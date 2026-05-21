@@ -43,13 +43,36 @@ Each entry uses this template:
 - Skill workflow: hybrid `superpowers:*` + `mattpocock/skills`. See `AGENTS.md` skill workflow map.
 
 **Next:**
-- Write remaining harness files: `docs/CODE_STYLE.md`, `docs/ARCHITECTURE.md`, `init.sh`, `.gitignore`.
-- Initialize git, create GitHub repo (`storygrow`, public).
-- Run `/setup-matt-pocock-skills` with GitHub Issues + `docs/` storage.
-- Create Milestones (Week 1..5) and Labels on GitHub.
-- Migrate roadmap from `PROJECT_PLAN.md` into GitHub Issues (~30 items).
-- Scaffold `backend/` (NestJS) and `frontend/` (Next.js) with pnpm workspace.
-- Write `docker-compose.yml` (Postgres + pgvector, Redis, MinIO, LangFuse).
+- Scaffold `backend/` (NestJS) and `frontend/` (Next.js) with pnpm workspace — Week 1 issues #1, #2, #3.
+- Write `docker-compose.yml` (Postgres + pgvector, Redis, MinIO, LangFuse) — issue #4.
+- Write `.env.example` — issue #5.
 
 **Blockers:**
-- None. Waiting on user decision: GitHub repo public or private.
+- None.
+
+---
+
+## 2026-05-21 — Harness completed, GitHub set up, roadmap → issues
+
+**Done:**
+- Wrote remaining harness: `docs/CODE_STYLE.md`, `docs/ARCHITECTURE.md`, `init.sh`, `.gitignore`.
+- Initialized git, first commit.
+- Created public GitHub repo `HelgaZhizhka/storygrow`, pushed `main`.
+- Created Milestones (Week 1..5) and Labels (12 `area:*` + 3 `priority:*`).
+- Ran `/setup-matt-pocock-skills` (GitHub Issues / `docs/` / default triage labels / single-context):
+  - Added `## Agent skills` section to `CLAUDE.md`.
+  - Wrote `docs/agents/issue-tracker.md`, `docs/agents/triage-labels.md`, `docs/agents/domain.md`.
+  - Created 5 triage labels on GitHub (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`).
+- Migrated roadmap into 32 GitHub Issues (#1-#32) distributed across Week 1..5 milestones with `area:*` + `priority:*` labels.
+
+**Decisions:**
+- Public repo on GitHub (portfolio + free CI).
+- Hybrid skills strategy: `superpowers:*` for process (brainstorming, writing-plans, executing-plans, tdd, verification) + `mattpocock/skills` for issues/triage/diagnose/handoff. See `AGENTS.md` skill workflow map.
+- 32 issues granularity — finer than original ~30-item roadmap, but each is independently completable in 1-4 hours with agents.
+
+**Next:**
+- Start Week 1 work — issue #1 (scaffold pnpm workspace).
+- Recommended order for Week 1: #1 → #2 → #3 → #4 → #5.
+
+**Blockers:**
+- None.
