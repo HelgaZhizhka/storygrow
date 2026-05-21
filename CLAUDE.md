@@ -165,4 +165,20 @@ A feature is `done` only when **all** are true:
 
 ---
 
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues (`HelgaZhizhka/storygrow`). Agents use the `gh` CLI for all operations. See [docs/agents/issue-tracker.md](docs/agents/issue-tracker.md).
+
+### Triage labels
+
+Default label vocabulary — `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See [docs/agents/triage-labels.md](docs/agents/triage-labels.md).
+
+### Domain docs
+
+Single-context — one `CONTEXT.md` + `docs/adr/` at the repo root. See [docs/agents/domain.md](docs/agents/domain.md).
+
+---
+
 **Questions?** Re-read this file. Still unclear? Add an entry to `progress.md` and ask the user.
