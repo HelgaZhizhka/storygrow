@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+.next/
+out/
+build/
+*.tsbuildinfo
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Editor
+.DS_Store
+.vscode/
+.idea/
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Prisma generated client
+backend/prisma/generated/
+
+# Generated artifacts (if any heavy output)
+/generated/
+
+# Local Docker volumes (if user maps any)
+.docker-data/
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Session-handoff is committed (it's the handoff). Keep it.
+# progress.md is committed too. Keep it.
