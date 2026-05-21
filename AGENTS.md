@@ -84,3 +84,9 @@ Before finishing any session:
 | `docs/superpowers/plans/` | Implementation plans (from `superpowers:writing-plans`). |
 | `PROJECT_PLAN.md` | High-level product vision, scope, 5-week roadmap, budget. |
 | **GitHub Issues** | **Task source of truth.** Milestones = weeks. Labels = areas + priority. |
+
+---
+
+## Deliberate non-files
+
+We deliberately do **not** maintain `feature_list.json`. GitHub Issues is the task source of truth; `progress.md` is the session log. If you ever feel like adding `feature_list.json`, re-read this section — that path was considered and rejected to avoid dual sources of truth.
