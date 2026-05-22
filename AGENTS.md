@@ -21,6 +21,7 @@ Before writing any code, always do this:
 
 ## Working Rules
 
+- **One issue → one branch → one PR → squash-merge to `main`.** Branch `issue/<N>-<short-kebab>`, PR title in Conventional Commits, body `Closes #N`. Full rules: [docs/adr/0001-git-workflow.md](docs/adr/0001-git-workflow.md).
 - **One issue at a time.** Finish before picking the next.
 - **Don't "also refactor" issue B while implementing issue A.** Unrelated bugs → new issue.
 - **Narrow exception:** a 1-2 line fix that unblocks your work is allowed — mention it in the commit message.
