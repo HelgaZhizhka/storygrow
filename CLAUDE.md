@@ -12,7 +12,7 @@
 4. ❌ Class components in Next.js (only arrow function components)
 5. ❌ Inline styles (only Tailwind classes)
 6. ❌ Index as key in dynamic lists (use stable id)
-7. ❌ Force push to `main`
+7. ❌ Direct push to `main` or force push to `main` (all changes via PR; see [docs/adr/0001-git-workflow.md](docs/adr/0001-git-workflow.md))
 8. ❌ Add dependencies without discussing first (especially AI-related)
 9. ❌ Raw LLM calls without a Zod schema — all generation goes through `generateObject` (Vercel AI SDK)
 10. ❌ AI output without a `StoryEval` row or LangFuse trace (no silent generation)
@@ -23,6 +23,7 @@
 15. ❌ Secrets in code (only via `ConfigService` from env)
 16. ❌ Mutating function parameters or state directly (immutable updates)
 17. ❌ Skip verification (`./init.sh`) before claiming a feature is done
+18. ❌ Squash-merge PR with a title that isn't Conventional Commits (`feat|fix|chore|docs|refactor|test|perf|ci(area)?: ...`)
 
 **Why:** maintainability, defensibility on course defense, AI-pipeline traceability, security.
 
@@ -89,6 +90,31 @@ pnpm --filter backend prisma:studio     # Prisma Studio UI
 # Infrastructure
 docker compose up -d           # Postgres + Redis + MinIO + LangFuse
 docker compose down            # Stop everything
+```
+
+---
+
+## Git Workflow (canonical)
+
+Full rationale: [docs/adr/0001-git-workflow.md](docs/adr/0001-git-workflow.md). Day-to-day rules:
+
+- **One GitHub Issue → one branch → one PR → squash-merge into `main`.**
+- Branch name: `issue/<N>-<short-kebab-title>`.
+- PR body: `Closes #<N>` so the issue auto-closes on merge.
+- PR title and squash-commit subject follow **Conventional Commits**: `type(area): short imperative subject`.
+  Types: `feat | fix | chore | docs | refactor | test | perf | ci`.
+- `main` is protected — no direct push, no force push.
+- Self-merge OK after `./init.sh` is green and Definition of Done is met.
+
+```bash
+# Typical loop
+gh issue list --milestone "Week 1" --state open
+git switch -c issue/1-pnpm-workspace
+# ...work, commit incrementally...
+git push -u origin issue/1-pnpm-workspace
+gh pr create --title "chore(repo): scaffold pnpm workspace" --body "Closes #1"
+# after ./init.sh is green
+gh pr merge --squash --delete-branch
 ```
 
 ---
