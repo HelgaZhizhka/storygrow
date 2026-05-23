@@ -85,3 +85,27 @@ The retry behavior in `StoryEvaluator`: if `finalScore < threshold`, the story i
 The numeric cutoff (default 7.0) for accepting a generated story. Configurable via env. Below the threshold → regenerate. The threshold is itself a metric to tune over time.
 
 ---
+
+## Semantic Hygiene — Easily Confused Pairs
+
+Quick-reference for pairs that are tempting to use interchangeably. When in doubt, **qualify the noun** — don't reuse one name for different concepts, don't use different names for the same concept. Keep the same concept named the same across code, docs, API, and UI.
+
+| Looks similar | But means | Use this term |
+|---|---|---|
+| `Book` vs `Story` | Artefact (DB row, PDF, what the user buys) vs structured content (JSON, the AI output) | `Book` for the artefact; `Story` for the content |
+| `Book` vs `BookPage` | Whole book vs a single page inside it | `BookPage` for one page; don't say "book entry" or "book item" for a page |
+| `Story` vs `Story Structure` vs `StorySchema` | Content instance vs the pedagogical structure (setup/conflict/lesson/resolution) vs the Zod schema enforcing it | "Story" for content; "Story Structure" / "Pedagogical Schema" in prose; `StorySchema` only in code |
+| `StoryEval` vs `Judge Score` vs `Final Score` | DB row holding all scores for one attempt vs one criterion's 0-10 number vs the mean across criteria | `StoryEval` for the row; "judge score" for a criterion; "final score" for the mean |
+| `Judge Score` vs `Eval Threshold` | The produced score (output) vs the cutoff for acceptance (config) | Don't say "judge threshold" |
+| `Fast Flow` vs `Custom Flow` | Synchronous template-fill (no AI) vs async full AI pipeline | Never "AI flow" or "slow flow" |
+| `Template` vs `StorySchema` | Pre-authored fast-flow story shell with placeholders vs Zod runtime/type schema for custom flow | `Template` is a DB row; `StorySchema` is code |
+| `Learning Goal` vs `Topic` / `Theme` | Pedagogical objective (admin-managed catalogue) vs descriptive label | Always `LearningGoal`; avoid "topic" / "theme" |
+| `Discussion Question` vs "quiz" | Open-ended parent-child prompt on PDF last page vs interactive quiz | We do NOT do quizzes — only `DiscussionQuestion` |
+| `Vocabulary Entry` vs "lexicon entry" / "word record" | RAG-indexed word with grade level and embedding | Always `VocabularyEntry` |
+| `Grade Level` vs "age" vs "difficulty" | Numeric band derived from age (0–4) used in RAG retrieval | `gradeLevel` in code; "grade level" in prose; never "age level" or bare "difficulty" |
+| `Regeneration Loop` vs "retry" | The judge-driven re-generation up to 2 times, with each attempt logged | Use "regeneration", not "retry" — "retry" implies transient error, this is quality-driven |
+| `LangFuse Trace` vs "log" | Structured observability record (prompt, response, latency, cost, score) vs unstructured logger output | "Trace" for LLM-call records in LangFuse; "log" only for `logger` service output |
+
+If a new term enters the codebase that could collide with one above — qualify it immediately (e.g., `ui_graph` vs `dependency_graph`, not bare `graph`) and add it here.
+
+---

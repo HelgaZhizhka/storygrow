@@ -79,6 +79,31 @@ Each entry uses this template:
 
 ---
 
+## 2026-05-23 — Agent harness refinements (agent1st-inspired) — #35
+
+**Done:**
+- Reviewed [applerom/agent1st AGENTS.md](https://github.com/applerom/agent1st/blob/main/AGENTS.md). Verdict: B+ doc — solid `Rule → WHY → IF MISSING` format, useful principles around evidence-based completion / right to disagree / not stopping at weak signals; but mostly philosophical and largely duplicated by the `superpowers:*` skills we already use.
+- Cherry-picked 4 ideas without wholesale replacement (issue #35):
+  - `CLAUDE.md` — applied `Rule → Why → If missing` format to all 6 AI-Pipeline Discipline rules so the agent can judge edge cases instead of mechanically applying them.
+  - `CONTEXT.md` — added "Semantic Hygiene — Easily Confused Pairs" table (12 pairs: Book vs Story, StoryEval vs Judge Score, Fast Flow vs Custom Flow, Template vs StorySchema, etc.).
+  - `AGENTS.md` — new "Agent Behavior Contract" section: Done-is-not-a-mood, Right-to-disagree, Don't-stop-at-first-weak-signal, Complaint-Driven Development (with `Friction:` block format).
+  - `session-handoff.md` — replaced free-form template with compact handoff format (Objective/Status/Key decisions/Assumptions/Rejected paths/Blockers/Next steps/Evidence/Frictions).
+
+**Decisions:**
+- Reject "Agent1st Mode ON" magic phrase — cargo cult, does not change model behavior.
+- Reject wholesale 11-principle copy — duplicates `superpowers:verification-before-completion`, `superpowers:systematic-debugging`, `superpowers:brainstorming`, `superpowers:executing-plans`, etc.
+- Phase the `Why / If missing` format in gradually — applied only to AI-Pipeline Discipline first; revisit the 18 hard constraints later if the format proves useful in practice.
+- CDD friction log lives inline under the current `progress.md` session entry (not a separate file) — same artefact, no dual source of truth.
+
+**Next:**
+- Continue with issue #1 (scaffold pnpm workspace).
+- Separately: clean up stray commits on `issue/1-pnpm-workspace` — commits `91ddd4e` (adds "Bundle progress.md" rule to AGENTS.md) and `a10be5c` (adds `docs/meetup-harness-walkthrough.md`, 329 lines) are misplaced on a branch named for pnpm scaffolding. Either reassign to a new issue or cherry-pick into a small docs PR before starting #1 in earnest.
+
+**Blockers:**
+- None.
+
+---
+
 ## 2026-05-22 — Git workflow adopted (ADR-0001)
 
 **Done:**

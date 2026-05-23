@@ -141,14 +141,31 @@ gh pr merge --squash --delete-branch
 
 ## AI-Pipeline Discipline (StoryGrow-specific)
 
-These are not optional. The AI pipeline is the substance of the project defense.
+These are not optional. The AI pipeline is the substance of the project defense. Each rule is stated as **Rule → Why → If missing** so you can judge edge cases instead of mechanically applying the rule.
 
 1. **All LLM calls use `generateObject` from Vercel AI SDK** with a typed Zod schema. No raw `chat.completions.create`.
+   - **Why:** structured output is one of the three AI-engineering differentiators on the defense; the schema is also the contract between backend, PDF renderer, and frontend.
+   - **If missing:** unstructured text breaks the PDF render contract; no parse-error detection; pedagogical sections (setup/conflict/lesson/resolution) cannot be enforced.
+
 2. **Every generation creates a `StoryEval` row** with judge scores and `attempt` number, even if the first attempt passes.
+   - **Why:** the eval dashboard is what we show the jury; without rows there is no metric.
+   - **If missing:** quality drift becomes invisible; "% books passing on first attempt" is unmeasurable; the regeneration story has no evidence.
+
 3. **Every LLM call is traced in LangFuse** via `experimental_telemetry: { isEnabled: true, functionId, metadata }`.
+   - **Why:** observability is part of the defense; the jury must be able to see token cost, latency, and judge score on one screen.
+   - **If missing:** debugging AI failures becomes archaeology; no defense-grade evidence of pipeline behavior.
+
 4. **Prompts live in `backend/src/ai/prompts/`** as exported constants — not inline strings in services.
+   - **Why:** prompts are the most-iterated artefact in an AI system; version-controlled constants enable diff review and A/B comparison.
+   - **If missing:** "magic" strings scattered across services; no review trail; impossible to A/B a prompt change.
+
 5. **Schemas live in `backend/src/ai/schemas/`** — single source of truth for both runtime validation and TypeScript types.
+   - **Why:** Zod schemas double as runtime guards and TS types via `z.infer`; one definition prevents drift between validator and type.
+   - **If missing:** type definitions diverge from runtime validators; bugs sneak in at the JSON boundary; LLM output may parse but violate downstream expectations.
+
 6. **No silent regeneration** — if a story fails judge threshold, the previous `StoryEval` row stays, a new one is created, and the user sees attempt progress.
+   - **Why:** the retry loop is the demo-able value-add on the defense; silent retry hides the loop from both jury and metrics.
+   - **If missing:** we cannot show "this book regenerated twice before passing"; the regeneration loop becomes invisible to the user and to the dashboard.
 
 ---
 
