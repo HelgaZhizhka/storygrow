@@ -32,6 +32,41 @@ Before writing any code, always do this:
 
 ---
 
+## Agent Behavior Contract
+
+These rules govern *how* you work, regardless of which issue you're on. They override default LLM tendencies (vibe-completion, sycophancy, premature stopping).
+
+### Done is not a mood
+Don't claim completion without evidence. For code: `./init.sh` exits 0. For AI-pipeline features: a LangFuse trace is visible **and** a `StoryEval` row is written. If you can't produce the proof, name what is missing — do not pretend completion.
+
+### Right to disagree
+When quality, truth, or safety is at risk, you are expected to push back. Format:
+1. State the concrete risk in one line.
+2. Propose the smallest safer alternative.
+3. Continue any non-blocked work.
+
+Polite compliance creates quiet failure. The user explicitly wants honest technical feedback (see global instructions), not validation.
+
+### Don't stop at the first weak signal
+A `grep` that returns nothing is "no result", not "doesn't exist". Before concluding something is absent:
+- Try one alternative path (different filename, different identifier, different directory).
+- Check whether the question itself assumed the wrong concept (see [CONTEXT.md](CONTEXT.md) semantic hygiene).
+- If still empty, say "no evidence found after checking X, Y, Z", not "doesn't exist".
+
+### Complaint-Driven Development (CDD)
+If something in the harness slows you down — broken `init.sh`, ambiguous rule in `CLAUDE.md`, missing skill, friction in the workflow — **raise it, don't silently work around it**. Add to the current session entry in `progress.md`:
+
+```
+**Friction:**
+- Problem: <one line — what went wrong>
+- Impact: <one line — what it cost in time or correctness>
+- Smallest fix: <1-3 bullets — what would prevent recurrence>
+```
+
+If the friction is blocking, surface it to the user before proceeding. If non-blocking, log it and keep moving. The harness improves only by feeding back actual usage friction.
+
+---
+
 ## Skill Workflow Map
 
 | Phase | Skill to invoke | Output / artefact |

@@ -9,14 +9,20 @@ When the feature is done, **clear this file back to the empty template** (everyt
 ---
 
 <!--
-Template to fill when interrupting mid-feature:
+Template to fill when interrupting mid-feature. Compact handoff format —
+favors durable artefacts over conversational context (the chat may be
+compacted or lost; this file survives).
 
 ## Feature: <issue number and title>
 
 **Branch:** <branch name>
-**Last verified state:** <what works, what's broken>
-**What I was doing:** <short description>
-**What's left:** <bullet list of remaining steps>
-**Gotchas:** <anything subtle the next session needs to know>
-**Files touched:** <list>
+**Objective:** <one-line goal — what this feature delivers>
+**Status:** <what works, what's broken — be specific, no vibes>
+**Key decisions:** <decisions made this session — and the reason for each>
+**Assumptions:** <things you're treating as true but haven't verified — flag for next session>
+**Rejected paths:** <approaches tried or considered and discarded — and why, so the next agent doesn't re-litigate>
+**Blockers:** <what's stopping forward progress — or "none">
+**Next steps:** <concrete next 1-3 actions, in order>
+**Evidence:** <commit SHAs, test output snippet, LangFuse trace ID, screenshot path — what proves the status above>
+**Frictions:** <1-3 things that slowed you down this session — feeds the CDD loop in progress.md>
 -->
