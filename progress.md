@@ -79,31 +79,6 @@ Each entry uses this template:
 
 ---
 
-## 2026-05-23 — Agent harness refinements (agent1st-inspired) — #35
-
-**Done:**
-- Reviewed [applerom/agent1st AGENTS.md](https://github.com/applerom/agent1st/blob/main/AGENTS.md). Verdict: B+ doc — solid `Rule → WHY → IF MISSING` format, useful principles around evidence-based completion / right to disagree / not stopping at weak signals; but mostly philosophical and largely duplicated by the `superpowers:*` skills we already use.
-- Cherry-picked 4 ideas without wholesale replacement (issue #35):
-  - `CLAUDE.md` — applied `Rule → Why → If missing` format to all 6 AI-Pipeline Discipline rules so the agent can judge edge cases instead of mechanically applying them.
-  - `CONTEXT.md` — added "Semantic Hygiene — Easily Confused Pairs" table (12 pairs: Book vs Story, StoryEval vs Judge Score, Fast Flow vs Custom Flow, Template vs StorySchema, etc.).
-  - `AGENTS.md` — new "Agent Behavior Contract" section: Done-is-not-a-mood, Right-to-disagree, Don't-stop-at-first-weak-signal, Complaint-Driven Development (with `Friction:` block format).
-  - `session-handoff.md` — replaced free-form template with compact handoff format (Objective/Status/Key decisions/Assumptions/Rejected paths/Blockers/Next steps/Evidence/Frictions).
-
-**Decisions:**
-- Reject "Agent1st Mode ON" magic phrase — cargo cult, does not change model behavior.
-- Reject wholesale 11-principle copy — duplicates `superpowers:verification-before-completion`, `superpowers:systematic-debugging`, `superpowers:brainstorming`, `superpowers:executing-plans`, etc.
-- Phase the `Why / If missing` format in gradually — applied only to AI-Pipeline Discipline first; revisit the 18 hard constraints later if the format proves useful in practice.
-- CDD friction log lives inline under the current `progress.md` session entry (not a separate file) — same artefact, no dual source of truth.
-
-**Next:**
-- Continue with issue #1 (scaffold pnpm workspace).
-- Separately: clean up stray commits on `issue/1-pnpm-workspace` — commits `91ddd4e` (adds "Bundle progress.md" rule to AGENTS.md) and `a10be5c` (adds `docs/meetup-harness-walkthrough.md`, 329 lines) are misplaced on a branch named for pnpm scaffolding. Either reassign to a new issue or cherry-pick into a small docs PR before starting #1 in earnest.
-
-**Blockers:**
-- None.
-
----
-
 ## 2026-05-22 — Git workflow adopted (ADR-0001)
 
 **Done:**
@@ -121,6 +96,67 @@ Each entry uses this template:
 **Next:**
 - Start Week 1 — issue #1 (scaffold pnpm workspace) on a branch `issue/1-pnpm-workspace`.
 - Open question: should `progress.md` updates be bundled into the feature PR (preferred), or go via standalone PRs at session end? Decide before/during issue #1.
+
+**Blockers:**
+- None.
+
+---
+
+## 2026-05-23 — Agent harness refinements (agent1st-inspired) — #35
+
+**Done:**
+- Reviewed [applerom/agent1st AGENTS.md](https://github.com/applerom/agent1st/blob/main/AGENTS.md). Verdict: B+ doc — solid `Rule → WHY → IF MISSING` format, useful principles around evidence-based completion / right to disagree / not stopping at weak signals; but mostly philosophical and largely duplicated by the `superpowers:*` skills we already use.
+- Cherry-picked 4 ideas without wholesale replacement (issue #35, PR #36):
+  - `CLAUDE.md` — applied `Rule → Why → If missing` format to all 6 AI-Pipeline Discipline rules so the agent can judge edge cases instead of mechanically applying them.
+  - `CONTEXT.md` — added "Semantic Hygiene — Easily Confused Pairs" table (12 pairs: Book vs Story, StoryEval vs Judge Score, Fast Flow vs Custom Flow, Template vs StorySchema, etc.).
+  - `AGENTS.md` — new "Agent Behavior Contract" section: Done-is-not-a-mood, Right-to-disagree, Don't-stop-at-first-weak-signal, Complaint-Driven Development (with `Friction:` block format).
+  - `session-handoff.md` — replaced free-form template with compact handoff format (Objective/Status/Key decisions/Assumptions/Rejected paths/Blockers/Next steps/Evidence/Frictions).
+- Cleaned up the two stray commits left on the old `issue/1-pnpm-workspace` branch — neither related to pnpm scaffolding:
+  - PR #39 (issue #37) — cherry-picked `91ddd4e` into main: documented the "bundle progress.md updates into the feature PR" rule in `AGENTS.md`.
+  - PR #40 (issue #38) — cherry-picked `a10be5c` into main: standalone meetup harness walkthrough doc.
+  - Deleted the polluted `issue/1-pnpm-workspace` branch (local + remote) — recreated clean off main for the actual #1 work.
+
+**Decisions:**
+- Reject "Agent1st Mode ON" magic phrase — cargo cult, does not change model behavior.
+- Reject wholesale 11-principle copy — duplicates `superpowers:verification-before-completion`, `superpowers:systematic-debugging`, `superpowers:brainstorming`, `superpowers:executing-plans`, etc.
+- Phase the `Why / If missing` format in gradually — applied only to AI-Pipeline Discipline first; revisit the 18 hard constraints later if the format proves useful in practice.
+- CDD friction log lives inline under the current `progress.md` session entry (not a separate file) — same artefact, no dual source of truth.
+
+**Next:**
+- Issue #1 (scaffold pnpm workspace) — start now.
+
+**Blockers:**
+- None.
+
+---
+
+## 2026-05-23 — Week 1 #1: pnpm workspace scaffold
+
+**Done:**
+- Created repo-root workspace artefacts (issue #1):
+  - `package.json` — `name: storygrow`, `private: true`, `packageManager: pnpm@10.29.3`, `engines.node >=22.0.0`, `format` / `format:check` scripts, devDep `prettier ^3.3.3` (resolved to `3.8.3`).
+  - `pnpm-workspace.yaml` — references `backend` and `frontend` (directories themselves come in #2/#3).
+  - `prettier.config.js` — CJS, `printWidth: 100`, `singleQuote: true`, `trailingComma: 'all'`, `arrowParens: 'always'`, `endOfLine: 'lf'`.
+  - `.prettierignore` — excludes `node_modules`, lockfiles (`pnpm-lock.yaml`, `package-lock.json`, `yarn.lock`), build outputs, and (deliberately) all `*.md` to keep current hand-formatted docs untouched.
+  - `.nvmrc` — `22.15.0` (matches current local Node; lets `nvm use` / CI pick the right version).
+  - `.editorconfig` — universal 2-space LF / UTF-8 / trim trailing whitespace / final newline; preserve trailing whitespace in `*.md` (markdown line-break syntax).
+- Verified: `pnpm install` runs clean, `pnpm format:check` passes, `./init.sh` exits 0.
+- Fixed a small ordering bug in `progress.md` introduced during the harness PR — the 2026-05-23 entry had been inserted above 2026-05-22, violating "newest at bottom". Reordered.
+
+**Decisions:**
+- Pin pnpm to `10.29.3` exact via `packageManager` (matches currently installed; ignore the v11 update prompt for now to keep CI / local in sync).
+- Pin Node via `engines: { node: ">=22.0.0" }` — current local is `v22.15.0`, gives upgrade headroom without forcing a hard pin.
+- Prettier `printWidth: 100` over the more common `80` — modern monitors, NestJS/Next code tends to be wider, and per-line meaningful density goes up.
+- `.prettierignore` includes `*.md` for now. Reason: existing harness docs are hand-formatted with intentional table widths / soft-wrapping that prettier would reflow. Revisit once the project has more docs and we want canonical markdown formatting across the board.
+- Skip root-level convenience scripts (`build`/`test`/`lint -r`) until at least one sub-package has those scripts — `pnpm -r` errors when no package has the named script. Add in #2/#3.
+- Cherry-picked environment-level files from the `yes-code-merch` repo config audit (`.nvmrc`, `.editorconfig`, lockfile entries in `.prettierignore`). Per-package configs (shared `tsconfig.base.json`, shared ESLint preset) deferred until after `backend/` and `frontend/` exist — separate issues (N2, N3). Husky + lint-staged (N1) lands next, with only Prettier wired in initially.
+
+**Next:**
+- Issue #41: husky + lint-staged (prettier only initially) — Week 1.
+- Issue #42: GitHub Action to lint PR title (Conventional Commits) — Week 1.
+- Issue #2: scaffold `backend/` (NestJS).
+- Issue #3: scaffold `frontend/` (Next.js).
+- After #2/#3: shared `tsconfig.base.json` (#43), shared ESLint preset (#44), CI workflow running `./init.sh` (#45), and root-level `build`/`test`/`lint` fan-out scripts via `pnpm -r`.
 
 **Blockers:**
 - None.
