@@ -269,3 +269,31 @@ Each entry uses this template:
 
 **Blockers:**
 - None.
+
+---
+
+## 2026-05-24 — Week 2 #45: CI workflow running ./init.sh on PR
+
+**Done:**
+- Added `.github/workflows/ci.yml`: single `init` job on `ubuntu-latest`, 10-min timeout.
+- Triggers: `pull_request` to `main` (for gating) and `push` to `main` (for status badge / post-merge confirmation).
+- Steps: `actions/checkout` → `pnpm/action-setup` (`10.29.3`, no auto-install) → `actions/setup-node` (`node-version-file: .nvmrc`, `cache: 'pnpm'`) → `pnpm install --frozen-lockfile` → `./init.sh`.
+- All three actions pinned to commit SHA, not floating major tags (same supply-chain rationale as #42's amannn pin — `actions/checkout` literally reads the repo contents, so a tag re-point is high-impact).
+- `concurrency` block cancels older PR runs when new commits arrive (`cancel-in-progress: ${{ github.event_name == 'pull_request' }}`) but keeps `main`-push runs to avoid losing the post-merge confirmation.
+- `permissions: contents: read` — minimum needed for checkout; no write tokens issued.
+
+**Decisions:**
+- **Pinned to commit SHA, not v4 / v6 tags** — even for first-party `actions/*`. Reasoning same as #42: tag re-points are silent, and an `actions/checkout` compromise would let the action read the source tree. Slight upgrade-ergonomics cost; acceptable here without dependabot wired up.
+- **`pnpm install --frozen-lockfile`** instead of plain `pnpm install`. CI must fail loudly when the lockfile is out of sync with `package.json`, not silently regenerate it. This is the lockfile-discipline counterpart to local `pnpm install`.
+- **Single job, no matrix.** Issue acknowledged a Node 22 / 24 matrix as a possible follow-up — explicitly out of scope. We pin Node via `.nvmrc` and that's the one supported version until/unless the matrix becomes worth it.
+- **Trigger on `push` to `main` too**, not only `pull_request`. Reason: future README status badge needs a `main`-branch run to report against; also lets us catch any post-merge anomalies (e.g. a base-branch shift that breaks something a PR review never saw).
+
+**Manual follow-up (after first green run on main):**
+- GitHub UI → Settings → Branches → main → edit branch protection → require status check **"./init.sh"** (in addition to the **"Conventional Commits"** check from #42).
+
+**Next:**
+- #4: `docker-compose.yml` (Postgres + pgvector, Redis, MinIO, LangFuse) — unblocks Week 2 feature work.
+- #5: `.env.example` (likely bundled with #4 since they share the env contract).
+
+**Blockers:**
+- None.
