@@ -87,9 +87,10 @@ pnpm --filter frontend lint:fix
 pnpm --filter backend prisma:migrate    # Apply migrations
 pnpm --filter backend prisma:studio     # Prisma Studio UI
 
-# Infrastructure
+# Infrastructure (see docs/local-dev.md for ports and bootstrap)
 docker compose up -d           # Postgres + Redis + MinIO + LangFuse
 docker compose down            # Stop everything
+docker compose down -v         # Stop AND wipe data volumes
 ```
 
 ---
@@ -179,7 +180,7 @@ REDIS_URL=redis://...
 OPENAI_API_KEY=sk-...
 LANGFUSE_PUBLIC_KEY=...
 LANGFUSE_SECRET_KEY=...
-LANGFUSE_HOST=http://localhost:3001
+LANGFUSE_HOST=http://localhost:3030
 S3_ENDPOINT=http://localhost:9000
 S3_ACCESS_KEY=...
 S3_SECRET_KEY=...
