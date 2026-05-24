@@ -239,3 +239,33 @@ Each entry uses this template:
 
 **Blockers:**
 - None.
+
+---
+
+## 2026-05-24 — Week 1 #3: frontend (Next.js) scaffold
+
+**Done:**
+- Scaffolded `frontend/` via `pnpm create next-app@latest` (Next 16.2.6, React 19.2, Tailwind 4, ESLint 9 flat, App Router, `src/` layout, `@/*` import alias, Turbopack).
+- Replaced the Vercel demo landing with a StoryGrow placeholder (`src/app/page.tsx`) — Russian copy (product language per CONTEXT.md), centered single-column hero, dark-mode aware via Tailwind classes.
+- `src/app/layout.tsx`: switched `<html lang>` from `"en"` to `"ru"`, added Cyrillic subset to `Geist` (default font), set real `metadata.title` / `description`.
+- ESLint config (`frontend/eslint.config.mjs`): added `@typescript-eslint/no-explicit-any: error` override on top of `eslint-config-next` (Hard Constraint #1).
+- `frontend/package.json`: added `description`, `lint:fix` script, and a placeholder `test` script (`true`) so `init.sh`'s `pnpm test --silent` step doesn't fail before a test framework is wired in.
+- Deleted the Vercel demo SVGs (`next.svg`, `vercel.svg`, `file.svg`, `window.svg`, `globe.svg`) — `page.tsx` no longer references them.
+- Deleted `frontend/CLAUDE.md` (was just `@AGENTS.md` re-export) and `frontend/.git/` (nested repo). Merged `frontend/pnpm-workspace.yaml`'s `ignoredBuiltDependencies` (`sharp`, `unrs-resolver`) into the root workspace file, plus `@nestjs/core`; deleted the nested file.
+- Kept `frontend/AGENTS.md` (5-line note from the Next CLI warning that Next 16 has breaking changes vs training-data Next) and `frontend/.gitignore` was deleted in favor of the root one; added `frontend/next-env.d.ts` to root `.gitignore` (Next auto-regenerates it; must not be committed per Next docs).
+- Verified: `./init.sh` exits 0 (`tsc --noEmit`, `lint`, placeholder `test` for frontend; backend still green); `pnpm --filter frontend exec next build` exits 0 with one static `/` route.
+
+**Decisions:**
+- **`text "no test"` placeholder via `"test": "true"`.** First attempt was `echo 'no tests yet' && exit 0` — that broke when `init.sh` invoked it as `pnpm test --silent`: pnpm appends `--silent` to the script → `exit 0 --silent` → too many arguments. Switched to bare `true` (POSIX `true(1)` ignores all args and exits 0). Real test framework lands with the first frontend feature, not in #3.
+- **No vitest / RTL / playwright yet.** Picking a frontend test stack is opinionated (vitest vs jest, jsdom vs happy-dom, integration vs visual). Wiring it in a "scaffold" PR would pre-commit to a choice without a real test to validate it. Defer to a dedicated issue when the first non-trivial component lands.
+- **Kept `eslint-config-next` flat-config as the base.** It already includes core-web-vitals + React rules + JSX a11y. #44 (shared ESLint preset) will compose this with the backend preset; for now adding our Hard-Constraint override is the minimum viable change.
+- **Single `pnpm-workspace.yaml` at the root.** The Next 16 CLI creates a nested one to declare `ignoredBuiltDependencies`. pnpm reads the *nearest* workspace file, so a nested one shadows the root and breaks the monorepo. Moved the ignore declarations into the root file.
+- **Russian copy on the landing.** `CONTEXT.md` says product language is Russian (UI + stories). Hard-coding the language now avoids the trap of building English-first scaffolds that get retrofitted later. i18n tooling decision deferred until there's actual content variation.
+
+**Next:**
+- Week 1 milestone closes with this PR. All five originally scoped Week 1 issues done (#1, #2, #3) plus the three we spun out today (#41 husky, #42 PR-title CI, #46... wait — re-count from the GitHub issue list).
+- Week 2 unblocks now: #43 shared tsconfig, #44 shared ESLint preset, #45 CI `./init.sh` workflow.
+- Then back to original roadmap: #4 (docker-compose), #5 (.env.example).
+
+**Blockers:**
+- None.

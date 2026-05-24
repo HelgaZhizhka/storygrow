@@ -9,6 +9,9 @@ out/
 build/
 *.tsbuildinfo
 
+# Next.js auto-generated (must not be committed per Next docs)
+frontend/next-env.d.ts
+
 # Env
 .env
 .env.local
