@@ -211,3 +211,31 @@ Each entry uses this template:
 
 **Blockers:**
 - None.
+
+---
+
+## 2026-05-24 — Week 1 #2: backend (NestJS) scaffold + /health
+
+**Done:**
+- Scaffolded `backend/` via `pnpm dlx @nestjs/cli new backend --package-manager pnpm --skip-git --skip-install --strict` (Nest 11, TypeScript 5, ESLint 9 flat config, Jest).
+- Replaced the default `Hello World` `AppController` / `AppService` with a `HealthController` at `GET /health` returning `{ status: 'ok' }` (typed via `HealthStatus`). `AppModule` wires the two.
+- `main.ts` listens on `process.env.PORT ?? 3001` (frontend gets 3000 per CLAUDE.md → backend defaults to 3001 to avoid collision).
+- Unit test (`health.controller.spec.ts`) and e2e test (`test/app.e2e-spec.ts`) both updated to cover the `/health` endpoint.
+- Tightened the Nest CLI default ESLint config: `@typescript-eslint/no-explicit-any: error` (Hard Constraint #1), `no-floating-promises: error`, prettier `endOfLine: 'lf'` (was `'auto'`).
+- Removed `backend/.prettierrc` — root `prettier.config.js` is the single source of truth.
+- Trimmed `backend/package.json`: dropped duplicated `format` script (root owns formatting), added `dev` alias (= `nest start --watch`) so `pnpm --filter backend dev` matches CLAUDE.md, dropped `start:debug` (unused).
+- Fixed `init.sh`: dropped `--run` from `pnpm test --run --silent` — vitest-only flag that broke Jest. Now `pnpm test --silent` for both packages; the `test` script in each package is framework-aware.
+- Verified end-to-end: `./init.sh` passes (`tsc --noEmit`, `lint`, `test --silent`); e2e suite (`pnpm exec jest --config ./test/jest-e2e.json`) passes.
+
+**Decisions:**
+- Scope reduction from the issue text. The original issue body says "Copy `eslint.config.js` + `tsconfig.json` from `mentor-resources/templates/configs/`" — that directory was never created (stale wording from the imported roadmap). Per our N1–N5 plan, strict shared tsconfig (#43) and shared ESLint preset (#44) are explicitly separate issues that land after both packages exist. So #2 uses the Nest CLI defaults *as is* (`strictNullChecks`, `noImplicitAny`, `strictBindCallApply` are already on) and we'll harmonize in #43/#44.
+- Enabled `no-explicit-any: error` (Hard Constraint #1) anyway — disabling a Hard Constraint while waiting for a follow-up PR would be a documented rule violation in the interim. One-line override, undone cleanly when #44 replaces the preset.
+- Backend default port `3001`, not `3000`. Frontend Next.js owns 3000 per CLAUDE.md; preventing the collision now is cheaper than diagnosing it later.
+- `@nestjs/core` and `unrs-resolver` postinstall scripts blocked by pnpm 10's default sandboxing — left as-is (no functional break observed). `pnpm approve-builds` if either turns out to need it (e.g. opentelemetry hooks fail to register). Not in #2 scope.
+
+**Next:**
+- Issue #3: scaffold `frontend/` (Next.js).
+- After #3: shared `tsconfig.base.json` (#43), shared ESLint preset (#44), CI `./init.sh` workflow (#45).
+
+**Blockers:**
+- None.
