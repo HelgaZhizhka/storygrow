@@ -160,3 +160,28 @@ Each entry uses this template:
 
 **Blockers:**
 - None.
+
+---
+
+## 2026-05-24 — Week 1 #41: husky + lint-staged (prettier only)
+
+**Done:**
+- Installed `husky@9` and `lint-staged@17` as repo-root devDependencies.
+- `pnpm exec husky init` created `.husky/`; `prepare: husky` in `package.json` so `pnpm install` rewires the hook on every fresh checkout.
+- `.husky/pre-commit` → `pnpm exec lint-staged`.
+- `lint-staged` config (in `package.json`): `"*": "prettier --write --ignore-unknown"` — single glob, prettier decides per-file whether it knows the parser, falls through silently otherwise.
+- End-to-end verification: created a deliberately malformed JSON file, staged it, committed — pre-commit hook ran prettier, reformatted the staged content, the commit landed with the cleaned version. Reset the test commit afterwards.
+- `./init.sh` exits 0.
+
+**Decisions:**
+- Catch-all `*` glob over per-extension globs. Reason: `prettier --ignore-unknown` already no-ops on files it can't parse, so per-extension globs would just duplicate prettier's own filtering and need updating every time we add a new file type. One glob = one source of truth.
+- No ESLint in `lint-staged` yet — `backend/` and `frontend/` don't exist; ESLint preset comes with #44 after #2/#3. We'll add `eslint --fix` to the pipeline then.
+- No `commit-msg` / commitlint hook. ADR-0001 keeps Conventional Commits as a soft rule on PR titles only (enforced by CI in #42); intermediate commits on feature branches stay unconstrained because squash-merge wipes them.
+- No `pre-push` test runner. `./init.sh` is the local smoke-check, CI (#45) is the gate — pre-push tests would just slow down branch pushes without adding signal.
+
+**Next:**
+- Issue #42: CI lint PR title (Conventional Commits) — Week 1, next.
+- Issues #2 (backend) / #3 (frontend) scaffolds — unblocks #43, #44, #45.
+
+**Blockers:**
+- None.
