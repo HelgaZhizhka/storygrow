@@ -1,0 +1,17 @@
+{
+  "name": "storygrow",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pedagogically-grounded personalized children's book generator (StoryGrow).",
+  "packageManager": "pnpm@10.29.3",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3"
+  }
+}
