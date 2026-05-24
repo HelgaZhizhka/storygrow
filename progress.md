@@ -185,3 +185,29 @@ Each entry uses this template:
 
 **Blockers:**
 - None.
+
+---
+
+## 2026-05-24 — Week 1 #42: CI lint PR title (Conventional Commits)
+
+**Done:**
+- Added `.github/workflows/lint-pr-title.yml` — single-job workflow on `ubuntu-latest`.
+- Uses `amannn/action-semantic-pull-request` pinned to commit SHA `48f256284bd46cdaab1048c3721360e808335d50` (= tag `v6.1.1`).
+- Allowed types match ADR-0001 exactly: `feat | fix | chore | docs | refactor | test | perf | ci`.
+- `requireScope: false` — area scope is optional per ADR-0001 ("Area matches an `area:*` label when one fits, free-form otherwise").
+- Triggers: `pull_request` on `opened | edited | reopened | synchronize`.
+- Permissions: `pull-requests: read` (action only reads the PR title; doesn't post comments).
+- The PR opened for this very change is the live test — a non-conformant title would fail the check, this title passes.
+
+**Decisions:**
+- `pull_request` (not `pull_request_target`). Reason: single-maintainer repo, no fork PRs expected. `pull_request_target` is the right choice only when checks must run with elevated permissions on forked-PR code; using it without need expands the attack surface for very little gain.
+- No `subjectPattern` lowercase rule. Reason: ADR-0001 says "short imperative subject" but doesn't mandate lowercase. Don't invent stricter rules than the source-of-truth doc; if we want lowercase later, amend the ADR first.
+- Pin to commit SHA, not the `v6` floating tag. Reason: tag re-points are silent — a compromised tag would let a malicious version of the action read PR metadata. SHA pinning trades dependabot-style upgrade ergonomics for supply-chain integrity, which matters more here.
+- Branch protection: marking `lint-pr-title / Conventional Commits` as a required check on `main` is a separate manual step in GitHub UI (Settings → Branches → main). Noting it in the PR body; if it's not set, the workflow runs but isn't gating — fine until we have a real violation.
+
+**Next:**
+- Set the workflow as a required status check on `main` (UI step, after at least one run completes successfully).
+- Issues #2 (backend) / #3 (frontend) scaffolds — unblocks #43, #44, #45.
+
+**Blockers:**
+- None.
