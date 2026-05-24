@@ -328,3 +328,31 @@ Each entry uses this template:
 
 **Blockers:**
 - None (Docker verification is a soft follow-up, not a blocker).
+
+---
+
+## 2026-05-24 — #53: MinIO host-port collision fix + compose stack verified
+
+**Done:**
+- Verified the compose stack against a real Docker daemon. Found a collision: dev host had Homebrew `php-fpm` listening on `127.0.0.1:9000`, blocking MinIO's host port. Filed #53 as a follow-up to #4.
+- Shifted MinIO's host-facing ports `9000 → 9100` (API) and `9001 → 9101` (console). Container-internal ports stay `9000`/`9001`, so the `minio-create-buckets` init container (talks to `http://minio:9000` via the docker network) is unaffected.
+- Updated everywhere the host port appeared: `docker-compose.yml`, `.env.example`, `CLAUDE.md` (Required Environment Variables block), `docs/local-dev.md` (port table + first-run URLs).
+- End-to-end verification with `docker compose up -d`:
+  - `postgres` → healthy (init script created `langfuse` DB on first start).
+  - `redis` → healthy.
+  - `minio` → healthy on `0.0.0.0:9100→9000`, `0.0.0.0:9101→9001`.
+  - `minio-create-buckets` → exit 0; logs confirm bucket created with anon-download policy.
+  - `langfuse` → HTTP 200 on `http://localhost:3030`.
+  - `curl http://localhost:9100/minio/health/live` → HTTP 200.
+
+**Decisions:**
+- **B over A (shift MinIO port, don't kill php-fpm).** The user runs PHP for other projects; killing it would optimize for ports-look-canonical at the cost of breaking their workflow. Port allocation is project-local convention, not protocol — non-standard host port is the right tradeoff. Documented in CLAUDE.md so this becomes the canonical local-dev port.
+- **Kept container-internal ports at 9000/9001.** Only the host mapping changed. Reasoning: the docker network is the project's bus — services talk to each other by service name on default ports (`http://minio:9000`). Renaming internal ports would have rippled into the `mc` init container and any future backend code that consumes S3 from inside the docker network.
+- **#53 was a follow-up issue, not just a direct fix on the #4 PR.** ADR-0001 mandates one-issue-one-branch-one-PR; #4 was already merged. New issue is the right move for traceability — the squash-merge commit on `main` for #4 will continue to show "ships with port 9000" while #53 documents the correction.
+
+**Next:**
+- Branch protection UI step still pending: require `./init.sh` and `Conventional Commits` checks on `main` (separate from this PR).
+- Week 2 feature work — start in a fresh session with re-read CLAUDE.md / CONTEXT.md.
+
+**Blockers:**
+- None.

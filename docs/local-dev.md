@@ -6,7 +6,7 @@
 | ---------------------- | --------------- | ------------------------------------------- |
 | `postgres` (pgvector)  | `5432`          | Hosts both `storygrow` and `langfuse` DBs.  |
 | `redis`                | `6379`          | BullMQ queues, generation cache.            |
-| `minio`                | `9000` / `9001` | API / console. Console login: `S3_*` creds. |
+| `minio`                | `9100` / `9101` | API / console (host ports; container is `9000`/`9001`). Console login: `S3_*` creds. Host ports shifted off `9000` to avoid collision with PHP-FPM. |
 | `minio-create-buckets` | —               | One-shot init; exits after bucket is ready. |
 | `langfuse`             | `3030`          | UI at `http://localhost:3030`.              |
 
@@ -27,7 +27,7 @@ docker compose ps                     # confirm all services healthy
 
 Visit:
 
-- `http://localhost:9001` — MinIO console (login with `S3_ACCESS_KEY` / `S3_SECRET_KEY` from `.env.local`)
+- `http://localhost:9101` — MinIO console (login with `S3_ACCESS_KEY` / `S3_SECRET_KEY` from `.env.local`)
 - `http://localhost:3030` — LangFuse UI (login with `LANGFUSE_INIT_USER_EMAIL` / `LANGFUSE_INIT_USER_PASSWORD`). Then create a project and copy its public/secret keys into `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` in `.env.local`.
 
 ## Common commands
