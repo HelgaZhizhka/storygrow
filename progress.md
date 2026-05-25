@@ -401,3 +401,38 @@ Each entry uses this template:
 - #8: скачать Dale-Chall + AoA-Kuperman корпуса и написать скрипт индексации в `VocabularyEntry` через pgvector embeddings.
 - #9: `VocabularyRagService` — поиск по grade level через similarity search.
 - Параллельно можно начать #11 (StoryGenerator) + #16 (Google OAuth).
+
+---
+
+## 2026-05-25 — Week 2 #8 + #9: Vocabulary RAG service (PR #59)
+
+**Done:**
+- **Design spec:** `docs/superpowers/plans/2026-05-25-vocabulary-rag.md` — full design for #8 + #9 including corpus choice, embedding pipeline, similarity search API, and integration with StoryGenerator.
+- **Dependencies:** added `ai`, `@ai-sdk/openai`, `csv-parse`, `pg`, `@prisma/adapter-pg`, `@types/pg` to backend.
+- **Corpus:** `backend/prisma/seed/vocabulary.csv` — 820 Russian words manually curated for grades 0–4 (frequency proxy: Д.Ш. Матвеев "Частотный словарь русской детской лексики"). Each row: `word,gradeLevel,frequency`.
+  - *Deviation from original issue:* issue #8 specified Dale-Chall + AoA-Kuperman (English proxies). Switched to Russian corpus because the product language is Russian (stories + UI); English word difficulty does not map cleanly to Russian pedagogical vocabulary bands.
+- **`ageToGradeLevel`** helper (`backend/src/ai/rag/age-grade.map.ts`) — maps child age (2–10) to reading grade level (0–4) with unit tests.
+- **`VocabularyRagService`** (`backend/src/ai/rag/vocabulary-rag.service.ts`) — `findByGradeLevel(grade, limit)` and `searchByEmbedding(embedding, limit)` using Prisma + pgvector HNSW index. Full unit tests with mocked PrismaClient.
+- **`PrismaService`** (`backend/src/prisma/prisma.service.ts`) — NestJS provider using `@prisma/adapter-pg` + `pg.Pool` for Driver Adapter support (required for pgvector raw queries). `PrismaModule` wired into `AppModule`.
+- **`seed-vocabulary` script** (`backend/src/scripts/seed-vocabulary.ts`) — reads CSV, batches words through `embedMany` (`text-embedding-3-small`, 512 batch, 200ms delay), upserts into `VocabularyEntry` via `$executeRaw` with `ON CONFLICT`. Uses `tsx` runner (not `ts-node`) for ESM compatibility.
+- **Fix:** `@types/pg` was missing — caused TS7016 and 8 ESLint `no-unsafe-*` violations across `prisma.service.ts` and `seed-vocabulary.ts`.
+
+**Decisions:**
+- **Russian corpus instead of English.** The original plan (Dale-Chall + AoA-Kuperman) was a proxy for English difficulty. For Russian stories, we need Russian word-frequency bands. The 820-word seed set is a pedagogical MVP; we can expand to 5k+ later via a real frequency dictionary.
+- **Manual curation over automated download.** Dale-Chall and AoA-Kuperman are freely available but English-specific. No equivalent open Russian child-vocabulary corpus exists in a downloadable CSV. Manual curation from a frequency dictionary is the pragmatic path for a course-project MVP.
+- **`embedMany` for batch embedding** — one OpenAI API call per 512 words, with 200ms delay between batches. Cost: ~820 words / 512 * $0.02/1M tokens ≈ negligible for seeding.
+- **`$executeRaw` with `ON CONFLICT`** instead of `prisma.vocabularyEntry.createMany` — `createMany` does not support the `vector` type in Prisma v7; raw SQL is the only path for pgvector inserts.
+- **Postinstall caveat:** `prisma generate` runs in `postinstall` and requires `DATABASE_URL`. Fresh clones without `.env` will fail `pnpm install`. Workaround: `pnpm install --ignore-scripts` then `pnpm --filter backend prisma:generate` with env set. This is a known friction; we may need to make `postinstall` conditional or move generation to an explicit step.
+
+**Next:**
+- Open PR #59 for #8 + #9 (branch `issue/8-9-vocabulary-rag`), squash-merge after review.
+- #11: `StoryGenerator` service with `generateObject` + `StorySchema`.
+- #13: `StoryEvaluator` + regeneration loop.
+- #14: LangFuse integration via `experimental_telemetry`.
+
+**Blockers:**
+- None.
+
+**Frictions:**
+- `pg` types missing was a preventable catch — `init.sh` should have been run immediately after the `prisma.service.ts` commit, not deferred to the end of the branch. Cost: one extra fix-up commit.
+- `prisma generate` in `postinstall` fails on fresh clones without `DATABASE_URL`. Need to decide: remove `postinstall`, make it conditional, or document the workaround.
