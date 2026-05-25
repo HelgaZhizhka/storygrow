@@ -356,3 +356,29 @@ Each entry uses this template:
 
 **Blockers:**
 - None.
+
+
+---
+
+## 2026-05-25 — Week 2: tooling + Prisma schema + Zod AI schemas (parallel)
+
+**Done:**
+- **#43 + #44** (PR #55): `tsconfig.base.json` at repo root; both `backend/` and `frontend/` tsconfigs extend it (8 shared options extracted). Internal workspace package `packages/eslint-config` (`@storygrow/eslint-config`) with shared `no-any: error` rule; both packages import it, `pnpm-workspace.yaml` updated to include `packages/*`.
+- **#10 + #12** (PR #56): `backend/src/ai/schemas/story.schema.ts` — `StorySchema` Zod с `title`, `setup`, `conflict`, `lesson`, `resolution`, `discussionQuestions[5]`, `illustrationPrompts[3-8]`; `backend/src/ai/schemas/judge.schema.ts` — `JudgeScoreSchema` (5 критериев 0-10), `JudgeSchema`, `computeFinalScore`; barrel `index.ts`; `backend/src/ai/prompts/.gitkeep`. `zod` добавлен в backend deps.
+- **#6** (PR #57): Prisma v7 (`@prisma/client`, `prisma` dev). `backend/prisma/schema.prisma` — все 9 сущностей: `User`, `Child`, `Book`, `BookPage`, `StoryEval`, `Subscription`, `LearningGoal`, `VocabularyEntry` (`embedding Unsupported("vector(1536)")`), `Template`. `prisma.config.ts` для v7. `postinstall: prisma generate`.
+
+**Decisions:**
+- **Prisma v7**: `provider = "prisma-client"` (не `prisma-client-js`), URL в `prisma.config.ts`. Генерация клиента в `backend/generated/prisma`. Файлы миграций не создавались — нужна живая БД (`docker compose up`), это задача #7.
+- **Три параллельных агента** в изолированных worktree — нулевых конфликтов при мердже; ребейз на новый main прошёл чисто для обоих.
+- **`computeFinalScore` как чистая экспортированная функция** в judge.schema.ts — тестируется без моков.
+
+**Next (приоритет):**
+- #7: pgvector extension + initial migration (требует `docker compose up`)
+- #8 → #9: RAG-корпуса + VocabularyRagService
+- #11: StoryGenerator (нужны `ai` + `@ai-sdk/openai`)
+- #13: StoryEvaluator + regeneration loop
+- #14: LangFuse via experimental_telemetry
+- #16: Google OAuth + JWT (backend)
+
+**Blockers:**
+- #7 требует запущенного postgres — сначала `docker compose up -d`.
