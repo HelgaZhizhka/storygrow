@@ -18,7 +18,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "seed:vocabulary": "dotenv -e .env -- ts-node --project tsconfig.json -r tsconfig-paths/register src/scripts/seed-vocabulary.ts",
+    "seed:vocabulary": "dotenv -e .env -- tsx src/scripts/seed-vocabulary.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -59,6 +59,7 @@
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.22.3",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
   },
