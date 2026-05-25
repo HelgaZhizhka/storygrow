@@ -382,3 +382,22 @@ Each entry uses this template:
 
 **Blockers:**
 - #7 требует запущенного postgres — сначала `docker compose up -d`.
+
+---
+
+## 2026-05-25 — #7: pgvector extension + HNSW index migration (PR #58)
+
+**Done:**
+- `backend/prisma.config.ts` — добавлены `datasource.url: env('DATABASE_URL')` и `experimental.extensions: true` (обязательно для Prisma v7 + pgvector).
+- Migration `0001_init` — `CREATE EXTENSION IF NOT EXISTS vector` + все 9 таблиц домена + 4 enum + FK constraints. Генерируется из схемы #6.
+- Migration `0002_add_vector_index` — HNSW-индекс на `VocabularyEntry.embedding` (`vector_cosine_ops`).
+- Применено к живому `pgvector/pgvector:pg17`; проверено: расширение `vector` активно, индекс виден в `\di`.
+
+**Decisions:**
+- **HNSW вместо IVFFlat** — IVFFlat требует минимального количества строк для построения кластерных центроидов; таблица начинается пустой и заполняется постепенно (#8). HNSW не требует обучения.
+- **`prisma migrate deploy` для применения** (не `migrate dev`) — `migrate dev` интерактивен и блокирует advisory lock в фоне; `deploy` — production-safe, неинтерактивный.
+
+**Next:**
+- #8: скачать Dale-Chall + AoA-Kuperman корпуса и написать скрипт индексации в `VocabularyEntry` через pgvector embeddings.
+- #9: `VocabularyRagService` — поиск по grade level через similarity search.
+- Параллельно можно начать #11 (StoryGenerator) + #16 (Google OAuth).
