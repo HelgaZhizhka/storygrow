@@ -40,8 +40,8 @@ backend/prisma/generated/
 # Local Docker volumes (if user maps any)
 .docker-data/
 
-# Claude Code local settings
-.claude/settings.local.json
+# Claude Code local settings and worktrees
+.claude/
 
 # Session-handoff is committed (it's the handoff). Keep it.
 # progress.md is committed too. Keep it.
