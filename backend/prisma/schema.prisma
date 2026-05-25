@@ -1,0 +1,147 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client"
+  previewFeatures = ["postgresqlExtensions"]
+  output          = "../generated/prisma"
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [vector]
+}
+
+// ─── Auth ──────────────────────────────────────────────────────────────────
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  googleId     String?       @unique
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  children     Child[]
+  books        Book[]
+  subscription Subscription?
+}
+
+// ─── Child ─────────────────────────────────────────────────────────────────
+
+model Child {
+  id        String   @id @default(cuid())
+  name      String
+  age       Int
+  gender    String?
+  interests String[]
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  books     Book[]
+}
+
+// ─── Books ─────────────────────────────────────────────────────────────────
+
+model Book {
+  id             String       @id @default(cuid())
+  title          String
+  status         BookStatus   @default(pending)
+  storyJson      Json?
+  pdfUrl         String?
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  childId        String
+  child          Child        @relation(fields: [childId], references: [id], onDelete: Cascade)
+  learningGoalId String
+  learningGoal   LearningGoal @relation(fields: [learningGoalId], references: [id])
+  pages          BookPage[]
+  evals          StoryEval[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+enum BookStatus {
+  pending
+  generating
+  ready
+  failed
+}
+
+model BookPage {
+  id         String  @id @default(cuid())
+  bookId     String
+  book       Book    @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  pageNumber Int
+  text       String
+  imageUrl   String?
+}
+
+// ─── Evaluation ────────────────────────────────────────────────────────────
+
+model StoryEval {
+  id          String   @id @default(cuid())
+  bookId      String
+  book        Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  judgeScores Json
+  finalScore  Float
+  attempt     Int      @default(1)
+  generatedAt DateTime @default(now())
+}
+
+// ─── Payments ──────────────────────────────────────────────────────────────
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String             @unique
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeSubscriptionId String             @unique
+  plan                 SubscriptionPlan   @default(free)
+  status               SubscriptionStatus
+  periodEnd            DateTime
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+}
+
+enum SubscriptionPlan {
+  free
+  basic
+  premium
+}
+
+enum SubscriptionStatus {
+  active
+  canceled
+  past_due
+  trialing
+}
+
+// ─── Catalogue ─────────────────────────────────────────────────────────────
+
+model LearningGoal {
+  id          String     @id @default(cuid())
+  title       String
+  description String
+  createdAt   DateTime   @default(now())
+  books       Book[]
+  templates   Template[]
+}
+
+// ─── RAG ───────────────────────────────────────────────────────────────────
+
+model VocabularyEntry {
+  id         String                       @id @default(cuid())
+  word       String                       @unique
+  gradeLevel Int
+  frequency  Float
+  embedding  Unsupported("vector(1536)")?
+}
+
+// ─── Fast Flow ─────────────────────────────────────────────────────────────
+
+model Template {
+  id               String       @id @default(cuid())
+  title            String
+  content          Json
+  learningGoalId   String
+  learningGoal     LearningGoal @relation(fields: [learningGoalId], references: [id])
+  illustrationTags String[]
+  createdAt        DateTime     @default(now())
+}
