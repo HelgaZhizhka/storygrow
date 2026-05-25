@@ -1,6 +1,7 @@
 packages:
   - 'backend'
   - 'frontend'
+  - 'packages/*'
 
 ignoredBuiltDependencies:
   - sharp

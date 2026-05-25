@@ -1,0 +1,12 @@
+{
+  "name": "@storygrow/eslint-config",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "index.mjs",
+  "exports": {
+    ".": "./index.mjs"
+  },
+  "peerDependencies": {
+    "eslint": ">=9"
+  }
+}
