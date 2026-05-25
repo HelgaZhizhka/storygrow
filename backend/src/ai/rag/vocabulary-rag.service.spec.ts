@@ -80,8 +80,8 @@ describe('VocabularyRagService', () => {
     it('uses default topK of 80 when not specified', async () => {
       mockPrisma.$queryRaw.mockResolvedValue([]);
       await service.retrieve({ topic: 'тест', learningGoal: 'цель', gradeLevel: 0 });
-      const call = mockPrisma.$queryRaw.mock.calls[0][0] as { strings: string[] };
-      const sqlString = call.strings.join('');
+      const rawCalls = mockPrisma.$queryRaw.mock.calls as Array<[{ strings: string[] }]>;
+      const sqlString = rawCalls[0][0].strings.join('');
       expect(sqlString).toContain('LIMIT');
     });
 
@@ -100,8 +100,8 @@ describe('VocabularyRagService', () => {
     it('passes gradeLevel as SQL parameter', async () => {
       mockPrisma.$queryRaw.mockResolvedValue([]);
       await service.retrieve({ topic: 'тест', learningGoal: 'цель', gradeLevel: 3 });
-      const call = mockPrisma.$queryRaw.mock.calls[0][0] as { values: unknown[] };
-      expect(call.values).toContain(3);
+      const rawCalls = mockPrisma.$queryRaw.mock.calls as Array<[{ values: unknown[] }]>;
+      expect(rawCalls[0][0].values).toContain(3);
     });
   });
 });
