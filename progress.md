@@ -364,40 +364,75 @@ Each entry uses this template:
 
 **Done:**
 - **#43 + #44** (PR #55): `tsconfig.base.json` at repo root; both `backend/` and `frontend/` tsconfigs extend it (8 shared options extracted). Internal workspace package `packages/eslint-config` (`@storygrow/eslint-config`) with shared `no-any: error` rule; both packages import it, `pnpm-workspace.yaml` updated to include `packages/*`.
-- **#10 + #12** (PR #56): `backend/src/ai/schemas/story.schema.ts` — `StorySchema` Zod с `title`, `setup`, `conflict`, `lesson`, `resolution`, `discussionQuestions[5]`, `illustrationPrompts[3-8]`; `backend/src/ai/schemas/judge.schema.ts` — `JudgeScoreSchema` (5 критериев 0-10), `JudgeSchema`, `computeFinalScore`; barrel `index.ts`; `backend/src/ai/prompts/.gitkeep`. `zod` добавлен в backend deps.
-- **#6** (PR #57): Prisma v7 (`@prisma/client`, `prisma` dev). `backend/prisma/schema.prisma` — все 9 сущностей: `User`, `Child`, `Book`, `BookPage`, `StoryEval`, `Subscription`, `LearningGoal`, `VocabularyEntry` (`embedding Unsupported("vector(1536)")`), `Template`. `prisma.config.ts` для v7. `postinstall: prisma generate`.
+- **#10 + #12** (PR #56): `backend/src/ai/schemas/story.schema.ts` — `StorySchema` Zod with `title`, `setup`, `conflict`, `lesson`, `resolution`, `discussionQuestions[5]`, `illustrationPrompts[3-8]`; `backend/src/ai/schemas/judge.schema.ts` — `JudgeScoreSchema` (5 criteria 0–10), `JudgeSchema`, `computeFinalScore`; barrel `index.ts`; `backend/src/ai/prompts/.gitkeep`. `zod` added to backend deps.
+- **#6** (PR #57): Prisma v7 (`@prisma/client`, `prisma` dev). `backend/prisma/schema.prisma` — all 9 domain entities: `User`, `Child`, `Book`, `BookPage`, `StoryEval`, `Subscription`, `LearningGoal`, `VocabularyEntry` (`embedding Unsupported("vector(1536)")`), `Template`. `prisma.config.ts` for v7. `postinstall: prisma generate`.
 
 **Decisions:**
-- **Prisma v7**: `provider = "prisma-client"` (не `prisma-client-js`), URL в `prisma.config.ts`. Генерация клиента в `backend/generated/prisma`. Файлы миграций не создавались — нужна живая БД (`docker compose up`), это задача #7.
-- **Три параллельных агента** в изолированных worktree — нулевых конфликтов при мердже; ребейз на новый main прошёл чисто для обоих.
-- **`computeFinalScore` как чистая экспортированная функция** в judge.schema.ts — тестируется без моков.
+- **Prisma v7**: `provider = "prisma-client"` (not `prisma-client-js`), URL in `prisma.config.ts`. Client generated to `backend/generated/prisma`. Migration files were not created — requires a live DB (`docker compose up`), that is issue #7.
+- **Three parallel agents** in isolated worktrees — zero merge conflicts; rebase onto the new main was clean for both.
+- **`computeFinalScore` as a pure exported function** in judge.schema.ts — testable without mocks.
 
-**Next (приоритет):**
-- #7: pgvector extension + initial migration (требует `docker compose up`)
-- #8 → #9: RAG-корпуса + VocabularyRagService
-- #11: StoryGenerator (нужны `ai` + `@ai-sdk/openai`)
+**Next (priority order):**
+- #7: pgvector extension + initial migration (requires `docker compose up`)
+- #8 → #9: RAG corpora + VocabularyRagService
+- #11: StoryGenerator (requires `ai` + `@ai-sdk/openai`)
 - #13: StoryEvaluator + regeneration loop
 - #14: LangFuse via experimental_telemetry
 - #16: Google OAuth + JWT (backend)
 
 **Blockers:**
-- #7 требует запущенного postgres — сначала `docker compose up -d`.
+- #7 requires a running postgres — run `docker compose up -d` first.
 
 ---
 
 ## 2026-05-25 — #7: pgvector extension + HNSW index migration (PR #58)
 
 **Done:**
-- `backend/prisma.config.ts` — добавлены `datasource.url: env('DATABASE_URL')` и `experimental.extensions: true` (обязательно для Prisma v7 + pgvector).
-- Migration `0001_init` — `CREATE EXTENSION IF NOT EXISTS vector` + все 9 таблиц домена + 4 enum + FK constraints. Генерируется из схемы #6.
-- Migration `0002_add_vector_index` — HNSW-индекс на `VocabularyEntry.embedding` (`vector_cosine_ops`).
-- Применено к живому `pgvector/pgvector:pg17`; проверено: расширение `vector` активно, индекс виден в `\di`.
+- `backend/prisma.config.ts` — added `datasource.url: env('DATABASE_URL')` and `experimental.extensions: true` (required for Prisma v7 + pgvector).
+- Migration `0001_init` — `CREATE EXTENSION IF NOT EXISTS vector` + all 9 domain tables + 4 enums + FK constraints. Generated from the schema in #6.
+- Migration `0002_add_vector_index` — HNSW index on `VocabularyEntry.embedding` (`vector_cosine_ops`).
+- Applied to a live `pgvector/pgvector:pg17`; verified: `vector` extension active, index visible in `\di`.
 
 **Decisions:**
-- **HNSW вместо IVFFlat** — IVFFlat требует минимального количества строк для построения кластерных центроидов; таблица начинается пустой и заполняется постепенно (#8). HNSW не требует обучения.
-- **`prisma migrate deploy` для применения** (не `migrate dev`) — `migrate dev` интерактивен и блокирует advisory lock в фоне; `deploy` — production-safe, неинтерактивный.
+- **HNSW over IVFFlat** — IVFFlat requires a minimum number of rows to build cluster centroids; the table starts empty and fills incrementally (#8). HNSW requires no training.
+- **`prisma migrate deploy` for applying migrations** (not `migrate dev`) — `migrate dev` is interactive and holds an advisory lock in the background; `deploy` is production-safe and non-interactive.
 
 **Next:**
-- #8: скачать Dale-Chall + AoA-Kuperman корпуса и написать скрипт индексации в `VocabularyEntry` через pgvector embeddings.
-- #9: `VocabularyRagService` — поиск по grade level через similarity search.
-- Параллельно можно начать #11 (StoryGenerator) + #16 (Google OAuth).
+- #8: download Dale-Chall + AoA-Kuperman corpora and write the indexing script for `VocabularyEntry` via pgvector embeddings.
+- #9: `VocabularyRagService` — grade-level retrieval via similarity search.
+- #11 (StoryGenerator) + #16 (Google OAuth) can start in parallel.
+
+---
+
+## 2026-05-25 — Week 2 #8 + #9: Vocabulary RAG service (PR #59)
+
+**Done:**
+- **Design spec:** `docs/superpowers/plans/2026-05-25-vocabulary-rag.md` — full design for #8 + #9 including corpus choice, embedding pipeline, similarity search API, and integration with StoryGenerator.
+- **Dependencies:** added `ai`, `@ai-sdk/openai`, `csv-parse`, `pg`, `@prisma/adapter-pg`, `@types/pg` to backend.
+- **Corpus:** `backend/prisma/seed/vocabulary.csv` — 820 Russian words manually curated for grades 0–4 (frequency proxy: D.Sh. Matveev "Frequency Dictionary of Russian Children's Vocabulary"). Each row: `word,gradeLevel,frequency`.
+  - *Deviation from original issue:* issue #8 specified Dale-Chall + AoA-Kuperman (English proxies). Switched to Russian corpus because the product language is Russian (stories + UI); English word difficulty does not map cleanly to Russian pedagogical vocabulary bands.
+- **`ageToGradeLevel`** helper (`backend/src/ai/rag/age-grade.map.ts`) — maps child age (2–10) to reading grade level (0–4) with unit tests.
+- **`VocabularyRagService`** (`backend/src/ai/rag/vocabulary-rag.service.ts`) — `findByGradeLevel(grade, limit)` and `searchByEmbedding(embedding, limit)` using Prisma + pgvector HNSW index. Full unit tests with mocked PrismaClient.
+- **`PrismaService`** (`backend/src/prisma/prisma.service.ts`) — NestJS provider using `@prisma/adapter-pg` + `pg.Pool` for Driver Adapter support (required for pgvector raw queries). `PrismaModule` wired into `AppModule`.
+- **`seed-vocabulary` script** (`backend/src/scripts/seed-vocabulary.ts`) — reads CSV, batches words through `embedMany` (`text-embedding-3-small`, 512 batch, 200ms delay), upserts into `VocabularyEntry` via `$executeRaw` with `ON CONFLICT`. Uses `tsx` runner (not `ts-node`) for ESM compatibility.
+- **Fix:** `@types/pg` was missing — caused TS7016 and 8 ESLint `no-unsafe-*` violations across `prisma.service.ts` and `seed-vocabulary.ts`.
+
+**Decisions:**
+- **Russian corpus instead of English.** The original plan (Dale-Chall + AoA-Kuperman) was a proxy for English difficulty. For Russian stories, we need Russian word-frequency bands. The 820-word seed set is a pedagogical MVP; we can expand to 5k+ later via a real frequency dictionary.
+- **Manual curation over automated download.** Dale-Chall and AoA-Kuperman are freely available but English-specific. No equivalent open Russian child-vocabulary corpus exists in a downloadable CSV. Manual curation from a frequency dictionary is the pragmatic path for a course-project MVP.
+- **`embedMany` for batch embedding** — one OpenAI API call per 512 words, with 200ms delay between batches. Cost: ~820 words / 512 * $0.02/1M tokens ≈ negligible for seeding.
+- **`$executeRaw` with `ON CONFLICT`** instead of `prisma.vocabularyEntry.createMany` — `createMany` does not support the `vector` type in Prisma v7; raw SQL is the only path for pgvector inserts.
+- **Postinstall caveat:** `prisma generate` runs in `postinstall` and requires `DATABASE_URL`. Fresh clones without `.env` will fail `pnpm install`. Workaround: `pnpm install --ignore-scripts` then `pnpm --filter backend prisma:generate` with env set. This is a known friction; we may need to make `postinstall` conditional or move generation to an explicit step.
+
+**Next:**
+- Open PR #59 for #8 + #9 (branch `issue/8-9-vocabulary-rag`), squash-merge after review.
+- #11: `StoryGenerator` service with `generateObject` + `StorySchema`.
+- #13: `StoryEvaluator` + regeneration loop.
+- #14: LangFuse integration via `experimental_telemetry`.
+
+**Blockers:**
+- None.
+
+**Frictions:**
+- `pg` types missing was a preventable catch — `init.sh` should have been run immediately after the `prisma.service.ts` commit, not deferred to the end of the branch. Cost: one extra fix-up commit.
+- `prisma generate` in `postinstall` fails on fresh clones without `DATABASE_URL`. Need to decide: remove `postinstall`, make it conditional, or document the workaround.
