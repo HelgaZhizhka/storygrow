@@ -436,3 +436,34 @@ Each entry uses this template:
 **Frictions:**
 - `pg` types missing was a preventable catch — `init.sh` should have been run immediately after the `prisma.service.ts` commit, not deferred to the end of the branch. Cost: one extra fix-up commit.
 - `prisma generate` in `postinstall` fails on fresh clones without `DATABASE_URL`. Need to decide: remove `postinstall`, make it conditional, or document the workaround.
+
+---
+
+## 2026-05-26 — Architecture review, controlled generation design, storycraft analysis
+
+**Done:**
+- **PR #59 merged** — vocabulary RAG (#8 + #9) squash-merged to main.
+- **PR #62 merged** — session documentation: ADR-0002, StoryGenerator spec, PROJECT_PLAN.md (EN), concepts explainer.
+- **`docs/adr/0002-page-templates-contract.md`** — architectural decision: Page Templates as a typed contract between StoryGenerator and PDFRenderer. 6 template types, physical sizing from A5, HTML-as-source, CSS scoping rationale, DALL-E size mapping.
+- **`docs/superpowers/specs/2026-05-26-story-generator-controlled.md`** — full spec for #11 StoryGenerator with 3-layer control architecture (PRE/GENERATION/POST), vocabulary compliance check, regen loop, hard fail, StoryEval migration, test plan.
+- **`docs/concepts/controlled-generation.md`** — Russian-language concept explainer of controlled AI generation (intentionally Russian, for personal re-reading).
+- **`PROJECT_PLAN.md`** — translated to English.
+- **`progress.md`** — Russian fragments translated to English.
+- **Storycraft stream2 analysis** — compared course reference project against StoryGrow. Key finding: storycraft lacks structured generation, RAG, judge, evals — we are ahead on AI engineering. Key gap we identified: Page Templates as physical layout contract.
+- **GitHub issue #60** created — `feat(pdf): page templates contract` (Week 3 milestone, blocks #11 and #17).
+- **Worktrees cleanup** — removed 3 stale agent worktrees from `.claude/worktrees/`.
+
+**Decisions:**
+- **Target audience narrowed to 5–8 years** — pedagogically valid age band for our text-centric approach. Under 5: images dominate, vocabulary RAG less effective. Over 8: children read independently without this format.
+- **Page Templates as next architectural step** — before implementing #11 (StoryGenerator), the LLM needs a typed layout contract. Issue #60 must be done first.
+- **Controlled generation = 3-layer sandwich** — PRE (RAG whitelist + system prompt), GENERATION (`generateObject` + Zod schema), POST (vocabulary compliance check + LLM judge + regen loop + hard fail). All three layers from the start, not retrofitted later.
+- **Vocabulary compliance — deterministic, not via LLM** — `checkCompliance()` measures token share from allowed corpus. Threshold 0.85. Auditable metric stored in `StoryEval.vocabularyCompliance`.
+- **All project docs in English** — specs, plans, ADRs, root docs. Russian only in `docs/concepts/` on explicit request.
+- **From storycraft — taking only one thing** — Page Templates contract. Their AI layer (raw openai SDK, no schema, no judge) is significantly behind ours.
+
+**Next:**
+- `issue/60-page-templates-contract` — `page-templates.config.ts`, extend `StorySchema` with `pages[]`, `BookPlanValidator`, 6 HTML template stubs, update prompt builder.
+- After #60: #11 StoryGenerator (now produces `pages[]` not `illustrationPrompts[]`).
+
+**Blockers:**
+- None.
