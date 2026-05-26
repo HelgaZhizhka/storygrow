@@ -1,87 +1,87 @@
-# StoryGrow — План проекта
+# StoryGrow — Project Plan
 
-## Концепция
+## Concept
 
-**Pedagogically-grounded генератор персонализированных детских книг.** Родитель вводит имя ребёнка, возраст и развивающую цель (например, *«научиться делиться»*, *«перестать бояться темноты»*). Система генерирует сказку, где главный герой носит имя ребёнка, **лексика и структура сюжета адаптированы под возраст по педагогической модели, а качество автоматически проверяется LLM-as-judge с регенерацией при низком скоре**. На выходе — PDF + список вопросов для обсуждения с ребёнком.
+**A pedagogically-grounded generator of personalised children's books.** A parent enters their child's name, age, and a developmental goal (e.g. *"learn to share"*, *"stop being afraid of the dark"*). The system generates a story in which the protagonist bears the child's name, **the vocabulary and plot structure are adapted to the child's age by a pedagogical model, and quality is automatically verified by an LLM-as-judge with regeneration on low scores**. The output is a PDF plus a list of discussion questions for the parent to read with the child.
 
-## Контекст курса
+## Course context
 
-Проект делается в рамках **«Курса по разработке и запуску SaaS сервиса с помощью AI»** (RS School / Владимир Яковлев). Курс предлагает базовый шаблон — генератор детских книг. Этот проект — **авторский вариант на той же архитектуре**, с углублением в AI-инженерию (RAG, structured generation, evaluation), которое отличает его от базовой версии.
+The project is built within the **"Course on building and launching a SaaS service with AI"** (RS School / Vladimir Yakovlev). The course provides a baseline template — a children's book generator. This project is an **author's variant on the same architecture**, with deeper investment in AI engineering (RAG, structured generation, evaluation) that differentiates it from the baseline.
 
-**Дедлайн:** 5 недель до защиты.
+**Deadline:** 5 weeks until the course defense.
 
-## Целевая аудитория
+## Target audience
 
-- Родители детей 3–10 лет
-- Хотят персонализированные истории с педагогической ценностью, а не «общие сказки»
-- Готовы платить подписку за качественный персонализированный контент
+- Parents of children aged 3–10
+- They want personalised stories with pedagogical value, not "generic fairy tales"
+- They are willing to pay a subscription for high-quality personalised content
 
-## Отличие от базовой версии курса
+## Difference from the baseline course version
 
-| | Базовый StoryCraft (курсовой шаблон) | StoryGrow (этот проект) |
+| | Baseline StoryCraft (course template) | StoryGrow (this project) |
 |---|---|---|
-| AI-pipeline | `prompt → GPT → текст → DALL-E → картинка` | `RAG → structured gen → LLM-judge → регенерация при низком скоре` |
-| Возрастная адаптация | Промпт типа «для детей» | RAG над лексическими корпусами по возрасту |
-| Контроль качества | Нет | Автоматический LLM-as-judge + метрики в БД |
-| Структура сказки | Свободный текст | Function calling по педагогической схеме |
-| Observability | Логи | LangFuse: трейсы, скоры, дашборд |
+| AI pipeline | `prompt → GPT → text → DALL-E → image` | `RAG → structured gen → LLM judge → regenerate on low score` |
+| Age adaptation | A prompt like "for children" | RAG over age-banded lexical corpora |
+| Quality control | None | Automated LLM-as-judge + metrics in the DB |
+| Story structure | Free-form text | Function calling against a pedagogical schema |
+| Observability | Logs | LangFuse: traces, scores, dashboard |
 
-## Технологический стек
+## Tech stack
 
-| Слой | Технология |
+| Layer | Technology |
 |------|------------|
 | Frontend | Next.js (App Router) |
 | Backend | NestJS + TypeScript |
 | ORM | Prisma |
-| Database | PostgreSQL 15+ с расширением `pgvector` |
+| Database | PostgreSQL 15+ with the `pgvector` extension |
 | Queue | BullMQ + Redis |
-| Storage | S3 / MinIO (локально через docker-compose) |
-| AI SDK | **Vercel AI SDK** (`ai`, `@ai-sdk/openai`, `zod`) — без LangChain |
-| LLM | OpenAI `gpt-4o-mini` (текст + judge), `text-embedding-3-small` (embeddings) |
-| Image gen | OpenAI `dall-e-3` (без Flux/IP-Adapter в MVP) |
-| Observability | **LangFuse** (self-hosted в docker-compose) |
+| Storage | S3 / MinIO (local via docker-compose) |
+| AI SDK | **Vercel AI SDK** (`ai`, `@ai-sdk/openai`, `zod`) — no LangChain |
+| LLM | OpenAI `gpt-4o-mini` (text + judge), `text-embedding-3-small` (embeddings) |
+| Image gen | OpenAI `dall-e-3` (no Flux/IP-Adapter in MVP) |
+| Observability | **LangFuse** (self-hosted in docker-compose) |
 | PDF | Puppeteer |
-| Payments | Stripe (test mode → production к защите) |
-| Notifications | SSE (Server-Sent Events) для прогресса медленной генерации |
-| Deploy | Dokploy на VPS (Hetzner, ~€5/мес, со 2-3 недели для тестов, на 5-й — продакшен) |
-| Monitoring | Sentry + Loki/Grafana (минимальная настройка) |
+| Payments | Stripe (test mode → production by defense time) |
+| Notifications | SSE (Server-Sent Events) for slow-generation progress |
+| Deploy | Dokploy on a VPS (Hetzner, ~€5/month, dev environment from week 2–3, production in week 5) |
+| Monitoring | Sentry + Loki/Grafana (minimal setup) |
 
-## Архитектура AI-pipeline
+## AI pipeline architecture
 
 ```
-Пользователь → форма (ребёнок, возраст, цель)
+User → form (child, age, goal)
                 ↓
        [BullMQ job: generateBook]
                 ↓
   1. VocabularyRagService.retrieve(age)
        → pgvector similarity search
-       → topK слов из корпуса для возрастного уровня
+       → topK words from the age-band corpus
                 ↓
   2. StoryGenerator.generate()
        → Vercel AI SDK `generateObject` (Zod schema)
-       → структурированный JSON: setup, conflict, lesson, resolution,
+       → structured JSON: setup, conflict, lesson, resolution,
          discussionQuestions[5], illustrationPrompts[N]
                 ↓
   3. StoryEvaluator.evaluate(story)
-       → второй LLM-вызов с judge-промптом
+       → a second LLM call with a judge prompt
        → JudgeSchema: ageAppropriateVocab, hasMoralLesson,
-         structureCompleteness, safetyForChildren, length (все 0-10)
-       → если средний скор < 7 → goto step 2 (max 2 retry)
+         structureCompleteness, safetyForChildren, length (all 0–10)
+       → if the mean score < 7 → goto step 2 (max 2 retries)
                 ↓
   4. ImageGenerator.generate(illustrationPrompts)
-       → DALL-E 3 для каждой страницы
+       → DALL-E 3 per page
                 ↓
   5. PDFRenderer.render(story, images)
-       → Puppeteer → PDF в S3
+       → Puppeteer → PDF in S3
                 ↓
-  6. Discussion questions на последней странице PDF
+  6. Discussion questions on the final page of the PDF
                 ↓
-       SSE прогресс → фронт
+       SSE progress → frontend
 ```
 
-Каждый AI-вызов трейсится в LangFuse через `experimental_telemetry`.
+Every AI call is traced in LangFuse via `experimental_telemetry`.
 
-## База данных (сущности)
+## Database (entities)
 
 ```
 User (id, email, googleId, createdAt)
@@ -91,104 +91,104 @@ User (id, email, googleId, createdAt)
 │   └── StoryEval (judgeScores: JSON, attempt, finalScore, generatedAt)
 └── Subscription (stripeSubscriptionId, plan, status, periodEnd)
 
-LearningGoal (admin-managed catalogue, ~20 целей)
+LearningGoal (admin-managed catalogue, ~20 goals)
 VocabularyEntry (word, gradeLevel, frequency, embedding: vector)
-Template (для быстрого потока генерации)
+Template (for the fast generation flow)
 ```
 
-## Два потока генерации (требование курса)
+## Two generation flows (course requirement)
 
-- **Быстрый (~5с):** готовый шаблон сказки + плейсхолдеры (имя, возраст, цель) + подбор готовых иллюстраций по тегам → быстрый PDF.
-- **Кастомный (3–10 мин, через BullMQ):** полная AI-генерация по pipeline выше, SSE-прогресс на фронт.
+- **Fast (~5 s):** ready-made story template + placeholders (name, age, goal) + tag-based selection of pre-made illustrations → fast PDF.
+- **Custom (3–10 min, via BullMQ):** the full AI generation pipeline above, with SSE progress streamed to the frontend.
 
-## Roadmap (5 недель)
+## Roadmap (5 weeks)
 
-### Неделя 1 — Решение + основа *(текущая)*
-- [x] Анализ выбора проекта, фиксация плана
-- [x] Переименование папки `miranda` → `storygrow`
-- [x] Обновление `PROJECT_PLAN.md`
-- [ ] Настройка harness: `CLAUDE.md`, `AGENTS.md`, code style
-- [ ] Инициализация репозитория, монорепо (`backend/`, `frontend/`)
+### Week 1 — Decision + foundation *(current)*
+- [x] Project-choice analysis, plan locked in
+- [x] Rename folder `miranda` → `storygrow`
+- [x] Update `PROJECT_PLAN.md`
+- [ ] Harness setup: `CLAUDE.md`, `AGENTS.md`, code style
+- [ ] Repo init, monorepo (`backend/`, `frontend/`)
 - [ ] `docker-compose.yml`: PostgreSQL + pgvector, Redis, MinIO, LangFuse
-- [ ] Базовый scaffold NestJS + Next.js + Prisma
+- [ ] Basic scaffold for NestJS + Next.js + Prisma
 
-### Неделя 2 — AI-инженерная глубина
-- [ ] Prisma схема: User, Child, Book, BookPage, StoryEval, LearningGoal, VocabularyEntry
-- [ ] Установка pgvector в Postgres, миграция
-- [ ] Скачать Dale-Chall + AoA-Kuperman, скрипт индексации в `VocabularyEntry`
-- [ ] `VocabularyRagService`: retrieval по grade level
-- [ ] `StoryGenerator` (Vercel AI SDK + Zod-схема педагогической истории)
-- [ ] `StoryEvaluator` (LLM-as-judge с JudgeSchema)
-- [ ] Логика regenerate при низком скоре
-- [ ] Подключение LangFuse через `experimental_telemetry`
+### Week 2 — AI-engineering depth
+- [ ] Prisma schema: User, Child, Book, BookPage, StoryEval, LearningGoal, VocabularyEntry
+- [ ] Install pgvector in Postgres, migration
+- [ ] Download Dale-Chall + AoA-Kuperman, indexing script for `VocabularyEntry`
+- [ ] `VocabularyRagService`: retrieval by grade level
+- [ ] `StoryGenerator` (Vercel AI SDK + Zod schema for the pedagogical story)
+- [ ] `StoryEvaluator` (LLM-as-judge with JudgeSchema)
+- [ ] Regenerate-on-low-score logic
+- [ ] Wire up LangFuse via `experimental_telemetry`
 - [ ] BullMQ job `generateBook`, processor
 - [ ] Google OAuth + JWT (NestJS Passport)
 
-### Неделя 3 — PDF + базовый UI
-- [ ] Puppeteer-job: HTML-шаблон страницы → PDF
-- [ ] Layout: иллюстрация + текст + discussion questions на финальной странице
-- [ ] Frontend: логин, форма создания книги, страница книги, прогресс через SSE
-- [ ] Каталог развивающих целей (`LearningGoal`) + админ-CRUD
-- [ ] Деплой dev-окружения на VPS для проверки
+### Week 3 — PDF + basic UI
+- [ ] Puppeteer job: HTML page template → PDF
+- [ ] Layout: illustration + text + discussion questions on the final page
+- [ ] Frontend: login, book-creation form, book page, SSE progress
+- [ ] Catalogue of learning goals (`LearningGoal`) + admin CRUD
+- [ ] Deploy dev environment to the VPS for testing
 
-### Неделя 4 — Stripe + два потока + админка
+### Week 4 — Stripe + two flows + admin
 - [ ] Stripe checkout + webhooks
-- [ ] Prisma `Subscription`, лимиты по плану
-- [ ] Быстрый поток: `Template` + плейсхолдер-логика
-- [ ] Админка: список книг, judge-скоры, метрики (% книг с первой попытки, средние скоры)
-- [ ] SEO-страницы (Schema.org, OG-теги) на отдельном поддомене
+- [ ] Prisma `Subscription`, per-plan limits
+- [ ] Fast flow: `Template` + placeholder logic
+- [ ] Admin: books list, judge scores, metrics (% of books passing on first attempt, average per-criterion scores)
+- [ ] SEO pages (Schema.org, OG tags) on a separate subdomain
 
-### Неделя 5 — Прод + защита
-- [ ] Production-деплой на VPS с доменом + HTTPS
-- [ ] Sentry, базовый мониторинг (Loki/Grafana)
-- [ ] Полировка UI, фиксы багов
-- [ ] Подготовка к защите: слайды, демо-сценарий, заготовки ответов
-- [ ] Eval-дашборд для жюри (метрики качества из StoryEval)
+### Week 5 — Production + defense
+- [ ] Production deploy to the VPS with domain + HTTPS
+- [ ] Sentry, basic monitoring (Loki/Grafana)
+- [ ] UI polish, bug fixes
+- [ ] Defense prep: slides, demo script, prepared answers
+- [ ] Eval dashboard for the jury (quality metrics from StoryEval)
 
-## Out of scope (явно НЕ делаем в MVP)
+## Out of scope (explicitly NOT in the MVP)
 
-- Character consistency через Flux/SDXL с IP-Adapter — оставляем DALL-E 3
-- Реферальная программа
-- Adaptive feedback loop от родителя
-- Quiz как интерактивные тесты (только список вопросов в PDF)
-- Полная локализация продукта на английский (только лексические корпуса используем)
-- Fine-tuning моделей
+- Character consistency via Flux/SDXL with IP-Adapter — we stay on DALL-E 3
+- Referral programme
+- Adaptive feedback loop from the parent
+- Quiz as interactive tests (only a list of questions in the PDF)
+- Full product localisation to English (we only use lexical corpora)
+- Model fine-tuning
 
-## Язык продукта
+## Product language
 
-- **Продукт (UI, сказки):** русский
-- **Корпуса для RAG:** английские (Dale-Chall, AoA-Kuperman) как **proxy для уровня сложности** — мапятся в системный промпт описанием уровня, GPT-4o адаптирует под русский по описанию. Открытых русских корпусов «слово → возраст» нет, это честный архитектурный компромисс, объясняемый на защите.
+- **Product (UI, stories):** Russian
+- **RAG corpora:** English (Dale-Chall, AoA-Kuperman) used as a **difficulty-level proxy** — mapped into the system prompt as a level description, and GPT-4o adapts to Russian based on that description. No open Russian "word → age" corpora exist, so this is an honest architectural compromise that will be explained on defense.
 
-## Бюджет
+## Budget
 
-| Статья | Сумма |
+| Item | Amount |
 |---|---|
-| VPS (Hetzner CX22, 5 неделя продакшен) | ~€5 |
-| OpenAI credits (эксперименты + тесты + продакшен на курсе) | ~$15–25 |
-| Домен (опционально) | ~$10/год |
-| Всё прочее (Dokploy, LangFuse, Stripe test mode, MinIO) | $0 |
-| **Итого** | **~$25–40** |
+| VPS (Hetzner CX22, production in week 5) | ~€5 |
+| OpenAI credits (experiments + tests + course-run production) | ~$15–25 |
+| Domain (optional) | ~$10/year |
+| Everything else (Dokploy, LangFuse, Stripe test mode, MinIO) | $0 |
+| **Total** | **~$25–40** |
 
-## Связанные проекты в файловой системе
+## Related projects on the filesystem
 
-- `/Users/mac/Projects/storycraft/` — **референсный учебный репозиторий** курса. Не используется как стартовая точка кода (пишем с нуля), но можно подсматривать паттерны (BullMQ-processors, Prisma-структура, OAuth-настройка).
-- `/Users/mac/Projects/storygrow/` — **этот проект**.
+- `/Users/mac/Projects/storycraft/` — the **course reference repository**. Not used as a starting point for code (we write from scratch), but its patterns can be inspected (BullMQ processors, Prisma structure, OAuth setup).
+- `/Users/mac/Projects/storygrow/` — **this project**.
 
-## Подход к разработке
+## Development approach
 
-- **Написание с нуля** (без копирования из storycraft) с помощью AI-агентов
-- **Harness:** `CLAUDE.md` + `AGENTS.md` с правилами проекта и стиля
-- **Superpowers skills:** brainstorming перед каждой крупной фичей, TDD для AI-pipeline, verification-before-completion перед коммитами, systematic-debugging при проблемах
-- **Замедление и проверка руками** на AI-pipeline (RAG, structured gen, judge) — это субстанция защиты, нельзя автогенерить и забывать
+- **Write from scratch** (no copy from storycraft) with AI agents
+- **Harness:** `CLAUDE.md` + `AGENTS.md` with project and style rules
+- **Superpowers skills:** brainstorming before each major feature, TDD for the AI pipeline, verification-before-completion before commits, systematic-debugging when something breaks
+- **Slow down and manual-verify** for the AI pipeline (RAG, structured gen, judge) — this is the substance of the defense; it cannot be auto-generated and forgotten
 
-## Что говорим на защите (заготовка)
+## Defense talking points (draft)
 
-> *«Я взяла архитектуру курса (два потока генерации, Stripe, очереди, SSE, VPS-деплой), но в AI-слое реализовала три вещи, которых нет в базовой версии:*
-> *(1) RAG над лексическими корпусами для возрастной адаптации сложности;*
-> *(2) structured generation по педагогической модели через Vercel AI SDK + Zod;*
-> *(3) автоматический LLM-as-judge с регенерацией при низком скоре.*
-> *Все AI-вызовы трейсятся в LangFuse — могу показать дашборд: процент книг, проходящих с первой попытки, средние скоры по критериям, дрейф качества во времени.»*
+> *"I took the course architecture (two generation flows, Stripe, queues, SSE, VPS deploy) but in the AI layer I implemented three things absent from the baseline:*
+> *(1) RAG over lexical corpora for age-based difficulty adaptation;*
+> *(2) structured generation against a pedagogical model via Vercel AI SDK + Zod;*
+> *(3) an automatic LLM-as-judge with regeneration on low scores.*
+> *Every AI call is traced in LangFuse — I can show the dashboard: percentage of books passing on the first attempt, average per-criterion scores, quality drift over time."*
 
 ---
 
-**Дата обновления плана:** 2026-05-21
+**Plan last updated:** 2026-05-21
