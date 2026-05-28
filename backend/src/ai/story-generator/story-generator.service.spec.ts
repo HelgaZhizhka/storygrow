@@ -170,7 +170,17 @@ describe('StoryGeneratorService', () => {
   });
 
   it('retries on low judge score and succeeds on second attempt', async () => {
-    const failingJudge = { ...validJudge, finalScore: 5.0 };
+    const failingJudge = {
+      ...validJudge,
+      scores: {
+        ageAppropriateVocab: 4,
+        hasMoralLesson: 5,
+        structureCompleteness: 4,
+        safetyForChildren: 6,
+        length: 5,
+      },
+      finalScore: 4.8,
+    };
     mockGenerateObject
       .mockResolvedValueOnce({ object: validStory } as never)
       .mockResolvedValueOnce({ object: failingJudge } as never)
@@ -184,7 +194,17 @@ describe('StoryGeneratorService', () => {
   });
 
   it('writes passed=false for the failing attempt', async () => {
-    const failingJudge = { ...validJudge, finalScore: 5.0 };
+    const failingJudge = {
+      ...validJudge,
+      scores: {
+        ageAppropriateVocab: 4,
+        hasMoralLesson: 5,
+        structureCompleteness: 4,
+        safetyForChildren: 6,
+        length: 5,
+      },
+      finalScore: 4.8,
+    };
     mockGenerateObject
       .mockResolvedValueOnce({ object: validStory } as never)
       .mockResolvedValueOnce({ object: failingJudge } as never)
@@ -200,7 +220,17 @@ describe('StoryGeneratorService', () => {
   });
 
   it('throws StoryGenerationFailedError after all attempts fail', async () => {
-    const failingJudge = { ...validJudge, finalScore: 5.0 };
+    const failingJudge = {
+      ...validJudge,
+      scores: {
+        ageAppropriateVocab: 4,
+        hasMoralLesson: 5,
+        structureCompleteness: 4,
+        safetyForChildren: 6,
+        length: 5,
+      },
+      finalScore: 4.8,
+    };
     for (let i = 0; i < 10; i++) {
       mockGenerateObject
         .mockResolvedValueOnce({ object: validStory } as never)

@@ -1,7 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { generateObject } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
-import { StorySchema, JudgeSchema, type Story, type JudgeResult } from '../schemas';
+import {
+  StorySchema,
+  JudgeSchema,
+  computeFinalScore,
+  type Story,
+  type JudgeResult,
+} from '../schemas';
 import {
   STORY_SYSTEM_PROMPT,
   buildStoryUserPrompt,
@@ -35,6 +41,7 @@ export interface GenerateStoryResult {
 interface PostCheckResult {
   passed: boolean;
   judgeResult: JudgeResult;
+  computedFinalScore: number;
   outOfCorpus: readonly string[];
   structuralErrors: readonly string[];
   vocabularyCompliance: number;
@@ -113,29 +120,41 @@ export class StoryGeneratorService {
   ): Promise<PostCheckResult> {
     const validation: ValidationResult = validateBookPlan(story.pages, opts.childAge);
     const compliance: ComplianceResult = checkCompliance(story, allowedWords);
-    const judgeResult = await this.judgeStory(story, opts.childAge, opts.learningGoal);
+    const judgeResult = await this.judgeStory({
+      story,
+      childAge: opts.childAge,
+      learningGoal: opts.learningGoal,
+      bookId: opts.bookId,
+    });
+    const computedFinalScore = computeFinalScore(judgeResult.scores);
     const evalThreshold = parseFloat(process.env['EVAL_THRESHOLD'] ?? '7.0');
-    const passed =
-      validation.valid && compliance.compliant && judgeResult.finalScore >= evalThreshold;
+    const passed = validation.valid && compliance.compliant && computedFinalScore >= evalThreshold;
     if (!passed) {
       this.logger.warn(
-        `Attempt failed: structural=${validation.valid} compliance=${compliance.score.toFixed(2)} judge=${judgeResult.finalScore}`,
+        `Attempt failed: structural=${validation.valid} compliance=${compliance.score.toFixed(2)} judge=${computedFinalScore}`,
       );
     }
     return {
       passed,
       judgeResult,
+      computedFinalScore,
       outOfCorpus: compliance.outOfCorpus,
       structuralErrors: validation.errors.map((e) => e.message),
       vocabularyCompliance: compliance.score,
     };
   }
 
-  private async judgeStory(
-    story: Story,
-    childAge: number,
-    learningGoal: string,
-  ): Promise<JudgeResult> {
+  private async judgeStory({
+    story,
+    childAge,
+    learningGoal,
+    bookId,
+  }: {
+    story: Story;
+    childAge: number;
+    learningGoal: string;
+    bookId: string;
+  }): Promise<JudgeResult> {
     const { object } = await generateObject({
       model: this.openai(GENERATION_MODEL),
       schema: JudgeSchema,
@@ -144,7 +163,7 @@ export class StoryGeneratorService {
       experimental_telemetry: {
         isEnabled: true,
         functionId: 'story-evaluator',
-        metadata: { childAge, learningGoal },
+        metadata: { childAge, learningGoal, bookId },
       },
     });
     return object;
@@ -160,7 +179,7 @@ export class StoryGeneratorService {
         bookId,
         judgeScores: checks.judgeResult.scores,
         judgeReasoning: checks.judgeResult.reasoning,
-        finalScore: checks.judgeResult.finalScore,
+        finalScore: checks.computedFinalScore,
         vocabularyCompliance: checks.vocabularyCompliance,
         passed: checks.passed,
         attempt,
