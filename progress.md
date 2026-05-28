@@ -462,8 +462,31 @@ Each entry uses this template:
 - **From storycraft — taking only one thing** — Page Templates contract. Their AI layer (raw openai SDK, no schema, no judge) is significantly behind ours.
 
 **Next:**
-- `issue/60-page-templates-contract` — `page-templates.config.ts`, extend `StorySchema` with `pages[]`, `BookPlanValidator`, 6 HTML template stubs, update prompt builder.
-- After #60: #11 StoryGenerator (now produces `pages[]` not `illustrationPrompts[]`).
+- #11 StoryGenerator (now unblocked by #60).
+
+**Blockers:**
+- None.
+
+---
+
+## 2026-05-28 — #60: page templates contract (PR #63, squash-merged)
+
+**Done:**
+- `backend/src/pdf/page-templates/page-templates.config.ts` — typed catalogue of 6 templates (`cover`, `image-top`, `image-bottom`, `image-left`, `text-focus`, `final`): maxChars, DALL-E sizes, age suitability. Single source of truth.
+- `backend/src/ai/schemas/story.schema.ts` — replaced flat `setup/conflict/lesson/resolution/illustrationPrompts` with `PageSchema` + `pages[]`. Template enum imported directly from config.
+- `backend/src/pdf/page-templates/book-plan.validator.ts` — deterministic post-generation validator (cover-first, final-last, text/title maxChars, age suitability, unknown-template guard). 12 unit tests.
+- `backend/src/ai/prompts/story-generator.prompt.ts` — `buildStoryUserPrompt` includes age-filtered template catalogue + text limits; `buildRegenerationFeedback` formats failures for retry loop.
+- 6 HTML template stubs with scoped BEM CSS and `{{slot}}` placeholders.
+- `./init.sh` exits 0 — 29 tests, tsc, lint all green.
+
+**Decisions:**
+- `StorySchema.title` kept as book-level metadata; `pages[0].title` is the shorter cover display title (max 60 chars). Documented in JSDoc.
+- `JudgeFeedback` → replaced with `JudgeResult` from judge.schema.ts (no duplicate type).
+- `text-focus` suitableFor `[7, 8]` only — younger children need image-heavy layouts.
+- CSS fix: `text-focus` illustration uses `flex: 1; min-height: 0` to resolve height in Puppeteer flex context.
+
+**Next:**
+- #11 StoryGenerator — now unblocked. Spec: `docs/superpowers/specs/2026-05-26-story-generator-controlled.md`.
 
 **Blockers:**
 - None.
