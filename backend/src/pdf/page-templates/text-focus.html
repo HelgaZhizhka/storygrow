@@ -1,0 +1,48 @@
+<section class="page page--text-focus">
+  <style>
+    .page--text-focus {
+      display: flex;
+      flex-direction: column;
+      width: 874px;
+      height: 1240px;
+      background: #fefce8;
+      font-family: inherit;
+    }
+    .page--text-focus__text-block {
+      flex: 2;
+      display: flex;
+      align-items: center;
+      padding: 56px 64px 32px;
+    }
+    .page--text-focus__text {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.8;
+      color: #1c1917;
+    }
+    .page--text-focus__illustration-block {
+      flex: 1;
+      min-height: 0;
+      padding: 0 64px 40px;
+      display: flex;
+    }
+    .page--text-focus__illustration {
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      object-fit: contain;
+      border-radius: 12px;
+    }
+  </style>
+
+  <div class="page--text-focus__text-block">
+    <p class="page--text-focus__text">{{text}}</p>
+  </div>
+  <div class="page--text-focus__illustration-block">
+    <img
+      class="page--text-focus__illustration"
+      src="{{illustrationUrl}}"
+      alt="{{illustrationPrompt}}"
+    />
+  </div>
+</section>

@@ -1,0 +1,39 @@
+<section class="page page--image-left">
+  <style>
+    .page--image-left {
+      display: flex;
+      flex-direction: row;
+      width: 874px;
+      height: 1240px;
+      font-family: inherit;
+    }
+    .page--image-left__illustration {
+      width: 50%;
+      height: 100%;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    .page--image-left__text-block {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      padding: 48px 40px;
+      background: #fefce8;
+    }
+    .page--image-left__text {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1.7;
+      color: #1c1917;
+    }
+  </style>
+
+  <img
+    class="page--image-left__illustration"
+    src="{{illustrationUrl}}"
+    alt="{{illustrationPrompt}}"
+  />
+  <div class="page--image-left__text-block">
+    <p class="page--image-left__text">{{text}}</p>
+  </div>
+</section>
