@@ -13,6 +13,7 @@ const extractRussianText = (story: Story): string =>
   [
     story.title,
     ...story.pages.flatMap((p) => [p.title, p.text].filter((t): t is string => Boolean(t))),
+    ...story.discussionQuestions,
   ].join(' ');
 
 const tokenize = (text: string): string[] => text.toLowerCase().match(/[а-яё]+/g) ?? [];

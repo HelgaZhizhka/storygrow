@@ -18,13 +18,7 @@ const makeStory = (overrides: Partial<Story> = {}): Story => ({
     { template: 'image-top', text: 'Кот прыгал', illustrationPrompt: 'Cat jumping' },
     finalPage,
   ],
-  discussionQuestions: [
-    'Что делал кот?',
-    'Где мяч?',
-    'Почему кот прыгал?',
-    'Что нашёл кот?',
-    'Куда пошёл кот?',
-  ],
+  discussionQuestions: ['?', '?', '?', '?', '?'],
   ...overrides,
 });
 
@@ -81,16 +75,17 @@ describe('checkCompliance', () => {
   });
 
   it('computes fractional score for partial corpus matches', () => {
-    const story = makeStory({
+    const story: Story = {
+      title: 'кот',
       pages: [
         { template: 'cover', title: 'тест', illustrationPrompt: 'test' },
         { template: 'image-top', text: 'кот прыгал бегемот слон', illustrationPrompt: 'x' },
         { template: 'final', text: 'кот', illustrationPrompt: 'x' },
       ],
       discussionQuestions: ['?', '?', '?', '?', '?'],
-    });
-    // Meaningful: тест, кот (×3), прыгал, бегемот, слон = 7 tokens
-    // In corpus: тест, кот (×3), прыгал = 5 tokens → score = 5/7
+    };
+    // Meaningful: кот (×3), тест, прыгал, бегемот, слон = 7 tokens
+    // In corpus: кот (×3), тест, прыгал = 5 tokens → score = 5/7
     const result = checkCompliance(story, ['кот', 'прыгал', 'тест']);
     expect(result.score).toBeCloseTo(5 / 7);
     expect(result.outOfCorpus).toContain('бегемот');
@@ -99,7 +94,8 @@ describe('checkCompliance', () => {
 
   it('marks result compliant when score >= COMPLIANCE_THRESHOLD', () => {
     expect(COMPLIANCE_THRESHOLD).toBe(0.85);
-    const story = makeStory({
+    const story: Story = {
+      title: 'один',
       pages: [
         { template: 'cover', title: 'один', illustrationPrompt: 'x' },
         {
@@ -110,8 +106,9 @@ describe('checkCompliance', () => {
         { template: 'final', text: 'одиннадцать', illustrationPrompt: 'x' },
       ],
       discussionQuestions: ['?', '?', '?', '?', '?'],
-    });
-    // 12 unique meaningful tokens; put 11 in corpus → 11/12 ≈ 0.917 >= 0.85
+    };
+    // Meaningful: один (×2), два, три, четыре, пять, шесть, семь, восемь, девять, десять, одиннадцать
+    // All 12 tokens in corpus → score = 1 >= 0.85
     const corpus = [
       'один',
       'два',
@@ -131,13 +128,15 @@ describe('checkCompliance', () => {
   });
 
   it('handles pages that have no text or title (illustration-only)', () => {
-    const story = makeStory({
+    const story: Story = {
+      title: 'кот',
       pages: [
-        { template: 'cover', illustrationPrompt: 'x' }, // no title, no text
-        { template: 'image-top', illustrationPrompt: 'x' }, // no text
+        { template: 'cover', illustrationPrompt: 'x' },
+        { template: 'image-top', illustrationPrompt: 'x' },
         { template: 'final', text: 'кот', illustrationPrompt: 'x' },
       ],
-    });
+      discussionQuestions: ['?', '?', '?', '?', '?'],
+    };
     expect(() => checkCompliance(story, ['кот'])).not.toThrow();
     const result = checkCompliance(story, ['кот']);
     expect(result.compliant).toBe(true);
