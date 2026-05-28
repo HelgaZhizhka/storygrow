@@ -52,6 +52,14 @@ export const validateBookPlan = (pages: Page[], childAge: number): ValidationRes
 
   pages.forEach((page, index) => {
     const config = PAGE_TEMPLATES[page.template];
+    if (!config) {
+      errors.push({
+        pageIndex: index,
+        field: 'template',
+        message: `Unknown template '${page.template as string}'`,
+      });
+      return;
+    }
 
     if (!config.suitableFor.includes(childAge)) {
       errors.push({

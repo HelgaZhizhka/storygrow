@@ -42,6 +42,12 @@ describe('validateBookPlan', () => {
       expect(err).toBeDefined();
       expect(err?.message).toMatch(/final/i);
     });
+
+    it('errors when page list is empty', () => {
+      const result = validateBookPlan([], 6);
+      expect(result.valid).toBe(false);
+      expect(result.errors[0].message).toMatch(/empty/i);
+    });
   });
 
   describe('maxChars validation', () => {
@@ -140,6 +146,25 @@ describe('validateBookPlan', () => {
       const result = validateBookPlan(pages, 7);
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThanOrEqual(3);
+    });
+  });
+
+  describe('unknown template guard', () => {
+    it('errors when a page has an unknown template name', () => {
+      const pages = [
+        makePage('cover', { title: 'Title' }),
+        // force an unknown template via cast
+        { template: 'nonexistent' as Page['template'], illustrationPrompt: 'x' },
+        makePage('image-left', { text: 'text' }),
+        makePage('image-left', { text: 'text' }),
+        makePage('image-left', { text: 'text' }),
+        makePage('final', { text: 'moral' }),
+      ];
+      const result = validateBookPlan(pages, 7);
+      expect(result.valid).toBe(false);
+      const err = result.errors.find((e) => e.field === 'template' && e.pageIndex === 1);
+      expect(err).toBeDefined();
+      expect(err?.message).toMatch(/nonexistent/);
     });
   });
 });
