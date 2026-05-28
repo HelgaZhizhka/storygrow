@@ -15,9 +15,9 @@ export const PAGES_MAX = 12;
 export const PageSchema = z.object({
   template: z.enum([...TEMPLATE_NAMES] as [TemplateName, ...TemplateName[]]),
   /** Narrative body text for this page. Required for all non-cover templates. */
-  text: z.string().optional(),
+  text: z.string().min(1).optional(),
   /** Title text — required for 'cover', unused on most other templates. */
-  title: z.string().optional(),
+  title: z.string().min(1).optional(),
   /** Detailed DALL-E prompt describing the illustration for this page. */
   illustrationPrompt: z.string().min(1),
 });
@@ -35,7 +35,12 @@ export type Page = z.infer<typeof PageSchema>;
  * `discussionQuestions` are rendered on the 'final' page by the PDF renderer.
  */
 export const StorySchema = z.object({
-  /** Book title — also used as the cover page title. */
+  /**
+   * Book title — stored in the database and shown in the app UI.
+   * The cover page has its own `pages[0].title` field for display (max 60 chars).
+   * These may differ: the book title can be longer; the cover title is a concise
+   * display version. Both are validated independently.
+   */
   title: z.string().min(1).max(120),
 
   /**
@@ -47,6 +52,8 @@ export const StorySchema = z.object({
   /**
    * Ordered list of pages composing the book.
    * Min 6 (cover + 4 content + final), max 12.
+   * Cover-first and final-last structural constraints are enforced by BookPlanValidator,
+   * not by this schema — Zod only validates shape and array length.
    */
   pages: z.array(PageSchema).min(PAGES_MIN).max(PAGES_MAX),
 });
