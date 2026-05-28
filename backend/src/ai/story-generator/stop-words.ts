@@ -247,4 +247,7 @@ export const STOP_WORDS: ReadonlySet<string> = new Set([
   'сама',
   'само',
   'сами',
+  // high-frequency generic nouns that appear so often in children's stories
+  // that they skew the compliance score without conveying age-specific vocabulary
+  'мяч',
 ]);
