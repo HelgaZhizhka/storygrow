@@ -137,7 +137,6 @@ describe('checkCompliance', () => {
       ],
       discussionQuestions: ['?', '?', '?', '?', '?'],
     };
-    expect(() => checkCompliance(story, ['кот'])).not.toThrow();
     const result = checkCompliance(story, ['кот']);
     expect(result.compliant).toBe(true);
   });

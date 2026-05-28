@@ -45,8 +45,6 @@ export const STOP_WORDS: ReadonlySet<string> = new Set([
   'потому',
   'хотя',
   'либо',
-  'да',
-  'ни',
   'однако',
   'зато',
   'причём',
