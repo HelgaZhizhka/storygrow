@@ -3,6 +3,7 @@ import {
   TEMPLATE_NAMES,
   TemplateName,
 } from '../../pdf/page-templates/page-templates.config';
+import { type JudgeResult } from '../schemas';
 
 // ─── System prompt ───────────────────────────────────────────────────────────
 
@@ -56,6 +57,20 @@ const buildTemplateCatalogue = (childAge: number): string => {
   return lines.join('\n');
 };
 
+// ─── Static book structure block ─────────────────────────────────────────────
+
+const BOOK_STRUCTURE_RULES = `Book structure requirements:
+  • Minimum 6 pages, maximum 12 pages.
+  • Page 1: 'cover' (title only — no text body on the cover).
+  • Pages 2–(N-1): content pages using age-appropriate templates.
+    Encode the narrative arc across these pages:
+    first pages = setup (introduce protagonist and world),
+    middle pages = conflict (challenge arises, protagonist struggles),
+    later pages = lesson (protagonist learns and applies the learning goal),
+    final content pages = resolution (story resolves, lesson reinforced).
+  • Last page: 'final' (moral summary in the page's 'text' field; discussion
+    questions in the top-level 'discussionQuestions' array).`;
+
 // ─── User prompt ─────────────────────────────────────────────────────────────
 
 export interface BuildStoryPromptOptions {
@@ -81,21 +96,12 @@ export interface BuildStoryPromptOptions {
  * - Allowed vocabulary word list
  * - Regeneration feedback (if retrying)
  */
-export const buildStoryUserPrompt = ({
-  childName,
-  childAge,
-  topic,
-  learningGoal,
-  allowedWords,
-  feedback,
-}: BuildStoryPromptOptions): string => {
+export const buildStoryUserPrompt = (opts: BuildStoryPromptOptions): string => {
+  const { childName, childAge, topic, learningGoal, allowedWords, feedback } = opts;
   const catalogue = buildTemplateCatalogue(childAge);
-  const wordList = allowedWords.join(', ');
-
-  const feedbackSection = feedback
+  const feedbackBlock = feedback
     ? `\nREGENERATION FEEDBACK (fix these issues):\n${feedback}\n`
     : '';
-
   return `
 Generate a personalised children's book in Russian for the following child:
   Name: ${childName}
@@ -105,34 +111,18 @@ Generate a personalised children's book in Russian for the following child:
 
 ${catalogue}
 
-Book structure requirements:
-  • Minimum 6 pages, maximum 12 pages.
-  • Page 1: 'cover' (title only — no text body on the cover).
-  • Pages 2–(N-1): content pages using age-appropriate templates.
-    Encode the narrative arc across these pages:
-    first pages = setup (introduce protagonist and world),
-    middle pages = conflict (challenge arises, protagonist struggles),
-    later pages = lesson (protagonist learns and applies the learning goal),
-    final content pages = resolution (story resolves, lesson reinforced).
-  • Last page: 'final' (moral summary + discussion questions placed separately
-    in the 'discussionQuestions' field).
+${BOOK_STRUCTURE_RULES}
 
-Allowed vocabulary (Russian words — use PRIMARILY these):
-${wordList}
+Allowed vocabulary (Russian words — use ONLY these plus common function words):
+${allowedWords.join(', ')}
 
 For each page's illustrationPrompt: write a vivid, detailed DALL-E 3 prompt
 in English. Include art style ("watercolour illustration, children's book style"),
 the scene, characters, mood, and colours. Keep prompts under 200 characters.
-${feedbackSection}
-`.trim();
+${feedbackBlock}`.trim();
 };
 
 // ─── Regeneration feedback builder ───────────────────────────────────────────
-
-export interface JudgeFeedback {
-  reasoning: string;
-  finalScore: number;
-}
 
 /**
  * buildRegenerationFeedback — formats why the previous attempt failed.
@@ -141,7 +131,7 @@ export interface JudgeFeedback {
  */
 export const buildRegenerationFeedback = (
   outOfCorpus: readonly string[],
-  judge?: JudgeFeedback,
+  judge?: JudgeResult,
 ): string => {
   const parts: string[] = [];
 
