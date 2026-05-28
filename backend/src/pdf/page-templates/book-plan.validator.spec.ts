@@ -1,4 +1,4 @@
-import { validateBookPlan, ValidationError } from './book-plan.validator';
+import { validateBookPlan } from './book-plan.validator';
 import { Page } from '../../ai/schemas/story.schema';
 
 const makePage = (template: Page['template'], overrides: Partial<Page> = {}): Page => ({
