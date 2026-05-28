@@ -39,6 +39,8 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/storygrow
 
       - name: Smoke check (tsc + lint + tests)
         run: ./init.sh
