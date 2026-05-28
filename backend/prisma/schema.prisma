@@ -77,13 +77,16 @@ model BookPage {
 // ─── Evaluation ────────────────────────────────────────────────────────────
 
 model StoryEval {
-  id          String   @id @default(cuid())
-  bookId      String
-  book        Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  judgeScores Json
-  finalScore  Float
-  attempt     Int      @default(1)
-  generatedAt DateTime @default(now())
+  id                   String   @id @default(cuid())
+  bookId               String
+  book                 Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  judgeScores          Json
+  judgeReasoning       String?
+  finalScore           Float
+  vocabularyCompliance Float?
+  passed               Boolean  @default(false)
+  attempt              Int      @default(1)
+  generatedAt          DateTime @default(now())
 }
 
 // ─── Payments ──────────────────────────────────────────────────────────────
