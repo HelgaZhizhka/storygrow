@@ -1,5 +1,3 @@
-// backend/src/pdf/page-templates/page-templates.config.ts
-
 export type AspectRatio = 'portrait' | 'landscape' | 'square';
 export type DalleSize = '1024x1024' | '1024x1792' | '1792x1024';
 
