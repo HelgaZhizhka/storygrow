@@ -47,8 +47,6 @@ interface LoopContext {
 }
 
 const GENERATION_MODEL = 'gpt-4o-mini';
-const EVAL_THRESHOLD = parseFloat(process.env['EVAL_THRESHOLD'] ?? '7.0');
-const EVAL_MAX_RETRIES = parseInt(process.env['EVAL_MAX_RETRIES'] ?? '2', 10);
 
 @Injectable()
 export class StoryGeneratorService {
@@ -67,7 +65,8 @@ export class StoryGeneratorService {
       learningGoal: opts.learningGoal,
       gradeLevel,
     });
-    return this.runLoop({ opts, allowedWords, maxAttempts: EVAL_MAX_RETRIES + 1 });
+    const maxRetries = parseInt(process.env['EVAL_MAX_RETRIES'] ?? '2', 10);
+    return this.runLoop({ opts, allowedWords, maxAttempts: maxRetries + 1 });
   }
 
   private async runLoop(ctx: LoopContext): Promise<GenerateStoryResult> {
@@ -115,8 +114,9 @@ export class StoryGeneratorService {
     const validation: ValidationResult = validateBookPlan(story.pages, opts.childAge);
     const compliance: ComplianceResult = checkCompliance(story, allowedWords);
     const judgeResult = await this.judgeStory(story, opts.childAge, opts.learningGoal);
+    const evalThreshold = parseFloat(process.env['EVAL_THRESHOLD'] ?? '7.0');
     const passed =
-      validation.valid && compliance.compliant && judgeResult.finalScore >= EVAL_THRESHOLD;
+      validation.valid && compliance.compliant && judgeResult.finalScore >= evalThreshold;
     if (!passed) {
       this.logger.warn(
         `Attempt failed: structural=${validation.valid} compliance=${compliance.score.toFixed(2)} judge=${judgeResult.finalScore}`,

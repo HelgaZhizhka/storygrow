@@ -210,6 +210,42 @@ describe('StoryGeneratorService', () => {
     await expect(service.generate(opts)).rejects.toThrow(StoryGenerationFailedError);
   });
 
+  it('writes passed=false and retries when validateBookPlan fails', async () => {
+    // Story with no cover page — validateBookPlan will return valid=false
+    const invalidStory: Story = {
+      title: 'Маша и кот',
+      pages: [
+        { template: 'image-top', text: 'Маша играла', illustrationPrompt: 'Girl playing' },
+        { template: 'image-top', text: 'Кот убежал', illustrationPrompt: 'Cat running' },
+        { template: 'image-top', text: 'Маша искала', illustrationPrompt: 'Girl searching' },
+        { template: 'image-top', text: 'Маша нашла кота', illustrationPrompt: 'Girl found cat' },
+        { template: 'image-top', text: 'Маша обняла кота', illustrationPrompt: 'Girl hugs cat' },
+        { template: 'final', text: 'Дружба важна', illustrationPrompt: 'Friends' },
+      ],
+      discussionQuestions: [
+        'Что случилось?',
+        'Почему кот убежал?',
+        'Как искала Маша?',
+        'Что узнала Маша?',
+        'Что важно?',
+      ],
+    };
+
+    mockGenerateObject
+      .mockResolvedValueOnce({ object: invalidStory } as never) // attempt 1: no cover → structural fail
+      .mockResolvedValueOnce({ object: validJudge } as never) // attempt 1: judge still called
+      .mockResolvedValueOnce({ object: validStory } as never) // attempt 2: valid story
+      .mockResolvedValueOnce({ object: validJudge } as never); // attempt 2: judge passes
+
+    const result = await service.generate(opts);
+
+    // First attempt: structural failure → passed=false
+    const firstCall = mockPrisma.storyEval.create.mock.calls[0][0];
+    expect(firstCall.data.passed).toBe(false);
+    // Second attempt: success
+    expect(result.attempts).toBe(2);
+  });
+
   it('retrieves allowed words from VocabularyRagService using correct gradeLevel', async () => {
     mockGenerateObject
       .mockResolvedValueOnce({ object: validStory } as never)
