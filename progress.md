@@ -559,3 +559,29 @@ Each entry uses this template:
 
 **Blockers:**
 - None.
+
+---
+
+## 2026-05-29 — #16: Google OAuth + JWT authentication (PR #70)
+
+**Done:**
+- **Prisma migration** `20260529165023_add_user_refresh_token` — `User.refreshToken String?` для хранения SHA-256 хэша refresh token (одна активная сессия на юзера).
+- **`AuthService`** — `validateOrCreateUser` (upsert по googleId/email), `generateTokens` (access 15m / refresh 7d, числовые секунды), `exchangeRefreshToken` (verify + hash match + rotate), `logout` (clear hash).
+- **`GoogleStrategy`** + **`JwtStrategy`** — Passport strategies через ConfigService.
+- **`AuthController`**: `GET /auth/google`, `GET /auth/google/callback` (redirect frontend с токенами в query params), `POST /auth/refresh`, `POST /auth/logout`.
+- **`JwtAuthGuard`** + **`@CurrentUser()`** — готовы для защиты routes.
+- **`ConfigModule.forRoot({ isGlobal: true })`** в AppModule; `.env.example` дополнен.
+- 64 теста, `./init.sh` зелёный.
+
+**Decisions:**
+- `expiresIn` числом секунд (не строкой) — `@nestjs/jwt@11` использует `ms@3` с template literal `StringValue`, которому `string` не присваивается.
+- Refresh token хранится как SHA-256 хэш — подпись секретом защищает от подделки, хэш нужен только для инвалидации.
+- Inline `eslint-disable` не использовали — заменили вложенный `expect.objectContaining` на явный `toHaveBeenCalledWith`.
+
+**Next:**
+- #15 BullMQ generation queue.
+- #17 Puppeteer PDF rendering.
+- #18 Frontend: Google login (разблокирован этим PR).
+
+**Blockers:**
+- None.
