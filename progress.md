@@ -585,3 +585,29 @@ Each entry uses this template:
 
 **Blockers:**
 - None.
+
+---
+
+## 2026-05-29 — #15: BullMQ generation queue + processor (PR #71)
+
+**Done:**
+- `generation.types.ts` — `GENERATION_QUEUE`, `GENERATE_BOOK_JOB` constants, `GenerateBookPayload`, `GenerationProgress` types.
+- `GenerationService` — `enqueueBook()` (ownership + status guard: throws `NotFoundException` / `ConflictException`), `getJobStatus()`.
+- `GenerationProcessor` — `@Processor(GENERATION_QUEUE)`, extends `WorkerHost`, sets `Book.status` lifecycle (`generating → ready / failed`), calls `StoryOrchestratorService.generate()`, progress updates 10/20/80/100%.
+- `GenerationController` — `POST /books/:id/generate` (JWT-protected, 202 Accepted), `GET /jobs/:jobId/status`.
+- `GenerationModule` — `BullModule.registerQueue` only (`forRootAsync` moved to `AppModule` per code review).
+- Code review fixes: `job.id ?? bookId` → explicit throw; raw string literals → `BookStatus` enum; dead `getJobName()` removed; `generatingSet` flag guards against double-fail on DB error; `BullModule.forRootAsync` moved to `AppModule`; `GET /jobs/:jobId/status` added.
+- 81 tests passing, `./init.sh` green.
+
+**Decisions:**
+- `BullModule.forRootAsync` belongs in `AppModule` (global registration), not in feature modules — avoids hidden ordering dependency when a second queue consumer is added.
+- `BookStatus` enum used everywhere — raw string literals would silently break on schema rename.
+- Code review run as foreground subagent (blocking) — correct because review result gates what to fix before merge.
+
+**Next:**
+- #17 Puppeteer PDF rendering (Page Templates from #60 already done).
+- #18 Frontend: Google login + protected routes (unblocked by PR #70).
+- #20 Frontend: SSE progress stream (`updateProgress` hooks in place).
+
+**Blockers:**
+- None.
