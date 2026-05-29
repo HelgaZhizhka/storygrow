@@ -3,8 +3,6 @@ import { STOP_WORDS } from './stop-words';
 import { COMPLIANCE_THRESHOLD } from '../ai.config';
 import type { CheckResult } from '../validators/check-result';
 
-export { COMPLIANCE_THRESHOLD };
-
 export interface ComplianceCheckResult extends CheckResult {
   score: number;
   outOfCorpus: readonly string[];

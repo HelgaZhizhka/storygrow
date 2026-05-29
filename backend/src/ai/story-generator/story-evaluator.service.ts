@@ -36,9 +36,8 @@ export class StoryEvaluatorService {
     const compliance = checkCompliance(story, allowedWords);
     const judgeResult = await this.judgeStory({ story, childAge, learningGoal, bookId });
     const computedFinalScore = computeFinalScore(judgeResult.scores);
-    const evalThreshold = parseFloat(
-      process.env['EVAL_THRESHOLD'] ?? String(EVAL_THRESHOLD_DEFAULT),
-    );
+    const rawThreshold = parseFloat(process.env['EVAL_THRESHOLD'] ?? '');
+    const evalThreshold = Number.isNaN(rawThreshold) ? EVAL_THRESHOLD_DEFAULT : rawThreshold;
     const passed = structural.passed && compliance.passed && computedFinalScore >= evalThreshold;
 
     if (!passed) {

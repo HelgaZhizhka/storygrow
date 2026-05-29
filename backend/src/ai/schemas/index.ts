@@ -1,10 +1,4 @@
-export {
-  StorySchema,
-  PageSchema,
-  DISCUSSION_QUESTIONS_COUNT,
-  PAGES_MIN,
-  PAGES_MAX,
-} from './story.schema';
+export { StorySchema, PageSchema } from './story.schema';
 export type { Story, Page } from './story.schema';
 
 export { JudgeScoreSchema, JudgeSchema, computeFinalScore } from './judge.schema';

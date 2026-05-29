@@ -45,10 +45,8 @@ export class StoryOrchestratorService {
       learningGoal: opts.learningGoal,
       gradeLevel,
     });
-    const maxRetries = parseInt(
-      process.env['EVAL_MAX_RETRIES'] ?? String(EVAL_MAX_RETRIES_DEFAULT),
-      10,
-    );
+    const rawRetries = parseInt(process.env['EVAL_MAX_RETRIES'] ?? '', 10);
+    const maxRetries = Number.isNaN(rawRetries) ? EVAL_MAX_RETRIES_DEFAULT : rawRetries;
     return this.runLoop({ opts, allowedWords, maxAttempts: maxRetries + 1 });
   }
 
