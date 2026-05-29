@@ -1,0 +1,82 @@
+import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { Logger } from '@nestjs/common';
+import { type Job } from 'bullmq';
+import { PrismaService } from '../prisma/prisma.service';
+import { StoryOrchestratorService } from '../ai/story-generator/story-orchestrator.service';
+import { GENERATION_QUEUE, GENERATE_BOOK_JOB, type GenerateBookPayload } from './generation.types';
+
+interface BookWithRelations {
+  id: string;
+  child: { name: string; age: number };
+  learningGoal: { title: string; description: string };
+}
+
+@Processor(GENERATION_QUEUE)
+export class GenerationProcessor extends WorkerHost {
+  private readonly logger = new Logger(GenerationProcessor.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly orchestrator: StoryOrchestratorService,
+  ) {
+    super();
+  }
+
+  async process(job: Job<GenerateBookPayload>): Promise<void> {
+    const { bookId, userId } = job.data;
+    this.logger.log(`Processing job ${job.id} for book ${bookId}`);
+
+    try {
+      await this.setStatus(bookId, 'generating');
+      await job.updateProgress(10);
+
+      const book = await this.fetchBook(bookId, userId);
+      await job.updateProgress(20);
+
+      const result = await this.orchestrator.generate({
+        bookId,
+        childName: book.child.name,
+        childAge: book.child.age,
+        topic: book.learningGoal.title,
+        learningGoal: book.learningGoal.description,
+      });
+      await job.updateProgress(80);
+
+      await this.prisma.book.update({
+        where: { id: bookId },
+        data: { storyJson: result.story, status: 'ready' },
+      });
+      await job.updateProgress(100);
+
+      this.logger.log(`Book ${bookId} generated in ${result.attempts} attempt(s)`);
+    } catch (err: unknown) {
+      this.logger.error(`Job ${job.id} failed for book ${bookId}`, err);
+      await this.setStatus(bookId, 'failed');
+      throw err;
+    }
+  }
+
+  private async fetchBook(bookId: string, userId: string): Promise<BookWithRelations> {
+    const book = await this.prisma.book.findUnique({
+      where: { id: bookId, userId },
+      select: {
+        id: true,
+        child: { select: { name: true, age: true } },
+        learningGoal: { select: { title: true, description: true } },
+      },
+    });
+    if (!book) throw new Error(`Book ${bookId} not found for user ${userId}`);
+    return book;
+  }
+
+  private async setStatus(
+    bookId: string,
+    status: 'generating' | 'ready' | 'failed',
+  ): Promise<void> {
+    await this.prisma.book.update({ where: { id: bookId }, data: { status } });
+  }
+
+  protected getJobName(): string {
+    return GENERATE_BOOK_JOB;
+  }
+}
