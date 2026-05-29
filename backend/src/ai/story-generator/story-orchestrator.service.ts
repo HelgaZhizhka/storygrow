@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { startActiveObservation } from '@langfuse/tracing';
 import { type Story } from '../schemas';
 import { buildRegenerationFeedback } from '../prompts/story-generator.prompt';
 import { VocabularyRagService } from '../rag/vocabulary-rag.service';
@@ -39,15 +40,31 @@ export class StoryOrchestratorService {
   ) {}
 
   async generate(opts: GenerateStoryOptions): Promise<GenerateStoryResult> {
-    const gradeLevel = ageToGradeLevel(opts.childAge);
-    const allowedWords = await this.vocabularyRag.retrieve({
-      topic: opts.topic,
-      learningGoal: opts.learningGoal,
-      gradeLevel,
+    return startActiveObservation(`story-generation`, async (span) => {
+      span.update({
+        input: { bookId: opts.bookId, childName: opts.childName, topic: opts.topic },
+        metadata: { bookId: opts.bookId, childAge: opts.childAge, learningGoal: opts.learningGoal },
+      });
+
+      const gradeLevel = ageToGradeLevel(opts.childAge);
+      const allowedWords = await this.vocabularyRag.retrieve({
+        topic: opts.topic,
+        learningGoal: opts.learningGoal,
+        gradeLevel,
+      });
+      const rawRetries = parseInt(process.env['EVAL_MAX_RETRIES'] ?? '', 10);
+      const maxRetries = Number.isNaN(rawRetries) ? EVAL_MAX_RETRIES_DEFAULT : rawRetries;
+      const result = await this.runLoop({ opts, allowedWords, maxAttempts: maxRetries + 1 });
+
+      span.update({
+        output: {
+          attempts: result.attempts,
+          evalId: result.evalId,
+        },
+      });
+
+      return result;
     });
-    const rawRetries = parseInt(process.env['EVAL_MAX_RETRIES'] ?? '', 10);
-    const maxRetries = Number.isNaN(rawRetries) ? EVAL_MAX_RETRIES_DEFAULT : rawRetries;
-    return this.runLoop({ opts, allowedWords, maxAttempts: maxRetries + 1 });
   }
 
   private async runLoop(ctx: LoopContext): Promise<GenerateStoryResult> {

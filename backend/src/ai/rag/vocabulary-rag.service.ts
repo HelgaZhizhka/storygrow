@@ -4,6 +4,7 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { Prisma } from '../../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { EMBEDDING_MODEL, DEFAULT_TOP_K } from '../ai.config';
+import { createTelemetry } from '../telemetry';
 
 interface RetrieveOptions {
   topic: string;
@@ -34,6 +35,11 @@ export class VocabularyRagService {
     const { embedding } = await embed({
       model: this.openai.embedding(EMBEDDING_MODEL),
       value: `${topic} ${learningGoal}`,
+      experimental_telemetry: createTelemetry('vocabulary-rag', {
+        topic,
+        learningGoal,
+        gradeLevel,
+      }),
     });
 
     const vectorLiteral = Prisma.raw(`'[${embedding.join(',')}]'::vector`);
