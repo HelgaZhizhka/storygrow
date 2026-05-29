@@ -490,3 +490,40 @@ Each entry uses this template:
 
 **Blockers:**
 - None.
+
+---
+
+## 2026-05-29 — #11: StoryGenerator service + #67: AI architecture refactor (PRs #66, #68)
+
+**Done:**
+- **PR #65** — CI fix: added dummy `DATABASE_URL` to `pnpm install` step so `prisma generate` no longer fails in CI (Prisma 6 `env()` throws on missing var during postinstall).
+- **PR #66 — Issue #11 StoryGenerator service** (subagent-driven, 8 tasks):
+  - `stop-words.ts` — 247 Russian function words for vocabulary compliance filtering.
+  - `vocabulary-compliance.ts` — `checkCompliance()`: tokenize Russian text, filter stop words, measure corpus coverage. Threshold 0.85.
+  - `story-generator.service.ts` — 3-layer pipeline: PRE (VocabularyRagService RAG) → GENERATION (`generateObject` + StorySchema + LangFuse telemetry) → POST (validateBookPlan + checkCompliance + LLM judge + retry loop). Writes `StoryEval` on every attempt.
+  - `judge.prompt.ts` + `JUDGE_SYSTEM_PROMPT` + `buildJudgePrompt()`.
+  - Prisma migration: added `judgeReasoning`, `vocabularyCompliance`, `passed` to `StoryEval`.
+  - `errors.ts` — `StoryGenerationFailedError`.
+  - 44 tests passing.
+- **PR #68 — Issue #67: 5 AI architectural improvements** (post-#11 review):
+  - `ai.config.ts` — all AI tuning constants centralized (GENERATION_MODEL, EMBEDDING_MODEL, DEFAULT_TOP_K, COMPLIANCE_THRESHOLD, PAGES_MIN, PAGES_MAX, DISCUSSION_QUESTIONS_COUNT, EVAL_THRESHOLD_DEFAULT, EVAL_MAX_RETRIES_DEFAULT).
+  - `telemetry.ts` — `createTelemetry(functionId, metadata)` helper with `LANGFUSE_ENABLED` toggle.
+  - `validators/` — `CheckResult { passed, errors }` unified interface; `validateBookPlan` moved from `pdf/page-templates/` to `ai/validators/`.
+  - `StoryGeneratorService` split into: `StoryGeneratorService` (generation) + `StoryEvaluatorService` (structural + compliance + judge) + `StoryOrchestratorService` (retry loop + RAG + DB writes).
+  - 52 tests passing.
+
+**Decisions:**
+- `illustrationPrompt` fields (DALL-E, English) excluded from Russian vocabulary compliance check — intentional.
+- `computeFinalScore()` used deterministically instead of trusting LLM's self-reported `finalScore`.
+- Env vars `EVAL_THRESHOLD` and `EVAL_MAX_RETRIES` read at runtime (not construction) to allow hot config; guarded with `Number.isNaN` fallback to defaults.
+- `StoryEvaluatorService` not exported from `AiModule` — internal to orchestrator by design.
+- Re-export shims removed (no consumers of old paths existed).
+
+**Next:**
+- #14 LangFuse integration via `experimental_telemetry` (`createTelemetry` helper already in place).
+- #13 StoryEvaluator service + regeneration loop (seams ready: `StoryEvaluatorService` + `CheckResult`).
+- #15 BullMQ generation queue (`StoryOrchestratorService` ready to be the queue processor).
+- #16 Google OAuth + JWT authentication (backend).
+
+**Blockers:**
+- None.
