@@ -14,12 +14,37 @@ const mockGenerateObject = generateObject as jest.MockedFunction<typeof generate
 const validStory: Story = {
   title: 'Маша и кот',
   pages: [
-    { template: 'cover', title: 'Маша и кот', illustrationPrompt: 'A girl with cat' },
-    { template: 'image-top', text: 'Маша играла с котом', illustrationPrompt: 'Girl playing' },
-    { template: 'image-bottom', text: 'Кот убежал', illustrationPrompt: 'Cat running' },
-    { template: 'image-left', text: 'Маша искала кота', illustrationPrompt: 'Girl searching' },
-    { template: 'image-left', text: 'Маша нашла кота', illustrationPrompt: 'Girl found cat' },
-    { template: 'final', text: 'Дружба важна', illustrationPrompt: 'Girl and cat friends' },
+    { template: 'cover', text: null, title: 'Маша и кот', illustrationPrompt: 'A girl with cat' },
+    {
+      template: 'image-top',
+      text: 'Маша играла с котом',
+      title: null,
+      illustrationPrompt: 'Girl playing',
+    },
+    {
+      template: 'image-bottom',
+      text: 'Кот убежал',
+      title: null,
+      illustrationPrompt: 'Cat running',
+    },
+    {
+      template: 'image-left',
+      text: 'Маша искала кота',
+      title: null,
+      illustrationPrompt: 'Girl searching',
+    },
+    {
+      template: 'image-left',
+      text: 'Маша нашла кота',
+      title: null,
+      illustrationPrompt: 'Girl found cat',
+    },
+    {
+      template: 'final',
+      text: 'Дружба важна',
+      title: null,
+      illustrationPrompt: 'Girl and cat friends',
+    },
   ],
   discussionQuestions: ['Что случилось?', 'Почему?', 'Как?', 'Что узнала?', 'Что важно?'],
 };

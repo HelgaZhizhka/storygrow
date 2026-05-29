@@ -42,7 +42,7 @@ export const validateBookPlan = (pages: Page[], childAge: number): CheckResult =
       );
     }
 
-    if (page.text !== undefined && config.maxChars.text !== undefined) {
+    if (page.text != null && config.maxChars.text !== undefined) {
       if (page.text.length > config.maxChars.text) {
         errors.push(
           `[page:${index}] Text is ${page.text.length} chars; template '${page.template}' allows ${config.maxChars.text}`,
@@ -50,7 +50,7 @@ export const validateBookPlan = (pages: Page[], childAge: number): CheckResult =
       }
     }
 
-    if (page.title !== undefined && config.maxChars.title !== undefined) {
+    if (page.title != null && config.maxChars.title !== undefined) {
       if (page.title.length > config.maxChars.title) {
         errors.push(
           `[page:${index}] Title is ${page.title.length} chars; template '${page.template}' allows ${config.maxChars.title}`,

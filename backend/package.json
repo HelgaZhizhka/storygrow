@@ -19,13 +19,17 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "seed:vocabulary": "dotenv -e .env -- tsx src/scripts/seed-vocabulary.ts",
+    "langfuse:test": "tsx src/scripts/test-langfuse.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.65",
+    "@langfuse/otel": "^5.4.0",
+    "@langfuse/tracing": "^5.4.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
+    "@opentelemetry/sdk-node": "^0.218.0",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "ai": "^6.0.191",
