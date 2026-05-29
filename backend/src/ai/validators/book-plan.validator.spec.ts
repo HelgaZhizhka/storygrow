@@ -1,5 +1,5 @@
 import { validateBookPlan } from './book-plan.validator';
-import { Page } from '../../ai/schemas/story.schema';
+import { Page } from '../schemas/story.schema';
 
 const makePage = (template: Page['template'], overrides: Partial<Page> = {}): Page => ({
   template,
@@ -20,33 +20,28 @@ describe('validateBookPlan', () => {
   describe('structure rules', () => {
     it('passes a valid page sequence', () => {
       const result = validateBookPlan(validPages, 6);
-      expect(result.valid).toBe(true);
+      expect(result.passed).toBe(true);
       expect(result.errors).toHaveLength(0);
     });
 
     it('errors when first page is not cover', () => {
       const pages: Page[] = [makePage('image-top'), ...validPages.slice(1)];
       const result = validateBookPlan(pages, 6);
-      expect(result.valid).toBe(false);
-      const err = result.errors.find((e) => e.field === 'template' && e.pageIndex === 0);
-      expect(err).toBeDefined();
-      expect(err?.message).toMatch(/cover/i);
+      expect(result.passed).toBe(false);
+      expect(result.errors.some((e) => /cover/i.test(e))).toBe(true);
     });
 
     it('errors when last page is not final', () => {
       const pages: Page[] = [...validPages.slice(0, -1), makePage('image-left')];
       const result = validateBookPlan(pages, 6);
-      expect(result.valid).toBe(false);
-      const lastIndex = pages.length - 1;
-      const err = result.errors.find((e) => e.field === 'template' && e.pageIndex === lastIndex);
-      expect(err).toBeDefined();
-      expect(err?.message).toMatch(/final/i);
+      expect(result.passed).toBe(false);
+      expect(result.errors.some((e) => /final/i.test(e))).toBe(true);
     });
 
     it('errors when page list is empty', () => {
       const result = validateBookPlan([], 6);
-      expect(result.valid).toBe(false);
-      expect(result.errors[0].message).toMatch(/empty/i);
+      expect(result.passed).toBe(false);
+      expect(result.errors[0]).toMatch(/empty/i);
     });
   });
 
@@ -59,10 +54,8 @@ describe('validateBookPlan', () => {
         ...validPages.slice(2),
       ];
       const result = validateBookPlan(pages, 6);
-      expect(result.valid).toBe(false);
-      const err = result.errors.find((e) => e.field === 'text' && e.pageIndex === 1);
-      expect(err).toBeDefined();
-      expect(err?.message).toMatch(/120/);
+      expect(result.passed).toBe(false);
+      expect(result.errors.some((e) => /120/.test(e))).toBe(true);
     });
 
     it('passes when text is exactly at the limit', () => {
@@ -73,18 +66,15 @@ describe('validateBookPlan', () => {
         ...validPages.slice(2),
       ];
       const result = validateBookPlan(pages, 6);
-      const textErr = result.errors.find((e) => e.field === 'text' && e.pageIndex === 1);
-      expect(textErr).toBeUndefined();
+      expect(result.passed).toBe(true);
     });
 
     it('errors when title exceeds template maxChars.title', () => {
       const longTitle = 'А'.repeat(61); // cover allows 60
       const pages: Page[] = [makePage('cover', { title: longTitle }), ...validPages.slice(1)];
       const result = validateBookPlan(pages, 6);
-      expect(result.valid).toBe(false);
-      const err = result.errors.find((e) => e.field === 'title' && e.pageIndex === 0);
-      expect(err).toBeDefined();
-      expect(err?.message).toMatch(/60/);
+      expect(result.passed).toBe(false);
+      expect(result.errors.some((e) => /60/.test(e))).toBe(true);
     });
 
     it('ignores text check when template has no maxChars.text defined', () => {
@@ -97,8 +87,7 @@ describe('validateBookPlan', () => {
         ...validPages.slice(1),
       ];
       const result = validateBookPlan(pages, 6);
-      const textErr = result.errors.find((e) => e.field === 'text' && e.pageIndex === 0);
-      expect(textErr).toBeUndefined();
+      expect(result.passed).toBe(true);
     });
   });
 
@@ -111,10 +100,8 @@ describe('validateBookPlan', () => {
         ...validPages.slice(2),
       ];
       const result = validateBookPlan(pages, 5);
-      expect(result.valid).toBe(false);
-      const err = result.errors.find((e) => e.field === 'template' && e.pageIndex === 1);
-      expect(err).toBeDefined();
-      expect(err?.message).toMatch(/age/i);
+      expect(result.passed).toBe(false);
+      expect(result.errors.some((e) => /age/i.test(e))).toBe(true);
     });
 
     it('passes text-focus for age 7', () => {
@@ -127,8 +114,7 @@ describe('validateBookPlan', () => {
         makePage('final', { text: 'Мораль истории.' }),
       ];
       const result = validateBookPlan(pages, 7);
-      const ageErr = result.errors.find((e) => e.field === 'template' && e.pageIndex === 1);
-      expect(ageErr).toBeUndefined();
+      expect(result.errors.some((e) => /age/i.test(e))).toBe(false);
     });
   });
 
@@ -144,7 +130,7 @@ describe('validateBookPlan', () => {
         makePage('image-top', { text: 'ok' }), // error: last page not final
       ];
       const result = validateBookPlan(pages, 7);
-      expect(result.valid).toBe(false);
+      expect(result.passed).toBe(false);
       expect(result.errors.length).toBeGreaterThanOrEqual(3);
     });
   });
@@ -161,10 +147,8 @@ describe('validateBookPlan', () => {
         makePage('final', { text: 'moral' }),
       ];
       const result = validateBookPlan(pages, 7);
-      expect(result.valid).toBe(false);
-      const err = result.errors.find((e) => e.field === 'template' && e.pageIndex === 1);
-      expect(err).toBeDefined();
-      expect(err?.message).toMatch(/nonexistent/);
+      expect(result.passed).toBe(false);
+      expect(result.errors.some((e) => /nonexistent/.test(e))).toBe(true);
     });
   });
 });
