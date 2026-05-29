@@ -4,8 +4,10 @@ import { LangfuseSpanProcessor } from '@langfuse/otel';
 const publicKey = process.env['LANGFUSE_PUBLIC_KEY'];
 const secretKey = process.env['LANGFUSE_SECRET_KEY'];
 
+let _sdk: NodeSDK | null = null;
+
 if (publicKey && secretKey) {
-  const sdk = new NodeSDK({
+  _sdk = new NodeSDK({
     spanProcessors: [
       new LangfuseSpanProcessor({
         publicKey,
@@ -16,8 +18,10 @@ if (publicKey && secretKey) {
     ],
   });
 
-  sdk.start();
+  _sdk.start();
 
-  process.on('SIGTERM', () => void sdk.shutdown());
-  process.on('SIGINT', () => void sdk.shutdown());
+  process.on('SIGTERM', () => void _sdk?.shutdown());
+  process.on('SIGINT', () => void _sdk?.shutdown());
 }
+
+export const shutdownTelemetry = (): Promise<void> => _sdk?.shutdown() ?? Promise.resolve();

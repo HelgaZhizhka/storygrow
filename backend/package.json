@@ -19,6 +19,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "seed:vocabulary": "dotenv -e .env -- tsx src/scripts/seed-vocabulary.ts",
+    "langfuse:test": "tsx src/scripts/test-langfuse.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

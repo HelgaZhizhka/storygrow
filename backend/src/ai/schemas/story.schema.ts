@@ -11,10 +11,10 @@ import { DISCUSSION_QUESTIONS_COUNT, PAGES_MIN, PAGES_MAX } from '../ai.config';
  */
 export const PageSchema = z.object({
   template: z.enum([...TEMPLATE_NAMES] as [TemplateName, ...TemplateName[]]),
-  /** Narrative body text for this page. Required for all non-cover templates. */
-  text: z.string().min(1).optional(),
-  /** Title text — required for 'cover', unused on most other templates. */
-  title: z.string().min(1).optional(),
+  /** Narrative body text for this page. Null only for cover template. */
+  text: z.string().min(1).nullable(),
+  /** Title text — required for 'cover' template; null for all other templates. */
+  title: z.string().min(1).nullable(),
   /** Detailed DALL-E prompt describing the illustration for this page. */
   illustrationPrompt: z.string().min(1),
 });

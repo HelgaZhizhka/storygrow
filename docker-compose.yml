@@ -67,21 +67,65 @@ services:
       mc alias set local http://minio:9000 ${S3_ACCESS_KEY:-storygrow} ${S3_SECRET_KEY:-storygrow-dev-secret} &&
       mc mb --ignore-existing local/${S3_BUCKET:-storygrow} &&
       mc anonymous set download local/${S3_BUCKET:-storygrow} &&
-      echo 'bucket ready';
+      mc mb --ignore-existing local/langfuse-events &&
+      echo 'buckets ready';
       "
 
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.3
+    container_name: storygrow-clickhouse
+    restart: unless-stopped
+    environment:
+      CLICKHOUSE_DB: default
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: '1'
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-langfuse}
+    ports:
+      - '8123:8123'
+      - '9009:9000'
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      - ./infra/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml:ro
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:8123/ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   langfuse:
-    image: langfuse/langfuse:2
+    image: langfuse/langfuse:3
     container_name: storygrow-langfuse
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-storygrow}:${POSTGRES_PASSWORD:-storygrow}@postgres:5432/langfuse
+      CLICKHOUSE_URL: http://default:${CLICKHOUSE_PASSWORD:-langfuse}@clickhouse:8123
+      CLICKHOUSE_MIGRATION_URL: clickhouse://default:${CLICKHOUSE_PASSWORD:-langfuse}@clickhouse:9000
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-langfuse}
       NEXTAUTH_URL: http://localhost:3030
       NEXTAUTH_SECRET: ${LANGFUSE_NEXTAUTH_SECRET:-dev-secret-change-me}
       SALT: ${LANGFUSE_SALT:-dev-salt-change-me}
+      ENCRYPTION_KEY: ${LANGFUSE_ENCRYPTION_KEY:-0000000000000000000000000000000000000000000000000000000000000000}
+      REDIS_HOST: redis
+      REDIS_PORT: '6379'
+      REDIS_AUTH: ''
+      LANGFUSE_S3_EVENT_UPLOAD_ENABLED: 'true'
+      LANGFUSE_S3_EVENT_UPLOAD_BUCKET: langfuse-events
+      LANGFUSE_S3_EVENT_UPLOAD_REGION: auto
+      LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT: http://minio:9000
+      LANGFUSE_S3_EVENT_UPLOAD_ACCESS_KEY_ID: ${S3_ACCESS_KEY:-storygrow}
+      LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY: ${S3_SECRET_KEY:-storygrow-dev-secret}
+      LANGFUSE_S3_EVENT_UPLOAD_FORCE_PATH_STYLE: 'true'
+      LANGFUSE_S3_MEDIA_UPLOAD_ENABLED: 'false'
       TELEMETRY_ENABLED: 'false'
       LANGFUSE_INIT_ORG_ID: ${LANGFUSE_INIT_ORG_ID:-storygrow}
       LANGFUSE_INIT_ORG_NAME: ${LANGFUSE_INIT_ORG_NAME:-StoryGrow}
@@ -93,7 +137,41 @@ services:
     ports:
       - '3030:3000'
 
+  langfuse-worker:
+    image: langfuse/langfuse-worker:3
+    container_name: storygrow-langfuse-worker
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-storygrow}:${POSTGRES_PASSWORD:-storygrow}@postgres:5432/langfuse
+      CLICKHOUSE_URL: http://default:${CLICKHOUSE_PASSWORD:-langfuse}@clickhouse:8123
+      CLICKHOUSE_MIGRATION_URL: clickhouse://default:${CLICKHOUSE_PASSWORD:-langfuse}@clickhouse:9000
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-langfuse}
+      REDIS_HOST: redis
+      REDIS_PORT: '6379'
+      REDIS_AUTH: ''
+      NEXTAUTH_SECRET: ${LANGFUSE_NEXTAUTH_SECRET:-dev-secret-change-me}
+      SALT: ${LANGFUSE_SALT:-dev-salt-change-me}
+      ENCRYPTION_KEY: ${LANGFUSE_ENCRYPTION_KEY:-0000000000000000000000000000000000000000000000000000000000000000}
+      LANGFUSE_S3_EVENT_UPLOAD_ENABLED: 'true'
+      LANGFUSE_S3_EVENT_UPLOAD_BUCKET: langfuse-events
+      LANGFUSE_S3_EVENT_UPLOAD_REGION: auto
+      LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT: http://minio:9000
+      LANGFUSE_S3_EVENT_UPLOAD_ACCESS_KEY_ID: ${S3_ACCESS_KEY:-storygrow}
+      LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY: ${S3_SECRET_KEY:-storygrow-dev-secret}
+      LANGFUSE_S3_EVENT_UPLOAD_FORCE_PATH_STYLE: 'true'
+      LANGFUSE_S3_MEDIA_UPLOAD_ENABLED: 'false'
+      TELEMETRY_ENABLED: 'false'
+
 volumes:
   postgres-data:
   redis-data:
   minio-data:
+  clickhouse-data:
