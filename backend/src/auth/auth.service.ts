@@ -1,0 +1,99 @@
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { createHash } from 'crypto';
+import { PrismaService } from '../prisma/prisma.service';
+
+export interface GoogleProfile {
+  googleId: string;
+  email: string;
+}
+
+export interface JwtPayload {
+  sub: string;
+  email: string;
+}
+
+export interface TokenPair {
+  accessToken: string;
+  refreshToken: string;
+}
+
+const ACCESS_EXPIRY_SECONDS = 15 * 60;
+const REFRESH_EXPIRY_SECONDS = 7 * 24 * 60 * 60;
+
+@Injectable()
+export class AuthService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwt: JwtService,
+    private readonly config: ConfigService,
+  ) {}
+
+  async validateOrCreateUser(profile: GoogleProfile): Promise<{ id: string; email: string }> {
+    const existing = await this.prisma.user.findUnique({
+      where: { googleId: profile.googleId },
+      select: { id: true, email: true },
+    });
+    if (existing) return existing;
+
+    return this.prisma.user.upsert({
+      where: { email: profile.email },
+      create: { email: profile.email, googleId: profile.googleId },
+      update: { googleId: profile.googleId },
+      select: { id: true, email: true },
+    });
+  }
+
+  async generateTokens(userId: string, email: string): Promise<TokenPair> {
+    const payload: JwtPayload = { sub: userId, email };
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwt.signAsync(payload, {
+        secret: this.config.getOrThrow<string>('JWT_SECRET'),
+        expiresIn: ACCESS_EXPIRY_SECONDS,
+      }),
+      this.jwt.signAsync(payload, {
+        secret: this.config.getOrThrow<string>('JWT_REFRESH_SECRET'),
+        expiresIn: REFRESH_EXPIRY_SECONDS,
+      }),
+    ]);
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { refreshToken: this.hashToken(refreshToken) },
+    });
+
+    return { accessToken, refreshToken };
+  }
+
+  async exchangeRefreshToken(rawRefreshToken: string): Promise<TokenPair> {
+    let payload: JwtPayload;
+    try {
+      payload = this.jwt.verify<JwtPayload>(rawRefreshToken, {
+        secret: this.config.getOrThrow<string>('JWT_REFRESH_SECRET'),
+      });
+    } catch {
+      throw new UnauthorizedException();
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: { id: true, email: true, refreshToken: true },
+    });
+    if (!user?.refreshToken) throw new UnauthorizedException();
+    if (user.refreshToken !== this.hashToken(rawRefreshToken)) throw new UnauthorizedException();
+
+    return this.generateTokens(user.id, user.email);
+  }
+
+  async logout(userId: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { refreshToken: null },
+    });
+  }
+
+  private hashToken(token: string): string {
+    return createHash('sha256').update(token).digest('hex');
+  }
+}
