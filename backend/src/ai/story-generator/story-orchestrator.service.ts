@@ -30,7 +30,7 @@ interface LoopContext {
 }
 
 @Injectable()
-export class StoryOrchestrator {
+export class StoryOrchestratorService {
   constructor(
     private readonly generator: StoryGeneratorService,
     private readonly evaluator: StoryEvaluatorService,

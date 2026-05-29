@@ -1,4 +1,5 @@
-import { checkCompliance, COMPLIANCE_THRESHOLD } from './vocabulary-compliance';
+import { checkCompliance } from './vocabulary-compliance';
+import { COMPLIANCE_THRESHOLD } from '../ai.config';
 import type { Story } from '../schemas';
 
 const coverPage = {

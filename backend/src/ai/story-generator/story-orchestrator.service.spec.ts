@@ -11,7 +11,7 @@ jest.mock('../../../generated/prisma/client', () => ({
 }));
 
 import { Test } from '@nestjs/testing';
-import { StoryOrchestrator } from './story-orchestrator.service';
+import { StoryOrchestratorService } from './story-orchestrator.service';
 import type { GenerateStoryOptions } from './story-orchestrator.service';
 import { StoryGenerationFailedError } from './errors';
 import { StoryGeneratorService } from './story-generator.service';
@@ -114,8 +114,8 @@ const mockPrisma = {
   },
 };
 
-describe('StoryOrchestrator', () => {
-  let orchestrator: StoryOrchestrator;
+describe('StoryOrchestratorService', () => {
+  let orchestrator: StoryOrchestratorService;
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -126,14 +126,14 @@ describe('StoryOrchestrator', () => {
 
     const module = await Test.createTestingModule({
       providers: [
-        StoryOrchestrator,
+        StoryOrchestratorService,
         { provide: StoryGeneratorService, useValue: mockGenerator },
         { provide: StoryEvaluatorService, useValue: mockEvaluator },
         { provide: VocabularyRagService, useValue: mockVocabRag },
         { provide: PrismaService, useValue: mockPrisma },
       ],
     }).compile();
-    orchestrator = module.get(StoryOrchestrator);
+    orchestrator = module.get(StoryOrchestratorService);
   });
 
   it('returns story and evalId on first passing attempt', async () => {

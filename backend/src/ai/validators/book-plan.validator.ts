@@ -32,7 +32,7 @@ export const validateBookPlan = (pages: Page[], childAge: number): CheckResult =
   pages.forEach((page, index) => {
     const config = PAGE_TEMPLATES[page.template];
     if (!config) {
-      errors.push(`[page:${index}] Unknown template '${page.template as string}'`);
+      errors.push(`[page:${index}] Unknown template '${page.template}'`);
       return;
     }
 
