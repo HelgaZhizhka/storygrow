@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Get,
   Post,
@@ -38,14 +39,15 @@ export class AuthController {
     const tokens = await this.auth.generateTokens(req.user.id, req.user.email);
     const frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'http://localhost:3000';
     const url = new URL('/auth/callback', frontendUrl);
-    url.searchParams.set('access_token', tokens.accessToken);
-    url.searchParams.set('refresh_token', tokens.refreshToken);
+    // Tokens in fragment: never sent to server, not in access logs or Referer headers
+    url.hash = `access_token=${tokens.accessToken}&refresh_token=${tokens.refreshToken}`;
     res.redirect(url.toString());
   }
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   refresh(@Body('refreshToken') refreshToken: string): Promise<TokenPair> {
+    if (!refreshToken) throw new BadRequestException('refreshToken required');
     return this.auth.exchangeRefreshToken(refreshToken);
   }
 

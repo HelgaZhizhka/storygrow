@@ -4,7 +4,7 @@ jest.mock('../../generated/prisma/client', () => ({
 
 import { Test } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import { UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService, type TokenPair } from './auth.service';
 
@@ -36,7 +36,7 @@ describe('AuthController', () => {
   });
 
   describe('googleCallback', () => {
-    it('redirects to /auth/callback with tokens in query params', async () => {
+    it('redirects to /auth/callback with tokens in URL fragment', async () => {
       mockAuth.generateTokens.mockResolvedValueOnce(tokens);
       const req = { user: { id: 'user-1', email: 'a@b.com' } } as never;
       const redirectMock = jest.fn();
@@ -55,6 +55,11 @@ describe('AuthController', () => {
       const result = await controller.refresh('old-rt');
       expect(mockAuth.exchangeRefreshToken).toHaveBeenCalledWith('old-rt');
       expect(result).toEqual(tokens);
+    });
+
+    it('throws BadRequestException when refreshToken is missing', () => {
+      expect(() => controller.refresh('')).toThrow(BadRequestException);
+      expect(mockAuth.exchangeRefreshToken).not.toHaveBeenCalled();
     });
 
     it('propagates UnauthorizedException from service', async () => {
