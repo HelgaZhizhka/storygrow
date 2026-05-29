@@ -1,9 +1,11 @@
 jest.mock('../../generated/prisma/client', () => ({
   PrismaClient: class {},
+  BookStatus: { generating: 'generating', ready: 'ready', failed: 'failed', pending: 'pending' },
 }));
 
 import { Test } from '@nestjs/testing';
 import { type Job } from 'bullmq';
+import { BookStatus } from '../../generated/prisma/client';
 import { GenerationProcessor } from './generation.processor';
 import { PrismaService } from '../prisma/prisma.service';
 import { StoryOrchestratorService } from '../ai/story-generator/story-orchestrator.service';
@@ -73,7 +75,7 @@ describe('GenerationProcessor', () => {
 
     expect(mockPrisma.book.update).toHaveBeenCalledWith({
       where: { id: 'book-1' },
-      data: { status: 'generating' },
+      data: { status: BookStatus.generating },
     });
     expect(mockOrchestrator.generate).toHaveBeenCalledWith({
       bookId: 'book-1',
@@ -84,7 +86,7 @@ describe('GenerationProcessor', () => {
     });
     expect(mockPrisma.book.update).toHaveBeenCalledWith({
       where: { id: 'book-1' },
-      data: { storyJson: mockStory, status: 'ready' },
+      data: { storyJson: mockStory, status: BookStatus.ready },
     });
   });
 
@@ -99,20 +101,29 @@ describe('GenerationProcessor', () => {
 
     expect(mockPrisma.book.update).toHaveBeenCalledWith({
       where: { id: 'book-1' },
-      data: { status: 'failed' },
+      data: { status: BookStatus.failed },
     });
   });
 
-  it('sets status=failed and rethrows when book not found in DB', async () => {
+  it('sets status=failed and rethrows when book not found after status=generating', async () => {
     mockPrisma.book.update.mockResolvedValue({});
     mockPrisma.book.findUnique.mockResolvedValueOnce(null);
 
     const job = makeJob({ bookId: 'missing-book', userId: 'user-1' });
-    await expect(processor.process(job)).rejects.toThrow();
+    await expect(processor.process(job)).rejects.toThrow('missing-book not found');
 
     expect(mockPrisma.book.update).toHaveBeenCalledWith({
       where: { id: 'missing-book' },
-      data: { status: 'failed' },
+      data: { status: BookStatus.failed },
     });
+  });
+
+  it('does not call setStatus(failed) when setStatus(generating) itself throws', async () => {
+    mockPrisma.book.update.mockRejectedValueOnce(new Error('DB connection error'));
+
+    const job = makeJob({ bookId: 'book-1', userId: 'user-1' });
+    await expect(processor.process(job)).rejects.toThrow('DB connection error');
+
+    expect(mockPrisma.book.update).toHaveBeenCalledTimes(1);
   });
 });

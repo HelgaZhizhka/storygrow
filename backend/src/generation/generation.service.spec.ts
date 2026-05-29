@@ -1,5 +1,6 @@
 jest.mock('../../generated/prisma/client', () => ({
   PrismaClient: class {},
+  BookStatus: { generating: 'generating', ready: 'ready', failed: 'failed', pending: 'pending' },
 }));
 
 import { Test } from '@nestjs/testing';

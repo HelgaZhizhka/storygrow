@@ -9,6 +9,7 @@ import { GenerationService } from './generation.service';
 
 const mockGeneration = {
   enqueueBook: jest.fn(),
+  getJobStatus: jest.fn(),
 };
 
 describe('GenerationController', () => {
@@ -42,5 +43,29 @@ describe('GenerationController', () => {
     await expect(
       controller.generate('book-1', { sub: 'user-1', email: 'a@b.com' }),
     ).rejects.toThrow(ConflictException);
+  });
+});
+
+describe('GenerationController.getJobStatus', () => {
+  let controller: GenerationController;
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    const module = await Test.createTestingModule({
+      controllers: [GenerationController],
+      providers: [{ provide: GenerationService, useValue: mockGeneration }],
+    }).compile();
+    controller = module.get(GenerationController);
+  });
+
+  it('returns status when job exists', async () => {
+    mockGeneration.getJobStatus.mockResolvedValueOnce('active');
+    const result = await controller.getJobStatus('job-1');
+    expect(result).toEqual({ status: 'active' });
+  });
+
+  it('throws NotFoundException when job does not exist', async () => {
+    mockGeneration.getJobStatus.mockResolvedValueOnce(null);
+    await expect(controller.getJobStatus('unknown')).rejects.toThrow(NotFoundException);
   });
 });

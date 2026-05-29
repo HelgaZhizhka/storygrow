@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
-import { Queue, type Job } from 'bullmq';
+import { Queue } from 'bullmq';
+import { BookStatus } from '../../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { GENERATION_QUEUE, GENERATE_BOOK_JOB, type GenerateBookPayload } from './generation.types';
 
@@ -11,7 +12,7 @@ export interface EnqueueResult {
 @Injectable()
 export class GenerationService {
   constructor(
-    @InjectQueue(GENERATION_QUEUE) private readonly queue: Queue,
+    @InjectQueue(GENERATION_QUEUE) private readonly queue: Queue<GenerateBookPayload>,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -22,12 +23,14 @@ export class GenerationService {
     });
 
     if (!book || book.userId !== userId) throw new NotFoundException('Book not found');
-    if (book.status === 'generating') throw new ConflictException('Generation already in progress');
-    if (book.status === 'ready') throw new ConflictException('Book already generated');
+    if (book.status === BookStatus.generating)
+      throw new ConflictException('Generation already in progress');
+    if (book.status === BookStatus.ready) throw new ConflictException('Book already generated');
 
     const job = await this.queue.add(GENERATE_BOOK_JOB, { bookId, userId });
 
-    return { jobId: (job as Job<GenerateBookPayload>).id ?? bookId };
+    if (!job.id) throw new Error(`BullMQ did not assign a job ID for book ${bookId}`);
+    return { jobId: job.id };
   }
 
   async getJobStatus(jobId: string): Promise<string | null> {

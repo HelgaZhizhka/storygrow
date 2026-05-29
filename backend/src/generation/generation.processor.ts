@@ -1,9 +1,10 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { type Job } from 'bullmq';
+import { BookStatus } from '../../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { StoryOrchestratorService } from '../ai/story-generator/story-orchestrator.service';
-import { GENERATION_QUEUE, GENERATE_BOOK_JOB, type GenerateBookPayload } from './generation.types';
+import { GENERATION_QUEUE, type GenerateBookPayload } from './generation.types';
 
 interface BookWithRelations {
   id: string;
@@ -26,8 +27,10 @@ export class GenerationProcessor extends WorkerHost {
     const { bookId, userId } = job.data;
     this.logger.log(`Processing job ${job.id} for book ${bookId}`);
 
+    let generatingSet = false;
     try {
-      await this.setStatus(bookId, 'generating');
+      await this.setStatus(bookId, BookStatus.generating);
+      generatingSet = true;
       await job.updateProgress(10);
 
       const book = await this.fetchBook(bookId, userId);
@@ -44,14 +47,14 @@ export class GenerationProcessor extends WorkerHost {
 
       await this.prisma.book.update({
         where: { id: bookId },
-        data: { storyJson: result.story, status: 'ready' },
+        data: { storyJson: result.story, status: BookStatus.ready },
       });
       await job.updateProgress(100);
 
       this.logger.log(`Book ${bookId} generated in ${result.attempts} attempt(s)`);
     } catch (err: unknown) {
       this.logger.error(`Job ${job.id} failed for book ${bookId}`, err);
-      await this.setStatus(bookId, 'failed');
+      if (generatingSet) await this.setStatus(bookId, BookStatus.failed);
       throw err;
     }
   }
@@ -69,14 +72,7 @@ export class GenerationProcessor extends WorkerHost {
     return book;
   }
 
-  private async setStatus(
-    bookId: string,
-    status: 'generating' | 'ready' | 'failed',
-  ): Promise<void> {
+  private async setStatus(bookId: string, status: BookStatus): Promise<void> {
     await this.prisma.book.update({ where: { id: bookId }, data: { status } });
-  }
-
-  protected getJobName(): string {
-    return GENERATE_BOOK_JOB;
   }
 }
