@@ -1,22 +1,32 @@
 import { checkCompliance } from './vocabulary-compliance';
 import { COMPLIANCE_THRESHOLD } from '../ai.config';
-import type { Story } from '../schemas';
+import type { Story, Page } from '../schemas';
+
+const p = (template: Page['template'], overrides: Partial<Page> = {}): Page => ({
+  template,
+  text: null,
+  title: null,
+  illustrationPrompt: 'x',
+  ...overrides,
+});
 
 const coverPage = {
   template: 'cover' as const,
+  text: null,
   title: 'Кот и мяч',
   illustrationPrompt: 'A cat with a ball, watercolour',
 };
 const finalPage = {
   template: 'final' as const,
   text: 'Кот научился дружить',
+  title: null,
   illustrationPrompt: 'Cat smiling, watercolour',
 };
 const makeStory = (overrides: Partial<Story> = {}): Story => ({
   title: 'Кот и мяч',
   pages: [
     coverPage,
-    { template: 'image-top', text: 'Кот прыгал', illustrationPrompt: 'Cat jumping' },
+    p('image-top', { text: 'Кот прыгал', illustrationPrompt: 'Cat jumping' }),
     finalPage,
   ],
   discussionQuestions: ['?', '?', '?', '?', '?'],
@@ -36,7 +46,7 @@ describe('checkCompliance', () => {
     const story = makeStory({
       pages: [
         coverPage,
-        { template: 'image-top', text: 'бегемот слон жираф', illustrationPrompt: 'Animals' },
+        p('image-top', { text: 'бегемот слон жираф', illustrationPrompt: 'Animals' }),
         finalPage,
       ],
     });
@@ -51,7 +61,7 @@ describe('checkCompliance', () => {
     const story = makeStory({
       pages: [
         coverPage,
-        { template: 'image-top', text: 'и в на кот', illustrationPrompt: 'Cat' },
+        p('image-top', { text: 'и в на кот', illustrationPrompt: 'Cat' }),
         finalPage,
       ],
     });
@@ -65,8 +75,8 @@ describe('checkCompliance', () => {
     const story = makeStory({
       pages: [
         coverPage,
-        { template: 'image-top', text: 'кот', illustrationPrompt: 'elephant giraffe hippo' },
-        { template: 'final', text: 'кот', illustrationPrompt: 'watercolour illustration' },
+        p('image-top', { text: 'кот', illustrationPrompt: 'elephant giraffe hippo' }),
+        p('final', { text: 'кот', illustrationPrompt: 'watercolour illustration' }),
       ],
     });
     // English words from illustrationPrompt must not be counted
@@ -79,9 +89,9 @@ describe('checkCompliance', () => {
     const story: Story = {
       title: 'кот',
       pages: [
-        { template: 'cover', title: 'тест', illustrationPrompt: 'test' },
-        { template: 'image-top', text: 'кот прыгал бегемот слон', illustrationPrompt: 'x' },
-        { template: 'final', text: 'кот', illustrationPrompt: 'x' },
+        p('cover', { title: 'тест', illustrationPrompt: 'test' }),
+        p('image-top', { text: 'кот прыгал бегемот слон' }),
+        p('final', { text: 'кот' }),
       ],
       discussionQuestions: ['?', '?', '?', '?', '?'],
     };
@@ -98,13 +108,9 @@ describe('checkCompliance', () => {
     const story: Story = {
       title: 'один',
       pages: [
-        { template: 'cover', title: 'один', illustrationPrompt: 'x' },
-        {
-          template: 'image-top',
-          text: 'два три четыре пять шесть семь восемь девять десять',
-          illustrationPrompt: 'x',
-        },
-        { template: 'final', text: 'одиннадцать', illustrationPrompt: 'x' },
+        p('cover', { title: 'один' }),
+        p('image-top', { text: 'два три четыре пять шесть семь восемь девять десять' }),
+        p('final', { text: 'одиннадцать' }),
       ],
       discussionQuestions: ['?', '?', '?', '?', '?'],
     };
@@ -131,11 +137,7 @@ describe('checkCompliance', () => {
   it('handles pages that have no text or title (illustration-only)', () => {
     const story: Story = {
       title: 'кот',
-      pages: [
-        { template: 'cover', illustrationPrompt: 'x' },
-        { template: 'image-top', illustrationPrompt: 'x' },
-        { template: 'final', text: 'кот', illustrationPrompt: 'x' },
-      ],
+      pages: [p('cover'), p('image-top'), p('final', { text: 'кот' })],
       discussionQuestions: ['?', '?', '?', '?', '?'],
     };
     const result = checkCompliance(story, ['кот']);

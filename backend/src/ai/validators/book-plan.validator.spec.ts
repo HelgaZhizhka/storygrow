@@ -3,6 +3,8 @@ import { Page } from '../schemas/story.schema';
 
 const makePage = (template: Page['template'], overrides: Partial<Page> = {}): Page => ({
   template,
+  text: null,
+  title: null,
   illustrationPrompt: 'A friendly bear in a forest',
   ...overrides,
 });
@@ -140,7 +142,12 @@ describe('validateBookPlan', () => {
       const pages = [
         makePage('cover', { title: 'Title' }),
         // force an unknown template via cast
-        { template: 'nonexistent' as Page['template'], illustrationPrompt: 'x' },
+        {
+          template: 'nonexistent' as Page['template'],
+          text: null,
+          title: null,
+          illustrationPrompt: 'x',
+        },
         makePage('image-left', { text: 'text' }),
         makePage('image-left', { text: 'text' }),
         makePage('image-left', { text: 'text' }),
