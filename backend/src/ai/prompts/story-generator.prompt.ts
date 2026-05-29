@@ -132,8 +132,13 @@ ${feedbackBlock}`.trim();
 export const buildRegenerationFeedback = (
   outOfCorpus: readonly string[],
   judge?: JudgeResult,
+  structuralErrors?: readonly string[],
 ): string => {
   const parts: string[] = [];
+
+  if (structuralErrors && structuralErrors.length > 0) {
+    parts.push(`Structural errors (fix first): ${structuralErrors.join('; ')}.`);
+  }
 
   if (outOfCorpus.length > 0) {
     const sample = outOfCorpus.slice(0, 10).join(', ');
