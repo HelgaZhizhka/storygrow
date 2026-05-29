@@ -50,8 +50,6 @@ Each entry uses this template:
 **Blockers:**
 - None.
 
----
-
 ## 2026-05-21 — Harness completed, GitHub set up, roadmap → issues
 
 **Done:**
@@ -76,8 +74,6 @@ Each entry uses this template:
 
 **Blockers:**
 - None.
-
----
 
 ## 2026-05-22 — Git workflow adopted (ADR-0001)
 
@@ -611,3 +607,32 @@ Each entry uses this template:
 
 **Blockers:**
 - None.
+
+---
+
+## 2026-05-30 - #24: Stripe subscription webhook idempotency
+
+**Done:**
+- Added `BillingModule` with `POST /api/stripe/webhooks`.
+- Enabled Nest raw-body support so Stripe signatures are verified against the original payload.
+- Added `StripeWebhookEvent` Prisma model and migration for event-id claims.
+- Added subscription lifecycle handling for `customer.subscription.created/updated/deleted`, `invoice.paid`, and `invoice.payment_failed`.
+- Duplicate Stripe event ids return 200 without rerunning subscription side effects.
+- Processing failures release the event claim so Stripe can retry.
+- Added unit tests for claim-before-side-effect, duplicate replay, retry release, and invoice failure handling.
+
+**Decisions:**
+- The first slice links subscriptions through `metadata.userId` when present; otherwise it updates an existing row by `stripeSubscriptionId`.
+- Unknown subscription events are acknowledged as ignored after recording the Stripe event id.
+- No checkout UI or dashboard setup was added in this slice.
+
+**Next:**
+- Wire checkout session creation and customer portal once Stripe dashboard products/price IDs are confirmed.
+
+**Friction:**
+- Problem: `corepack pnpm add stripe --filter backend` ran postinstall before local `DATABASE_URL` was configured.
+- Impact: dependency install needed a second verification pass with a dummy local Prisma URL.
+- Smallest fix: document a local `DATABASE_URL` fallback in the setup notes or make Prisma generate tolerate missing env during package install.
+
+**Blockers:**
+- Stripe dashboard setup and price IDs still need owner confirmation for the checkout side.
