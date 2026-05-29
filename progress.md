@@ -527,3 +527,35 @@ Each entry uses this template:
 
 **Blockers:**
 - None.
+
+---
+
+## 2026-05-29 — #14: LangFuse integration (PR #69)
+
+**Done:**
+- **LangFuse v3 stack** in `docker-compose.yml`:
+  - ClickHouse (`clickhouse/clickhouse-server:25.3`) with embedded ClickHouseKeeper via `infra/clickhouse/cluster.xml` (needed for `ReplicatedMergeTree` tables used by LangFuse migrations).
+  - `langfuse/langfuse:3` web server + `langfuse/langfuse-worker:3` worker (v3 splits ingestion into a separate worker process).
+  - MinIO `langfuse-events` bucket for S3-backed event upload storage.
+  - All env vars: `CLICKHOUSE_URL` (HTTP/8123 for queries), `CLICKHOUSE_MIGRATION_URL` (native/9000 for migrations), `CLICKHOUSE_PASSWORD`, `LANGFUSE_S3_EVENT_UPLOAD_*`, `REDIS_HOST/PORT`.
+- **`backend/src/instrument.ts`** — OTel SDK bootstrap: `LangfuseSpanProcessor` from `@langfuse/otel`, started on module load, exported `shutdownTelemetry()` for graceful shutdown.
+- **`main.ts`** — imports `./instrument.js` as side-effect (must run before any DI wiring).
+- **`createTelemetry()` helper** in `backend/src/ai/telemetry.ts` — wraps `experimental_telemetry` object; wired into `StoryGeneratorService.generateStory()` and `StoryEvaluatorService.evaluate()`.
+- **`backend/src/ai/schemas/story.schema.ts`** — changed `text` and `title` from `.optional()` to `.nullable()`. OpenAI structured output requires all properties in `required`; `.optional()` removed them, causing 400 errors.
+- **`book-plan.validator.ts`** — updated null checks from `!== undefined` to `!= null`.
+- **Spec files** — added `text: null, title: null` to all inline `Page` objects across 5 spec files.
+- **Verified:** LangFuse UI at `localhost:3030` shows 2 parent traces (`story-generation`) with 15 child spans each. `./init.sh` exits 0, 52 tests passing.
+
+**Decisions:**
+- `@langfuse/otel@5.x` requires LangFuse v3 (adds OTLP endpoint); v2 returns 404.
+- `.nullable()` over `.optional()` in PageSchema — OpenAI structured output requires fields stay in JSON Schema `required`.
+- `tsx` for scripts — handles Prisma 6 ESM client natively; ts-node creates CJS/ESM cycle.
+- `shutdownTelemetry()` called explicitly in scripts — `process.exit` bypasses SIGTERM, spans would not flush otherwise.
+
+**Next:**
+- #13 StoryEvaluator service (seams in place).
+- #15 BullMQ generation queue.
+- #16 Google OAuth + JWT.
+
+**Blockers:**
+- None.
