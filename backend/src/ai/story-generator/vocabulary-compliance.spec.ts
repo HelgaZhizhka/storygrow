@@ -27,7 +27,7 @@ describe('checkCompliance', () => {
     const story = makeStory();
     const result = checkCompliance(story, ['кот', 'мяч', 'прыгал', 'научился', 'дружить']);
     expect(result.score).toBe(1);
-    expect(result.compliant).toBe(true);
+    expect(result.passed).toBe(true);
     expect(result.outOfCorpus).toEqual([]);
   });
 
@@ -40,7 +40,7 @@ describe('checkCompliance', () => {
       ],
     });
     const result = checkCompliance(story, ['кот', 'мяч']);
-    expect(result.compliant).toBe(false);
+    expect(result.passed).toBe(false);
     expect(result.outOfCorpus).toContain('бегемот');
     expect(result.outOfCorpus).toContain('слон');
     expect(result.outOfCorpus).toContain('жираф');
@@ -57,7 +57,7 @@ describe('checkCompliance', () => {
     // "и", "в", "на" are stop words — only "кот" is meaningful
     const result = checkCompliance(story, ['кот', 'мяч', 'научился', 'дружить']);
     expect(result.score).toBe(1);
-    expect(result.compliant).toBe(true);
+    expect(result.passed).toBe(true);
   });
 
   it('does NOT check illustrationPrompt text (English, for DALL-E)', () => {
@@ -71,7 +71,7 @@ describe('checkCompliance', () => {
     // English words from illustrationPrompt must not be counted
     const result = checkCompliance(story, ['кот', 'мяч', 'научился', 'дружить']);
     expect(result.score).toBe(1);
-    expect(result.compliant).toBe(true);
+    expect(result.passed).toBe(true);
   });
 
   it('computes fractional score for partial corpus matches', () => {
@@ -124,7 +124,7 @@ describe('checkCompliance', () => {
     ];
     const result = checkCompliance(story, corpus);
     expect(result.score).toBeGreaterThanOrEqual(COMPLIANCE_THRESHOLD);
-    expect(result.compliant).toBe(true);
+    expect(result.passed).toBe(true);
   });
 
   it('handles pages that have no text or title (illustration-only)', () => {
@@ -138,7 +138,7 @@ describe('checkCompliance', () => {
       discussionQuestions: ['?', '?', '?', '?', '?'],
     };
     const result = checkCompliance(story, ['кот']);
-    expect(result.compliant).toBe(true);
+    expect(result.passed).toBe(true);
   });
 
   it('checks story.title and discussionQuestions as well as page text', () => {

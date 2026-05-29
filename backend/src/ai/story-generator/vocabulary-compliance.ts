@@ -1,12 +1,13 @@
 import type { Story } from '../schemas';
 import { STOP_WORDS } from './stop-words';
+import { COMPLIANCE_THRESHOLD } from '../ai.config';
+import type { CheckResult } from '../validators/check-result';
 
-export const COMPLIANCE_THRESHOLD = 0.85;
+export { COMPLIANCE_THRESHOLD };
 
-export interface ComplianceResult {
-  compliant: boolean;
+export interface ComplianceCheckResult extends CheckResult {
   score: number;
-  outOfCorpus: string[];
+  outOfCorpus: readonly string[];
 }
 
 const extractRussianText = (story: Story): string =>
@@ -21,22 +22,28 @@ const tokenize = (text: string): string[] => text.toLowerCase().match(/[а-яё]
 export const checkCompliance = (
   story: Story,
   allowedWords: readonly string[],
-): ComplianceResult => {
+): ComplianceCheckResult => {
   const corpusSet = new Set(allowedWords.map((w) => w.toLowerCase()));
   const allTokens = tokenize(extractRussianText(story));
   const meaningful = allTokens.filter((t) => !STOP_WORDS.has(t));
 
   if (meaningful.length === 0) {
-    return { compliant: true, score: 1, outOfCorpus: [] };
+    return { passed: true, errors: [], score: 1, outOfCorpus: [] };
   }
 
-  const outOfCorpusSet = new Set(meaningful.filter((t) => !corpusSet.has(t)));
+  const outOfCorpus = [...new Set(meaningful.filter((t) => !corpusSet.has(t)))];
   const inCorpusCount = meaningful.filter((t) => corpusSet.has(t)).length;
   const score = inCorpusCount / meaningful.length;
+  const passed = score >= COMPLIANCE_THRESHOLD;
 
   return {
-    compliant: score >= COMPLIANCE_THRESHOLD,
+    passed,
+    errors: passed
+      ? []
+      : [
+          `Vocabulary compliance ${(score * 100).toFixed(0)}% below threshold ${COMPLIANCE_THRESHOLD * 100}%`,
+        ],
     score,
-    outOfCorpus: [...outOfCorpusSet],
+    outOfCorpus,
   };
 };

@@ -1,9 +1,8 @@
 import { z } from 'zod';
 import { TEMPLATE_NAMES, type TemplateName } from '../../pdf/page-templates/page-templates.config';
+import { DISCUSSION_QUESTIONS_COUNT, PAGES_MIN, PAGES_MAX } from '../ai.config';
 
-export const DISCUSSION_QUESTIONS_COUNT = 5;
-export const PAGES_MIN = 6;
-export const PAGES_MAX = 12;
+export { DISCUSSION_QUESTIONS_COUNT, PAGES_MIN, PAGES_MAX };
 
 /**
  * PageSchema — one page in the book.

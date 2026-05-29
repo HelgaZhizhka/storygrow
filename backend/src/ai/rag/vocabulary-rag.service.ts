@@ -3,9 +3,7 @@ import { embed } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { Prisma } from '../../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
-
-const EMBEDDING_MODEL = 'text-embedding-3-small';
-const DEFAULT_TOP_K = 80;
+import { EMBEDDING_MODEL, DEFAULT_TOP_K } from '../ai.config';
 
 interface RetrieveOptions {
   topic: string;
