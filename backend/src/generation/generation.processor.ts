@@ -47,7 +47,11 @@ export class GenerationProcessor extends WorkerHost {
 
       await this.prisma.book.update({
         where: { id: bookId },
-        data: { storyJson: result.story, status: BookStatus.ready },
+        data: {
+          storyJson: result.story,
+          imageUrls: result.imageUrls,
+          status: BookStatus.ready,
+        },
       });
       await job.updateProgress(100);
 

@@ -66,6 +66,7 @@ describe('GenerationProcessor', () => {
     mockPrisma.book.findUnique.mockResolvedValueOnce(mockBook);
     mockOrchestrator.generate.mockResolvedValueOnce({
       story: mockStory,
+      imageUrls: ['https://signed/p1', 'https://signed/p2', 'https://signed/p3'],
       evalId: 'eval-1',
       attempts: 1,
     });
@@ -86,7 +87,11 @@ describe('GenerationProcessor', () => {
     });
     expect(mockPrisma.book.update).toHaveBeenCalledWith({
       where: { id: 'book-1' },
-      data: { storyJson: mockStory, status: BookStatus.ready },
+      data: {
+        storyJson: mockStory,
+        imageUrls: ['https://signed/p1', 'https://signed/p2', 'https://signed/p3'],
+        status: BookStatus.ready,
+      },
     });
   });
 

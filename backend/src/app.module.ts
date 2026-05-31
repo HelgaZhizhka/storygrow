@@ -8,6 +8,7 @@ import { GenerationModule } from './generation/generation.module';
 import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
 import { PrismaModule } from './prisma/prisma.module';
+import { S3Module } from './s3/s3.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { PrismaModule } from './prisma/prisma.module';
       inject: [ConfigService],
     }),
     PrismaModule,
+    S3Module,
     AiModule,
     AuthModule,
     GenerationModule,
