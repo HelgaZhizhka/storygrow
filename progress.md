@@ -611,3 +611,34 @@ Each entry uses this template:
 
 **Blockers:**
 - None.
+
+---
+
+## 2026-05-29 — Grilling session: development trajectory + process improvements
+
+**Done:**
+- Velocity audit: 29/37 issues closed in 8 days vs original 5-week plan (~70% complete in 23% of budget). Roadmap velocity 2-3× faster than estimated.
+- 7-question grilling on process gaps and risks identified. 6 new issues created + 1 closed + 1 split.
+
+**Decisions (with rationale):**
+- **#72 eval-corpus harness** (Week 4) — pause after #17+#19 to populate `StoryEval` with 30 real generations before #27 admin dashboard. Why: without real judge data, dashboard is mocks; defense centerpiece is the metric story.
+- **#74 frontend test infra** (Week 3, before #18) — Vitest + RTL + MSW + Playwright. Why: zero frontend tests now, 5 frontend issues incoming; without safety net agent has no UX feedback loop.
+- **Frontend design workflow: Claude Design + ASCII** — for each frontend issue, user creates Claude Design prototype, exports PNG to `docs/design/`, agent reads via multimodal Read + structural ASCII wireframe in issue body. Why: closes the visual-judgment gap for agents without Figma overhead.
+- **#26 Fast Flow split → #75/#76/#77/#78** — original one-issue was 4 different concerns (content/illustrations/service/frontend), violating one-issue-one-PR pattern. Illustrations: DALL-E pre-gen (~$2 one-time) over stock/skip for visual consistency with Custom Flow.
+- **#22 dev VPS merged into #29 prod deploy** (Week 5) — local docker-compose covers 95% of testing scenarios; one deploy session catches the same prod risks (Puppeteer headless, OAuth callback URL, TLS) as two.
+- **#79 defense demo script** (Week 3, early) — written NOW so its requirements flow back to #25/#27/#72 priorities, not after-the-fact in Week 5.
+
+**Revised timeline:**
+- Remaining: ~17 issues across Weeks 3-5.
+- At current 3-issue/day pace: code-complete ~**6-8 June** (was: 25 June).
+- ~2-week buffer before defense — to be used for eval-data accumulation, demo rehearsal, polish.
+
+**Next:**
+- #17 Puppeteer PDF rendering (next pickup).
+- Then #74 frontend test infra → #18 login → #19 form → eval-corpus pause (#72) → #20 SSE.
+
+**Blockers:**
+- None.
+
+**Frictions:**
+- 5 process-improvement issues created in one session — agentic dev was running on auto-pilot without a periodic audit. Should schedule similar grilling reviews every ~1 week to keep priorities aligned with defense.
