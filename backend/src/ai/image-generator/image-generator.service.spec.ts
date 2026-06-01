@@ -23,6 +23,7 @@ jest.mock('@langfuse/tracing', () => ({
 
 import { Test } from '@nestjs/testing';
 import { ImageGeneratorService } from './image-generator.service';
+import { ImageContentPolicyError } from './errors';
 import { S3Service } from '../../s3/s3.service';
 import type { Story } from '../schemas';
 
@@ -93,7 +94,7 @@ describe('ImageGeneratorService', () => {
     );
   });
 
-  it('passes style suffix appended to each prompt', async () => {
+  it('appends style suffix to each prompt', async () => {
     mockGenerateImage.mockResolvedValue({ image: { base64: Buffer.from('x').toString('base64') } });
     mockS3.uploadObject.mockResolvedValue(undefined);
     mockS3.getSignedUrl.mockResolvedValue('url');
@@ -106,14 +107,31 @@ describe('ImageGeneratorService', () => {
     }
   });
 
-  it('rejects if any single page generation fails', async () => {
-    mockGenerateImage
-      .mockResolvedValueOnce({ image: { base64: Buffer.from('x').toString('base64') } })
-      .mockRejectedValueOnce(new Error('rate limit'))
-      .mockResolvedValueOnce({ image: { base64: Buffer.from('x').toString('base64') } });
+  it('passes maxRetries=1 and quality from IMAGE_QUALITY constant', async () => {
+    mockGenerateImage.mockResolvedValue({ image: { base64: Buffer.from('x').toString('base64') } });
     mockS3.uploadObject.mockResolvedValue(undefined);
     mockS3.getSignedUrl.mockResolvedValue('url');
 
-    await expect(service.generate({ story, bookId: 'b' })).rejects.toThrow('rate limit');
+    await service.generate({ story, bookId: 'book-42' });
+
+    const calls = mockGenerateImage.mock.calls as Array<
+      [{ maxRetries: number; providerOptions: { openai: { quality: string } } }]
+    >;
+    expect(calls[0][0].maxRetries).toBe(1);
+    expect(calls[0][0].providerOptions.openai.quality).toBe('standard');
+  });
+
+  it('throws ImageContentPolicyError when DALL-E refuses the prompt', async () => {
+    mockGenerateImage.mockRejectedValueOnce(new Error('content_policy_violation: not safe'));
+
+    await expect(service.generate({ story, bookId: 'b' })).rejects.toBeInstanceOf(
+      ImageContentPolicyError,
+    );
+  });
+
+  it('propagates non-content-policy errors as-is (BullMQ retries the job)', async () => {
+    mockGenerateImage.mockRejectedValueOnce(new Error('network timeout'));
+
+    await expect(service.generate({ story, bookId: 'b' })).rejects.toThrow('network timeout');
   });
 });

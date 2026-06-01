@@ -4,6 +4,7 @@ import { type Job } from 'bullmq';
 import { BookStatus } from '../../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { StoryOrchestratorService } from '../ai/story-generator/story-orchestrator.service';
+import { ImageGeneratorService } from '../ai/image-generator/image-generator.service';
 import { GENERATION_QUEUE, type GenerateBookPayload } from './generation.types';
 
 interface BookWithRelations {
@@ -19,6 +20,7 @@ export class GenerationProcessor extends WorkerHost {
   constructor(
     private readonly prisma: PrismaService,
     private readonly orchestrator: StoryOrchestratorService,
+    private readonly imageGenerator: ImageGeneratorService,
   ) {
     super();
   }
@@ -36,26 +38,33 @@ export class GenerationProcessor extends WorkerHost {
       const book = await this.fetchBook(bookId, userId);
       await job.updateProgress(20);
 
-      const result = await this.orchestrator.generate({
+      const storyResult = await this.orchestrator.generate({
         bookId,
         childName: book.child.name,
         childAge: book.child.age,
         topic: book.learningGoal.title,
         learningGoal: book.learningGoal.description,
       });
-      await job.updateProgress(80);
+      await job.updateProgress(60);
 
       await this.prisma.book.update({
         where: { id: bookId },
-        data: {
-          storyJson: result.story,
-          imageUrls: result.imageUrls,
-          status: BookStatus.ready,
-        },
+        data: { storyJson: storyResult.story },
+      });
+
+      const imageUrls = await this.imageGenerator.generate({
+        story: storyResult.story,
+        bookId,
+      });
+      await job.updateProgress(90);
+
+      await this.prisma.book.update({
+        where: { id: bookId },
+        data: { imageUrls, status: BookStatus.ready },
       });
       await job.updateProgress(100);
 
-      this.logger.log(`Book ${bookId} generated in ${result.attempts} attempt(s)`);
+      this.logger.log(`Book ${bookId} generated in ${storyResult.attempts} attempt(s)`);
     } catch (err: unknown) {
       this.logger.error(`Job ${job.id} failed for book ${bookId}`, err);
       if (generatingSet) await this.setStatus(bookId, BookStatus.failed);

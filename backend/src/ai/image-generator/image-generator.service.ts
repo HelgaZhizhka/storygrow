@@ -5,7 +5,10 @@ import { openai } from '@ai-sdk/openai';
 import { type Story } from '../schemas';
 import { PAGE_TEMPLATES } from '../../pdf/page-templates/page-templates.config';
 import { S3Service } from '../../s3/s3.service';
-import { IMAGE_MODEL, IMAGE_STYLE_SUFFIX } from '../ai.config';
+import { IMAGE_MODEL, IMAGE_QUALITY, IMAGE_STYLE_SUFFIX } from '../ai.config';
+import { ImageContentPolicyError } from './errors';
+
+const IMAGE_GEN_MAX_RETRIES = 1;
 
 export interface ImageGenInput {
   story: Story;
@@ -47,28 +50,56 @@ export class ImageGeneratorService {
     prompt: string;
     template: Story['pages'][number]['template'];
   }): Promise<string> {
-    const dalleSize = PAGE_TEMPLATES[opts.template].images[0]?.dalleSize ?? '1024x1024';
-    const fullPrompt = `${opts.prompt}${IMAGE_STYLE_SUFFIX}`;
+    return startActiveObservation(`image-generation.page-${opts.pageNumber}`, async (span) => {
+      const slot = PAGE_TEMPLATES[opts.template].images[0];
+      if (!slot) {
+        throw new Error(`Template '${opts.template}' has no image slot configured`);
+      }
+      const fullPrompt = `${opts.prompt}${IMAGE_STYLE_SUFFIX}`;
+      span.update({
+        input: { prompt: fullPrompt, size: slot.dalleSize },
+        metadata: {
+          bookId: opts.bookId,
+          pageNumber: opts.pageNumber,
+          template: opts.template,
+          model: IMAGE_MODEL,
+        },
+      });
 
-    const result = await generateImage({
-      model: openai.imageModel(IMAGE_MODEL),
-      prompt: fullPrompt,
-      size: dalleSize,
-      providerOptions: {
-        openai: { quality: 'standard' },
-      },
+      let result;
+      try {
+        result = await generateImage({
+          model: openai.imageModel(IMAGE_MODEL),
+          prompt: fullPrompt,
+          size: slot.dalleSize,
+          maxRetries: IMAGE_GEN_MAX_RETRIES,
+          providerOptions: { openai: { quality: IMAGE_QUALITY } },
+        });
+      } catch (err: unknown) {
+        if (isContentPolicyError(err)) {
+          throw new ImageContentPolicyError(opts.pageNumber, opts.prompt, err);
+        }
+        throw err;
+      }
+
+      const buffer = Buffer.from(result.image.base64, 'base64');
+      const key = `books/${opts.bookId}/page-${opts.pageNumber}.png`;
+      await this.s3.uploadObject({ key, body: buffer, contentType: 'image/png' });
+
+      const url = await this.s3.getSignedUrl(key);
+      span.update({ output: { key, contentType: 'image/png' } });
+      this.logger.log(`Generated image for book ${opts.bookId} page ${opts.pageNumber}`);
+      return url;
     });
-
-    const buffer = Buffer.from(result.image.base64, 'base64');
-    const key = `books/${opts.bookId}/page-${opts.pageNumber}.png`;
-
-    await this.s3.uploadObject({
-      key,
-      body: buffer,
-      contentType: 'image/png',
-    });
-
-    this.logger.log(`Generated image for book ${opts.bookId} page ${opts.pageNumber}`);
-    return this.s3.getSignedUrl(key);
   }
+}
+
+function isContentPolicyError(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  const message = err.message.toLowerCase();
+  return (
+    message.includes('content_policy_violation') ||
+    message.includes('safety system') ||
+    message.includes('content policy')
+  );
 }

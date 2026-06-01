@@ -7,7 +7,6 @@ import { ageToGradeLevel } from '../rag/age-grade.map';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StoryGeneratorService } from './story-generator.service';
 import { StoryEvaluatorService, type EvalCheckResult } from './story-evaluator.service';
-import { ImageGeneratorService } from '../image-generator/image-generator.service';
 import { StoryGenerationFailedError } from './errors';
 import { EVAL_MAX_RETRIES_DEFAULT } from '../ai.config';
 
@@ -20,13 +19,6 @@ export interface GenerateStoryOptions {
 }
 
 export interface GenerateStoryResult {
-  story: Story;
-  imageUrls: string[];
-  evalId: string;
-  attempts: number;
-}
-
-interface LoopResult {
   story: Story;
   evalId: string;
   attempts: number;
@@ -43,7 +35,6 @@ export class StoryOrchestratorService {
   constructor(
     private readonly generator: StoryGeneratorService,
     private readonly evaluator: StoryEvaluatorService,
-    private readonly imageGenerator: ImageGeneratorService,
     private readonly vocabularyRag: VocabularyRagService,
     private readonly prisma: PrismaService,
   ) {}
@@ -63,26 +54,20 @@ export class StoryOrchestratorService {
       });
       const rawRetries = parseInt(process.env['EVAL_MAX_RETRIES'] ?? '', 10);
       const maxRetries = Number.isNaN(rawRetries) ? EVAL_MAX_RETRIES_DEFAULT : rawRetries;
-      const loopResult = await this.runLoop({ opts, allowedWords, maxAttempts: maxRetries + 1 });
-
-      const imageUrls = await this.imageGenerator.generate({
-        story: loopResult.story,
-        bookId: opts.bookId,
-      });
+      const result = await this.runLoop({ opts, allowedWords, maxAttempts: maxRetries + 1 });
 
       span.update({
         output: {
-          attempts: loopResult.attempts,
-          evalId: loopResult.evalId,
-          imageCount: imageUrls.length,
+          attempts: result.attempts,
+          evalId: result.evalId,
         },
       });
 
-      return { ...loopResult, imageUrls };
+      return result;
     });
   }
 
-  private async runLoop(ctx: LoopContext): Promise<LoopResult> {
+  private async runLoop(ctx: LoopContext): Promise<GenerateStoryResult> {
     let feedback: string | undefined;
     for (let attempt = 1; attempt <= ctx.maxAttempts; attempt++) {
       const story = await this.generator.generateStory({

@@ -16,6 +16,6 @@ import { S3Module } from '../s3/s3.module';
     StoryOrchestratorService,
     ImageGeneratorService,
   ],
-  exports: [VocabularyRagService, StoryOrchestratorService],
+  exports: [VocabularyRagService, StoryOrchestratorService, ImageGeneratorService],
 })
 export class AiModule {}

@@ -16,7 +16,6 @@ import type { GenerateStoryOptions } from './story-orchestrator.service';
 import { StoryGenerationFailedError } from './errors';
 import { StoryGeneratorService } from './story-generator.service';
 import { StoryEvaluatorService } from './story-evaluator.service';
-import { ImageGeneratorService } from '../image-generator/image-generator.service';
 import { VocabularyRagService } from '../rag/vocabulary-rag.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import type { Story } from '../schemas';
@@ -127,11 +126,6 @@ interface StoryEvalCreateArgs {
 
 const mockGenerator = { generateStory: jest.fn<Promise<Story>, [unknown]>() };
 const mockEvaluator = { evaluate: jest.fn<Promise<EvalCheckResult>, [unknown]>() };
-const mockImageGen = {
-  generate: jest
-    .fn<Promise<string[]>, [unknown]>()
-    .mockResolvedValue(['url1', 'url2', 'url3', 'url4', 'url5', 'url6']),
-};
 const mockVocabRag = { retrieve: jest.fn().mockResolvedValue(['маша', 'кот', 'дружба']) };
 const mockPrisma = {
   storyEval: {
@@ -148,7 +142,6 @@ describe('StoryOrchestratorService', () => {
     jest.clearAllMocks();
     mockGenerator.generateStory.mockResolvedValue(validStory);
     mockEvaluator.evaluate.mockResolvedValue(passingEval);
-    mockImageGen.generate.mockResolvedValue(['url1', 'url2', 'url3', 'url4', 'url5', 'url6']);
     mockVocabRag.retrieve.mockResolvedValue(['маша', 'кот', 'дружба']);
     mockPrisma.storyEval.create.mockResolvedValue({ id: 'eval-1' });
 
@@ -157,7 +150,6 @@ describe('StoryOrchestratorService', () => {
         StoryOrchestratorService,
         { provide: StoryGeneratorService, useValue: mockGenerator },
         { provide: StoryEvaluatorService, useValue: mockEvaluator },
-        { provide: ImageGeneratorService, useValue: mockImageGen },
         { provide: VocabularyRagService, useValue: mockVocabRag },
         { provide: PrismaService, useValue: mockPrisma },
       ],
