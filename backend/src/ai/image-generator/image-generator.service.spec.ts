@@ -129,7 +129,7 @@ describe('ImageGeneratorService', () => {
     );
   });
 
-  it('propagates non-content-policy errors as-is (BullMQ retries the job)', async () => {
+  it('propagates non-content-policy errors as-is', async () => {
     mockGenerateImage.mockRejectedValueOnce(new Error('network timeout'));
 
     await expect(service.generate({ story, bookId: 'b' })).rejects.toThrow('network timeout');
