@@ -642,3 +642,60 @@ Each entry uses this template:
 
 **Frictions:**
 - 5 process-improvement issues created in one session — agentic dev was running on auto-pilot without a periodic audit. Should schedule similar grilling reviews every ~1 week to keep priorities aligned with defense.
+
+---
+
+## 2026-06-01 — #80 ImageGenerator + #82 S3 keys + #17 PDF rendering (PRs #81, #86, #87)
+
+**Done:**
+
+### PR #81 — ImageGenerator (#80)
+- Identified planning gap during grilling: AI pipeline diagram had `ImageGenerator` step but no issue, no code, no `illustrationUrl` field in schema. Created #80 before starting #17 PDF.
+- New `S3Module` + `S3Service` wrapping AWS SDK v3 (`@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`). `uploadObject({ key, body, contentType })` + `getSignedUrl(key)`. Reads config from env (`S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET`).
+- `ImageGeneratorService` uses Vercel AI SDK `generateImage` against `openai.imageModel('dall-e-3')`. Parallel `Promise.all` per page. DALL-E size from `PAGE_TEMPLATES[template].images[0].dalleSize`. Style suffix appended. LangFuse child span per page (substituted for `experimental_telemetry` after verifying AI SDK v6 image generator doesn't accept that param). `ImageContentPolicyError` typed exception detects DALL-E safety refusals via error-message regex.
+- Code review found 3 Critical + 4 Important. Fixes applied: explicit `maxRetries: 1`; storyJson persisted BEFORE image-gen (so DALL-E failure doesn't lose validated story); image-gen extracted from orchestrator into processor; `IMAGE_QUALITY` constant consumed; no silent dalleSize fallback.
+- Architecture shift: `StoryOrchestratorService` is now eval-loop-only. `GenerationProcessor` sequences story → persist → images → persist → ready. Cleaner separation.
+- Re-review accepted the substitution + fixes. 3 follow-up issues filed (#83 BullMQ retry + skip-orchestrator-on-retry, #84 `BookStatus.images_failed` + robust content-policy detection, #85 stale-book sweeper).
+
+### PR #86 — S3 keys not URLs (#82)
+- Code review of #81 surfaced latent landmine: `Book.imageUrls` stored 7-day signed URLs at generation time. After expiry, DB rows persist with dead URLs.
+- Renamed `Book.imageUrls` → `Book.imageKeys` (`RENAME COLUMN`, no data loss). `ImageGeneratorService` now returns S3 keys.
+- New `BookImageService.signKeys(keys)` — signs on read. To be used by future `GET /books/:id` endpoints (#19/#20) and PDF renderer.
+- Mechanical refactor, ~90 LOC diff, no architectural change → skipped pre-merge code review per the policy fixed during grilling.
+
+### PR #87 — Puppeteer PDF render (#17)
+- New `PdfRenderService`: 6 HTML page templates cached at module init (`readFileSync`), placeholder substitution per page, multi-page A5 (874×1240) HTML doc assembled with `page-break-after: always`, Puppeteer headless → PDF buffer → S3 at `books/<bookId>/book.pdf`.
+- HTML escaping on all LLM-output text/title. Browser closed in `finally`. Discussion questions scoped to final page only.
+- `BookImageService.signKey(key)` singular helper.
+- Prisma: `Book.pdfUrl` → `Book.pdfKey` (consistency with #82).
+- `GenerationProcessor` chained: orchestrator → persist storyJson → image-gen → persist imageKeys → sign URLs → PDF render → persist pdfKey + status=ready. Split persistence so PDF failure preserves storyJson + imageKeys.
+- **Code review caught a CRITICAL defect** that all 105 tests missed: HTML templates were not copied to `dist/` (no `assets` config in `nest-cli.json`). Production startup would have crashed with ENOENT on first boot. Fixed: added `assets: [{ include: "pdf/page-templates/*.html" }]` to nest-cli.json; verified `pnpm exec nest build` now copies HTMLs to `dist/pdf/page-templates/`.
+- Additional fixes from review: `--no-sandbox` gated on `PUPPETEER_NO_SANDBOX` env var (security: don't disable Chromium sandbox by default in dev/CI); `waitUntil: 'networkidle0'` instead of `'load'` (wait for remote signed-URL images); `escapeAttribute` now escapes `&` (signed URLs contain query-string `&`); `safeImageUrl` scheme allowlist (https/http only, defensive against future `javascript:`/`data:` bugs); ordered assertions in failure-path test (`toHaveBeenNthCalledWith`).
+- 2 follow-up issues: #88 manual PDF smoke test with real Puppeteer, #89 prod Dockerfile Chromium runtime deps + `PUPPETEER_NO_SANDBOX=true` + BullMQ job timeout.
+
+**Decisions (with rationale):**
+- **Re-review policy fixed** during #81 fix session: re-review only when (a) architectural shift, (b) substitution of recommended approach, (c) new critical test, or (d) ≥3 connected Critical fixes. Mechanical/targeted fixes get no re-review. Applied: re-review for #81 (architectural shift image-gen → processor), first review for #87 (new feature, new dependency, multi-step pipeline). Skipped for #86 (mechanical refactor).
+- **storyJson preservation across pipeline stages**: split `book.update` into 4 sequential calls so each completed stage's output survives later failures. Trade-off: 3× more DB writes per book; gain: image-gen or PDF failure leaves a recoverable state (future #84 partial recovery API).
+- **S3 keys, not signed URLs, in DB**: the column name encodes the intent. Sign-on-read pattern via `BookImageService` is the canonical way to expose URLs to clients.
+- **DALL-E size driven from PAGE_TEMPLATES**: same single-source-of-truth pattern as the StorySchema enum. Future template-catalogue changes propagate automatically.
+
+**Architecture:**
+- Full backend AI pipeline now complete: Form → BullMQ enqueue → Orchestrator (RAG + Story + Eval + retry) → ImageGenerator (DALL-E + S3 keys) → PdfRenderer (Puppeteer + S3 PDF) → `Book.{storyJson, imageKeys, pdfKey, status=ready}`.
+- LangFuse traces: `story-generation` (parent for eval loop) + `image-generation` (parent for per-page DALL-E spans). PDF render is logged but not in LangFuse (not an AI call).
+
+**Next:**
+- #74 frontend test infra — Vitest + RTL + MSW + Playwright. First frontend work, unlocks #18/#19/#20.
+- Then #18 Google login → #19 create-book form → pause for #72 eval-corpus → #20 SSE progress.
+
+**Blockers:**
+- None.
+
+**Metrics:**
+- 64 → 105 backend tests (+41 over the session).
+- 30 → 33 issues closed (#80, #82, #17 merged).
+- 7 new follow-up issues filed (#82-#85, #88, #89, #79, #72, #74-#78 — partial overlap with grilling outputs).
+- Code-complete trajectory unchanged: ~6-8 June at current pace.
+
+**Frictions:**
+- Forgot to bundle progress.md into feature PRs (per AGENTS.md rule). Fixing with this standalone docs PR. Established practice for next session: add progress.md entry to first commit of each feature branch.
+- Pre-existing migration drift: each `prisma migrate dev` autogenerates `DROP INDEX VocabularyEntry_embedding_hnsw_idx`. Manually trimmed three times now. Root cause: schema doesn't declare the HNSW index (it's only in a separate migration), so Prisma's schema-to-migration diff treats it as drift. Worth a follow-up to declare the index in `schema.prisma` once Prisma supports HNSW natively, or document the manual-trim step prominently.
