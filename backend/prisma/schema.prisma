@@ -47,7 +47,7 @@ model Book {
   status         BookStatus   @default(pending)
   storyJson      Json?
   imageKeys      String[]     @default([])
-  pdfUrl         String?
+  pdfKey         String?
   userId         String
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   childId        String
