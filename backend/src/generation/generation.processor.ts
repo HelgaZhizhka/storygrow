@@ -52,7 +52,7 @@ export class GenerationProcessor extends WorkerHost {
         data: { storyJson: storyResult.story },
       });
 
-      const imageUrls = await this.imageGenerator.generate({
+      const imageKeys = await this.imageGenerator.generate({
         story: storyResult.story,
         bookId,
       });
@@ -60,7 +60,7 @@ export class GenerationProcessor extends WorkerHost {
 
       await this.prisma.book.update({
         where: { id: bookId },
-        data: { imageUrls, status: BookStatus.ready },
+        data: { imageKeys, status: BookStatus.ready },
       });
       await job.updateProgress(100);
 

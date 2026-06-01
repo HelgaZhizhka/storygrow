@@ -53,30 +53,27 @@ describe('ImageGeneratorService', () => {
     service = module.get(ImageGeneratorService);
   });
 
-  it('generates one image per page and uploads each to S3', async () => {
+  it('generates one image per page, uploads each to S3, and returns deterministic S3 keys', async () => {
     mockGenerateImage.mockResolvedValue({
       image: { base64: Buffer.from('img').toString('base64') },
     });
     mockS3.uploadObject.mockResolvedValue(undefined);
-    mockS3.getSignedUrl.mockImplementation((key: string) =>
-      Promise.resolve(`https://signed/${key}`),
-    );
 
-    const urls = await service.generate({ story, bookId: 'book-1' });
+    const keys = await service.generate({ story, bookId: 'book-1' });
 
     expect(mockGenerateImage).toHaveBeenCalledTimes(3);
     expect(mockS3.uploadObject).toHaveBeenCalledTimes(3);
-    expect(urls).toEqual([
-      'https://signed/books/book-1/page-1.png',
-      'https://signed/books/book-1/page-2.png',
-      'https://signed/books/book-1/page-3.png',
+    expect(mockS3.getSignedUrl).not.toHaveBeenCalled();
+    expect(keys).toEqual([
+      'books/book-1/page-1.png',
+      'books/book-1/page-2.png',
+      'books/book-1/page-3.png',
     ]);
   });
 
   it('uploads each image with image/png contentType and deterministic key', async () => {
     mockGenerateImage.mockResolvedValue({ image: { base64: Buffer.from('x').toString('base64') } });
     mockS3.uploadObject.mockResolvedValue(undefined);
-    mockS3.getSignedUrl.mockResolvedValue('https://signed/anything');
 
     await service.generate({ story, bookId: 'book-xyz' });
 
@@ -97,7 +94,6 @@ describe('ImageGeneratorService', () => {
   it('appends style suffix to each prompt', async () => {
     mockGenerateImage.mockResolvedValue({ image: { base64: Buffer.from('x').toString('base64') } });
     mockS3.uploadObject.mockResolvedValue(undefined);
-    mockS3.getSignedUrl.mockResolvedValue('url');
 
     await service.generate({ story, bookId: 'b' });
 
@@ -110,7 +106,6 @@ describe('ImageGeneratorService', () => {
   it('passes maxRetries=1 and quality from IMAGE_QUALITY constant', async () => {
     mockGenerateImage.mockResolvedValue({ image: { base64: Buffer.from('x').toString('base64') } });
     mockS3.uploadObject.mockResolvedValue(undefined);
-    mockS3.getSignedUrl.mockResolvedValue('url');
 
     await service.generate({ story, bookId: 'book-42' });
 
