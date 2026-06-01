@@ -130,7 +130,7 @@ describe('GenerationProcessor', () => {
     });
   });
 
-  it('preserves storyJson + imageKeys when PDF render fails', async () => {
+  it('preserves storyJson + imageKeys when PDF render fails (ordered)', async () => {
     mockPrisma.book.update.mockResolvedValue({});
     mockPrisma.book.findUnique.mockResolvedValueOnce(mockBook);
     mockOrchestrator.generate.mockResolvedValueOnce({
@@ -145,15 +145,22 @@ describe('GenerationProcessor', () => {
     const job = makeJob({ bookId: 'book-1', userId: 'user-1' });
     await expect(processor.process(job)).rejects.toThrow('puppeteer crashed');
 
-    expect(mockPrisma.book.update).toHaveBeenCalledWith({
+    // Asserting ORDER (not just presence): storyJson MUST be persisted before
+    // imageKeys, and both before status=failed. A regression that reorders the
+    // pipeline would lose the validated story on PDF failure.
+    expect(mockPrisma.book.update).toHaveBeenNthCalledWith(1, {
+      where: { id: 'book-1' },
+      data: { status: BookStatus.generating },
+    });
+    expect(mockPrisma.book.update).toHaveBeenNthCalledWith(2, {
       where: { id: 'book-1' },
       data: { storyJson: mockStory },
     });
-    expect(mockPrisma.book.update).toHaveBeenCalledWith({
+    expect(mockPrisma.book.update).toHaveBeenNthCalledWith(3, {
       where: { id: 'book-1' },
       data: { imageKeys: ['k1', 'k2', 'k3'] },
     });
-    expect(mockPrisma.book.update).toHaveBeenCalledWith({
+    expect(mockPrisma.book.update).toHaveBeenNthCalledWith(4, {
       where: { id: 'book-1' },
       data: { status: BookStatus.failed },
     });

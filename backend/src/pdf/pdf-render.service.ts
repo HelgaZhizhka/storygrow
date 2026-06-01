@@ -96,20 +96,21 @@ ${pageSections.join('\n')}
     return template
       .replaceAll('{{title}}', escapeHtml(ctx.title))
       .replaceAll('{{text}}', escapeHtml(ctx.text))
-      .replaceAll('{{illustrationUrl}}', escapeAttribute(ctx.illustrationUrl))
+      .replaceAll('{{illustrationUrl}}', escapeAttribute(safeImageUrl(ctx.illustrationUrl)))
       .replaceAll('{{illustrationPrompt}}', escapeAttribute(ctx.illustrationPrompt))
       .replaceAll('{{discussionQuestionsHtml}}', questionsHtml);
   }
 
   private async renderToBuffer(html: string): Promise<Buffer> {
-    const browser: Browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    });
+    const noSandbox = process.env['PUPPETEER_NO_SANDBOX'] === 'true';
+    const args = noSandbox ? ['--no-sandbox', '--disable-setuid-sandbox'] : [];
+    const browser: Browser = await puppeteer.launch({ headless: true, args });
     try {
       const page = await browser.newPage();
       await page.setViewport({ width: A5_WIDTH_PX, height: A5_HEIGHT_PX });
-      await page.setContent(html, { waitUntil: 'load' });
+      // 'networkidle0' isn't in the typed union in puppeteer v25 but is valid at runtime.
+      // Critical for waiting on remote S3-signed-URL images before PDF capture.
+      await page.setContent(html, { waitUntil: 'networkidle0' as 'load' });
       const pdf = await page.pdf({
         width: `${A5_WIDTH_PX}px`,
         height: `${A5_HEIGHT_PX}px`,
@@ -133,5 +134,16 @@ function escapeHtml(value: string): string {
 }
 
 function escapeAttribute(value: string): string {
-  return value.replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+}
+
+function safeImageUrl(url: string): string {
+  if (/^https?:\/\//i.test(url)) return url;
+  // Reject javascript:, data:, file:, etc. — defensive against future bugs that
+  // could land attacker-controlled strings in the illustrationUrl slot.
+  return '';
 }

@@ -141,6 +141,63 @@ describe('PdfRenderService', () => {
     expect(mockClose).toHaveBeenCalled();
   });
 
+  it('escapes & in URL attributes (signed-URL query strings)', async () => {
+    mockS3.uploadObject.mockResolvedValue(undefined);
+
+    await service.render({
+      ...input,
+      illustrationUrls: [
+        'https://signed/p1.png?X-Amz-Algorithm=AWS4&X-Amz-Signature=abc',
+        'https://signed/p2.png',
+        'https://signed/p3.png',
+      ],
+    });
+
+    const calls = mockSetContent.mock.calls as Array<[string, ...unknown[]]>;
+    const html = calls[0][0];
+    // Unescaped & in attribute would let HTML parser try to interpret entities
+    expect(html).toContain('X-Amz-Algorithm=AWS4&amp;X-Amz-Signature=abc');
+    expect(html).not.toContain('X-Amz-Algorithm=AWS4&X-Amz-Signature=abc');
+  });
+
+  it('rejects non-http(s) URL schemes (defends against future XSS via illustrationUrl)', async () => {
+    mockS3.uploadObject.mockResolvedValue(undefined);
+
+    await service.render({
+      ...input,
+      illustrationUrls: ['javascript:alert(1)', 'data:text/html,<script>x</script>', 'https://ok'],
+    });
+
+    const calls = mockSetContent.mock.calls as Array<[string, ...unknown[]]>;
+    const html = calls[0][0];
+    expect(html).not.toContain('javascript:');
+    expect(html).not.toContain('data:text/html');
+    expect(html).toContain('https://ok');
+  });
+
+  it('omits --no-sandbox flag by default (security)', async () => {
+    delete process.env['PUPPETEER_NO_SANDBOX'];
+    mockS3.uploadObject.mockResolvedValue(undefined);
+
+    await service.render(input);
+
+    const launchCalls = mockLaunch.mock.calls as Array<[{ args: string[] }]>;
+    expect(launchCalls[0][0].args).toEqual([]);
+  });
+
+  it('uses --no-sandbox when PUPPETEER_NO_SANDBOX=true (Docker/root context)', async () => {
+    process.env['PUPPETEER_NO_SANDBOX'] = 'true';
+    mockS3.uploadObject.mockResolvedValue(undefined);
+
+    await service.render(input);
+
+    const launchCalls = mockLaunch.mock.calls as Array<[{ args: string[] }]>;
+    expect(launchCalls[0][0].args).toContain('--no-sandbox');
+    expect(launchCalls[0][0].args).toContain('--disable-setuid-sandbox');
+
+    delete process.env['PUPPETEER_NO_SANDBOX'];
+  });
+
   it('uses A5 viewport for rendering', async () => {
     mockS3.uploadObject.mockResolvedValue(undefined);
     await service.render(input);
