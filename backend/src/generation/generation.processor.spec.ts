@@ -9,6 +9,7 @@ import { BookStatus } from '../../generated/prisma/client';
 import { GenerationProcessor } from './generation.processor';
 import { PrismaService } from '../prisma/prisma.service';
 import { StoryOrchestratorService } from '../ai/story-generator/story-orchestrator.service';
+import { ImageGeneratorService } from '../ai/image-generator/image-generator.service';
 import type { GenerateBookPayload } from './generation.types';
 import type { Story } from '../ai/schemas';
 
@@ -39,6 +40,10 @@ const mockOrchestrator = {
   generate: jest.fn(),
 };
 
+const mockImageGen = {
+  generate: jest.fn(),
+};
+
 const makeJob = (data: GenerateBookPayload): Job<GenerateBookPayload> =>
   ({
     id: 'job-1',
@@ -56,12 +61,13 @@ describe('GenerationProcessor', () => {
         GenerationProcessor,
         { provide: PrismaService, useValue: mockPrisma },
         { provide: StoryOrchestratorService, useValue: mockOrchestrator },
+        { provide: ImageGeneratorService, useValue: mockImageGen },
       ],
     }).compile();
     processor = module.get(GenerationProcessor);
   });
 
-  it('sets status=generating, calls orchestrator, saves storyJson, sets status=ready', async () => {
+  it('persists storyJson before image-gen, then imageUrls + status=ready after', async () => {
     mockPrisma.book.update.mockResolvedValue({});
     mockPrisma.book.findUnique.mockResolvedValueOnce(mockBook);
     mockOrchestrator.generate.mockResolvedValueOnce({
@@ -69,36 +75,58 @@ describe('GenerationProcessor', () => {
       evalId: 'eval-1',
       attempts: 1,
     });
+    mockImageGen.generate.mockResolvedValueOnce(['url-1', 'url-2', 'url-3']);
 
     const job = makeJob({ bookId: 'book-1', userId: 'user-1' });
     await processor.process(job);
 
-    expect(mockPrisma.book.update).toHaveBeenCalledWith({
+    expect(mockPrisma.book.update).toHaveBeenNthCalledWith(1, {
       where: { id: 'book-1' },
       data: { status: BookStatus.generating },
     });
-    expect(mockOrchestrator.generate).toHaveBeenCalledWith({
-      bookId: 'book-1',
-      childName: 'Маша',
-      childAge: 6,
-      topic: 'дружба',
-      learningGoal: 'научиться дружить',
-    });
-    expect(mockPrisma.book.update).toHaveBeenCalledWith({
+    expect(mockPrisma.book.update).toHaveBeenNthCalledWith(2, {
       where: { id: 'book-1' },
-      data: { storyJson: mockStory, status: BookStatus.ready },
+      data: { storyJson: mockStory },
+    });
+    expect(mockImageGen.generate).toHaveBeenCalledWith({ story: mockStory, bookId: 'book-1' });
+    expect(mockPrisma.book.update).toHaveBeenNthCalledWith(3, {
+      where: { id: 'book-1' },
+      data: { imageUrls: ['url-1', 'url-2', 'url-3'], status: BookStatus.ready },
     });
   });
 
-  it('sets status=failed and rethrows on orchestrator error', async () => {
+  it('preserves storyJson when image-gen fails (status=failed but storyJson saved)', async () => {
     mockPrisma.book.update.mockResolvedValue({});
     mockPrisma.book.findUnique.mockResolvedValueOnce(mockBook);
-    const error = new Error('generation failed');
-    mockOrchestrator.generate.mockRejectedValueOnce(error);
+    mockOrchestrator.generate.mockResolvedValueOnce({
+      story: mockStory,
+      evalId: 'eval-1',
+      attempts: 1,
+    });
+    mockImageGen.generate.mockRejectedValueOnce(new Error('DALL-E rate limit'));
+
+    const job = makeJob({ bookId: 'book-1', userId: 'user-1' });
+    await expect(processor.process(job)).rejects.toThrow('DALL-E rate limit');
+
+    expect(mockPrisma.book.update).toHaveBeenCalledWith({
+      where: { id: 'book-1' },
+      data: { storyJson: mockStory },
+    });
+    expect(mockPrisma.book.update).toHaveBeenCalledWith({
+      where: { id: 'book-1' },
+      data: { status: BookStatus.failed },
+    });
+  });
+
+  it('sets status=failed and rethrows on orchestrator error before storyJson write', async () => {
+    mockPrisma.book.update.mockResolvedValue({});
+    mockPrisma.book.findUnique.mockResolvedValueOnce(mockBook);
+    mockOrchestrator.generate.mockRejectedValueOnce(new Error('generation failed'));
 
     const job = makeJob({ bookId: 'book-1', userId: 'user-1' });
     await expect(processor.process(job)).rejects.toThrow('generation failed');
 
+    expect(mockImageGen.generate).not.toHaveBeenCalled();
     expect(mockPrisma.book.update).toHaveBeenCalledWith({
       where: { id: 'book-1' },
       data: { status: BookStatus.failed },
