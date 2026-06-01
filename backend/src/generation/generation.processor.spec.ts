@@ -67,7 +67,7 @@ describe('GenerationProcessor', () => {
     processor = module.get(GenerationProcessor);
   });
 
-  it('persists storyJson before image-gen, then imageUrls + status=ready after', async () => {
+  it('persists storyJson before image-gen, then imageKeys + status=ready after', async () => {
     mockPrisma.book.update.mockResolvedValue({});
     mockPrisma.book.findUnique.mockResolvedValueOnce(mockBook);
     mockOrchestrator.generate.mockResolvedValueOnce({
@@ -75,7 +75,11 @@ describe('GenerationProcessor', () => {
       evalId: 'eval-1',
       attempts: 1,
     });
-    mockImageGen.generate.mockResolvedValueOnce(['url-1', 'url-2', 'url-3']);
+    mockImageGen.generate.mockResolvedValueOnce([
+      'books/book-1/page-1.png',
+      'books/book-1/page-2.png',
+      'books/book-1/page-3.png',
+    ]);
 
     const job = makeJob({ bookId: 'book-1', userId: 'user-1' });
     await processor.process(job);
@@ -91,7 +95,14 @@ describe('GenerationProcessor', () => {
     expect(mockImageGen.generate).toHaveBeenCalledWith({ story: mockStory, bookId: 'book-1' });
     expect(mockPrisma.book.update).toHaveBeenNthCalledWith(3, {
       where: { id: 'book-1' },
-      data: { imageUrls: ['url-1', 'url-2', 'url-3'], status: BookStatus.ready },
+      data: {
+        imageKeys: [
+          'books/book-1/page-1.png',
+          'books/book-1/page-2.png',
+          'books/book-1/page-3.png',
+        ],
+        status: BookStatus.ready,
+      },
     });
   });
 

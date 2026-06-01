@@ -4,6 +4,7 @@ import { BullModule } from '@nestjs/bullmq';
 
 import { AiModule } from './ai/ai.module';
 import { AuthModule } from './auth/auth.module';
+import { BooksModule } from './books/books.module';
 import { GenerationModule } from './generation/generation.module';
 import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
@@ -22,6 +23,7 @@ import { PrismaModule } from './prisma/prisma.module';
     PrismaModule,
     AiModule,
     AuthModule,
+    BooksModule,
     GenerationModule,
   ],
   controllers: [HealthController],

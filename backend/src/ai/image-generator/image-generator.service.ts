@@ -28,7 +28,7 @@ export class ImageGeneratorService {
         metadata: { bookId: input.bookId },
       });
 
-      const urls = await Promise.all(
+      const keys = await Promise.all(
         input.story.pages.map((page, index) =>
           this.generateOne({
             bookId: input.bookId,
@@ -39,8 +39,8 @@ export class ImageGeneratorService {
         ),
       );
 
-      span.update({ output: { count: urls.length } });
-      return urls;
+      span.update({ output: { count: keys.length } });
+      return keys;
     });
   }
 
@@ -86,10 +86,9 @@ export class ImageGeneratorService {
       const key = `books/${opts.bookId}/page-${opts.pageNumber}.png`;
       await this.s3.uploadObject({ key, body: buffer, contentType: 'image/png' });
 
-      const url = await this.s3.getSignedUrl(key);
       span.update({ output: { key, contentType: 'image/png' } });
       this.logger.log(`Generated image for book ${opts.bookId} page ${opts.pageNumber}`);
-      return url;
+      return key;
     });
   }
 }
