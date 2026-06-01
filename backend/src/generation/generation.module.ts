@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { AiModule } from '../ai/ai.module';
+import { PdfModule } from '../pdf/pdf.module';
+import { BooksModule } from '../books/books.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { AuthModule } from '../auth/auth.module';
 import { GenerationService } from './generation.service';
@@ -14,6 +16,8 @@ import { GENERATION_QUEUE } from './generation.types';
     PrismaModule,
     AiModule,
     AuthModule,
+    BooksModule,
+    PdfModule,
   ],
   controllers: [GenerationController],
   providers: [GenerationService, GenerationProcessor],

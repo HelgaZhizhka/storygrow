@@ -8,4 +8,8 @@ export class BookImageService {
   async signKeys(keys: readonly string[]): Promise<string[]> {
     return Promise.all(keys.map((key) => this.s3.getSignedUrl(key)));
   }
+
+  async signKey(key: string): Promise<string> {
+    return this.s3.getSignedUrl(key);
+  }
 }

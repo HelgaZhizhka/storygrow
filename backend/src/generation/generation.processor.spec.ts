@@ -3,6 +3,11 @@ jest.mock('../../generated/prisma/client', () => ({
   BookStatus: { generating: 'generating', ready: 'ready', failed: 'failed', pending: 'pending' },
 }));
 
+jest.mock('puppeteer', () => ({
+  __esModule: true,
+  default: { launch: jest.fn() },
+}));
+
 import { Test } from '@nestjs/testing';
 import { type Job } from 'bullmq';
 import { BookStatus } from '../../generated/prisma/client';
@@ -10,6 +15,8 @@ import { GenerationProcessor } from './generation.processor';
 import { PrismaService } from '../prisma/prisma.service';
 import { StoryOrchestratorService } from '../ai/story-generator/story-orchestrator.service';
 import { ImageGeneratorService } from '../ai/image-generator/image-generator.service';
+import { BookImageService } from '../books/book-image.service';
+import { PdfRenderService } from '../pdf/pdf-render.service';
 import type { GenerateBookPayload } from './generation.types';
 import type { Story } from '../ai/schemas';
 
@@ -44,6 +51,15 @@ const mockImageGen = {
   generate: jest.fn(),
 };
 
+const mockBookImage = {
+  signKeys: jest.fn(),
+  signKey: jest.fn(),
+};
+
+const mockPdfRender = {
+  render: jest.fn(),
+};
+
 const makeJob = (data: GenerateBookPayload): Job<GenerateBookPayload> =>
   ({
     id: 'job-1',
@@ -62,12 +78,14 @@ describe('GenerationProcessor', () => {
         { provide: PrismaService, useValue: mockPrisma },
         { provide: StoryOrchestratorService, useValue: mockOrchestrator },
         { provide: ImageGeneratorService, useValue: mockImageGen },
+        { provide: BookImageService, useValue: mockBookImage },
+        { provide: PdfRenderService, useValue: mockPdfRender },
       ],
     }).compile();
     processor = module.get(GenerationProcessor);
   });
 
-  it('persists storyJson before image-gen, then imageKeys + status=ready after', async () => {
+  it('runs full pipeline: story → persist → images → persist → pdf → ready', async () => {
     mockPrisma.book.update.mockResolvedValue({});
     mockPrisma.book.findUnique.mockResolvedValueOnce(mockBook);
     mockOrchestrator.generate.mockResolvedValueOnce({
@@ -75,11 +93,14 @@ describe('GenerationProcessor', () => {
       evalId: 'eval-1',
       attempts: 1,
     });
-    mockImageGen.generate.mockResolvedValueOnce([
-      'books/book-1/page-1.png',
-      'books/book-1/page-2.png',
-      'books/book-1/page-3.png',
+    const keys = ['books/book-1/page-1.png', 'books/book-1/page-2.png', 'books/book-1/page-3.png'];
+    mockImageGen.generate.mockResolvedValueOnce(keys);
+    mockBookImage.signKeys.mockResolvedValueOnce([
+      'https://signed/p1',
+      'https://signed/p2',
+      'https://signed/p3',
     ]);
+    mockPdfRender.render.mockResolvedValueOnce('books/book-1/book.pdf');
 
     const job = makeJob({ bookId: 'book-1', userId: 'user-1' });
     await processor.process(job);
@@ -95,14 +116,53 @@ describe('GenerationProcessor', () => {
     expect(mockImageGen.generate).toHaveBeenCalledWith({ story: mockStory, bookId: 'book-1' });
     expect(mockPrisma.book.update).toHaveBeenNthCalledWith(3, {
       where: { id: 'book-1' },
-      data: {
-        imageKeys: [
-          'books/book-1/page-1.png',
-          'books/book-1/page-2.png',
-          'books/book-1/page-3.png',
-        ],
-        status: BookStatus.ready,
-      },
+      data: { imageKeys: keys },
+    });
+    expect(mockBookImage.signKeys).toHaveBeenCalledWith(keys);
+    expect(mockPdfRender.render).toHaveBeenCalledWith({
+      bookId: 'book-1',
+      story: mockStory,
+      illustrationUrls: ['https://signed/p1', 'https://signed/p2', 'https://signed/p3'],
+    });
+    expect(mockPrisma.book.update).toHaveBeenNthCalledWith(4, {
+      where: { id: 'book-1' },
+      data: { pdfKey: 'books/book-1/book.pdf', status: BookStatus.ready },
+    });
+  });
+
+  it('preserves storyJson + imageKeys when PDF render fails (ordered)', async () => {
+    mockPrisma.book.update.mockResolvedValue({});
+    mockPrisma.book.findUnique.mockResolvedValueOnce(mockBook);
+    mockOrchestrator.generate.mockResolvedValueOnce({
+      story: mockStory,
+      evalId: 'eval-1',
+      attempts: 1,
+    });
+    mockImageGen.generate.mockResolvedValueOnce(['k1', 'k2', 'k3']);
+    mockBookImage.signKeys.mockResolvedValueOnce(['u1', 'u2', 'u3']);
+    mockPdfRender.render.mockRejectedValueOnce(new Error('puppeteer crashed'));
+
+    const job = makeJob({ bookId: 'book-1', userId: 'user-1' });
+    await expect(processor.process(job)).rejects.toThrow('puppeteer crashed');
+
+    // Asserting ORDER (not just presence): storyJson MUST be persisted before
+    // imageKeys, and both before status=failed. A regression that reorders the
+    // pipeline would lose the validated story on PDF failure.
+    expect(mockPrisma.book.update).toHaveBeenNthCalledWith(1, {
+      where: { id: 'book-1' },
+      data: { status: BookStatus.generating },
+    });
+    expect(mockPrisma.book.update).toHaveBeenNthCalledWith(2, {
+      where: { id: 'book-1' },
+      data: { storyJson: mockStory },
+    });
+    expect(mockPrisma.book.update).toHaveBeenNthCalledWith(3, {
+      where: { id: 'book-1' },
+      data: { imageKeys: ['k1', 'k2', 'k3'] },
+    });
+    expect(mockPrisma.book.update).toHaveBeenNthCalledWith(4, {
+      where: { id: 'book-1' },
+      data: { status: BookStatus.failed },
     });
   });
 

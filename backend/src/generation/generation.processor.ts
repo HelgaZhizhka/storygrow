@@ -5,6 +5,8 @@ import { BookStatus } from '../../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { StoryOrchestratorService } from '../ai/story-generator/story-orchestrator.service';
 import { ImageGeneratorService } from '../ai/image-generator/image-generator.service';
+import { BookImageService } from '../books/book-image.service';
+import { PdfRenderService } from '../pdf/pdf-render.service';
 import { GENERATION_QUEUE, type GenerateBookPayload } from './generation.types';
 
 interface BookWithRelations {
@@ -21,6 +23,8 @@ export class GenerationProcessor extends WorkerHost {
     private readonly prisma: PrismaService,
     private readonly orchestrator: StoryOrchestratorService,
     private readonly imageGenerator: ImageGeneratorService,
+    private readonly bookImage: BookImageService,
+    private readonly pdfRender: PdfRenderService,
   ) {
     super();
   }
@@ -56,11 +60,23 @@ export class GenerationProcessor extends WorkerHost {
         story: storyResult.story,
         bookId,
       });
-      await job.updateProgress(90);
+      await this.prisma.book.update({
+        where: { id: bookId },
+        data: { imageKeys },
+      });
+      await job.updateProgress(85);
+
+      const illustrationUrls = await this.bookImage.signKeys(imageKeys);
+      const pdfKey = await this.pdfRender.render({
+        bookId,
+        story: storyResult.story,
+        illustrationUrls,
+      });
+      await job.updateProgress(95);
 
       await this.prisma.book.update({
         where: { id: bookId },
-        data: { imageKeys, status: BookStatus.ready },
+        data: { pdfKey, status: BookStatus.ready },
       });
       await job.updateProgress(100);
 

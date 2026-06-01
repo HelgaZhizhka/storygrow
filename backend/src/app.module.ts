@@ -8,6 +8,7 @@ import { BooksModule } from './books/books.module';
 import { GenerationModule } from './generation/generation.module';
 import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
+import { PdfModule } from './pdf/pdf.module';
 import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
@@ -24,6 +25,7 @@ import { PrismaModule } from './prisma/prisma.module';
     AiModule,
     AuthModule,
     BooksModule,
+    PdfModule,
     GenerationModule,
   ],
   controllers: [HealthController],
