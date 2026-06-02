@@ -17,6 +17,7 @@ import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
 import { BillingController } from './billing.controller';
 import { BillingService } from './billing.service';
+import type { StripeInstance, StripeEvent } from './billing-types';
 
 describe('BillingController', () => {
   let controller: BillingController;
@@ -26,7 +27,7 @@ describe('BillingController', () => {
   beforeEach(async () => {
     mockConstructEvent = jest.fn();
     (Stripe as jest.MockedClass<typeof Stripe>).mockImplementation(
-      () => ({ webhooks: { constructEvent: mockConstructEvent } }) as unknown as Stripe,
+      () => ({ webhooks: { constructEvent: mockConstructEvent } }) as unknown as StripeInstance,
     );
 
     billingService = { handleEvent: jest.fn().mockResolvedValue(undefined) };
@@ -59,7 +60,7 @@ describe('BillingController', () => {
   });
 
   it('returns { received: true } and delegates to BillingService on valid event', async () => {
-    const fakeEvent = { id: 'evt_1', type: 'invoice.paid' } as Stripe.Event;
+    const fakeEvent = { id: 'evt_1', type: 'invoice.paid' } as unknown as StripeEvent;
     mockConstructEvent.mockReturnValue(fakeEvent);
 
     const req = { rawBody: Buffer.from('{}') } as never;

@@ -6,16 +6,17 @@ import {
   BadRequestException,
   HttpCode,
   HttpStatus,
-  RawBodyRequest,
+  type RawBodyRequest,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Request } from 'express';
+import type { Request } from 'express';
 import Stripe from 'stripe';
 import { BillingService } from './billing.service';
+import type { StripeInstance, StripeEvent } from './billing-types';
 
 @Controller('api/stripe')
 export class BillingController {
-  private readonly stripe: Stripe;
+  private readonly stripe: StripeInstance;
   private readonly webhookSecret: string;
 
   constructor(
@@ -35,7 +36,7 @@ export class BillingController {
     const rawBody = req.rawBody;
     if (!rawBody) throw new BadRequestException('Missing raw body');
 
-    let event: Stripe.Event;
+    let event: StripeEvent;
     try {
       event = this.stripe.webhooks.constructEvent(rawBody, signature, this.webhookSecret);
     } catch {

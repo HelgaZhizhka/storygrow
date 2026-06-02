@@ -1,9 +1,9 @@
 import { Test } from '@nestjs/testing';
-import Stripe from 'stripe';
 import { BadRequestException } from '@nestjs/common';
 import { BillingService } from './billing.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { SubscriptionPlan, SubscriptionStatus } from '../../generated/prisma/client';
+import type { StripeEvent } from './billing-types';
 
 jest.mock('../../generated/prisma/client', () => ({
   PrismaClient: class {},
@@ -16,8 +16,8 @@ jest.mock('../../generated/prisma/client', () => ({
   },
 }));
 
-const makeEvent = (type: string, data: object, id = 'evt_001'): Stripe.Event =>
-  ({ id, type, data: { object: data } }) as unknown as Stripe.Event;
+const makeEvent = (type: string, data: object, id = 'evt_001'): StripeEvent =>
+  ({ id, type, data: { object: data } }) as unknown as StripeEvent;
 
 describe('BillingService', () => {
   let service: BillingService;
@@ -127,10 +127,11 @@ describe('BillingService', () => {
 
       expect(prisma.subscription.upsert).toHaveBeenCalledWith(
         expect.objectContaining({
-          update: expect.objectContaining({
-            status: SubscriptionStatus.past_due,
+          update: {
             plan: SubscriptionPlan.premium,
-          }),
+            status: SubscriptionStatus.past_due,
+            periodEnd: new Date(1700000000 * 1000),
+          },
         }),
       );
     });
