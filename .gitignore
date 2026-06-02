@@ -45,3 +45,6 @@ backend/prisma/generated/
 
 # Session-handoff is committed (it's the handoff). Keep it.
 # progress.md is committed too. Keep it.
+
+# Personal scratch notes (not part of tracked docs)
+docs/process-evolution.md
