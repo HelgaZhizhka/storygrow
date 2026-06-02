@@ -41,7 +41,7 @@ run_in_pkg backend  test --silent
 
 run_in_pkg frontend exec tsc --noEmit
 run_in_pkg frontend lint
-run_in_pkg frontend test --silent
+run_in_pkg frontend test --run --silent
 
 log "Git status (informational)"
 if [ -n "$(git status --porcelain 2>/dev/null || true)" ]; then
