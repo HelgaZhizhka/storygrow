@@ -699,3 +699,43 @@ Each entry uses this template:
 **Frictions:**
 - Forgot to bundle progress.md into feature PRs (per AGENTS.md rule). Fixing with this standalone docs PR. Established practice for next session: add progress.md entry to first commit of each feature branch.
 - Pre-existing migration drift: each `prisma migrate dev` autogenerates `DROP INDEX VocabularyEntry_embedding_hnsw_idx`. Manually trimmed three times now. Root cause: schema doesn't declare the HNSW index (it's only in a separate migration), so Prisma's schema-to-migration diff treats it as drift. Worth a follow-up to declare the index in `schema.prisma` once Prisma supports HNSW natively, or document the manual-trim step prominently.
+
+---
+
+## 2026-06-03 — #74 frontend test infra + #24 Stripe webhooks (PRs #92, #93)
+
+**Done:**
+
+### PR #92 — Frontend test infrastructure (#74)
+- `vitest.config.ts` — Vitest + @vitejs/plugin-react, happy-dom, globals, setupFiles.
+- `tests/setup.ts` — @testing-library/jest-dom + MSW server lifecycle.
+- `tests/mocks/handlers.ts` + `server.ts` — MSW v2 node server scaffold.
+- `frontend/src/app/page.test.tsx` — 2 unit tests (brand name render, h1 heading).
+- `playwright.config.ts` + `e2e/smoke.spec.ts` — Playwright E2E (title check).
+- `init.sh` fixed: `vitest --run` flag added (without `--run` vitest enters watch mode in CI).
+
+### PR #93 — Stripe webhooks (#24)
+- `POST /api/stripe/webhooks` — validates Stripe signature via `stripe.webhooks.constructEvent`, delegates to `BillingService`.
+- `BillingService` — idempotency via `StripeWebhookEvent` table; handles `customer.subscription.created/updated/deleted`, `invoice.paid`, `invoice.payment_failed`.
+- `StripeWebhookEvent` Prisma model + migration (HNSW drift trimmed per established pattern).
+- `billing-types.ts` — `StripeInstance`/`StripeEvent` via `InstanceType<typeof Stripe>` to bypass Stripe v22 + `module: "nodenext"` + `isolatedModules` namespace type constraints. `WebhookSubscription`/`WebhookInvoice` interfaces handle both v1 and v2 Stripe billing API shapes (`current_period_end` moved to `SubscriptionItem` in v2; `invoice.subscription` nested under `parent.subscription_details` in v2).
+- 13 tests across controller + service specs.
+
+**Decisions:**
+- **Stripe v22 type bypass**: `import Stripe from 'stripe'` in CJS (`module: "nodenext"` + no `"type": "module"`) resolves to `StripeConstructor` namespace which only exposes `type Stripe`, not `Event`/`Subscription`/`Invoice`. Workaround: derive types via `InstanceType<typeof Stripe>` + `ReturnType<>` — bypasses namespace lookup entirely.
+- **`RawBodyRequest` as `type` import**: `isolatedModules: true` + `emitDecoratorMetadata: true` requires all types in decorated parameter positions to use `import type`. Fixed with inline `type RawBodyRequest` modifier.
+- **Closed PR #73** (external contributor, merge conflicts) and reimplemented #24 from scratch.
+
+**Next:**
+- #18: Google OAuth login flow on frontend (button + callback page).
+- #19: Create-book form (wizard UI).
+- #20: SSE progress feed.
+- #72: Eval corpus harness (can batch with #20).
+
+**Blockers:**
+- None.
+
+**Metrics:**
+- 118 backend tests (unchanged; billing tests added, replace the earlier stubs).
+- 35 issues closed (#74, #24 merged).
+- Code-complete trajectory: ~6-8 June.
