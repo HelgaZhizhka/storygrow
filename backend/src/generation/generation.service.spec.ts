@@ -1,4 +1,4 @@
-jest.mock('../../generated/prisma/client', () => ({
+jest.mock('../generated/prisma/client', () => ({
   PrismaClient: class {},
   BookStatus: { generating: 'generating', ready: 'ready', failed: 'failed', pending: 'pending' },
 }));

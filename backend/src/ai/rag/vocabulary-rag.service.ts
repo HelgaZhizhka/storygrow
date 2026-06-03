@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { embed } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
-import { Prisma } from '../../../generated/prisma/client';
+import { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { EMBEDDING_MODEL, DEFAULT_TOP_K } from '../ai.config';
 import { createTelemetry } from '../telemetry';

@@ -1,4 +1,4 @@
-jest.mock('../../generated/prisma/client', () => ({
+jest.mock('../generated/prisma/client', () => ({
   PrismaClient: class {},
   SubscriptionPlan: { free: 'free', basic: 'basic', premium: 'premium' },
   SubscriptionStatus: {

@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { SubscriptionPlan, SubscriptionStatus } from '../../generated/prisma/client';
+import { SubscriptionPlan, SubscriptionStatus } from '../generated/prisma/client';
 import type {
   StripeEvent,
   WebhookSubscription,

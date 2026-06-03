@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import { BookStatus } from '../../generated/prisma/client';
+import { BookStatus } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { GENERATION_QUEUE, GENERATE_BOOK_JOB, type GenerateBookPayload } from './generation.types';
 

@@ -1,5 +1,5 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { SubscriptionPlan, SubscriptionStatus } from '../../generated/prisma/client';
+import { SubscriptionPlan, SubscriptionStatus } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 interface CreateChildDto {

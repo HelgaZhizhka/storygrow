@@ -2,10 +2,10 @@ import { Test } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { BillingService } from './billing.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { SubscriptionPlan, SubscriptionStatus } from '../../generated/prisma/client';
+import { SubscriptionPlan, SubscriptionStatus } from '../generated/prisma/client';
 import type { StripeEvent } from './billing-types';
 
-jest.mock('../../generated/prisma/client', () => ({
+jest.mock('../generated/prisma/client', () => ({
   PrismaClient: class {},
   SubscriptionPlan: { free: 'free', basic: 'basic', premium: 'premium' },
   SubscriptionStatus: {

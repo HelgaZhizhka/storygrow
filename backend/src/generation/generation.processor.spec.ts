@@ -1,4 +1,4 @@
-jest.mock('../../generated/prisma/client', () => ({
+jest.mock('../generated/prisma/client', () => ({
   PrismaClient: class {},
   BookStatus: {
     generating: 'generating',
@@ -16,7 +16,7 @@ jest.mock('puppeteer', () => ({
 
 import { Test } from '@nestjs/testing';
 import { type Job } from 'bullmq';
-import { BookStatus } from '../../generated/prisma/client';
+import { BookStatus } from '../generated/prisma/client';
 import { GenerationProcessor } from './generation.processor';
 import { PrismaService } from '../prisma/prisma.service';
 import { StoryOrchestratorService } from '../ai/story-generator/story-orchestrator.service';

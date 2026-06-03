@@ -2,7 +2,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import { openai } from '@ai-sdk/openai';
 import { generateImage } from 'ai';
-import { PrismaClient } from '../../generated/prisma/client';
+import { PrismaClient } from '../generated/prisma/client';
 import { IMAGE_MODEL, IMAGE_QUALITY, IMAGE_STYLE_SUFFIX } from '../ai/ai.config';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { ALL_TAGS, type IllustrationTag } from '../fast-flow/tag-taxonomy';
