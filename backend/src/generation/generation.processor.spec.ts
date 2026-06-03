@@ -33,6 +33,8 @@ const mockStory: Story = {
 
 const mockBook = {
   id: 'book-1',
+  storyJson: null,
+  imageKeys: [] as string[],
   child: { name: 'Маша', age: 6 },
   learningGoal: { title: 'дружба', description: 'научиться дружить' },
 };
@@ -231,5 +233,37 @@ describe('GenerationProcessor', () => {
     await expect(processor.process(job)).rejects.toThrow('DB connection error');
 
     expect(mockPrisma.book.update).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips orchestrator on retry when storyJson is already saved', async () => {
+    const bookWithStory = { ...mockBook, storyJson: mockStory, imageKeys: [] };
+    mockPrisma.book.update.mockResolvedValue({});
+    mockPrisma.book.findUnique.mockResolvedValueOnce(bookWithStory);
+    const keys = ['k1', 'k2', 'k3'];
+    mockImageGen.generate.mockResolvedValueOnce(keys);
+    mockBookImage.signKeys.mockResolvedValueOnce(['u1', 'u2', 'u3']);
+    mockPdfRender.render.mockResolvedValueOnce('books/book-1/book.pdf');
+
+    const job = makeJob({ bookId: 'book-1', userId: 'user-1' });
+    await processor.process(job);
+
+    expect(mockOrchestrator.generate).not.toHaveBeenCalled();
+    expect(mockImageGen.generate).toHaveBeenCalledWith({ story: mockStory, bookId: 'book-1' });
+  });
+
+  it('skips both orchestrator and image-gen on retry when both storyJson and imageKeys are saved', async () => {
+    const savedKeys = ['k1', 'k2', 'k3'];
+    const bookWithStoryAndImages = { ...mockBook, storyJson: mockStory, imageKeys: savedKeys };
+    mockPrisma.book.update.mockResolvedValue({});
+    mockPrisma.book.findUnique.mockResolvedValueOnce(bookWithStoryAndImages);
+    mockBookImage.signKeys.mockResolvedValueOnce(['u1', 'u2', 'u3']);
+    mockPdfRender.render.mockResolvedValueOnce('books/book-1/book.pdf');
+
+    const job = makeJob({ bookId: 'book-1', userId: 'user-1' });
+    await processor.process(job);
+
+    expect(mockOrchestrator.generate).not.toHaveBeenCalled();
+    expect(mockImageGen.generate).not.toHaveBeenCalled();
+    expect(mockBookImage.signKeys).toHaveBeenCalledWith(savedKeys);
   });
 });
