@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  HttpException,
   HttpStatus,
   NotFoundException,
   Param,
@@ -14,6 +15,7 @@ import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { JwtPayload } from '../auth/auth.service';
+import { FastFlowService } from '../fast-flow/fast-flow.service';
 import { BookImageService } from './book-image.service';
 import { BooksService, type QuotaInfo } from './books.service';
 
@@ -35,6 +37,7 @@ export class BooksController {
   constructor(
     private readonly books: BooksService,
     private readonly bookImage: BookImageService,
+    private readonly fastFlow: FastFlowService,
   ) {}
 
   @Get('children')
@@ -56,8 +59,25 @@ export class BooksController {
 
   @Post('books')
   @HttpCode(HttpStatus.CREATED)
-  createBook(@CurrentUser() user: JwtPayload, @Body() body: unknown) {
+  async createBook(@CurrentUser() user: JwtPayload, @Body() body: unknown) {
     const dto = createBookSchema.parse(body);
+
+    const { used, limit } = await this.books.getQuota(user.sub);
+    if (limit !== null && used >= limit) {
+      throw new HttpException(
+        { message: 'Book quota exceeded for current plan', used, limit },
+        HttpStatus.PAYMENT_REQUIRED,
+      );
+    }
+
+    if (dto.mode === 'fast') {
+      return this.fastFlow.generate({
+        userId: user.sub,
+        childId: dto.childId,
+        learningGoalId: dto.learningGoalId,
+      });
+    }
+
     return this.books.createBook(user.sub, dto);
   }
 
