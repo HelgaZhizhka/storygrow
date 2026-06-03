@@ -40,8 +40,10 @@ export class BooksService {
   }
 
   createChild(userId: string, dto: CreateChildDto) {
-    return this.prisma.child.create({
-      data: { userId, name: dto.name, age: dto.age, gender: dto.gender },
+    return this.prisma.child.upsert({
+      where: { userId_name: { userId, name: dto.name } },
+      create: { userId, name: dto.name, age: dto.age, gender: dto.gender },
+      update: { age: dto.age, gender: dto.gender },
     });
   }
 
