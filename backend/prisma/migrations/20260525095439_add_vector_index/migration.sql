@@ -1,6 +1,7 @@
--- CreateIndex: HNSW index on VocabularyEntry.embedding for fast cosine similarity search.
--- Used by VocabularyRagService to retrieve age-appropriate vocabulary by grade level.
--- HNSW chosen over IVFFlat: no training step needed (no rows yet), better recall at low ef_search.
-CREATE INDEX "VocabularyEntry_embedding_hnsw_idx"
-  ON "VocabularyEntry"
-  USING hnsw ("embedding" vector_cosine_ops);
+-- The HNSW index on VocabularyEntry.embedding used to live here. It moved OUT of
+-- Prisma migration history into prisma/sql/hnsw-index.sql, applied via the
+-- db:hnsw-index script (and the prisma:migrate wrapper). Reason: Prisma cannot
+-- represent `USING hnsw (... vector_cosine_ops)` in schema.prisma, so tracking it
+-- in a migration made every `migrate dev` re-propose a spurious DROP INDEX.
+-- Intentionally a no-op; kept to preserve migration history order.
+SELECT 1;
