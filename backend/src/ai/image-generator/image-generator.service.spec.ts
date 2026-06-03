@@ -113,7 +113,7 @@ describe('ImageGeneratorService', () => {
       [{ maxRetries: number; providerOptions: { openai: { quality: string } } }]
     >;
     expect(calls[0][0].maxRetries).toBe(1);
-    expect(calls[0][0].providerOptions.openai.quality).toBe('standard');
+    expect(calls[0][0].providerOptions.openai.quality).toBe('medium');
   });
 
   it('throws ImageContentPolicyError when DALL-E refuses the prompt', async () => {
