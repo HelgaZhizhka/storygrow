@@ -2,7 +2,9 @@ jest.mock('../generated/prisma/client', () => ({ PrismaClient: class {} }));
 jest.mock('puppeteer', () => ({ __esModule: true, default: { launch: jest.fn() } }));
 
 const mockGenerateObject = jest.fn();
-jest.mock('ai', () => ({ generateObject: (...args: unknown[]) => mockGenerateObject(...args) }));
+jest.mock('ai', () => ({
+  generateObject: (...args: unknown[]): unknown => mockGenerateObject(...args),
+}));
 jest.mock('@ai-sdk/openai', () => ({ openai: jest.fn((id: string) => ({ id })) }));
 jest.mock('@langfuse/tracing', () => ({
   startActiveObservation: async <T>(_n: string, fn: () => Promise<T>) => fn(),
@@ -116,7 +118,8 @@ describe('FastFlowService.generate', () => {
     await service.generate({ userId: 'u1', childId: 'child-1', learningGoalId: 'goal-1' });
 
     expect(mockGenerateObject).toHaveBeenCalledTimes(1);
-    const callArg = mockGenerateObject.mock.calls[0][0] as { prompt: string; system: string };
+    const calls = mockGenerateObject.mock.calls as Array<[{ prompt: string; system: string }]>;
+    const callArg = calls[0][0];
     expect(callArg.prompt).toContain('Аня');
     expect(callArg.prompt).toContain('Делиться с другими');
     expect(callArg.prompt).toContain('6');
@@ -157,11 +160,11 @@ describe('FastFlowService.generate', () => {
 
     await service.generate({ userId: 'u1', childId: 'child-1', learningGoalId: 'goal-1' });
 
-    expect(prisma.storyEval.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ bookId: 'book-1', attempt: 1, passed: true }),
-      }),
-    );
+    type StoryEvalArg = { data: { bookId: string; attempt: number; passed: boolean } };
+    const evalCalls = prisma.storyEval.create.mock.calls as Array<[StoryEvalArg]>;
+    expect(evalCalls[0][0].data.bookId).toBe('book-1');
+    expect(evalCalls[0][0].data.attempt).toBe(1);
+    expect(evalCalls[0][0].data.passed).toBe(true);
   });
 
   it('marks book as failed and re-throws when PDF render fails', async () => {
