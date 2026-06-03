@@ -12,7 +12,15 @@ import { GENERATION_QUEUE } from './generation.types';
 
 @Module({
   imports: [
-    BullModule.registerQueue({ name: GENERATION_QUEUE }),
+    BullModule.registerQueue({
+      name: GENERATION_QUEUE,
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 2000 },
+        removeOnComplete: { count: 100 },
+        removeOnFail: { count: 50 },
+      },
+    }),
     PrismaModule,
     AiModule,
     AuthModule,

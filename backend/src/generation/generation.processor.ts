@@ -8,10 +8,13 @@ import { ImageGeneratorService } from '../ai/image-generator/image-generator.ser
 import { BookImageService } from '../books/book-image.service';
 import { BookProgressService } from '../books/book-progress.service';
 import { PdfRenderService } from '../pdf/pdf-render.service';
+import type { Story } from '../ai/schemas';
 import { GENERATION_QUEUE, type GenerateBookPayload } from './generation.types';
 
 interface BookWithRelations {
   id: string;
+  storyJson: Story | null;
+  imageKeys: string[];
   child: { name: string; age: number };
   learningGoal: { title: string; description: string };
 }
@@ -50,33 +53,52 @@ export class GenerationProcessor extends WorkerHost {
       });
       await job.updateProgress(20);
 
-      const storyResult = await this.orchestrator.generate({
-        bookId,
-        childName: book.child.name,
-        childAge: book.child.age,
-        topic: book.learningGoal.title,
-        learningGoal: book.learningGoal.description,
-      });
-      this.bookProgress.emit(bookId, {
-        type: 'progress',
-        progress: 60,
-        message: `История сгенерирована (попытка ${storyResult.attempts})`,
-      });
-      await job.updateProgress(60);
+      // On retry: skip orchestrator if story was already generated and saved
+      let story: Story;
+      if (book.storyJson) {
+        this.logger.log(`Book ${bookId}: reusing saved storyJson (retry path)`);
+        story = book.storyJson;
+        this.bookProgress.emit(bookId, {
+          type: 'progress',
+          progress: 60,
+          message: 'История уже сгенерирована — повторяем иллюстрации',
+        });
+        await job.updateProgress(60);
+      } else {
+        const storyResult = await this.orchestrator.generate({
+          bookId,
+          childName: book.child.name,
+          childAge: book.child.age,
+          topic: book.learningGoal.title,
+          learningGoal: book.learningGoal.description,
+        });
+        story = storyResult.story;
+        this.bookProgress.emit(bookId, {
+          type: 'progress',
+          progress: 60,
+          message: `История сгенерирована (попытка ${storyResult.attempts})`,
+        });
+        await job.updateProgress(60);
+        await this.prisma.book.update({
+          where: { id: bookId },
+          data: { storyJson: story },
+        });
+      }
 
-      await this.prisma.book.update({
-        where: { id: bookId },
-        data: { storyJson: storyResult.story },
-      });
-
-      const imageKeys = await this.imageGenerator.generate({
-        story: storyResult.story,
-        bookId,
-      });
-      await this.prisma.book.update({
-        where: { id: bookId },
-        data: { imageKeys },
-      });
+      // On retry: skip image-gen if images are already stored
+      let imageKeys: string[];
+      if (book.imageKeys.length > 0) {
+        this.logger.log(
+          `Book ${bookId}: reusing ${book.imageKeys.length} saved image keys (retry path)`,
+        );
+        imageKeys = book.imageKeys;
+      } else {
+        imageKeys = await this.imageGenerator.generate({ story, bookId });
+        await this.prisma.book.update({
+          where: { id: bookId },
+          data: { imageKeys },
+        });
+      }
       this.bookProgress.emit(bookId, {
         type: 'progress',
         progress: 85,
@@ -87,7 +109,7 @@ export class GenerationProcessor extends WorkerHost {
       const illustrationUrls = await this.bookImage.signKeys(imageKeys);
       const pdfKey = await this.pdfRender.render({
         bookId,
-        story: storyResult.story,
+        story,
         illustrationUrls,
       });
       await job.updateProgress(95);
@@ -99,7 +121,7 @@ export class GenerationProcessor extends WorkerHost {
       await job.updateProgress(100);
       this.bookProgress.emit(bookId, { type: 'ready', progress: 100, message: 'Книга готова!' });
 
-      this.logger.log(`Book ${bookId} generated in ${storyResult.attempts} attempt(s)`);
+      this.logger.log(`Book ${bookId} ready`);
     } catch (err: unknown) {
       this.logger.error(`Job ${job.id} failed for book ${bookId}`, err);
       if (generatingSet) {
@@ -115,12 +137,14 @@ export class GenerationProcessor extends WorkerHost {
       where: { id: bookId, userId },
       select: {
         id: true,
+        storyJson: true,
+        imageKeys: true,
         child: { select: { name: true, age: true } },
         learningGoal: { select: { title: true, description: true } },
       },
     });
     if (!book) throw new Error(`Book ${bookId} not found for user ${userId}`);
-    return book;
+    return { ...book, storyJson: book.storyJson as Story | null };
   }
 
   private async setStatus(bookId: string, status: BookStatus): Promise<void> {
