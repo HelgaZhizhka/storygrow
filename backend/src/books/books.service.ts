@@ -63,6 +63,13 @@ export class BooksService {
     });
   }
 
+  findById(bookId: string) {
+    return this.prisma.book.findUnique({
+      where: { id: bookId },
+      select: { id: true, status: true },
+    });
+  }
+
   getBook(userId: string, bookId: string) {
     return this.prisma.book.findFirst({
       where: { id: bookId, userId },

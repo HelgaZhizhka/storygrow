@@ -16,6 +16,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { StoryOrchestratorService } from '../ai/story-generator/story-orchestrator.service';
 import { ImageGeneratorService } from '../ai/image-generator/image-generator.service';
 import { BookImageService } from '../books/book-image.service';
+import { BookProgressService } from '../books/book-progress.service';
 import { PdfRenderService } from '../pdf/pdf-render.service';
 import type { GenerateBookPayload } from './generation.types';
 import type { Story } from '../ai/schemas';
@@ -60,6 +61,11 @@ const mockPdfRender = {
   render: jest.fn(),
 };
 
+const mockBookProgress = {
+  emit: jest.fn(),
+  stream: jest.fn(),
+};
+
 const makeJob = (data: GenerateBookPayload): Job<GenerateBookPayload> =>
   ({
     id: 'job-1',
@@ -80,6 +86,7 @@ describe('GenerationProcessor', () => {
         { provide: ImageGeneratorService, useValue: mockImageGen },
         { provide: BookImageService, useValue: mockBookImage },
         { provide: PdfRenderService, useValue: mockPdfRender },
+        { provide: BookProgressService, useValue: mockBookProgress },
       ],
     }).compile();
     processor = module.get(GenerationProcessor);
