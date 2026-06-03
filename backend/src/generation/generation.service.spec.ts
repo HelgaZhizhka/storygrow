@@ -82,15 +82,25 @@ describe('GenerationService', () => {
   describe('getJobStatus', () => {
     it('returns null when job does not exist', async () => {
       mockQueue.getJob.mockResolvedValueOnce(null);
-      const result = await service.getJobStatus('unknown-job');
+      const result = await service.getJobStatus('unknown-job', userId);
       expect(result).toBeNull();
     });
 
-    it('returns job state when job exists', async () => {
+    it('returns null when job belongs to a different user', async () => {
       mockQueue.getJob.mockResolvedValueOnce({
+        data: { userId: 'other-user', bookId },
+        getState: jest.fn(),
+      });
+      const result = await service.getJobStatus('job-1', userId);
+      expect(result).toBeNull();
+    });
+
+    it('returns job state when job exists and userId matches', async () => {
+      mockQueue.getJob.mockResolvedValueOnce({
+        data: { userId, bookId },
         getState: jest.fn().mockResolvedValueOnce('active'),
       });
-      const result = await service.getJobStatus('job-1');
+      const result = await service.getJobStatus('job-1', userId);
       expect(result).toBe('active');
     });
   });

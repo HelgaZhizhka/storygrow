@@ -62,14 +62,17 @@ describe('GenerationController.getJobStatus', () => {
     controller = module.get(GenerationController);
   });
 
+  const user = { sub: 'user-1', email: 'a@b.com', role: 'user' as const };
+
   it('returns status when job exists', async () => {
     mockGeneration.getJobStatus.mockResolvedValueOnce('active');
-    const result = await controller.getJobStatus('job-1');
+    const result = await controller.getJobStatus('job-1', user);
     expect(result).toEqual({ status: 'active' });
+    expect(mockGeneration.getJobStatus).toHaveBeenCalledWith('job-1', 'user-1');
   });
 
   it('throws NotFoundException when job does not exist', async () => {
     mockGeneration.getJobStatus.mockResolvedValueOnce(null);
-    await expect(controller.getJobStatus('unknown')).rejects.toThrow(NotFoundException);
+    await expect(controller.getJobStatus('unknown', user)).rejects.toThrow(NotFoundException);
   });
 });

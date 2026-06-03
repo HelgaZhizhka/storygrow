@@ -34,8 +34,11 @@ export class GenerationController {
   }
 
   @Get('jobs/:jobId/status')
-  async getJobStatus(@Param('jobId') jobId: string): Promise<{ status: string }> {
-    const status = await this.generation.getJobStatus(jobId);
+  async getJobStatus(
+    @Param('jobId') jobId: string,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<{ status: string }> {
+    const status = await this.generation.getJobStatus(jobId, user.sub);
     if (status === null) throw new NotFoundException('Job not found');
     return { status };
   }

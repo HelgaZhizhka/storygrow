@@ -33,9 +33,9 @@ export class GenerationService {
     return { jobId: job.id };
   }
 
-  async getJobStatus(jobId: string): Promise<string | null> {
+  async getJobStatus(jobId: string, userId: string): Promise<string | null> {
     const job = await this.queue.getJob(jobId);
-    if (!job) return null;
+    if (!job || job.data.userId !== userId) return null;
     return job.getState();
   }
 }
