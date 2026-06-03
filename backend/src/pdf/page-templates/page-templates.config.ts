@@ -1,5 +1,5 @@
 export type AspectRatio = 'portrait' | 'landscape' | 'square';
-export type DalleSize = '1024x1024' | '1024x1792' | '1792x1024';
+export type ImageSize = '1024x1024' | '1024x1536' | '1536x1024';
 
 /**
  * All valid template names. This array is imported by StorySchema to build
@@ -20,8 +20,8 @@ export interface ImageSlot {
   /** Slot identifier used as a CSS class and render target. */
   slot: string;
   aspect: AspectRatio;
-  /** DALL-E 3 size that best fits this slot on an A5 page at 150 DPI. */
-  dalleSize: DalleSize;
+  /** gpt-image-1 size that best fits this slot on an A5 page at 150 DPI. */
+  imageSize: ImageSize;
 }
 
 export interface MaxChars {
@@ -45,7 +45,7 @@ export interface PageTemplateConfig {
  *
  * Physical sizing rationale (ADR 0002):
  *   A5 = 148 × 210 mm, target 150 DPI → ~874 × 1240 px canvas.
- *   DALL-E sizes: 1024×1024 (square), 1792×1024 (landscape), 1024×1792 (portrait).
+ *   gpt-image-1 sizes: 1024×1024 (square), 1536×1024 (landscape), 1024×1536 (portrait).
  *
  * `text-focus` is intentionally absent for ages 5–6:
  *   younger children need image-heavy layouts for comprehension.
@@ -54,37 +54,37 @@ export const PAGE_TEMPLATES: Readonly<Record<TemplateName, PageTemplateConfig>> 
   cover: {
     htmlFile: 'cover.html',
     maxChars: { title: 60 },
-    images: [{ slot: 'main', aspect: 'portrait', dalleSize: '1024x1792' }],
+    images: [{ slot: 'main', aspect: 'portrait', imageSize: '1024x1536' }],
     suitableFor: [5, 6, 7, 8],
   },
   'image-top': {
     htmlFile: 'image-top.html',
     maxChars: { text: 120 },
-    images: [{ slot: 'illustration', aspect: 'landscape', dalleSize: '1792x1024' }],
+    images: [{ slot: 'illustration', aspect: 'landscape', imageSize: '1536x1024' }],
     suitableFor: [5, 6],
   },
   'image-bottom': {
     htmlFile: 'image-bottom.html',
     maxChars: { text: 120 },
-    images: [{ slot: 'illustration', aspect: 'landscape', dalleSize: '1792x1024' }],
+    images: [{ slot: 'illustration', aspect: 'landscape', imageSize: '1536x1024' }],
     suitableFor: [5, 6],
   },
   'image-left': {
     htmlFile: 'image-left.html',
     maxChars: { text: 200 },
-    images: [{ slot: 'illustration', aspect: 'square', dalleSize: '1024x1024' }],
+    images: [{ slot: 'illustration', aspect: 'square', imageSize: '1024x1024' }],
     suitableFor: [6, 7, 8],
   },
   'text-focus': {
     htmlFile: 'text-focus.html',
     maxChars: { text: 350 },
-    images: [{ slot: 'illustration', aspect: 'square', dalleSize: '1024x1024' }],
+    images: [{ slot: 'illustration', aspect: 'square', imageSize: '1024x1024' }],
     suitableFor: [7, 8],
   },
   final: {
     htmlFile: 'final.html',
     maxChars: { text: 200 },
-    images: [{ slot: 'illustration', aspect: 'portrait', dalleSize: '1024x1792' }],
+    images: [{ slot: 'illustration', aspect: 'portrait', imageSize: '1024x1536' }],
     suitableFor: [5, 6, 7, 8],
   },
 } as const;

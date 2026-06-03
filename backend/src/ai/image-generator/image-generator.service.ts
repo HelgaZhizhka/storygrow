@@ -57,7 +57,7 @@ export class ImageGeneratorService {
       }
       const fullPrompt = `${opts.prompt}${IMAGE_STYLE_SUFFIX}`;
       span.update({
-        input: { prompt: fullPrompt, size: slot.dalleSize },
+        input: { prompt: fullPrompt, size: slot.imageSize },
         metadata: {
           bookId: opts.bookId,
           pageNumber: opts.pageNumber,
@@ -71,7 +71,7 @@ export class ImageGeneratorService {
         result = await generateImage({
           model: openai.imageModel(IMAGE_MODEL),
           prompt: fullPrompt,
-          size: slot.dalleSize,
+          size: slot.imageSize,
           maxRetries: IMAGE_GEN_MAX_RETRIES,
           providerOptions: { openai: { quality: IMAGE_QUALITY } },
         });
