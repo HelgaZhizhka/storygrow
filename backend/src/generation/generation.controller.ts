@@ -24,6 +24,15 @@ export class GenerationController {
     return this.generation.enqueueBook(bookId, user.sub);
   }
 
+  @Post('books/:id/retry-images')
+  @HttpCode(HttpStatus.ACCEPTED)
+  retryImages(
+    @Param('id') bookId: string,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<EnqueueResult> {
+    return this.generation.enqueueBook(bookId, user.sub);
+  }
+
   @Get('jobs/:jobId/status')
   async getJobStatus(@Param('jobId') jobId: string): Promise<{ status: string }> {
     const status = await this.generation.getJobStatus(jobId);

@@ -125,7 +125,12 @@ export class GenerationProcessor extends WorkerHost {
     } catch (err: unknown) {
       this.logger.error(`Job ${job.id} failed for book ${bookId}`, err);
       if (generatingSet) {
-        await this.setStatus(bookId, BookStatus.failed);
+        const book = await this.prisma.book.findUnique({
+          where: { id: bookId },
+          select: { storyJson: true },
+        });
+        const failStatus = book?.storyJson != null ? BookStatus.images_failed : BookStatus.failed;
+        await this.setStatus(bookId, failStatus);
         this.bookProgress.emit(bookId, { type: 'failed', message: 'Ошибка генерации' });
       }
       throw err;
