@@ -33,10 +33,10 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleCallback(
-    @Req() req: Request & { user: { id: string; email: string } },
+    @Req() req: Request & { user: { id: string; email: string; role: 'user' | 'admin' } },
     @Res() res: Response,
   ): Promise<void> {
-    const tokens = await this.auth.generateTokens(req.user.id, req.user.email);
+    const tokens = await this.auth.generateTokens(req.user.id, req.user.email, req.user.role);
     const frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'http://localhost:3000';
     const url = new URL('/auth/callback', frontendUrl);
     // Tokens in fragment: never sent to server, not in access logs or Referer headers

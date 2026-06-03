@@ -7,6 +7,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { z } from 'zod';
@@ -49,8 +50,8 @@ export class BooksController {
   }
 
   @Get('learning-goals')
-  listLearningGoals() {
-    return this.books.listLearningGoals();
+  listLearningGoals(@Query('childId') childId?: string) {
+    return this.books.listLearningGoals(childId);
   }
 
   @Post('books')

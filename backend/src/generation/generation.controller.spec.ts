@@ -26,7 +26,11 @@ describe('GenerationController', () => {
 
   it('returns jobId on successful enqueue', async () => {
     mockGeneration.enqueueBook.mockResolvedValueOnce({ jobId: 'job-1' });
-    const result = await controller.generate('book-1', { sub: 'user-1', email: 'a@b.com' });
+    const result = await controller.generate('book-1', {
+      sub: 'user-1',
+      email: 'a@b.com',
+      role: 'user' as const,
+    });
     expect(result).toEqual({ jobId: 'job-1' });
     expect(mockGeneration.enqueueBook).toHaveBeenCalledWith('book-1', 'user-1');
   });
@@ -34,14 +38,14 @@ describe('GenerationController', () => {
   it('propagates NotFoundException from service', async () => {
     mockGeneration.enqueueBook.mockRejectedValueOnce(new NotFoundException());
     await expect(
-      controller.generate('bad-book', { sub: 'user-1', email: 'a@b.com' }),
+      controller.generate('bad-book', { sub: 'user-1', email: 'a@b.com', role: 'user' as const }),
     ).rejects.toThrow(NotFoundException);
   });
 
   it('propagates ConflictException from service', async () => {
     mockGeneration.enqueueBook.mockRejectedValueOnce(new ConflictException());
     await expect(
-      controller.generate('book-1', { sub: 'user-1', email: 'a@b.com' }),
+      controller.generate('book-1', { sub: 'user-1', email: 'a@b.com', role: 'user' as const }),
     ).rejects.toThrow(ConflictException);
   });
 });

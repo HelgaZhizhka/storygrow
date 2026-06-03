@@ -30,8 +30,20 @@ export class BooksService {
     });
   }
 
-  listLearningGoals() {
-    return this.prisma.learningGoal.findMany({ orderBy: { title: 'asc' } });
+  async listLearningGoals(childId?: string) {
+    let age: number | undefined;
+    if (childId) {
+      const child = await this.prisma.child.findUnique({
+        where: { id: childId },
+        select: { age: true },
+      });
+      age = child?.age;
+    }
+    return this.prisma.learningGoal.findMany({
+      where:
+        age !== undefined ? { ageRangeMin: { lte: age }, ageRangeMax: { gte: age } } : undefined,
+      orderBy: { title: 'asc' },
+    });
   }
 
   async createBook(userId: string, dto: CreateBookDto) {
