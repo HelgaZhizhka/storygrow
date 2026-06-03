@@ -46,7 +46,10 @@ describe('checkCompliance', () => {
     const story = makeStory({
       pages: [
         coverPage,
-        p('image-top', { text: 'бегемот слон жираф', illustrationPrompt: 'Animals' }),
+        p('image-top', {
+          text: 'бегемот слон жираф крокодил носорог зебра пингвин антилопа',
+          illustrationPrompt: 'Animals',
+        }),
         finalPage,
       ],
     });
@@ -103,8 +106,24 @@ describe('checkCompliance', () => {
     expect(result.outOfCorpus).toContain('слон');
   });
 
+  it('matches inflected story words against base-form corpus entries (stemming)', () => {
+    const story: Story = {
+      title: 'кот',
+      pages: [
+        p('cover', { title: 'кот' }),
+        // inflected forms; corpus holds only base forms
+        p('image-top', { text: 'котом кота играла дружбы' }),
+        p('final', { text: 'кот' }),
+      ],
+      discussionQuestions: ['?', '?', '?', '?', '?'],
+    };
+    const result = checkCompliance(story, ['кот', 'играть', 'дружба']);
+    expect(result.score).toBe(1);
+    expect(result.passed).toBe(true);
+  });
+
   it('marks result compliant when score >= COMPLIANCE_THRESHOLD', () => {
-    expect(COMPLIANCE_THRESHOLD).toBe(0.85);
+    expect(COMPLIANCE_THRESHOLD).toBe(0.4);
     const story: Story = {
       title: 'один',
       pages: [

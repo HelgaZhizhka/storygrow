@@ -126,7 +126,10 @@ interface StoryEvalCreateArgs {
 
 const mockGenerator = { generateStory: jest.fn<Promise<Story>, [unknown]>() };
 const mockEvaluator = { evaluate: jest.fn<Promise<EvalCheckResult>, [unknown]>() };
-const mockVocabRag = { retrieve: jest.fn().mockResolvedValue(['маша', 'кот', 'дружба']) };
+const mockVocabRag = {
+  retrieve: jest.fn().mockResolvedValue(['маша', 'кот', 'дружба']),
+  listByGrade: jest.fn().mockResolvedValue(['маша', 'кот', 'дружба', 'играть', 'убежать']),
+};
 const mockPrisma = {
   storyEval: {
     create: jest.fn<Promise<{ id: string }>, [StoryEvalCreateArgs]>().mockResolvedValue({
@@ -143,6 +146,7 @@ describe('StoryOrchestratorService', () => {
     mockGenerator.generateStory.mockResolvedValue(validStory);
     mockEvaluator.evaluate.mockResolvedValue(passingEval);
     mockVocabRag.retrieve.mockResolvedValue(['маша', 'кот', 'дружба']);
+    mockVocabRag.listByGrade.mockResolvedValue(['маша', 'кот', 'дружба', 'играть', 'убежать']);
     mockPrisma.storyEval.create.mockResolvedValue({ id: 'eval-1' });
 
     const module = await Test.createTestingModule({

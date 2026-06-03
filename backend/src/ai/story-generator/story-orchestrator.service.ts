@@ -27,6 +27,7 @@ export interface GenerateStoryResult {
 interface LoopContext {
   opts: GenerateStoryOptions;
   allowedWords: readonly string[];
+  corpusWords: readonly string[];
   maxAttempts: number;
 }
 
@@ -52,9 +53,15 @@ export class StoryOrchestratorService {
         learningGoal: opts.learningGoal,
         gradeLevel,
       });
+      const corpusWords = await this.vocabularyRag.listByGrade(gradeLevel);
       const rawRetries = parseInt(process.env['EVAL_MAX_RETRIES'] ?? '', 10);
       const maxRetries = Number.isNaN(rawRetries) ? EVAL_MAX_RETRIES_DEFAULT : rawRetries;
-      const result = await this.runLoop({ opts, allowedWords, maxAttempts: maxRetries + 1 });
+      const result = await this.runLoop({
+        opts,
+        allowedWords,
+        corpusWords,
+        maxAttempts: maxRetries + 1,
+      });
 
       span.update({
         output: {
@@ -80,7 +87,7 @@ export class StoryOrchestratorService {
         childAge: ctx.opts.childAge,
         learningGoal: ctx.opts.learningGoal,
         bookId: ctx.opts.bookId,
-        allowedWords: ctx.allowedWords,
+        corpusWords: ctx.corpusWords,
       });
       const eval_ = await this.writeEval(ctx.opts.bookId, checks, attempt);
       if (checks.passed) return { story, evalId: eval_.id, attempts: attempt };

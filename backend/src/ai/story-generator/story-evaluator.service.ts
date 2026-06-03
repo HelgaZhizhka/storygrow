@@ -13,7 +13,7 @@ export interface EvaluateInput {
   childAge: number;
   learningGoal: string;
   bookId: string;
-  allowedWords: readonly string[];
+  corpusWords: readonly string[];
 }
 
 export interface EvalCheckResult {
@@ -31,9 +31,9 @@ export class StoryEvaluatorService {
   private readonly openai = createOpenAI({ apiKey: process.env['OPENAI_API_KEY'] });
 
   async evaluate(input: EvaluateInput): Promise<EvalCheckResult> {
-    const { story, childAge, learningGoal, bookId, allowedWords } = input;
+    const { story, childAge, learningGoal, bookId, corpusWords } = input;
     const structural = validateBookPlan(story.pages, childAge);
-    const compliance = checkCompliance(story, allowedWords);
+    const compliance = checkCompliance(story, corpusWords);
     const judgeResult = await this.judgeStory({ story, childAge, learningGoal, bookId });
     const computedFinalScore = computeFinalScore(judgeResult.scores);
     const rawThreshold = parseFloat(process.env['EVAL_THRESHOLD'] ?? '');
