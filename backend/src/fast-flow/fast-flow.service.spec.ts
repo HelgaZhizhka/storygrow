@@ -1,27 +1,54 @@
 jest.mock('../generated/prisma/client', () => ({ PrismaClient: class {} }));
 jest.mock('puppeteer', () => ({ __esModule: true, default: { launch: jest.fn() } }));
 
+const mockGenerateObject = jest.fn();
+jest.mock('ai', () => ({ generateObject: (...args: unknown[]) => mockGenerateObject(...args) }));
+jest.mock('@ai-sdk/openai', () => ({ openai: jest.fn((id: string) => ({ id })) }));
+jest.mock('@langfuse/tracing', () => ({
+  startActiveObservation: async <T>(_n: string, fn: () => Promise<T>) => fn(),
+}));
+
 import { NotFoundException } from '@nestjs/common';
 import { FastFlowService } from './fast-flow.service';
 import type { RenderInput } from '../pdf/pdf-render.service';
+import type { Story } from '../ai/schemas';
 
-const mockChild = { id: 'child-1', name: 'Аня', age: 6 };
+const mockChild = { id: 'child-1', name: 'Аня', age: 6, gender: 'female' };
 
-const templateContent = {
+const mockTemplate = { illustrationTags: ['park', 'sad', 'sharing', 'happy'] };
+const mockGoal = { title: 'Делиться с другими' };
+
+const mockStory: Story = {
+  title: 'Аня учится делиться',
+  discussionQuestions: ['Q1', 'Q2', 'Q3', 'Q4', 'Q5'],
   pages: [
-    { pageNumber: 1, text: '{{childName}} вышел в парк.', illustrationTag: 'park' },
-    { pageNumber: 2, text: 'Рядом сидела девочка.', illustrationTag: 'sad' },
-    { pageNumber: 3, text: '{{childName}} протянул игрушку.', illustrationTag: 'sharing' },
-    { pageNumber: 4, text: 'Они стали друзьями.', illustrationTag: 'happy' },
-    { pageNumber: 5, text: 'Делиться — значит дарить радость.', illustrationTag: 'happy' },
+    { template: 'cover', text: null, title: 'Аня учится делиться', illustrationPrompt: 'cover' },
+    { template: 'image-top', text: 'Аня пошла в парк.', title: null, illustrationPrompt: 'park' },
+    {
+      template: 'image-bottom',
+      text: 'Она увидела грустного ребёнка.',
+      title: null,
+      illustrationPrompt: 'sad child',
+    },
+    {
+      template: 'image-left',
+      text: 'Аня протянула игрушку.',
+      title: null,
+      illustrationPrompt: 'sharing',
+    },
+    {
+      template: 'image-top',
+      text: 'Они стали друзьями.',
+      title: null,
+      illustrationPrompt: 'happy',
+    },
+    {
+      template: 'final',
+      text: 'Делиться — значит дарить радость.',
+      title: null,
+      illustrationPrompt: 'happy friends',
+    },
   ],
-};
-
-const mockTemplate = {
-  id: 'tpl-1',
-  title: 'Маленький {{childName}} учится делиться',
-  content: templateContent,
-  learningGoalId: 'goal-1',
 };
 
 const mockIllustrations = [
@@ -35,14 +62,30 @@ function makeMocks() {
   const prisma = {
     child: { findUnique: jest.fn() },
     template: { findFirst: jest.fn() },
+    learningGoal: { findUnique: jest.fn() },
     fastIllustration: { findMany: jest.fn() },
     book: { create: jest.fn(), update: jest.fn() },
     bookPage: { createMany: jest.fn() },
+    storyEval: { create: jest.fn() },
   };
   const pdfRender = { render: jest.fn<Promise<string>, [RenderInput]>() };
   const service = new FastFlowService(prisma as never, pdfRender as never);
   return { prisma, pdfRender, service };
 }
+
+function setupHappyPath(prisma: ReturnType<typeof makeMocks>['prisma']) {
+  prisma.child.findUnique.mockResolvedValue(mockChild);
+  prisma.template.findFirst.mockResolvedValue(mockTemplate);
+  prisma.learningGoal.findUnique.mockResolvedValue(mockGoal);
+  prisma.fastIllustration.findMany.mockResolvedValue(mockIllustrations);
+  prisma.book.create.mockResolvedValue({ id: 'book-1' });
+  prisma.storyEval.create.mockResolvedValue({});
+  prisma.bookPage.createMany.mockResolvedValue({ count: 6 });
+  prisma.book.update.mockResolvedValue({});
+  mockGenerateObject.mockResolvedValue({ object: mockStory });
+}
+
+beforeEach(() => jest.clearAllMocks());
 
 describe('FastFlowService.generate', () => {
   it('throws NotFoundException when child does not exist', async () => {
@@ -58,61 +101,45 @@ describe('FastFlowService.generate', () => {
     const { prisma, service } = makeMocks();
     prisma.child.findUnique.mockResolvedValue(mockChild);
     prisma.template.findFirst.mockResolvedValue(null);
+    prisma.learningGoal.findUnique.mockResolvedValue(mockGoal);
 
     await expect(
       service.generate({ userId: 'u1', childId: 'child-1', learningGoalId: 'missing-goal' }),
     ).rejects.toThrow(NotFoundException);
   });
 
-  it('substitutes {{childName}} in title and page texts', async () => {
+  it('calls generateObject with child name, age, and learning goal in prompt', async () => {
     const { prisma, pdfRender, service } = makeMocks();
-    prisma.child.findUnique.mockResolvedValue(mockChild);
-    prisma.template.findFirst.mockResolvedValue(mockTemplate);
-    prisma.fastIllustration.findMany.mockResolvedValue(mockIllustrations);
-    prisma.book.create.mockResolvedValue({ id: 'book-1' });
+    setupHappyPath(prisma);
     pdfRender.render.mockResolvedValue('books/book-1/book.pdf');
-    prisma.bookPage.createMany.mockResolvedValue({ count: 5 });
-    prisma.book.update.mockResolvedValue({});
+
+    await service.generate({ userId: 'u1', childId: 'child-1', learningGoalId: 'goal-1' });
+
+    expect(mockGenerateObject).toHaveBeenCalledTimes(1);
+    const callArg = mockGenerateObject.mock.calls[0][0] as { prompt: string; system: string };
+    expect(callArg.prompt).toContain('Аня');
+    expect(callArg.prompt).toContain('Делиться с другими');
+    expect(callArg.prompt).toContain('6');
+  });
+
+  it('uses LLM-generated title and pages for the book', async () => {
+    const { prisma, pdfRender, service } = makeMocks();
+    setupHappyPath(prisma);
+    pdfRender.render.mockResolvedValue('books/book-1/book.pdf');
 
     await service.generate({ userId: 'u1', childId: 'child-1', learningGoalId: 'goal-1' });
 
     const renderCall = pdfRender.render.mock.calls[0][0];
-    expect(renderCall?.story.title).toBe('Маленький Аня учится делиться');
-    expect(renderCall?.story.pages[0]?.title).toBe('Маленький Аня учится делиться');
-    expect(renderCall?.story.pages[2]?.text).toBe('Аня протянул игрушку.');
+    expect(renderCall?.story.title).toBe('Аня учится делиться');
+    expect(renderCall?.story.pages).toHaveLength(6);
+    expect(renderCall?.story.pages[0]?.template).toBe('cover');
+    expect(renderCall?.story.pages[5]?.template).toBe('final');
   });
 
-  it('maps first page to cover, last to final, middle pages cycle content templates', async () => {
+  it('picks illustrations by cycling through template illustrationTags', async () => {
     const { prisma, pdfRender, service } = makeMocks();
-    prisma.child.findUnique.mockResolvedValue(mockChild);
-    prisma.template.findFirst.mockResolvedValue(mockTemplate);
-    prisma.fastIllustration.findMany.mockResolvedValue(mockIllustrations);
-    prisma.book.create.mockResolvedValue({ id: 'book-1' });
+    setupHappyPath(prisma);
     pdfRender.render.mockResolvedValue('books/book-1/book.pdf');
-    prisma.bookPage.createMany.mockResolvedValue({ count: 5 });
-    prisma.book.update.mockResolvedValue({});
-
-    await service.generate({ userId: 'u1', childId: 'child-1', learningGoalId: 'goal-1' });
-
-    const renderInput = pdfRender.render.mock.calls[0][0];
-    const pages = renderInput?.story.pages ?? [];
-    expect(pages[0]?.template).toBe('cover');
-    expect(pages[0]?.text).toBeNull();
-    expect(pages[pages.length - 1]?.template).toBe('final');
-    expect(pages[1]?.template).toBe('image-top');
-    expect(pages[2]?.template).toBe('image-bottom');
-    expect(pages[3]?.template).toBe('image-left');
-  });
-
-  it('picks illustrations by tag and passes them to PdfRenderService', async () => {
-    const { prisma, pdfRender, service } = makeMocks();
-    prisma.child.findUnique.mockResolvedValue(mockChild);
-    prisma.template.findFirst.mockResolvedValue(mockTemplate);
-    prisma.fastIllustration.findMany.mockResolvedValue(mockIllustrations);
-    prisma.book.create.mockResolvedValue({ id: 'book-1' });
-    pdfRender.render.mockResolvedValue('books/book-1/book.pdf');
-    prisma.bookPage.createMany.mockResolvedValue({ count: 5 });
-    prisma.book.update.mockResolvedValue({});
 
     await service.generate({ userId: 'u1', childId: 'child-1', learningGoalId: 'goal-1' });
 
@@ -120,16 +147,27 @@ describe('FastFlowService.generate', () => {
     expect(illustrationUrls[0]).toBe('https://s3/park.png');
     expect(illustrationUrls[1]).toBe('https://s3/sad.png');
     expect(illustrationUrls[2]).toBe('https://s3/sharing.png');
+    expect(illustrationUrls[3]).toBe('https://s3/happy.png');
+  });
+
+  it('creates a StoryEval row marked as passed', async () => {
+    const { prisma, pdfRender, service } = makeMocks();
+    setupHappyPath(prisma);
+    pdfRender.render.mockResolvedValue('books/book-1/book.pdf');
+
+    await service.generate({ userId: 'u1', childId: 'child-1', learningGoalId: 'goal-1' });
+
+    expect(prisma.storyEval.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ bookId: 'book-1', attempt: 1, passed: true }),
+      }),
+    );
   });
 
   it('marks book as failed and re-throws when PDF render fails', async () => {
     const { prisma, pdfRender, service } = makeMocks();
-    prisma.child.findUnique.mockResolvedValue(mockChild);
-    prisma.template.findFirst.mockResolvedValue(mockTemplate);
-    prisma.fastIllustration.findMany.mockResolvedValue(mockIllustrations);
-    prisma.book.create.mockResolvedValue({ id: 'book-1' });
+    setupHappyPath(prisma);
     pdfRender.render.mockRejectedValue(new Error('Puppeteer crash'));
-    prisma.book.update.mockResolvedValue({});
 
     await expect(
       service.generate({ userId: 'u1', childId: 'child-1', learningGoalId: 'goal-1' }),
@@ -143,13 +181,9 @@ describe('FastFlowService.generate', () => {
 
   it('returns bookId and pdfKey on success', async () => {
     const { prisma, pdfRender, service } = makeMocks();
-    prisma.child.findUnique.mockResolvedValue(mockChild);
-    prisma.template.findFirst.mockResolvedValue(mockTemplate);
-    prisma.fastIllustration.findMany.mockResolvedValue(mockIllustrations);
-    prisma.book.create.mockResolvedValue({ id: 'book-42' });
+    setupHappyPath(prisma);
     pdfRender.render.mockResolvedValue('books/book-42/book.pdf');
-    prisma.bookPage.createMany.mockResolvedValue({ count: 5 });
-    prisma.book.update.mockResolvedValue({});
+    prisma.book.create.mockResolvedValue({ id: 'book-42' });
 
     const result = await service.generate({
       userId: 'u1',

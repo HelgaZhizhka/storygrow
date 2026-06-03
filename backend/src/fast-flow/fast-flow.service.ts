@@ -1,16 +1,14 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { generateObject } from 'ai';
+import { openai } from '@ai-sdk/openai';
 import { PrismaService } from '../prisma/prisma.service';
 import { PdfRenderService } from '../pdf/pdf-render.service';
-import { templateContentSchema, type TemplatePage } from './template-content.schema';
-import {
-  substitutePlaceholders,
-  resolveGender,
-  type SubstitutionContext,
-} from './substitute-placeholders';
+import { GENERATION_MODEL } from '../ai/ai.config';
+import { createTelemetry } from '../ai/telemetry';
+import { StorySchema } from '../ai/schemas/story.schema';
+import { FAST_FLOW_SYSTEM_PROMPT, buildFastFlowPrompt } from './fast-flow.prompt';
+import { resolveGender } from './substitute-placeholders';
 import { pickIllustration, type IllustrationRecord } from './pick-illustration';
-import type { Page } from '../ai/schemas/story.schema';
-import type { Story } from '../ai/schemas';
-import type { TemplateName } from '../pdf/page-templates/page-templates.config';
 
 export interface FastFlowInput {
   userId: string;
@@ -22,8 +20,6 @@ export interface FastFlowResult {
   bookId: string;
   pdfKey: string;
 }
-
-const CONTENT_TEMPLATES: readonly TemplateName[] = ['image-top', 'image-bottom', 'image-left'];
 
 @Injectable()
 export class FastFlowService {
@@ -38,43 +34,71 @@ export class FastFlowService {
     const child = await this.prisma.child.findUnique({ where: { id: input.childId } });
     if (!child) throw new NotFoundException(`Child ${input.childId} not found`);
 
-    const template = await this.prisma.template.findFirst({
-      where: { learningGoalId: input.learningGoalId },
-    });
+    const [template, goal] = await Promise.all([
+      this.prisma.template.findFirst({
+        where: { learningGoalId: input.learningGoalId },
+        select: { illustrationTags: true },
+      }),
+      this.prisma.learningGoal.findUnique({
+        where: { id: input.learningGoalId },
+        select: { title: true },
+      }),
+    ]);
+
     if (!template) {
       throw new NotFoundException(`No template for learning goal ${input.learningGoalId}`);
     }
 
-    const ctx: SubstitutionContext = {
-      childName: child.name,
-      childAge: child.age,
-      isFeminine: resolveGender(child.gender),
-    };
-    const title = substitutePlaceholders(template.title, ctx);
-    const content = templateContentSchema.parse(template.content);
-    const pages = content.pages.map((p) => ({ ...p, text: substitutePlaceholders(p.text, ctx) }));
+    const isFeminine = resolveGender(child.gender);
+
+    const { object: story } = await generateObject({
+      model: openai(GENERATION_MODEL),
+      schema: StorySchema,
+      system: FAST_FLOW_SYSTEM_PROMPT,
+      prompt: buildFastFlowPrompt({
+        childName: child.name,
+        childAge: child.age,
+        isFeminine,
+        learningGoal: goal?.title ?? '',
+      }),
+      experimental_telemetry: createTelemetry('fast-flow-story', {
+        childId: input.childId,
+        learningGoalId: input.learningGoalId,
+        childAge: child.age,
+      }),
+      maxRetries: 1,
+    });
 
     const rawIllustrations = await this.prisma.fastIllustration.findMany({
       select: { id: true, url: true, tags: true },
     });
-    const illustrationUrls = buildIllustrationUrls(pages, rawIllustrations);
+    const illustrationUrls = buildIllustrationUrls(
+      story.pages.length,
+      template.illustrationTags,
+      rawIllustrations,
+    );
 
     const book = await this.prisma.book.create({
       data: {
         userId: input.userId,
         childId: input.childId,
         learningGoalId: input.learningGoalId,
-        title,
+        title: story.title,
         status: 'generating',
       },
       select: { id: true },
     });
 
-    const story: Story = {
-      title,
-      discussionQuestions: generateDiscussionQuestions(child.name, ctx.isFeminine),
-      pages: buildStoryPages(pages, title),
-    };
+    await this.prisma.storyEval.create({
+      data: {
+        bookId: book.id,
+        attempt: 1,
+        passed: true,
+        finalScore: 0,
+        judgeScores: {},
+        judgeReasoning: 'Fast-flow generation — no quality evaluation',
+      },
+    });
 
     let pdfKey: string;
     try {
@@ -85,10 +109,10 @@ export class FastFlowService {
     }
 
     await this.prisma.bookPage.createMany({
-      data: pages.map((p, i) => ({
+      data: story.pages.map((p, i) => ({
         bookId: book.id,
-        pageNumber: p.pageNumber,
-        text: p.text,
+        pageNumber: i + 1,
+        text: p.text ?? '',
         imageUrl: illustrationUrls[i] ?? null,
       })),
     });
@@ -103,40 +127,13 @@ export class FastFlowService {
   }
 }
 
-function buildStoryPages(pages: readonly TemplatePage[], title: string): Page[] {
-  return pages.map((page, index) => {
-    const isFirst = index === 0;
-    const isLast = index === pages.length - 1;
-    const template: TemplateName = isFirst
-      ? 'cover'
-      : isLast
-        ? 'final'
-        : CONTENT_TEMPLATES[(index - 1) % CONTENT_TEMPLATES.length];
-    return {
-      template,
-      text: isFirst ? null : page.text,
-      title: isFirst ? title : null,
-      illustrationPrompt: `Children's book illustration: ${page.illustrationTag}`,
-    };
-  });
-}
-
 function buildIllustrationUrls(
-  pages: readonly TemplatePage[],
+  pageCount: number,
+  illustrationTags: string[],
   illustrations: IllustrationRecord[],
 ): readonly string[] {
-  return pages.map((page) => pickIllustration(illustrations, [page.illustrationTag])?.url ?? '');
-}
-
-function generateDiscussionQuestions(childName: string, isFeminine: boolean): string[] {
-  const postupil = isFeminine ? 'поступила' : 'поступил';
-  const popal = isFeminine ? 'попадала' : 'попадал';
-  const sdelal = isFeminine ? 'сделала' : 'сделал';
-  return [
-    `Что произошло в этой истории?`,
-    `Как ты думаешь, правильно ли ${postupil} ${childName}? Почему?`,
-    `А ты когда-нибудь ${popal} в похожую ситуацию?`,
-    `Что бы ты ${sdelal} на месте ${childName}?`,
-    `Чему нас учит эта история?`,
-  ];
+  return Array.from({ length: pageCount }, (_, i) => {
+    const tag = illustrationTags[i % illustrationTags.length] ?? '';
+    return pickIllustration(illustrations, [tag])?.url ?? '';
+  });
 }
