@@ -71,6 +71,7 @@ enum BookStatus {
   generating
   ready
   failed
+  images_failed
 }
 
 model BookPage {

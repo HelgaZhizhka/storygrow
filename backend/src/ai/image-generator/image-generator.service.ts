@@ -95,6 +95,20 @@ export class ImageGeneratorService {
 
 function isContentPolicyError(err: unknown): boolean {
   if (!(err instanceof Error)) return false;
+
+  // Primary: AI SDK APICallError has a structured cause with the OpenAI response body
+  const cause = (err as { cause?: unknown }).cause;
+  if (cause && typeof cause === 'object') {
+    const code = (cause as Record<string, unknown>).code;
+    if (code === 'content_policy_violation') return true;
+    // OpenAI embeds the error in the response body JSON
+    const responseBody = (cause as Record<string, unknown>).responseBody;
+    if (typeof responseBody === 'string' && responseBody.includes('content_policy_violation')) {
+      return true;
+    }
+  }
+
+  // Fallback: string-match on the error message
   const message = err.message.toLowerCase();
   return (
     message.includes('content_policy_violation') ||
