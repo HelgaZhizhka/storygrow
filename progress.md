@@ -833,3 +833,22 @@ Consolidated catch-up entry. 37 PRs squash-merged in one high-velocity day, grou
 
 **Blockers:**
 - None.
+
+---
+
+## 2026-06-04 — Image-gen size bug fixed, end-to-end UI run verified (#135)
+
+**Done:**
+- **Verified book generation end-to-end through the UI** (frontend + backend, real OpenAI generation). Text pipeline confirmed healthy: RAG/HNSW retrieval, vocabulary compliance (0.468 ≥ 0.40), and LLM-as-judge all passed on attempt 1 (StoryEval finalScore 9). Book reached status `ready` with 8 images + PDF in S3.
+- **Fixed image generation failure (#135 → PR #136).** `page-templates.config.ts` still carried dall-e-3 sizes (`1024x1792`/`1792x1024`), which `gpt-image-1` rejects with HTTP 400 ("Supported sizes are 1024x1024, 1024x1536, 1536x1024, and auto"). Renamed `DalleSize`→`ImageSize` and slot field `dalleSize`→`imageSize`, remapped all six templates to supported sizes, updated `image-generator.service.ts`.
+- `./init.sh` green (0 errors); fix shipped via squash-merge.
+
+**Decisions:**
+- Image model is `gpt-image-1`, not dall-e-3 — its size set is the canonical constraint for any future template slot.
+
+**Next:**
+- Unchanged (defense harness #72/#79/#32, deploy #29/#89/#30, polish).
+- **UI gap noted (not yet ticketed):** books in `images_failed` status show no retry button — only "Вернуться к книге". The `POST books/:id/retry-images` endpoint exists in the backend but isn't surfaced in the UI.
+
+**Blockers:**
+- None.
