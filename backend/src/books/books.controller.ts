@@ -15,7 +15,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { JwtPayload } from '../auth/auth.service';
 import { BookImageService } from './book-image.service';
-import { BooksService } from './books.service';
+import { BooksService, type QuotaInfo } from './books.service';
 
 const createChildSchema = z.object({
   name: z.string().min(1).max(100),
@@ -59,6 +59,11 @@ export class BooksController {
   createBook(@CurrentUser() user: JwtPayload, @Body() body: unknown) {
     const dto = createBookSchema.parse(body);
     return this.books.createBook(user.sub, dto);
+  }
+
+  @Get('books/quota')
+  getQuota(@CurrentUser() user: JwtPayload): Promise<QuotaInfo> {
+    return this.books.getQuota(user.sub);
   }
 
   @Get('books')

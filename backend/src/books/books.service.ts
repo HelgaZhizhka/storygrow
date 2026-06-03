@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { SubscriptionPlan, SubscriptionStatus } from '../../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 interface CreateChildDto {
@@ -12,6 +13,20 @@ interface CreateBookDto {
   learningGoalId: string;
   mode: 'fast' | 'custom';
 }
+
+export interface QuotaInfo {
+  plan: SubscriptionPlan;
+  used: number;
+  limit: number | null;
+}
+
+const PLAN_LIMITS: Record<SubscriptionPlan, number | null> = {
+  [SubscriptionPlan.free]: 1,
+  [SubscriptionPlan.basic]: 10,
+  [SubscriptionPlan.premium]: null,
+};
+
+const PERIOD_DAYS = 30;
 
 @Injectable()
 export class BooksService {
@@ -46,7 +61,36 @@ export class BooksService {
     });
   }
 
+  async getQuota(userId: string): Promise<QuotaInfo> {
+    const sub = await this.prisma.subscription.findUnique({
+      where: { userId },
+      select: { plan: true, status: true },
+    });
+
+    const plan =
+      sub?.status === SubscriptionStatus.active || sub?.status === SubscriptionStatus.trialing
+        ? sub.plan
+        : SubscriptionPlan.free;
+
+    const limit = PLAN_LIMITS[plan];
+    const periodStart = new Date(Date.now() - PERIOD_DAYS * 24 * 60 * 60 * 1000);
+
+    const used = await this.prisma.book.count({
+      where: { userId, createdAt: { gte: periodStart } },
+    });
+
+    return { plan, used, limit };
+  }
+
   async createBook(userId: string, dto: CreateBookDto) {
+    const { used, limit } = await this.getQuota(userId);
+    if (limit !== null && used >= limit) {
+      throw new HttpException(
+        { message: 'Book quota exceeded for current plan', used, limit },
+        HttpStatus.PAYMENT_REQUIRED,
+      );
+    }
+
     const book = await this.prisma.book.create({
       data: {
         userId,
