@@ -165,3 +165,10 @@ model Template {
   illustrationTags String[]
   createdAt        DateTime     @default(now())
 }
+
+model FastIllustration {
+  id        String   @id @default(cuid())
+  url       String
+  tags      String[]
+  createdAt DateTime @default(now())
+}
