@@ -43,6 +43,8 @@ model Child {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   books     Book[]
+
+  @@unique([userId, name])
 }
 
 // ─── Books ─────────────────────────────────────────────────────────────────
