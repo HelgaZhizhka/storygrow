@@ -17,12 +17,20 @@ interface Book {
   learningGoal: { title: string };
 }
 
+interface Quota {
+  plan: string;
+  used: number;
+  limit: number | null;
+}
+
 export default function BooksPage(): React.ReactElement {
   const router = useRouter();
   const [books, setBooks] = useState<Book[]>([]);
+  const [quota, setQuota] = useState<Quota | null>(null);
 
   useEffect(() => {
     void api.get<Book[]>('/books').then(setBooks);
+    void api.get<Quota>('/books/quota').then(setQuota);
   }, []);
 
   async function handleLogout(): Promise<void> {
@@ -37,12 +45,23 @@ export default function BooksPage(): React.ReactElement {
     router.replace('/login');
   }
 
+  const quotaLabel =
+    quota &&
+    (quota.limit === null
+      ? `${quota.plan} · безлимитно`
+      : `${quota.plan} · ${quota.used} / ${quota.limit} книг`);
+
   return (
     <main className="mx-auto w-full max-w-2xl px-6 py-12">
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Мои книги
-        </h1>
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+            Мои книги
+          </h1>
+          {quotaLabel && (
+            <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">{quotaLabel}</p>
+          )}
+        </div>
         <div className="flex items-center gap-3">
           <Link
             href="/books/new"
@@ -58,6 +77,15 @@ export default function BooksPage(): React.ReactElement {
           </button>
         </div>
       </div>
+
+      {quota && quota.limit !== null && quota.used >= quota.limit && (
+        <div className="mb-6 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+          Лимит книг для тарифа «{quota.plan}» исчерпан.{' '}
+          <Link href="/pricing" className="font-medium underline">
+            Обновить тариф
+          </Link>
+        </div>
+      )}
 
       {books.length === 0 ? (
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
