@@ -1,4 +1,4 @@
-jest.mock('../../generated/prisma/client', () => ({ PrismaClient: class {} }));
+jest.mock('../generated/prisma/client', () => ({ PrismaClient: class {} }));
 jest.mock('puppeteer', () => ({ __esModule: true, default: { launch: jest.fn() } }));
 
 import { NotFoundException } from '@nestjs/common';

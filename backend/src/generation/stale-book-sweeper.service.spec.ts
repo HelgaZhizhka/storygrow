@@ -1,4 +1,4 @@
-jest.mock('../../generated/prisma/client', () => ({
+jest.mock('../generated/prisma/client', () => ({
   PrismaClient: class {},
   BookStatus: {
     generating: 'generating',
@@ -10,7 +10,7 @@ jest.mock('../../generated/prisma/client', () => ({
 }));
 
 import { Test } from '@nestjs/testing';
-import { BookStatus } from '../../generated/prisma/client';
+import { BookStatus } from '../generated/prisma/client';
 import { StaleBooksSweeperService } from './stale-book-sweeper.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { BookProgressService } from '../books/book-progress.service';

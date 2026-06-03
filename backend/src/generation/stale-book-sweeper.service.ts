@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { BookStatus } from '../../generated/prisma/client';
+import { BookStatus } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { BookProgressService } from '../books/book-progress.service';
 

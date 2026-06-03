@@ -1,7 +1,7 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { type Job } from 'bullmq';
-import { BookStatus } from '../../generated/prisma/client';
+import { BookStatus } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { StoryOrchestratorService } from '../ai/story-generator/story-orchestrator.service';
 import { ImageGeneratorService } from '../ai/image-generator/image-generator.service';

@@ -1,5 +1,5 @@
 // Mock the Prisma generated client (ESM-native, incompatible with Jest CJS mode)
-jest.mock('../../../generated/prisma/client', () => ({
+jest.mock('../../generated/prisma/client', () => ({
   Prisma: {
     sql: (strings: TemplateStringsArray, ...values: unknown[]) => ({
       strings: Array.from(strings),

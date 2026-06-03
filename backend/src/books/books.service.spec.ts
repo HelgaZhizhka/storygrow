@@ -1,4 +1,4 @@
-jest.mock('../../generated/prisma/client', () => ({
+jest.mock('../generated/prisma/client', () => ({
   PrismaClient: class {},
   SubscriptionPlan: { free: 'free', basic: 'basic', premium: 'premium' },
   SubscriptionStatus: {
@@ -11,7 +11,7 @@ jest.mock('../../generated/prisma/client', () => ({
 
 import { Test } from '@nestjs/testing';
 import { HttpException } from '@nestjs/common';
-import { SubscriptionPlan } from '../../generated/prisma/client';
+import { SubscriptionPlan } from '../generated/prisma/client';
 import { BooksService } from './books.service';
 import { PrismaService } from '../prisma/prisma.service';
 

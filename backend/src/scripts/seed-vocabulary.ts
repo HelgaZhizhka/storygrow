@@ -5,7 +5,7 @@ import { embedMany } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
-import { PrismaClient } from '../../generated/prisma/client';
+import { PrismaClient } from '../generated/prisma/client';
 import { EMBEDDING_MODEL } from '../ai/ai.config';
 
 const BATCH_SIZE = 512;
