@@ -8,6 +8,7 @@ import { AuthModule } from '../auth/auth.module';
 import { GenerationService } from './generation.service';
 import { GenerationProcessor } from './generation.processor';
 import { GenerationController } from './generation.controller';
+import { StaleBooksSweeperService } from './stale-book-sweeper.service';
 import { GENERATION_QUEUE } from './generation.types';
 
 @Module({
@@ -28,7 +29,7 @@ import { GENERATION_QUEUE } from './generation.types';
     PdfModule,
   ],
   controllers: [GenerationController],
-  providers: [GenerationService, GenerationProcessor],
+  providers: [GenerationService, GenerationProcessor, StaleBooksSweeperService],
   exports: [GenerationService],
 })
 export class GenerationModule {}
