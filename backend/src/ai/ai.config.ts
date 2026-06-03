@@ -8,7 +8,7 @@ export const DISCUSSION_QUESTIONS_COUNT = 5;
 export const EVAL_THRESHOLD_DEFAULT = 7.0;
 export const EVAL_MAX_RETRIES_DEFAULT = 2;
 
-export const IMAGE_MODEL = 'dall-e-3';
-export const IMAGE_QUALITY = 'standard';
+export const IMAGE_MODEL = 'gpt-image-1';
+export const IMAGE_QUALITY = 'medium';
 export const IMAGE_STYLE_SUFFIX =
   ", flat children's book illustration style, soft pastel colors, warm lighting, no text in image";
