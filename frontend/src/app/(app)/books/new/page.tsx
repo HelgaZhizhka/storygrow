@@ -95,7 +95,8 @@ export default function NewBookPage(): React.ReactElement {
         mode: values.mode,
       });
 
-      router.replace(`/books/${book.id}`);
+      await api.post(`/books/${book.id}/generate`, {});
+      router.replace(`/books/${book.id}/progress`);
     } catch (err) {
       setServerError(err instanceof Error ? err.message : 'Что-то пошло не так');
     }

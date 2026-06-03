@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 interface BookDetail {
   id: string;
@@ -14,10 +16,16 @@ interface BookDetail {
   pdfKey: string | null;
 }
 
+interface PdfUrlResponse {
+  url: string;
+}
+
 export default function BookPage(): React.ReactElement {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const [book, setBook] = useState<BookDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     void api
@@ -25,6 +33,25 @@ export default function BookPage(): React.ReactElement {
       .then(setBook)
       .catch(() => setError('Книга не найдена'));
   }, [id]);
+
+  async function handleGenerate(): Promise<void> {
+    setGenerating(true);
+    try {
+      await api.post(`/books/${id}/generate`, {});
+      router.replace(`/books/${id}/progress`);
+    } catch {
+      setGenerating(false);
+    }
+  }
+
+  async function handleDownloadPdf(): Promise<void> {
+    try {
+      const { url } = await api.get<PdfUrlResponse>(`/books/${id}/pdf-url`);
+      window.open(url, '_blank');
+    } catch {
+      // silently ignore — user can retry
+    }
+  }
 
   if (error) {
     return (
@@ -57,14 +84,47 @@ export default function BookPage(): React.ReactElement {
         {book.child.name} · {book.child.age} лет · {book.learningGoal.title}
       </p>
 
-      <div className="rounded-lg border border-zinc-200 p-6 dark:border-zinc-700">
+      <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 p-6 dark:border-zinc-700">
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           Статус: <span className="font-medium text-zinc-900 dark:text-zinc-50">{book.status}</span>
         </p>
+
+        {book.status === 'ready' && book.pdfKey && (
+          <button
+            onClick={() => void handleDownloadPdf()}
+            className="self-start rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          >
+            Скачать PDF
+          </button>
+        )}
+
         {book.status === 'pending' && (
-          <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
-            Книга ещё не сгенерирована. Нажмите кнопку ниже, чтобы запустить генерацию.
-          </p>
+          <button
+            disabled={generating}
+            onClick={() => void handleGenerate()}
+            className="self-start rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          >
+            {generating ? 'Запускаем…' : 'Запустить генерацию'}
+          </button>
+        )}
+
+        {book.status === 'generating' && (
+          <Link
+            href={`/books/${id}/progress`}
+            className="self-start text-sm text-zinc-500 underline hover:text-zinc-700"
+          >
+            Смотреть прогресс →
+          </Link>
+        )}
+
+        {book.status === 'failed' && (
+          <button
+            disabled={generating}
+            onClick={() => void handleGenerate()}
+            className="self-start rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 disabled:opacity-50 dark:border-red-800 dark:text-red-400"
+          >
+            {generating ? 'Запускаем…' : 'Повторить генерацию'}
+          </button>
         )}
       </div>
     </main>

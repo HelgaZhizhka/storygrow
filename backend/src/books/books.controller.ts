@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { JwtPayload } from '../auth/auth.service';
+import { BookImageService } from './book-image.service';
 import { BooksService } from './books.service';
 
 const createChildSchema = z.object({
@@ -30,7 +31,10 @@ const createBookSchema = z.object({
 @Controller()
 @UseGuards(JwtAuthGuard)
 export class BooksController {
-  constructor(private readonly books: BooksService) {}
+  constructor(
+    private readonly books: BooksService,
+    private readonly bookImage: BookImageService,
+  ) {}
 
   @Get('children')
   listChildren(@CurrentUser() user: JwtPayload) {
@@ -66,5 +70,14 @@ export class BooksController {
     const book = await this.books.getBook(user.sub, id);
     if (!book) throw new NotFoundException('Book not found');
     return book;
+  }
+
+  @Get('books/:id/pdf-url')
+  async getPdfUrl(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    const book = await this.books.getBook(user.sub, id);
+    if (!book) throw new NotFoundException('Book not found');
+    if (!book.pdfKey) throw new NotFoundException('PDF not ready');
+    const url = await this.bookImage.signKey(book.pdfKey);
+    return { url };
   }
 }
