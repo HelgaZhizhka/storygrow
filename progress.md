@@ -814,3 +814,22 @@ Consolidated catch-up entry. 37 PRs squash-merged in one high-velocity day, grou
 **Frictions:**
 - progress.md went 37 PRs stale (last entry #93). Single-day velocity outran the "bundle progress.md into each feature PR" rule. Caught during this review; reconstructed from git history. The bundling rule clearly isn't holding under high-throughput days — worth either enforcing it in the PR template/checklist or accepting periodic catch-up entries like this one as the actual workflow.
 - HNSW migration drift trimmed again during fast-flow migrations (#103/#104) — same recurring `DROP INDEX` autogen noted on 2026-06-01. Still unaddressed at the schema level.
+
+---
+
+## 2026-06-03 — DX frictions fixed at the root (#133)
+
+**Done:**
+- **HNSW migration drift — root-caused and eliminated.** Prisma cannot represent `USING hnsw (embedding vector_cosine_ops)` in `schema.prisma`, so keeping the index in migration history made every `migrate dev` autogen a spurious `DROP INDEX`. Moved the index out of migrations into an idempotent SQL file (`backend/prisma/sql/hnsw-index.sql`). The `prisma:migrate` wrapper (`prisma/migrate-dev.mjs`) now drops the index → runs `migrate dev` clean → recreates the index. Emptied migration `20260525095439_add_vector_index` to a no-op. Fixed `db:hnsw-index` for Prisma 7 (`db execute` reads the datasource from `prisma.config.ts`; `--schema` no longer accepted).
+- **progress.md bundling — added `.github/pull_request_template.md`** with a Definition-of-Done checklist (update progress.md, AI-pipeline evidence, Conventional Commits title) so doc updates stop getting forgotten.
+- Verified `pnpm prisma:migrate` reports "Already in sync" with no drift/reset; HNSW index + all seed data intact (VocabularyEntry 812, LearningGoal 20, Template 5, FastIllustration 44).
+
+**Decisions (with rationale):**
+- **Index lives outside migration history, not inside.** Keeping it in migrations forces a perpetual trimmable `DROP`; the chosen drop-before/recreate-after wrapper keeps the dev DB matching migration history exactly, so `migrate dev` is clean every run. Prod uses `migrate deploy` (no drift detection) + the `db:hnsw-index` script, so the index is never dropped there.
+- **Use `pnpm prisma:migrate`, not raw `prisma migrate dev`.** Raw `migrate dev` will still see the live index as drift and demand a reset; the wrapper is the supported entrypoint.
+
+**Next:**
+- Unchanged from prior entry (defense harness #72/#79/#32, deploy #29/#89/#30, polish).
+
+**Blockers:**
+- None.
