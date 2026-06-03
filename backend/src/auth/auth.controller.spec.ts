@@ -71,7 +71,7 @@ describe('AuthController', () => {
   describe('logout', () => {
     it('calls auth.logout with userId from JWT payload', async () => {
       mockAuth.logout.mockResolvedValueOnce(undefined);
-      await controller.logout({ sub: 'user-1', email: 'a@b.com' });
+      await controller.logout({ sub: 'user-1', email: 'a@b.com', role: 'user' });
       expect(mockAuth.logout).toHaveBeenCalledWith('user-1');
     });
   });

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 
+import { AdminModule } from './admin/admin.module';
 import { AiModule } from './ai/ai.module';
 import { AuthModule } from './auth/auth.module';
 import { BillingModule } from './billing/billing.module';
@@ -23,6 +24,7 @@ import { PrismaModule } from './prisma/prisma.module';
       inject: [ConfigService],
     }),
     PrismaModule,
+    AdminModule,
     AiModule,
     AuthModule,
     BillingModule,

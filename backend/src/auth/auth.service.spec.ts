@@ -76,7 +76,7 @@ describe('AuthService', () => {
         where: { email: profile.email },
         create: { email: profile.email, googleId: profile.googleId },
         update: { googleId: profile.googleId },
-        select: { id: true, email: true },
+        select: { id: true, email: true, role: true },
       });
     });
   });
@@ -86,7 +86,7 @@ describe('AuthService', () => {
       mockJwt.signAsync.mockResolvedValueOnce('access-tok').mockResolvedValueOnce('refresh-tok');
       mockPrisma.user.update.mockResolvedValueOnce({});
 
-      const result = await service.generateTokens('user-1', 'test@example.com');
+      const result = await service.generateTokens('user-1', 'test@example.com', 'user');
 
       expect(result).toEqual({ accessToken: 'access-tok', refreshToken: 'refresh-tok' });
       expect(mockPrisma.user.update).toHaveBeenCalledWith({

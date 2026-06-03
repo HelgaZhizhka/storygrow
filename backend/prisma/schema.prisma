@@ -14,11 +14,17 @@ datasource db {
 
 // ─── Auth ──────────────────────────────────────────────────────────────────
 
+enum UserRole {
+  user
+  admin
+}
+
 model User {
   id           String        @id @default(cuid())
   email        String        @unique
   googleId     String?       @unique
   refreshToken String?
+  role         UserRole      @default(user)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   children     Child[]
@@ -127,12 +133,14 @@ enum SubscriptionStatus {
 // ─── Catalogue ─────────────────────────────────────────────────────────────
 
 model LearningGoal {
-  id          String     @id @default(cuid())
-  title       String
-  description String
-  createdAt   DateTime   @default(now())
-  books       Book[]
-  templates   Template[]
+  id            String     @id @default(cuid())
+  title         String
+  description   String
+  ageRangeMin   Int        @default(1)
+  ageRangeMax   Int        @default(18)
+  createdAt     DateTime   @default(now())
+  books         Book[]
+  templates     Template[]
 }
 
 // ─── RAG ───────────────────────────────────────────────────────────────────

@@ -12,6 +12,7 @@ export interface GoogleProfile {
 export interface JwtPayload {
   sub: string;
   email: string;
+  role: 'user' | 'admin';
 }
 
 export interface TokenPair {
@@ -30,10 +31,12 @@ export class AuthService {
     private readonly config: ConfigService,
   ) {}
 
-  async validateOrCreateUser(profile: GoogleProfile): Promise<{ id: string; email: string }> {
+  async validateOrCreateUser(
+    profile: GoogleProfile,
+  ): Promise<{ id: string; email: string; role: 'user' | 'admin' }> {
     const existing = await this.prisma.user.findUnique({
       where: { googleId: profile.googleId },
-      select: { id: true, email: true },
+      select: { id: true, email: true, role: true },
     });
     if (existing) return existing;
 
@@ -41,12 +44,12 @@ export class AuthService {
       where: { email: profile.email },
       create: { email: profile.email, googleId: profile.googleId },
       update: { googleId: profile.googleId },
-      select: { id: true, email: true },
+      select: { id: true, email: true, role: true },
     });
   }
 
-  async generateTokens(userId: string, email: string): Promise<TokenPair> {
-    const payload: JwtPayload = { sub: userId, email };
+  async generateTokens(userId: string, email: string, role: 'user' | 'admin'): Promise<TokenPair> {
+    const payload: JwtPayload = { sub: userId, email, role };
     const [accessToken, refreshToken] = await Promise.all([
       this.jwt.signAsync(payload, {
         secret: this.config.getOrThrow<string>('JWT_SECRET'),
@@ -78,12 +81,12 @@ export class AuthService {
 
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
-      select: { id: true, email: true, refreshToken: true },
+      select: { id: true, email: true, role: true, refreshToken: true },
     });
     if (!user?.refreshToken) throw new UnauthorizedException();
     if (user.refreshToken !== this.hashToken(rawRefreshToken)) throw new UnauthorizedException();
 
-    return this.generateTokens(user.id, user.email);
+    return this.generateTokens(user.id, user.email, user.role);
   }
 
   async logout(userId: string): Promise<void> {
