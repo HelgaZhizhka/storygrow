@@ -73,7 +73,7 @@ const failingJudge = {
   finalScore: 4.8,
 };
 
-const allowedWords = [
+const corpusWords = [
   'маша',
   'кот',
   'котом',
@@ -95,7 +95,7 @@ const baseInput: EvaluateInput = {
   childAge: 6,
   learningGoal: 'научиться дружить',
   bookId: 'book-1',
-  allowedWords,
+  corpusWords,
 };
 
 describe('StoryEvaluatorService', () => {
@@ -141,9 +141,16 @@ describe('StoryEvaluatorService', () => {
     const storyWithForeignWords: Story = {
       ...validStory,
       title: 'бегемот жираф слон антилопа носорог лемур',
+      pages: validStory.pages.map((page) =>
+        page.text ? { ...page, text: 'бегемот жираф слон антилопа носорог' } : page,
+      ),
     };
     mockGenerateObject.mockResolvedValueOnce({ object: passingJudge } as never);
-    const result = await service.evaluate({ ...baseInput, story: storyWithForeignWords });
+    const result = await service.evaluate({
+      ...baseInput,
+      story: storyWithForeignWords,
+      corpusWords: ['кот'],
+    });
     expect(result.passed).toBe(false);
     expect(result.outOfCorpus.length).toBeGreaterThan(0);
   });

@@ -64,4 +64,12 @@ export class VocabularyRagService {
 
     return rows.map((r) => r.word);
   }
+
+  async listByGrade(gradeLevel: number): Promise<string[]> {
+    const rows = await this.prisma.vocabularyEntry.findMany({
+      where: { gradeLevel: { lte: gradeLevel } },
+      select: { word: true },
+    });
+    return rows.map((r) => r.word);
+  }
 }
