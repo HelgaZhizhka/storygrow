@@ -122,7 +122,7 @@ export class BooksService {
   findById(bookId: string) {
     return this.prisma.book.findUnique({
       where: { id: bookId },
-      select: { id: true, status: true },
+      select: { id: true, status: true, userId: true },
     });
   }
 
