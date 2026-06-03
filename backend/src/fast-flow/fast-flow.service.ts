@@ -2,7 +2,11 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PdfRenderService } from '../pdf/pdf-render.service';
 import { templateContentSchema, type TemplatePage } from './template-content.schema';
-import { substitutePlaceholders, type SubstitutionContext } from './substitute-placeholders';
+import {
+  substitutePlaceholders,
+  resolveGender,
+  type SubstitutionContext,
+} from './substitute-placeholders';
 import { pickIllustration, type IllustrationRecord } from './pick-illustration';
 import type { Page } from '../ai/schemas/story.schema';
 import type { Story } from '../ai/schemas';
@@ -41,7 +45,11 @@ export class FastFlowService {
       throw new NotFoundException(`No template for learning goal ${input.learningGoalId}`);
     }
 
-    const ctx: SubstitutionContext = { childName: child.name, childAge: child.age };
+    const ctx: SubstitutionContext = {
+      childName: child.name,
+      childAge: child.age,
+      isFeminine: resolveGender(child.gender),
+    };
     const title = substitutePlaceholders(template.title, ctx);
     const content = templateContentSchema.parse(template.content);
     const pages = content.pages.map((p) => ({ ...p, text: substitutePlaceholders(p.text, ctx) }));
@@ -64,7 +72,7 @@ export class FastFlowService {
 
     const story: Story = {
       title,
-      discussionQuestions: generateDiscussionQuestions(child.name),
+      discussionQuestions: generateDiscussionQuestions(child.name, ctx.isFeminine),
       pages: buildStoryPages(pages, title),
     };
 
@@ -120,12 +128,15 @@ function buildIllustrationUrls(
   return pages.map((page) => pickIllustration(illustrations, [page.illustrationTag])?.url ?? '');
 }
 
-function generateDiscussionQuestions(childName: string): string[] {
+function generateDiscussionQuestions(childName: string, isFeminine: boolean): string[] {
+  const postupil = isFeminine ? 'поступила' : 'поступил';
+  const popal = isFeminine ? 'попадала' : 'попадал';
+  const sdelal = isFeminine ? 'сделала' : 'сделал';
   return [
     `Что произошло в этой истории?`,
-    `Как ты думаешь, правильно ли поступил ${childName}? Почему?`,
-    `А ты когда-нибудь попадал в похожую ситуацию?`,
-    `Что бы ты сделал на месте ${childName}?`,
+    `Как ты думаешь, правильно ли ${postupil} ${childName}? Почему?`,
+    `А ты когда-нибудь ${popal} в похожую ситуацию?`,
+    `Что бы ты ${sdelal} на месте ${childName}?`,
     `Чему нас учит эта история?`,
   ];
 }
