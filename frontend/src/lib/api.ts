@@ -1,4 +1,4 @@
-import { getAccessToken } from './auth';
+import { getAccessToken, getRefreshToken, setTokens, clearTokens } from './auth';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
@@ -12,7 +12,33 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+let refreshPromise: Promise<void> | null = null;
+
+async function refreshAccessToken(): Promise<void> {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) {
+    clearTokens();
+    window.location.href = '/login';
+    throw new ApiError(401, 'No refresh token');
+  }
+
+  const res = await fetch(`${API_URL}/auth/refresh`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refreshToken }),
+  });
+
+  if (!res.ok) {
+    clearTokens();
+    window.location.href = '/login';
+    throw new ApiError(401, 'Session expired');
+  }
+
+  const data = (await res.json()) as { accessToken: string; refreshToken: string };
+  setTokens(data.accessToken, data.refreshToken);
+}
+
+async function request<T>(path: string, init?: RequestInit, isRetry = false): Promise<T> {
   const token = getAccessToken();
   const res = await fetch(`${API_URL}${path}`, {
     ...init,
@@ -22,6 +48,15 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       ...init?.headers,
     },
   });
+
+  if (res.status === 401 && !isRetry) {
+    refreshPromise ??= refreshAccessToken().finally(() => {
+      refreshPromise = null;
+    });
+    await refreshPromise;
+    return request<T>(path, init, true);
+  }
+
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);
     throw new ApiError(res.status, text);
