@@ -38,7 +38,7 @@ The project is built within the **"Course on building and launching a SaaS servi
 | Storage | S3 / MinIO (local via docker-compose) |
 | AI SDK | **Vercel AI SDK** (`ai`, `@ai-sdk/openai`, `zod`) — no LangChain |
 | LLM | OpenAI `gpt-4o-mini` (text + judge), `text-embedding-3-small` (embeddings) |
-| Image gen | OpenAI `dall-e-3` (no Flux/IP-Adapter in MVP) |
+| Image gen | OpenAI `gpt-image-1` (no Flux/IP-Adapter in MVP) |
 | Observability | **LangFuse** (self-hosted in docker-compose) |
 | PDF | Puppeteer |
 | Payments | Stripe (test mode → production by defense time) |

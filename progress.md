@@ -739,3 +739,78 @@ Each entry uses this template:
 - 118 backend tests (unchanged; billing tests added, replace the earlier stubs).
 - 35 issues closed (#74, #24 merged).
 - Code-complete trajectory: ~6-8 June.
+
+---
+
+## 2026-06-03 — Big push: frontend, fast flow, payments, admin, ops, compliance fix (PRs #94–#130)
+
+Consolidated catch-up entry. 37 PRs squash-merged in one high-velocity day, grouped by theme below. Project went from backend-pipeline-complete to a working end-to-end product (auth → create → generate → read → admin → pay).
+
+**Frontend core (auth + books + SSE):**
+- **#94** Google OAuth login flow — auth guard, callback page, token store.
+- **#95** Book creation form (wizard) + CRUD endpoints.
+- **#96** SSE progress stream + book detail page (live attempt/stage feed).
+- **#112** Enable CORS for the frontend origin.
+- **#114** Auto-refresh JWT on 401 + add seed scripts.
+
+**Fast Flow (template/AI fast path, no RAG/compliance — the #75–#78 cluster):**
+- **#103** Tag taxonomy + `substitutePlaceholders` + 5 template stories.
+- **#104** `FastIllustration` table + `pickIllustration` + DALL-E seed script.
+- **#105** `FastFlowService` + sync `POST /books` routing.
+- **#107** Frontend mode selector + fast-flow inline result.
+- **#116** Gender-aware placeholders + expanded template text.
+- **#123** Gender-correct all 5 seed templates + fix goal title mapping.
+- **#125** Replace static template text with AI generation (still no RAG/compliance gate — that's the Custom Flow's job).
+- **#106 / #126** lint cleanups (unsafe-any/unsafe-member-access in fast-flow specs).
+
+**Payments (Stripe Checkout + quotas):**
+- **#101** Stripe Checkout — `POST /api/stripe/subscribe` + pricing page.
+- **#102** Subscription quota enforcement — free=1, basic=10, premium=∞.
+
+**Admin:**
+- **#97** `LearningGoal` CRUD + seed + user role + age-range filter.
+- **#108** Books list + metrics dashboard (the defense-facing eval view).
+
+**Ops / resilience (the #83–#85 follow-ups):**
+- **#98** Skip orchestrator/image-gen on retry + BullMQ retry config.
+- **#99** `BookStatus.images_failed` + partial recovery + content-policy detection.
+- **#100** Stale-book sweeper — recover books stuck in `status=generating`.
+
+**Build / model:**
+- **#110** Switch to SWC builder + move Prisma client into `src/generated` (faster builds; client path now `src/generated/prisma`).
+- **#118** Switch image model `dall-e-3 → gpt-image-1` (+ **#119** test assertion `standard → medium` quality).
+
+**Security / correctness fixes:**
+- **#121** Ownership checks on job-status and SSE progress endpoints (was leaking other users' generation state).
+- **#127** Prevent duplicate child names per user.
+
+**#130 — vocabulary compliance reachable (today's main session):**
+- Root cause found during a custom-flow smoke test: stories scored 8.8–9.6 by the judge but `passed=false` because `vocabularyCompliance` landed ~0.11–0.21 against a `0.85` threshold. Two compounding bugs: exact string match against heavily-inflected Russian, and scoring against only the 80 RAG-retrieved words instead of the full grade corpus.
+- Added self-contained Russian Snowball stemmer (`russian-stemmer.ts`); stem both story tokens and corpus before comparison.
+- Score compliance against full grade-≤N corpus via new `VocabularyRagService.listByGrade()`; the 80 retrieved words still go only to the generator.
+- Recalibrated `COMPLIANCE_THRESHOLD` `0.85 → 0.40` (empirical stemmed match ~0.45–0.54 vs ~436-word grade-≤1 corpus; noise floor ~0.14).
+- Verified end-to-end against real DB + OpenAI ("Маша и волшебство дружбы") — passes compliance first attempt, `StoryEval` row written. Re-seeded the empty corpus (`pnpm --filter backend seed:vocabulary`, 812 words) that triggered the original crash. Cleaned up the two failed test books.
+
+**Decisions (with rationale):**
+- **Fast Flow stays gate-free.** Fast flow uses template/AI text with no RAG retrieval and no compliance check; the pedagogical vocabulary gate is the Custom Flow's differentiator. Keeping them separate avoids forcing template stories through a corpus they were never built against.
+- **Compliance threshold is empirical, not aspirational.** 0.85 was an untested guess that made the gate unreachable. 0.40 was measured against the real stemmed corpus with headroom above the noise floor — a gate that actually discriminates.
+- **gpt-image-1 over dall-e-3** for illustration generation (#118) — better instruction-following for the per-template prompts.
+- **Prisma client moved into `src/generated`** (#110) so the SWC build and Jest resolve it without a separate out-of-tree path.
+
+**Next (remaining open issues, ~10):**
+- **Defense-facing:** #72 eval-corpus harness (populate `StoryEval` via 30 real generations) → #79 demo script → #32 defense prep / dashboard polish.
+- **Deploy:** #29 prod deploy to Hetzner via Dokploy + #89 Dockerfile Chromium runtime deps + #30 Sentry/Loki monitoring.
+- **Polish:** #31 UI polish pass, #28 SEO marketing pages, #88 manual PDF smoke test.
+- **Post-defense:** #128 photo-based character generation (GDPR blocker).
+
+**Blockers:**
+- None.
+
+**Metrics:**
+- 118 → ~180 backend `it/test` cases.
+- ~35 → ~45 issues closed (#94–#130 span; 10 open remain).
+- Code-complete reached on the ~6–8 June trajectory — end-to-end product now functional locally.
+
+**Frictions:**
+- progress.md went 37 PRs stale (last entry #93). Single-day velocity outran the "bundle progress.md into each feature PR" rule. Caught during this review; reconstructed from git history. The bundling rule clearly isn't holding under high-throughput days — worth either enforcing it in the PR template/checklist or accepting periodic catch-up entries like this one as the actual workflow.
+- HNSW migration drift trimmed again during fast-flow migrations (#103/#104) — same recurring `DROP INDEX` autogen noted on 2026-06-01. Still unaddressed at the schema level.

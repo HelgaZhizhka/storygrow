@@ -54,7 +54,7 @@ Synchronous generation path (~5 seconds): pick a pre-authored `Template`, fill p
 **Avoid:** "template flow" (acceptable informally, but "fast flow" is the term in code paths and docs).
 
 ### Custom Flow
-Asynchronous generation path (3-10 min): full AI pipeline via BullMQ job — `VocabularyRag` → `StoryGenerator` → `StoryEvaluator` (with regeneration loop) → `ImageGenerator` (DALL-E 3 per page) → `PDFRenderer` (Puppeteer). Progress streamed to frontend via SSE.
+Asynchronous generation path (3-10 min): full AI pipeline via BullMQ job — `VocabularyRag` → `StoryGenerator` → `StoryEvaluator` (with regeneration loop) → `ImageGenerator` (gpt-image-1 per page) → `PDFRenderer` (Puppeteer). Progress streamed to frontend via SSE.
 
 **Avoid:** "AI flow" (every flow technically uses AI somewhere — be specific), "slow flow" (negative framing).
 

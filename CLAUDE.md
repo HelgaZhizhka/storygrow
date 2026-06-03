@@ -54,7 +54,7 @@ See [PROJECT_PLAN.md](PROJECT_PLAN.md) for full concept, scope, roadmap, and bud
 | Queue | BullMQ + Redis |
 | Storage | S3 / MinIO |
 | AI SDK | Vercel AI SDK (`ai`, `@ai-sdk/openai`, `zod`) — **not LangChain** |
-| LLM | OpenAI `gpt-4o-mini` (text + judge), `text-embedding-3-small`, `dall-e-3` |
+| LLM | OpenAI `gpt-4o-mini` (text + judge), `text-embedding-3-small`, `gpt-image-1` |
 | Observability | LangFuse (self-hosted) |
 | PDF | Puppeteer |
 | Payments | Stripe |
