@@ -3,6 +3,7 @@ jest.mock('puppeteer', () => ({ __esModule: true, default: { launch: jest.fn() }
 
 import { NotFoundException } from '@nestjs/common';
 import { FastFlowService } from './fast-flow.service';
+import type { RenderInput } from '../pdf/pdf-render.service';
 
 const mockChild = { id: 'child-1', name: 'Аня', age: 6 };
 
@@ -38,7 +39,7 @@ function makeMocks() {
     book: { create: jest.fn(), update: jest.fn() },
     bookPage: { createMany: jest.fn() },
   };
-  const pdfRender = { render: jest.fn() };
+  const pdfRender = { render: jest.fn<Promise<string>, [RenderInput]>() };
   const service = new FastFlowService(prisma as never, pdfRender as never);
   return { prisma, pdfRender, service };
 }
@@ -76,9 +77,9 @@ describe('FastFlowService.generate', () => {
     await service.generate({ userId: 'u1', childId: 'child-1', learningGoalId: 'goal-1' });
 
     const renderCall = pdfRender.render.mock.calls[0][0];
-    expect(renderCall.story.title).toBe('Маленький Аня учится делиться');
-    expect(renderCall.story.pages[0].title).toBe('Маленький Аня учится делиться');
-    expect(renderCall.story.pages[2].text).toBe('Аня протянул игрушку.');
+    expect(renderCall?.story.title).toBe('Маленький Аня учится делиться');
+    expect(renderCall?.story.pages[0]?.title).toBe('Маленький Аня учится делиться');
+    expect(renderCall?.story.pages[2]?.text).toBe('Аня протянул игрушку.');
   });
 
   it('maps first page to cover, last to final, middle pages cycle content templates', async () => {
@@ -93,13 +94,14 @@ describe('FastFlowService.generate', () => {
 
     await service.generate({ userId: 'u1', childId: 'child-1', learningGoalId: 'goal-1' });
 
-    const pages = pdfRender.render.mock.calls[0][0].story.pages;
-    expect(pages[0].template).toBe('cover');
-    expect(pages[0].text).toBeNull();
-    expect(pages[pages.length - 1].template).toBe('final');
-    expect(pages[1].template).toBe('image-top');
-    expect(pages[2].template).toBe('image-bottom');
-    expect(pages[3].template).toBe('image-left');
+    const renderInput = pdfRender.render.mock.calls[0][0];
+    const pages = renderInput?.story.pages ?? [];
+    expect(pages[0]?.template).toBe('cover');
+    expect(pages[0]?.text).toBeNull();
+    expect(pages[pages.length - 1]?.template).toBe('final');
+    expect(pages[1]?.template).toBe('image-top');
+    expect(pages[2]?.template).toBe('image-bottom');
+    expect(pages[3]?.template).toBe('image-left');
   });
 
   it('picks illustrations by tag and passes them to PdfRenderService', async () => {
@@ -114,7 +116,7 @@ describe('FastFlowService.generate', () => {
 
     await service.generate({ userId: 'u1', childId: 'child-1', learningGoalId: 'goal-1' });
 
-    const { illustrationUrls } = pdfRender.render.mock.calls[0][0];
+    const illustrationUrls = pdfRender.render.mock.calls[0][0]?.illustrationUrls ?? [];
     expect(illustrationUrls[0]).toBe('https://s3/park.png');
     expect(illustrationUrls[1]).toBe('https://s3/sad.png');
     expect(illustrationUrls[2]).toBe('https://s3/sharing.png');
