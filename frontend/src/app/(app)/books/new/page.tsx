@@ -19,9 +19,13 @@ interface LearningGoal {
   description: string;
 }
 
-interface CreatedBook {
+interface FastBookResult {
+  bookId: string;
+  pdfKey: string;
+}
+
+interface CustomBookResult {
   id: string;
-  mode: string;
 }
 
 const schema = z
@@ -55,6 +59,7 @@ export default function NewBookPage(): React.ReactElement {
   const [children, setChildren] = useState<Child[]>([]);
   const [goals, setGoals] = useState<LearningGoal[]>([]);
   const [serverError, setServerError] = useState<string | null>(null);
+  const [fastResult, setFastResult] = useState<{ bookId: string; pdfUrl: string } | null>(null);
 
   const {
     register,
@@ -63,10 +68,11 @@ export default function NewBookPage(): React.ReactElement {
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { childOption: 'existing', mode: 'fast' },
+    defaultValues: { childOption: 'existing', mode: 'custom' },
   });
 
   const childOption = watch('childOption');
+  const mode = watch('mode');
 
   useEffect(() => {
     void Promise.all([
@@ -77,6 +83,7 @@ export default function NewBookPage(): React.ReactElement {
 
   async function onSubmit(values: FormValues): Promise<void> {
     setServerError(null);
+    setFastResult(null);
     try {
       let childId = values.childId;
 
@@ -89,14 +96,23 @@ export default function NewBookPage(): React.ReactElement {
         childId = created.id;
       }
 
-      const book = await api.post<CreatedBook>('/books', {
-        childId,
-        learningGoalId: values.learningGoalId,
-        mode: values.mode,
-      });
-
-      await api.post(`/books/${book.id}/generate`, {});
-      router.replace(`/books/${book.id}/progress`);
+      if (values.mode === 'fast') {
+        const result = await api.post<FastBookResult>('/books', {
+          childId,
+          learningGoalId: values.learningGoalId,
+          mode: 'fast',
+        });
+        const { url } = await api.get<{ url: string }>(`/books/${result.bookId}/pdf-url`);
+        setFastResult({ bookId: result.bookId, pdfUrl: url });
+      } else {
+        const book = await api.post<CustomBookResult>('/books', {
+          childId,
+          learningGoalId: values.learningGoalId,
+          mode: 'custom',
+        });
+        await api.post(`/books/${book.id}/generate`, {});
+        router.replace(`/books/${book.id}/progress`);
+      }
     } catch (err) {
       setServerError(err instanceof Error ? err.message : 'Что-то пошло не так');
     }
@@ -221,12 +237,34 @@ export default function NewBookPage(): React.ReactElement {
 
         {serverError && <p className="text-sm text-red-500">{serverError}</p>}
 
+        {fastResult && (
+          <div className="flex flex-col gap-3 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950">
+            <p className="text-sm font-medium text-green-800 dark:text-green-200">Книга готова!</p>
+            <div className="flex gap-3">
+              <a
+                href={fastResult.pdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-800"
+              >
+                Скачать PDF
+              </a>
+              <a
+                href={`/books/${fastResult.bookId}`}
+                className="rounded-lg border border-green-300 px-4 py-2 text-sm font-medium text-green-800 transition-colors hover:bg-green-100 dark:border-green-700 dark:text-green-200 dark:hover:bg-green-900"
+              >
+                Открыть книгу
+              </a>
+            </div>
+          </div>
+        )}
+
         <button
           type="submit"
           disabled={isSubmitting}
           className="rounded-lg bg-zinc-900 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
         >
-          {isSubmitting ? 'Создаём…' : 'Создать книгу'}
+          {isSubmitting ? (mode === 'fast' ? 'Генерируем PDF…' : 'Создаём…') : 'Создать книгу'}
         </button>
       </form>
     </main>
