@@ -128,8 +128,9 @@ storygrow/
          ┌───────────────────────────────────────────┐
          │ 4. ImageGenerator.generate(prompts)       │
          │      → for each illustrationPrompt:        │
-         │          openai.images.generate(dalle-3)   │
-         │          upload to S3                      │
+         │          openai.images.generate(gpt-image-1)│
+         │          upload to S3 → store key in       │
+         │          Book.imageKeys[]                  │
          └───────────────────────────────────────────┘
                               │
                               ▼
@@ -154,18 +155,20 @@ Every AI call is wrapped with LangFuse telemetry, producing a trace with metadat
 
 ---
 
-## Fast flow (template-based, no AI)
+## Fast flow (AI-assisted, synchronous)
 
 ```
-POST /books { mode='fast', templateId, childId }
-   → pick Template
-   → substitute placeholders ({{childName}}, {{learningGoal}}, ...)
-   → pick illustrations by template's image tags
-   → Puppeteer → PDF
-   → return { pdfUrl }   (sub-5-second response)
+POST /books { mode='fast', childId, learningGoalId }
+   → pick Template by learningGoal + child age
+   → ai.generateObject(StorySchema) with template as context
+   → substitute child name / goal placeholders
+   → pick FastIllustration by template tags (pre-rendered images)
+   → write BookPage rows to DB
+   → Puppeteer → PDF → S3
+   → return book (sub-10-second response)
 ```
 
-No BullMQ queue (synchronous), no `StoryEval`, no LangFuse trace.
+No BullMQ queue (synchronous). No `StoryEval`. LangFuse trace written for the `generateObject` call.
 
 ---
 
@@ -204,18 +207,18 @@ model LearningGoal {
 }
 
 model Book {
-  id              String   @id @default(cuid())
+  id              String      @id @default(cuid())
   userId          String
   childId         String
   learningGoalId  String
-  mode            BookMode  // 'fast' | 'custom'
-  status          BookStatus  // 'pending' | 'generating' | 'ready' | 'failed'
-  title           String?
-  pdfUrl          String?
-  storyJson       Json?      // full Story payload for custom mode
-  pages           BookPage[]
+  status          BookStatus  // 'pending'|'generating'|'ready'|'failed'|'images_failed'|'generation_failed'
+  title           String
+  storyJson       Json?       // full Story payload (custom flow)
+  imageKeys       String[]    // S3 keys for page illustrations
+  pdfKey          String?     // S3 key for the rendered PDF
+  pages           BookPage[]  // populated by fast flow
   evals           StoryEval[]
-  createdAt       DateTime @default(now())
+  createdAt       DateTime    @default(now())
 }
 
 model BookPage {
@@ -228,14 +231,16 @@ model BookPage {
 }
 
 model StoryEval {
-  id          String   @id @default(cuid())
-  bookId      String
-  attempt     Int
-  scores      Json     // { ageAppropriateVocab, hasMoralLesson, ... }
-  finalScore  Float
-  passed      Boolean
-  createdAt   DateTime @default(now())
-  book        Book     @relation(fields: [bookId], references: [id])
+  id                   String   @id @default(cuid())
+  bookId               String
+  attempt              Int
+  judgeScores          Json     // { ageAppropriateVocab, hasMoralLesson, structureCompleteness, safetyForChildren, length }
+  judgeReasoning       String?
+  finalScore           Float
+  vocabularyCompliance Float?
+  passed               Boolean
+  generatedAt          DateTime @default(now())
+  book                 Book     @relation(fields: [bookId], references: [id])
 }
 
 model VocabularyEntry {
@@ -284,7 +289,7 @@ model Subscription {
 
 ## Why not LangChain
 
-Our pipeline is **deterministic** (input → retrieve → generate → judge → render). There is no multi-step tool use, no agent loop, no provider abstraction need. LangChain would add layers of abstraction over what is essentially five sequential service calls — increasing debugger surface area without adding capability. See `docs/adr/0001-ai-stack-vercel-sdk.md` (to be written) for the full reasoning.
+Our pipeline is **deterministic** (input → retrieve → generate → judge → render). There is no multi-step tool use, no agent loop, no provider abstraction need. LangChain would add layers of abstraction over what is essentially five sequential service calls — increasing debugger surface area without adding capability.
 
 ---
 
@@ -294,7 +299,7 @@ Our pipeline is **deterministic** (input → retrieve → generate → judge →
 Hetzner CX22 (or CX32) ─── Dokploy ─── stories.example.com
                                   │
                                   ├── frontend (Next.js, port 3000)
-                                  ├── backend  (NestJS, port 4000)
+                                  ├── backend  (NestJS, port 3001)
                                   ├── postgres + pgvector
                                   ├── redis
                                   ├── minio

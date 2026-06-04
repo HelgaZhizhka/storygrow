@@ -933,3 +933,28 @@ Consolidated catch-up entry. 37 PRs squash-merged in one high-velocity day, grou
 **Metrics:**
 - `./init.sh` green (0 errors, 2 lint warnings).
 - ~45 → ~47 issues closed.
+
+---
+
+## 2026-06-04 — Docs cleanup + issue triage
+
+**Done:**
+- Closed #72 (corpus harness) as wontfix — 2 real StoryEval rows are sufficient jury evidence.
+- Closed #88 (PDF smoke test) as done — verified during full end-to-end run on 2026-06-04.
+- Fixed `docs/ARCHITECTURE.md` stale content:
+  - Image model `dall-e-3` → `gpt-image-1`, noted `Book.imageKeys[]` storage
+  - Fast Flow description updated: it uses `generateObject` + AI since PR #125; LangFuse trace written
+  - `Book` model sketch: removed non-existent `mode` field, `pdfUrl` → `pdfKey`, added `imageKeys[]`, fixed `title` (non-optional), added `images_failed`/`generation_failed` statuses
+  - `StoryEval` model sketch: `scores` → `judgeScores`, `createdAt` → `generatedAt`, added `judgeReasoning`, `vocabularyCompliance`
+  - Removed dead link to non-existent ADR `0001-ai-stack-vercel-sdk.md`
+  - Backend port `4000` → `3001` in deployment diagram
+
+**Next:**
+- Code review of current codebase
+- #29 Hetzner VPS provisioning (manual user step — follow `docs/deploy-checklist.md`)
+- #32 Defense prep: eval dashboard polish + slides
+- #28 SEO pages (lower priority)
+- #30 Sentry/Loki (lower priority)
+
+**Blockers:**
+- None.
