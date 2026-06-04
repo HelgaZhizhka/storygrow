@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import { getAccessToken } from '@/lib/auth';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
@@ -31,46 +32,67 @@ export default function BookProgressPage(): React.ReactElement {
   const esRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
-    const es = new EventSource(`${API_URL}/books/${id}/progress`);
-    esRef.current = es;
+    let cancelled = false;
 
-    es.onmessage = (ev: MessageEvent<string>) => {
-      const event = JSON.parse(ev.data) as ProgressEvent;
+    // Check current status first; api auto-refreshes the access token if expired.
+    api
+      .get<BookStatus>(`/books/${id}`)
+      .then((book) => {
+        if (cancelled) return;
+        if (book.status === 'ready') {
+          router.replace(`/books/${id}`);
+          return;
+        }
+        if (TERMINAL_FAILED.has(book.status)) {
+          setFailed(true);
+          return;
+        }
 
-      setLog((prev) => [
-        ...prev,
-        { message: event.message ?? event.type, progress: event.progress },
-      ]);
+        // EventSource cannot send Authorization headers — pass token as query param.
+        const token = getAccessToken();
+        const qs = token ? `?token=${encodeURIComponent(token)}` : '';
+        const es = new EventSource(`${API_URL}/books/${id}/progress${qs}`);
+        esRef.current = es;
 
-      if (event.type === 'ready') {
-        es.close();
-        router.replace(`/books/${id}`);
-      } else if (event.type === 'failed') {
-        es.close();
-        setFailed(true);
-      }
-    };
+        es.onmessage = (ev: MessageEvent<string>) => {
+          const event = JSON.parse(ev.data) as ProgressEvent;
+          setLog((prev) => [
+            ...prev,
+            { message: event.message ?? event.type, progress: event.progress },
+          ]);
 
-    es.onerror = () => {
-      es.close();
-      // SSE dropped — check actual book status before showing error
-      api
-        .get<BookStatus>(`/books/${id}`)
-        .then((book) => {
-          if (book.status === 'ready') {
+          if (event.type === 'ready') {
+            es.close();
             router.replace(`/books/${id}`);
-          } else if (TERMINAL_FAILED.has(book.status)) {
+          } else if (event.type === 'failed') {
+            es.close();
             setFailed(true);
           }
-          // still 'generating' or 'pending' — leave spinner, SSE will reconnect
-        })
-        .catch(() => {
-          setFailed(true);
-        });
-    };
+        };
+
+        es.onerror = () => {
+          es.close();
+          if (cancelled) return;
+          api
+            .get<BookStatus>(`/books/${id}`)
+            .then((b) => {
+              if (cancelled) return;
+              if (b.status === 'ready') router.replace(`/books/${id}`);
+              else if (TERMINAL_FAILED.has(b.status)) setFailed(true);
+              // still generating — leave spinner, user can refresh
+            })
+            .catch(() => {
+              if (!cancelled) setFailed(true);
+            });
+        };
+      })
+      .catch(() => {
+        if (!cancelled) setFailed(true);
+      });
 
     return () => {
-      es.close();
+      cancelled = true;
+      esRef.current?.close();
     };
   }, [id, router]);
 
