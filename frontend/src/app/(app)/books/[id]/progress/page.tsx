@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { api } from '@/lib/api';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
@@ -15,6 +16,12 @@ interface LogEntry {
   message: string;
   progress?: number;
 }
+
+interface BookStatus {
+  status: 'pending' | 'generating' | 'ready' | 'failed' | 'images_failed' | 'generation_failed';
+}
+
+const TERMINAL_FAILED = new Set(['failed', 'generation_failed', 'images_failed']);
 
 export default function BookProgressPage(): React.ReactElement {
   const { id } = useParams<{ id: string }>();
@@ -45,8 +52,21 @@ export default function BookProgressPage(): React.ReactElement {
     };
 
     es.onerror = () => {
-      setFailed(true);
       es.close();
+      // SSE dropped — check actual book status before showing error
+      api
+        .get<BookStatus>(`/books/${id}`)
+        .then((book) => {
+          if (book.status === 'ready') {
+            router.replace(`/books/${id}`);
+          } else if (TERMINAL_FAILED.has(book.status)) {
+            setFailed(true);
+          }
+          // still 'generating' or 'pending' — leave spinner, SSE will reconnect
+        })
+        .catch(() => {
+          setFailed(true);
+        });
     };
 
     return () => {
