@@ -958,3 +958,31 @@ Consolidated catch-up entry. 37 PRs squash-merged in one high-velocity day, grou
 
 **Blockers:**
 - None.
+
+---
+
+## 2026-06-04 — Code review findings applied (PR #151)
+
+**Done:**
+- High-effort code review (10 commits, 7 finder angles × parallel verify agents). 5 findings confirmed/plausible:
+  1. `progress.controller.ts` — `images_failed` missing from terminal status guard; SSE endpoint hung.
+  2. `progress/page.tsx` — `onerror` unconditionally called `es.close()`, killing browser SSE reconnect on transient errors.
+  3. `books/[id]/page.tsx` — image URL fetch failure silently swallowed (empty `.catch(() => {})`).
+  4. `types.ts` / `StatusBadge.tsx` — `generation_failed` phantom status (never existed in Prisma enum).
+  5. All 4 AI services read `OPENAI_API_KEY` via `process.env` directly, bypassing ConfigService.
+- Applied all 5 fixes on branch `issue/code-review-fixes` → PR #151 → squash-merged.
+- `./init.sh` exits 0 (tsc + lint + 170 tests).
+
+**Decisions:**
+- `MAX_SSE_ERRORS = 5`: up to 5 transient SSE errors before giving up, rather than fail-on-first.
+- `EVAL_THRESHOLD` also moved into ConfigService in `StoryEvaluatorService` (same pattern as OPENAI_API_KEY).
+- Test fixtures for 4 AI spec files updated with `{ provide: ConfigService, useValue: mockConfig }`.
+
+**Next:**
+- #29 Hetzner VPS provisioning (manual user step — follow `docs/deploy-checklist.md`)
+- #32 Defense prep: eval dashboard polish + slides
+- #28 SEO pages (lower priority)
+- #30 Sentry/Loki (lower priority)
+
+**Blockers:**
+- None.
