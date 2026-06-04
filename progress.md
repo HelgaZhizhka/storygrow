@@ -852,3 +852,22 @@ Consolidated catch-up entry. 37 PRs squash-merged in one high-velocity day, grou
 
 **Blockers:**
 - None.
+
+---
+
+## 2026-06-04 — Language purity guard added to eval pipeline (#138)
+
+**Done:**
+- **Found quality gap:** the generated book contained an English sentence («Алиса learned to care about her friends…») in the final page. `checkCompliance` tokenises only Cyrillic, so Latin words were invisible to it; judge scored 9 and it passed. No deterministic guard existed for language purity.
+- **Added `checkLanguagePurity`** in `vocabulary-compliance.ts`: scans `title`, `page.title`, `page.text`, `discussionQuestions` for Latin words (≥2 chars); `illustrationPrompt` is correctly excluded (required to be English). On failure, errors merge into `structuralErrors` → existing retry loop regenerates with explicit feedback («убери английские слова»).
+- **Strengthened judge criterion 1** (`ageAppropriateVocab`): explicit −4+ penalty for non-Russian text in story fields.
+- `./init.sh` green; fix shipped via PR #139.
+
+**Decisions:**
+- Language purity is a hard gate (deterministic), not a judge score — a 100% Russian story is a structural correctness requirement, not a quality dial.
+
+**Next:**
+- Unchanged.
+
+**Blockers:**
+- None.
