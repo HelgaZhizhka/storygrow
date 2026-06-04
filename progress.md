@@ -891,3 +891,45 @@ Consolidated catch-up entry. 37 PRs squash-merged in one high-velocity day, grou
 
 **Blockers:**
 - None.
+
+---
+
+## 2026-06-04 — UI polish + deploy prep (#31, #89, #29)
+
+**Done:**
+
+### UI polish (#31 → PR #149)
+- `frontend/src/lib/types.ts` — shared `BookStatus` union type.
+- `frontend/src/components/ui/StatusBadge.tsx` — Russian-label badge with semantic Tailwind colours (ready=green, generating=blue, pending=gray, failed/generation_failed=red, images_failed=orange).
+- Books list page — `StatusBadge`, `formatDate()` ("4 июня"), hover arrow, empty state (dashed border, 📚, CTA), quota banner.
+- Book detail page — quality stats bar (оценка качества / попыток / страниц), pages rendered from `BookPage` rows (fast-flow) or `storyJson.pages[]` (custom flow), AI images via `next/image` with `unoptimized`, discussion questions section, `images_failed` retry button, skeleton loading.
+- `GET /books/:id/image-urls` backend endpoint — bulk S3 presigned URL fetch.
+- `next.config.ts` — `output: 'standalone'`, `images.remotePatterns` for MinIO (`localhost:9100`) and prod HTTPS.
+- `next/image unoptimized` used for book-page illustrations: Next.js 14+ SSRF protection blocks `/_next/image` from fetching localhost IPs; `unoptimized` bypasses the optimizer for already-sized AI-generated PNGs.
+
+### Deploy prep (#89 → PRs #147, #148; #29 → docs)
+- `backend/Dockerfile` — multi-stage: builder (PUPPETEER_CACHE_DIR, pnpm install, nest build), pruner (pnpm deploy --prod), runner (14 Chromium runtime libs, PUPPETEER_NO_SANDBOX=true).
+- `frontend/Dockerfile` — multi-stage: builder, runner (Next.js standalone output).
+- `backend/src/generation/generation.processor.ts` — `lockDuration: 90_000` on `@Processor` to prevent BullMQ job stall during Puppeteer PDF render.
+- `docs/adr/0003-chromium-runtime.md` — ADR for co-locating Chromium in API container.
+- `docs/deploy-checklist.md` — 15-section production checklist: Hetzner VPS, Dokploy, services, env vars table, Google OAuth callback, Stripe webhook, `prisma migrate deploy`, seed commands, HNSW index, smoke test.
+- Closed #72 (eval-corpus harness) as `wontfix` — jury evidence already provided by 2 real `StoryEval` rows from end-to-end runs; generating 30 synthetic books has no additional value.
+
+**Decisions:**
+- `unoptimized` on all book-page `<Image>` components rather than conditional by URL — presigned S3/MinIO URLs are already full-res AI-generated images; Next.js WebP resizing adds no value and breaks in dev.
+- `lockDuration` on the Worker decorator (not `DefaultJobOptions`) — BullMQ only exposes `lockDuration` at the Worker level; `timeout` does not exist in `DefaultJobOptions`.
+- Chromium co-located in API container (not a sidecar) — simpler Dokploy deployment; Puppeteer + API share a process, no IPC overhead. Documented in ADR-0003.
+
+**Next:**
+- #79 demo script — record end-to-end walkthrough for defense.
+- #32 defense prep / dashboard polish.
+- #28 SEO marketing pages (lower priority).
+- #30 Sentry/Loki monitoring (lower priority).
+- Hetzner VPS provisioning — manual user step, checklist in `docs/deploy-checklist.md`.
+
+**Blockers:**
+- None.
+
+**Metrics:**
+- `./init.sh` green (0 errors, 2 lint warnings).
+- ~45 → ~47 issues closed.
