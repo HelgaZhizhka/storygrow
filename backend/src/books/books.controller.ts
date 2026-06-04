@@ -106,4 +106,12 @@ export class BooksController {
     const url = await this.bookImage.signKey(book.pdfKey);
     return { url };
   }
+
+  @Get('books/:id/image-urls')
+  async getImageUrls(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    const book = await this.books.getBook(user.sub, id);
+    if (!book) throw new NotFoundException('Book not found');
+    const urls = await this.bookImage.signKeys(book.imageKeys);
+    return { urls };
+  }
 }
