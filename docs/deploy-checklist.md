@@ -81,18 +81,22 @@ Create **two** application services. For each, set **Build type = Dockerfile** a
 
 ## 6. Managed services (Postgres, Redis, MinIO, LangFuse)
 
-Dokploy can manage these as compose services, or you can create them manually.
-Recommended: use Dokploy's **Compose** tab, paste `docker-compose.yml` from the repo,
-then override the ports that Traefik should expose.
+Recommended: use Dokploy's **Compose** tab and paste the repo's `docker-compose.yml` directly.
+This deploys Postgres + Redis + MinIO + ClickHouse + LangFuse (v3) + LangFuse worker in one shot,
+with the correct inter-service networking.
 
-Alternatively, create each as a Dokploy service:
+Steps:
+1. Dokploy → **Compose** → New → paste the contents of `docker-compose.yml`
+2. Remove the `ports:` bindings for Postgres (5432), Redis (6379), and MinIO (9100/9101) — they should only be reachable internally; Traefik does not need to route to them
+3. Add a Traefik domain for LangFuse: `langfuse.storygrow.app` → container port `3000`
+4. Set required env vars for the compose stack (see step 7 below)
+5. Deploy the compose stack
 
-- [ ] **Postgres** — `pgvector/pgvector:pg17`, port 5432 (internal only), volume `postgres-data`
-- [ ] **Redis** — `redis:7-alpine`, port 6379 (internal only), volume `redis-data`
-- [ ] **MinIO** — `minio/minio`, ports 9100/9101, volume `minio-data`; run init container to create bucket `storygrow`
-- [ ] **LangFuse** — `langfuse/langfuse:2`, port 3030, connect to Postgres `langfuse` DB
+> Service hostnames within the compose network are the **service names** from `docker-compose.yml`:
+> `postgres`, `redis`, `minio`, `clickhouse`, `langfuse`.
+> Use these in `DATABASE_URL`, `REDIS_URL`, `S3_ENDPOINT`, etc.
 
-> For database hostnames, use the Dokploy internal service name (e.g. `storygrow-postgres`).
+- [ ] Compose stack deployed and all services healthy
 
 ---
 
@@ -104,13 +108,16 @@ Replace every `<...>` placeholder with a real value.
 ### Database / Cache / Storage
 
 ```env
-DATABASE_URL=postgresql://<POSTGRES_USER>:<POSTGRES_PASSWORD>@storygrow-postgres:5432/storygrow
-REDIS_URL=redis://storygrow-redis:6379
-S3_ENDPOINT=http://storygrow-minio:9000
+DATABASE_URL=postgresql://<POSTGRES_USER>:<POSTGRES_PASSWORD>@postgres:5432/storygrow
+REDIS_URL=redis://redis:6379
+S3_ENDPOINT=http://minio:9000
 S3_ACCESS_KEY=<minio_root_user>
 S3_SECRET_KEY=<minio_root_password>
 S3_BUCKET=storygrow
 ```
+
+> Hostnames are the Docker Compose **service names** (`postgres`, `redis`, `minio`),
+> not the `container_name` values.
 
 ### AI
 
@@ -118,12 +125,23 @@ S3_BUCKET=storygrow
 OPENAI_API_KEY=sk-proj-...
 ```
 
-### LangFuse
+### LangFuse (app credentials — from LangFuse UI after first login)
 
 ```env
 LANGFUSE_HOST=https://langfuse.storygrow.app
 LANGFUSE_PUBLIC_KEY=pk-...
 LANGFUSE_SECRET_KEY=sk-...
+```
+
+### LangFuse compose stack env vars (set in the Compose stack, not in storygrow-api)
+
+```env
+LANGFUSE_NEXTAUTH_SECRET=<generate: openssl rand -hex 32>
+LANGFUSE_SALT=<generate: openssl rand -hex 32>
+LANGFUSE_ENCRYPTION_KEY=<generate: openssl rand -hex 64>
+CLICKHOUSE_PASSWORD=<generate a strong password>
+LANGFUSE_INIT_USER_EMAIL=<your email>
+LANGFUSE_INIT_USER_PASSWORD=<secure password>
 ```
 
 ### Auth
@@ -151,8 +169,9 @@ STRIPE_PRICE_PREMIUM=price_...
 ```env
 EVAL_THRESHOLD=7.0
 EVAL_MAX_RETRIES=2
-PUPPETEER_NO_SANDBOX=true
 ```
+
+> `PUPPETEER_NO_SANDBOX=true` is already set in the backend Dockerfile — no need to add it here.
 
 ### Frontend env vars (Dokploy → `storygrow-web`)
 
@@ -179,7 +198,7 @@ NEXT_PUBLIC_API_URL=https://api.storygrow.app
 ## 9. Stripe — configure webhook
 
 - [ ] Stripe Dashboard → Webhooks → Add endpoint:
-  - URL: `https://api.storygrow.app/stripe/webhook`
+  - URL: `https://api.storygrow.app/api/stripe/webhooks`
   - Events: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`
 - [ ] Copy the signing secret → update `STRIPE_WEBHOOK_SECRET` in Dokploy
 
@@ -211,18 +230,18 @@ docker exec -it <container_id> npx prisma migrate deploy
 ## 12. Seed reference data
 
 ```bash
-docker exec -it <container_id> sh -c "node dist/scripts/seed-learning-goals.js"
-docker exec -it <container_id> sh -c "node dist/scripts/seed-templates.js"
-docker exec -it <container_id> sh -c "node dist/scripts/seed-illustrations.js"
-docker exec -it <container_id> sh -c "node dist/scripts/seed-vocabulary.js"
+docker exec -it <container_id> node dist/scripts/seed-learning-goals.js
+docker exec -it <container_id> node dist/scripts/seed-fast-flow-templates.js
+docker exec -it <container_id> node dist/scripts/seed-fast-illustrations.js
+docker exec -it <container_id> node dist/scripts/seed-vocabulary.js
 ```
 
-> If seed scripts are not compiled to `dist/scripts/`, run them via tsx before building,
-> or connect to the DB directly and run the SQL equivalents.
+> These scripts are compiled to `dist/scripts/` by `nest build` and require `DATABASE_URL`
+> to be set in the container environment (handled by Dokploy env vars).
 
 - [ ] `LearningGoal` rows present (20)
 - [ ] `Template` rows present (5)
-- [ ] `VocabularyEntry` rows present (812)
+- [ ] `VocabularyEntry` rows present (~820)
 
 ---
 
