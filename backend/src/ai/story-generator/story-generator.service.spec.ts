@@ -4,6 +4,7 @@ jest.mock('@ai-sdk/openai', () => ({
 }));
 
 import { Test } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { generateObject } from 'ai';
 import { StoryGeneratorService } from './story-generator.service';
 import type { GenerateStoryInput } from './story-generator.service';
@@ -64,7 +65,10 @@ describe('StoryGeneratorService', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     const module = await Test.createTestingModule({
-      providers: [StoryGeneratorService],
+      providers: [
+        StoryGeneratorService,
+        { provide: ConfigService, useValue: { getOrThrow: jest.fn().mockReturnValue('sk-test') } },
+      ],
     }).compile();
     service = module.get(StoryGeneratorService);
   });

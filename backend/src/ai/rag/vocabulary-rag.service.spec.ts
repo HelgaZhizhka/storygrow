@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { VocabularyRagService } from './vocabulary-rag.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -31,7 +32,11 @@ describe('VocabularyRagService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [VocabularyRagService, { provide: PrismaService, useValue: mockPrisma }],
+      providers: [
+        VocabularyRagService,
+        { provide: PrismaService, useValue: mockPrisma },
+        { provide: ConfigService, useValue: { getOrThrow: jest.fn().mockReturnValue('sk-test') } },
+      ],
     }).compile();
 
     service = module.get<VocabularyRagService>(VocabularyRagService);

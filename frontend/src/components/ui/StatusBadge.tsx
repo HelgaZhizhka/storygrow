@@ -17,10 +17,6 @@ const CONFIG: Record<BookStatus, { label: string; className: string }> = {
     label: 'Ошибка',
     className: 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400',
   },
-  generation_failed: {
-    label: 'Ошибка генерации',
-    className: 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400',
-  },
   images_failed: {
     label: 'Ошибка изображений',
     className: 'bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400',
