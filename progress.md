@@ -871,3 +871,23 @@ Consolidated catch-up entry. 37 PRs squash-merged in one high-velocity day, grou
 
 **Blockers:**
 - None.
+
+---
+
+## 2026-06-04 — Image prompt simplifier + SSE auth fix (#141, #144, #146)
+
+**Done:**
+- **Image prompt auto-simplify on content policy (#141 → PR #142).** `gpt-image-1` rejected an innocent illustration prompt ("Алиса in a dim room"). Added `simplifyIllustrationPrompt` in `backend/src/ai/image-generator/prompt-simplifier.ts` — calls `gpt-4o-mini` to rephrase the rejected prompt to a simpler, neutral form, then retries once. Only raises `ImageContentPolicyError` if the simplified prompt is also rejected. 170/170 tests green.
+- **SSE onerror fallback (#144 → PR #145).** Progress page was unconditionally setting `failed=true` on any SSE error, showing «Не удалось сгенерировать книгу» even for books that were already `ready`. Fixed `onerror` to call `GET /books/:id`, redirect if `ready`, show error only for terminal-failed statuses.
+- **SSE auth root fix (#146 → PR #146).** `EventSource` cannot send `Authorization` headers, so the SSE endpoint always returned 401 for authenticated users. Added `JwtSseStrategy` (passport-jwt) accepting the token from both `Authorization` header and `?token=` query param. Added `JwtSseAuthGuard`. Switched `ProgressController` to the new guard. Updated `progress/page.tsx`: checks book status on mount (redirects if already ready, ensures token is fresh), then opens `EventSource` with `?token=<accessToken>`.
+
+**Decisions:**
+- `?token=` query param exposure is acceptable for short-lived (15-minute) access tokens over HTTPS. The alternative (cookie-based SSE) requires cross-origin cookie config on the API server.
+- Status check on mount before opening EventSource: double benefit — handles already-complete books (no spinner flicker) and ensures the API's auto-refresh logic has run before the token is embedded in the SSE URL.
+
+**Next:**
+- Unchanged (defense harness #72/#79/#32, deploy #29/#89/#30, polish).
+- UI gap: `images_failed` books show no retry button (no ticket yet).
+
+**Blockers:**
+- None.
