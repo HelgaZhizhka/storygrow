@@ -19,7 +19,8 @@ interface BookWithRelations {
   learningGoal: { title: string; description: string };
 }
 
-@Processor(GENERATION_QUEUE)
+// lockDuration: 6–8 pages × ~10 s Puppeteer render ≈ 60–80 s upper bound; 90 s gives headroom.
+@Processor(GENERATION_QUEUE, { lockDuration: 90_000 })
 export class GenerationProcessor extends WorkerHost {
   private readonly logger = new Logger(GenerationProcessor.name);
 
