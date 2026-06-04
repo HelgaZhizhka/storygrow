@@ -30,6 +30,7 @@ jest.mock('../telemetry', () => ({
 }));
 
 import { Test } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { ImageGeneratorService } from './image-generator.service';
 import { ImageContentPolicyError } from './errors';
 import { S3Service } from '../../s3/s3.service';
@@ -39,6 +40,8 @@ const mockS3 = {
   uploadObject: jest.fn(),
   getSignedUrl: jest.fn(),
 };
+
+const mockConfig = { getOrThrow: jest.fn().mockReturnValue('sk-test') };
 
 const story: Story = {
   title: 'Test',
@@ -56,7 +59,11 @@ describe('ImageGeneratorService', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     const module = await Test.createTestingModule({
-      providers: [ImageGeneratorService, { provide: S3Service, useValue: mockS3 }],
+      providers: [
+        ImageGeneratorService,
+        { provide: S3Service, useValue: mockS3 },
+        { provide: ConfigService, useValue: mockConfig },
+      ],
     }).compile();
     service = module.get(ImageGeneratorService);
   });

@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { embed } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
+import type { OpenAIProvider } from '@ai-sdk/openai';
 import { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { EMBEDDING_MODEL, DEFAULT_TOP_K } from '../ai.config';
@@ -20,11 +22,14 @@ interface VocabularyRow {
 @Injectable()
 export class VocabularyRagService {
   private readonly logger = new Logger(VocabularyRagService.name);
-  private readonly openai = createOpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
+  private readonly openai: OpenAIProvider;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    config: ConfigService,
+  ) {
+    this.openai = createOpenAI({ apiKey: config.getOrThrow<string>('OPENAI_API_KEY') });
+  }
 
   async retrieve({
     topic,

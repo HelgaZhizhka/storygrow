@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { generateObject } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
+import type { OpenAIProvider } from '@ai-sdk/openai';
 import { JudgeSchema, computeFinalScore, type Story, type JudgeResult } from '../schemas';
 import { JUDGE_SYSTEM_PROMPT, buildJudgePrompt } from '../prompts/judge.prompt';
 import { validateBookPlan } from '../validators/book-plan.validator';
@@ -28,7 +30,14 @@ export interface EvalCheckResult {
 @Injectable()
 export class StoryEvaluatorService {
   private readonly logger = new Logger(StoryEvaluatorService.name);
-  private readonly openai = createOpenAI({ apiKey: process.env['OPENAI_API_KEY'] });
+  private readonly openai: OpenAIProvider;
+  private readonly evalThreshold: number;
+
+  constructor(config: ConfigService) {
+    this.openai = createOpenAI({ apiKey: config.getOrThrow<string>('OPENAI_API_KEY') });
+    const raw = parseFloat(config.get<string>('EVAL_THRESHOLD') ?? '');
+    this.evalThreshold = Number.isNaN(raw) ? EVAL_THRESHOLD_DEFAULT : raw;
+  }
 
   async evaluate(input: EvaluateInput): Promise<EvalCheckResult> {
     const { story, childAge, learningGoal, bookId, corpusWords } = input;
@@ -37,8 +46,7 @@ export class StoryEvaluatorService {
     const compliance = checkCompliance(story, corpusWords);
     const judgeResult = await this.judgeStory({ story, childAge, learningGoal, bookId });
     const computedFinalScore = computeFinalScore(judgeResult.scores);
-    const rawThreshold = parseFloat(process.env['EVAL_THRESHOLD'] ?? '');
-    const evalThreshold = Number.isNaN(rawThreshold) ? EVAL_THRESHOLD_DEFAULT : rawThreshold;
+    const evalThreshold = this.evalThreshold;
     const passed =
       structural.passed &&
       languagePurity.passed &&

@@ -62,13 +62,14 @@ function formatDate(iso: string): string {
   });
 }
 
-const TERMINAL_FAILED: BookStatus[] = ['failed', 'generation_failed', 'images_failed'];
+const TERMINAL_FAILED: BookStatus[] = ['failed', 'images_failed'];
 
 export default function BookPage(): React.ReactElement {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [book, setBook] = useState<BookDetail | null>(null);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [imageUrlError, setImageUrlError] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -81,7 +82,7 @@ export default function BookPage(): React.ReactElement {
           void api
             .get<ImageUrlsResponse>(`/books/${id}/image-urls`)
             .then((r) => setImageUrls(r.urls))
-            .catch(() => {});
+            .catch(() => setImageUrlError(true));
         }
       })
       .catch(() => setError('Книга не найдена'));
@@ -214,7 +215,7 @@ export default function BookPage(): React.ReactElement {
             Смотреть прогресс →
           </Link>
         )}
-        {(book.status === 'failed' || book.status === 'generation_failed') && (
+        {book.status === 'failed' && (
           <button
             disabled={busy}
             onClick={() => void handleGenerate()}
@@ -233,6 +234,27 @@ export default function BookPage(): React.ReactElement {
           </button>
         )}
       </div>
+
+      {/* Image load error */}
+      {imageUrlError && (
+        <div className="mb-6 rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
+          <p className="text-sm text-amber-700 dark:text-amber-400">
+            Не удалось загрузить иллюстрации.{' '}
+            <button
+              onClick={() => {
+                setImageUrlError(false);
+                void api
+                  .get<ImageUrlsResponse>(`/books/${id}/image-urls`)
+                  .then((r) => setImageUrls(r.urls))
+                  .catch(() => setImageUrlError(true));
+              }}
+              className="font-medium underline"
+            >
+              Попробовать снова
+            </button>
+          </p>
+        </div>
+      )}
 
       {/* Story pages */}
       {pages.length > 0 && (

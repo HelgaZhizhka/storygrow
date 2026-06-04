@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { startActiveObservation } from '@langfuse/tracing';
 import { generateImage } from 'ai';
 import { openai, createOpenAI } from '@ai-sdk/openai';
+import type { LanguageModel } from 'ai';
 import { type Story } from '../schemas';
 import { PAGE_TEMPLATES } from '../../pdf/page-templates/page-templates.config';
 import { S3Service } from '../../s3/s3.service';
@@ -20,11 +22,16 @@ export interface ImageGenInput {
 @Injectable()
 export class ImageGeneratorService {
   private readonly logger = new Logger(ImageGeneratorService.name);
-  private readonly textModel = createOpenAI({ apiKey: process.env['OPENAI_API_KEY'] })(
-    GENERATION_MODEL,
-  );
+  private readonly textModel: LanguageModel;
 
-  constructor(private readonly s3: S3Service) {}
+  constructor(
+    private readonly s3: S3Service,
+    config: ConfigService,
+  ) {
+    this.textModel = createOpenAI({ apiKey: config.getOrThrow<string>('OPENAI_API_KEY') })(
+      GENERATION_MODEL,
+    );
+  }
 
   async generate(input: ImageGenInput): Promise<string[]> {
     return startActiveObservation(`image-generation`, async (span) => {

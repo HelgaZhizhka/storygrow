@@ -32,7 +32,7 @@ export class ProgressController {
     if (!book) throw new NotFoundException('Book not found');
     if (book.userId !== user.sub) throw new ForbiddenException();
 
-    if (book.status === 'ready' || book.status === 'failed') {
+    if (book.status === 'ready' || book.status === 'failed' || book.status === 'images_failed') {
       return of({ data: { type: book.status } });
     }
 

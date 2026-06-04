@@ -1,7 +1,1 @@
-export type BookStatus =
-  | 'pending'
-  | 'generating'
-  | 'ready'
-  | 'failed'
-  | 'generation_failed'
-  | 'images_failed';
+export type BookStatus = 'pending' | 'generating' | 'ready' | 'failed' | 'images_failed';

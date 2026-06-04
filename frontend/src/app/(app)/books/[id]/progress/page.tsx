@@ -6,9 +6,10 @@ import { api } from '@/lib/api';
 import { getAccessToken } from '@/lib/auth';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+const MAX_SSE_ERRORS = 5;
 
 interface ProgressEvent {
-  type: 'generating' | 'progress' | 'ready' | 'failed';
+  type: 'generating' | 'progress' | 'ready' | 'failed' | 'images_failed';
   progress?: number;
   message?: string;
 }
@@ -19,10 +20,10 @@ interface LogEntry {
 }
 
 interface BookStatus {
-  status: 'pending' | 'generating' | 'ready' | 'failed' | 'images_failed' | 'generation_failed';
+  status: 'pending' | 'generating' | 'ready' | 'failed' | 'images_failed';
 }
 
-const TERMINAL_FAILED = new Set(['failed', 'generation_failed', 'images_failed']);
+const TERMINAL_FAILED = new Set(['failed', 'images_failed']);
 
 export default function BookProgressPage(): React.ReactElement {
   const { id } = useParams<{ id: string }>();
@@ -33,6 +34,7 @@ export default function BookProgressPage(): React.ReactElement {
 
   useEffect(() => {
     let cancelled = false;
+    let errorCount = 0;
 
     // Check current status first; api auto-refreshes the access token if expired.
     api
@@ -64,22 +66,34 @@ export default function BookProgressPage(): React.ReactElement {
           if (event.type === 'ready') {
             es.close();
             router.replace(`/books/${id}`);
-          } else if (event.type === 'failed') {
+          } else if (event.type === 'failed' || event.type === 'images_failed') {
             es.close();
             setFailed(true);
           }
         };
 
         es.onerror = () => {
-          es.close();
           if (cancelled) return;
+          errorCount++;
+
+          // Poll to detect a terminal state. If the book is still generating and
+          // we haven't exceeded the error budget, don't close — let the browser's
+          // built-in SSE reconnect handle the transient blip.
           api
             .get<BookStatus>(`/books/${id}`)
             .then((b) => {
               if (cancelled) return;
-              if (b.status === 'ready') router.replace(`/books/${id}`);
-              else if (TERMINAL_FAILED.has(b.status)) setFailed(true);
-              // still generating — leave spinner, user can refresh
+              if (b.status === 'ready') {
+                es.close();
+                router.replace(`/books/${id}`);
+              } else if (TERMINAL_FAILED.has(b.status)) {
+                es.close();
+                setFailed(true);
+              } else if (errorCount >= MAX_SSE_ERRORS) {
+                es.close();
+                setFailed(true);
+              }
+              // still generating and under error budget → browser reconnects automatically
             })
             .catch(() => {
               if (!cancelled) setFailed(true);
