@@ -4,6 +4,38 @@ import { stemRussian } from './russian-stemmer';
 import { COMPLIANCE_THRESHOLD } from '../ai.config';
 import type { CheckResult } from '../validators/check-result';
 
+export interface LanguagePurityResult extends CheckResult {
+  latinWords: readonly string[];
+}
+
+const LATIN_WORD_RE = /[a-zA-Z]{2,}/g;
+
+/** Returns Latin words found in Russian-only text fields (illustrationPrompt is excluded). */
+const extractLatinWords = (story: Story): string[] => {
+  const texts: string[] = [
+    story.title,
+    ...story.pages.flatMap((p) => [p.title, p.text].filter((t): t is string => Boolean(t))),
+    ...story.discussionQuestions,
+  ];
+  const found = new Set<string>();
+  for (const t of texts) {
+    for (const m of t.matchAll(LATIN_WORD_RE)) found.add(m[0]);
+  }
+  return [...found];
+};
+
+export const checkLanguagePurity = (story: Story): LanguagePurityResult => {
+  const latinWords = extractLatinWords(story);
+  if (latinWords.length === 0) return { passed: true, errors: [], latinWords: [] };
+  return {
+    passed: false,
+    errors: [
+      `Language violation: Latin words found in Russian text fields: ${latinWords.slice(0, 8).join(', ')}${latinWords.length > 8 ? ` and ${latinWords.length - 8} more` : ''}. All text fields except illustrationPrompt must be in Russian.`,
+    ],
+    latinWords,
+  };
+};
+
 export interface ComplianceCheckResult extends CheckResult {
   score: number;
   outOfCorpus: readonly string[];
