@@ -4,7 +4,7 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { JudgeSchema, computeFinalScore, type Story, type JudgeResult } from '../schemas';
 import { JUDGE_SYSTEM_PROMPT, buildJudgePrompt } from '../prompts/judge.prompt';
 import { validateBookPlan } from '../validators/book-plan.validator';
-import { checkCompliance } from './vocabulary-compliance';
+import { checkCompliance, checkLanguagePurity } from './vocabulary-compliance';
 import { createTelemetry } from '../telemetry';
 import { GENERATION_MODEL, EVAL_THRESHOLD_DEFAULT } from '../ai.config';
 
@@ -33,16 +33,21 @@ export class StoryEvaluatorService {
   async evaluate(input: EvaluateInput): Promise<EvalCheckResult> {
     const { story, childAge, learningGoal, bookId, corpusWords } = input;
     const structural = validateBookPlan(story.pages, childAge);
+    const languagePurity = checkLanguagePurity(story);
     const compliance = checkCompliance(story, corpusWords);
     const judgeResult = await this.judgeStory({ story, childAge, learningGoal, bookId });
     const computedFinalScore = computeFinalScore(judgeResult.scores);
     const rawThreshold = parseFloat(process.env['EVAL_THRESHOLD'] ?? '');
     const evalThreshold = Number.isNaN(rawThreshold) ? EVAL_THRESHOLD_DEFAULT : rawThreshold;
-    const passed = structural.passed && compliance.passed && computedFinalScore >= evalThreshold;
+    const passed =
+      structural.passed &&
+      languagePurity.passed &&
+      compliance.passed &&
+      computedFinalScore >= evalThreshold;
 
     if (!passed) {
       this.logger.warn(
-        `Attempt failed: structural=${structural.passed} compliance=${compliance.score.toFixed(2)} judge=${computedFinalScore}`,
+        `Attempt failed: structural=${structural.passed} languagePurity=${languagePurity.passed} compliance=${compliance.score.toFixed(2)} judge=${computedFinalScore}`,
       );
     }
 
@@ -51,7 +56,7 @@ export class StoryEvaluatorService {
       judgeResult,
       computedFinalScore,
       outOfCorpus: compliance.outOfCorpus,
-      structuralErrors: structural.errors,
+      structuralErrors: [...structural.errors, ...languagePurity.errors],
       vocabularyCompliance: compliance.score,
     };
   }

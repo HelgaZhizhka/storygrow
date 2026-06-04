@@ -4,7 +4,7 @@ export const JUDGE_SYSTEM_PROMPT = `
 You are an expert evaluator of Russian children's books.
 Rate the story on exactly five criteria using integers 0–10 each:
 
-1. ageAppropriateVocab — vocabulary difficulty matches the child's age
+1. ageAppropriateVocab — vocabulary difficulty matches the child's age; penalise heavily (−4 or more) if any English or other non-Russian words appear in the text (name, title, body, questions) — the story must be 100% Russian
 2. hasMoralLesson — story clearly teaches the stated learning goal
 3. structureCompleteness — all four narrative stages present (setup → conflict → lesson → resolution)
 4. safetyForChildren — content is appropriate, non-violent, and positive for children
