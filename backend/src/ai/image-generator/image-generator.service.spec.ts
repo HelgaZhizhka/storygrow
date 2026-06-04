@@ -3,15 +3,19 @@ jest.mock('../../generated/prisma/client', () => ({
 }));
 
 const mockGenerateImage = jest.fn();
+const mockGenerateText = jest.fn();
 
 jest.mock('ai', () => ({
   generateImage: (...args: unknown[]): unknown => mockGenerateImage(...args),
+  generateText: (...args: unknown[]): unknown => mockGenerateText(...args),
 }));
 
+const mockTextModel = { id: 'gpt-4o-mini-mock' };
+const mockCreateOpenAI = jest.fn().mockReturnValue(jest.fn().mockReturnValue(mockTextModel));
+
 jest.mock('@ai-sdk/openai', () => ({
-  openai: {
-    imageModel: jest.fn((id: string) => ({ id })),
-  },
+  openai: { imageModel: jest.fn((id: string) => ({ id })) },
+  createOpenAI: (...args: unknown[]): unknown => mockCreateOpenAI(...args),
 }));
 
 jest.mock('@langfuse/tracing', () => ({
@@ -19,6 +23,10 @@ jest.mock('@langfuse/tracing', () => ({
     _name: string,
     fn: (span: { update: jest.Mock }) => Promise<T>,
   ): Promise<T> => fn({ update: jest.fn() }),
+}));
+
+jest.mock('../telemetry', () => ({
+  createTelemetry: jest.fn(() => ({ isEnabled: false })),
 }));
 
 import { Test } from '@nestjs/testing';
@@ -116,8 +124,25 @@ describe('ImageGeneratorService', () => {
     expect(calls[0][0].providerOptions.openai.quality).toBe('medium');
   });
 
-  it('throws ImageContentPolicyError when DALL-E refuses the prompt', async () => {
-    mockGenerateImage.mockRejectedValueOnce(new Error('content_policy_violation: not safe'));
+  it('on content policy error: simplifies prompt via LLM and retries image generation', async () => {
+    const policyErr = new Error('content_policy_violation: not safe');
+    mockGenerateImage
+      .mockRejectedValueOnce(policyErr) // first attempt → rejected
+      .mockResolvedValue({ image: { base64: Buffer.from('img').toString('base64') } }); // retry → ok
+    mockGenerateText.mockResolvedValue({ text: 'simplified safe prompt' });
+    mockS3.uploadObject.mockResolvedValue(undefined);
+
+    const keys = await service.generate({ story, bookId: 'b' });
+
+    expect(mockGenerateText).toHaveBeenCalledTimes(1);
+    expect(mockGenerateImage).toHaveBeenCalledTimes(4); // 3 pages, page-1 retried once
+    expect(keys).toHaveLength(3);
+  });
+
+  it('throws ImageContentPolicyError when both original and simplified prompt are rejected', async () => {
+    const policyErr = new Error('content_policy_violation: not safe');
+    mockGenerateImage.mockRejectedValue(policyErr);
+    mockGenerateText.mockResolvedValue({ text: 'simplified prompt' });
 
     await expect(service.generate({ story, bookId: 'b' })).rejects.toBeInstanceOf(
       ImageContentPolicyError,
