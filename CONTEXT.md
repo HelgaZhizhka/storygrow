@@ -58,6 +58,26 @@ Asynchronous generation path (3-10 min): full AI pipeline via BullMQ job — `Vo
 
 **Avoid:** "AI flow" (every flow technically uses AI somewhere — be specific), "slow flow" (negative framing).
 
+### Protagonist Mode
+Per-book choice in the Custom Flow (`Book.protagonistMode`): `child` — the hero **is** the child (name and `appearance` used); `observer` — a third-person story about an **invented** character (the child's name and appearance are deliberately not used). Observer mode is the pedagogically safer framing for sensitive learning goals (tantrums, greed), so the child watches a proxy learn rather than seeing themselves shamed.
+
+**Avoid:** "narrator mode", "POV" — the term is "protagonist mode" with values `child` / `observer`.
+
+### Character Appearance
+Free-text visual description of the child stored on `Child.appearance` (reusable across books). Fed into the story prompt in `child` protagonist mode to seed `characterProfile`. If blank, the LLM invents an age-appropriate appearance.
+
+**Avoid:** "avatar", "portrait" — there is no image of the child; this is a text description only.
+
+### Art Style
+Per-book illustration style (`Book.artStyle`): `watercolor` (default) / `cartoon` / `storybook` / `pixel` / `realistic`. Maps to an English suffix (`STYLE_SUFFIXES` in `ai.config.ts`) appended to every illustration prompt. Custom Flow only; fast-flow uses its pre-rendered illustrations.
+
+**Avoid:** "theme", "skin" — the term is "art style".
+
+### Character Profile
+The English visual description of the protagonist that the LLM emits in `StorySchema.characterProfile`, prepended to **every** page's illustration prompt so the character looks consistent across pages. In `child` mode it derives from `Character Appearance`; in `observer` mode it describes the invented character.
+
+**Avoid:** "character sheet", "bio" — it is a short visual descriptor, not a backstory.
+
 ### Discussion Question
 A single open-ended question for the parent to ask the child after reading. Five per story, generated as part of `StorySchema`. Rendered on the last page of the PDF, not as an interactive quiz.
 

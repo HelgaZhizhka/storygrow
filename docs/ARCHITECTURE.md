@@ -192,6 +192,7 @@ model Child {
   name       String
   age        Int
   gender     String?
+  appearance String?    // free-text visual description; blank → LLM invents
   interests  String[]
   books      Book[]
 }
@@ -211,8 +212,10 @@ model Book {
   userId          String
   childId         String
   learningGoalId  String
-  status          BookStatus  // 'pending'|'generating'|'ready'|'failed'|'images_failed'|'generation_failed'
+  status          BookStatus  // 'pending'|'generating'|'ready'|'failed'|'images_failed'
   title           String
+  protagonistMode ProtagonistMode  // 'child' (hero = the child) | 'observer' (invented character)
+  artStyle        ArtStyle    // 'watercolor'|'cartoon'|'storybook'|'pixel'|'realistic'
   storyJson       Json?       // full Story payload (custom flow)
   imageKeys       String[]    // S3 keys for page illustrations
   pdfKey          String?     // S3 key for the rendered PDF
