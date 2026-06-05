@@ -16,6 +16,9 @@ export interface GenerateStoryOptions {
   childAge: number;
   topic: string;
   learningGoal: string;
+  protagonistMode: 'child' | 'observer';
+  gender?: string;
+  appearance?: string;
 }
 
 export interface GenerateStoryResult {

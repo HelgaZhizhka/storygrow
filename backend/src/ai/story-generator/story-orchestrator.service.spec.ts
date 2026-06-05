@@ -110,6 +110,7 @@ const opts: GenerateStoryOptions = {
   childAge: 6,
   topic: 'дружба',
   learningGoal: 'научиться дружить',
+  protagonistMode: 'child',
 };
 
 interface StoryEvalCreateArgs {
@@ -167,6 +168,22 @@ describe('StoryOrchestratorService', () => {
     expect(result.story).toEqual(validStory);
     expect(result.evalId).toBe('eval-1');
     expect(result.attempts).toBe(1);
+  });
+
+  it('passes protagonistMode, gender and appearance to the generator', async () => {
+    await orchestrator.generate({
+      ...opts,
+      protagonistMode: 'observer',
+      gender: 'male',
+      appearance: 'red hair',
+    });
+    expect(mockGenerator.generateStory).toHaveBeenCalledWith(
+      expect.objectContaining({
+        protagonistMode: 'observer',
+        gender: 'male',
+        appearance: 'red hair',
+      }),
+    );
   });
 
   it('writes a StoryEval row with passed=true on success', async () => {
