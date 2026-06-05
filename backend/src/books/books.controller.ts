@@ -53,8 +53,8 @@ export class BooksController {
   }
 
   @Get('learning-goals')
-  listLearningGoals(@Query('childId') childId?: string) {
-    return this.books.listLearningGoals(childId);
+  listLearningGoals(@CurrentUser() user: JwtPayload, @Query('childId') childId?: string) {
+    return this.books.listLearningGoals(user.sub, childId);
   }
 
   @Post('books')

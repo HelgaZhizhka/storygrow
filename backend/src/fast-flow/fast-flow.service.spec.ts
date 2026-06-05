@@ -63,7 +63,7 @@ const mockIllustrations = [
 
 function makeMocks() {
   const prisma = {
-    child: { findUnique: jest.fn() },
+    child: { findFirst: jest.fn() },
     template: { findFirst: jest.fn() },
     learningGoal: { findUnique: jest.fn() },
     fastIllustration: { findMany: jest.fn() },
@@ -77,7 +77,7 @@ function makeMocks() {
 }
 
 function setupHappyPath(prisma: ReturnType<typeof makeMocks>['prisma']) {
-  prisma.child.findUnique.mockResolvedValue(mockChild);
+  prisma.child.findFirst.mockResolvedValue(mockChild);
   prisma.template.findFirst.mockResolvedValue(mockTemplate);
   prisma.learningGoal.findUnique.mockResolvedValue(mockGoal);
   prisma.fastIllustration.findMany.mockResolvedValue(mockIllustrations);
@@ -91,18 +91,21 @@ function setupHappyPath(prisma: ReturnType<typeof makeMocks>['prisma']) {
 beforeEach(() => jest.clearAllMocks());
 
 describe('FastFlowService.generate', () => {
-  it('throws NotFoundException when child does not exist', async () => {
+  it('throws NotFoundException when child does not exist or is not owned by the user', async () => {
     const { prisma, service } = makeMocks();
-    prisma.child.findUnique.mockResolvedValue(null);
+    // findFirst with { id, userId } returns null both when the child is missing
+    // and when it belongs to another user — neither is leaked to the caller.
+    prisma.child.findFirst.mockResolvedValue(null);
 
     await expect(
-      service.generate({ userId: 'u1', childId: 'c1', learningGoalId: 'g1' }),
+      service.generate({ userId: 'u1', childId: 'other-users-child', learningGoalId: 'g1' }),
     ).rejects.toThrow(NotFoundException);
+    expect(prisma.book.create).not.toHaveBeenCalled();
   });
 
   it('throws NotFoundException when no template exists for the learning goal', async () => {
     const { prisma, service } = makeMocks();
-    prisma.child.findUnique.mockResolvedValue(mockChild);
+    prisma.child.findFirst.mockResolvedValue(mockChild);
     prisma.template.findFirst.mockResolvedValue(null);
     prisma.learningGoal.findUnique.mockResolvedValue(mockGoal);
 
