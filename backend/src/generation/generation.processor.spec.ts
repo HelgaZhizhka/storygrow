@@ -42,7 +42,9 @@ const mockBook = {
   id: 'book-1',
   storyJson: null,
   imageKeys: [] as string[],
-  child: { name: 'Маша', age: 6 },
+  protagonistMode: 'child' as const,
+  artStyle: 'watercolor' as const,
+  child: { name: 'Маша', age: 6, gender: 'female', appearance: 'brown hair' },
   learningGoal: { title: 'дружба', description: 'научиться дружить' },
 };
 
@@ -129,7 +131,18 @@ describe('GenerationProcessor', () => {
       where: { id: 'book-1' },
       data: { storyJson: mockStory },
     });
-    expect(mockImageGen.generate).toHaveBeenCalledWith({ story: mockStory, bookId: 'book-1' });
+    expect(mockOrchestrator.generate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        protagonistMode: 'child',
+        gender: 'female',
+        appearance: 'brown hair',
+      }),
+    );
+    expect(mockImageGen.generate).toHaveBeenCalledWith({
+      story: mockStory,
+      bookId: 'book-1',
+      artStyle: 'watercolor',
+    });
     expect(mockPrisma.book.update).toHaveBeenNthCalledWith(3, {
       where: { id: 'book-1' },
       data: { imageKeys: keys },
@@ -261,7 +274,11 @@ describe('GenerationProcessor', () => {
     await processor.process(job);
 
     expect(mockOrchestrator.generate).not.toHaveBeenCalled();
-    expect(mockImageGen.generate).toHaveBeenCalledWith({ story: mockStory, bookId: 'book-1' });
+    expect(mockImageGen.generate).toHaveBeenCalledWith({
+      story: mockStory,
+      bookId: 'book-1',
+      artStyle: 'watercolor',
+    });
   });
 
   it('skips both orchestrator and image-gen on retry when both storyJson and imageKeys are saved', async () => {

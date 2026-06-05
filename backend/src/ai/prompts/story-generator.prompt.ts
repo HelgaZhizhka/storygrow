@@ -23,7 +23,8 @@ Hard rules:
 2. Use ONLY vocabulary from the provided allowed-words list plus common
    function words (prepositions, conjunctions, pronouns, particles).
    Any word outside the list is a violation.
-3. The protagonist's name MUST match the child's name provided in the prompt.
+3. The protagonist is defined in the user prompt — either the named child or an
+   invented character. Follow the user prompt's protagonist instruction exactly.
 4. The narrative arc MUST follow: setup → conflict → lesson → resolution,
    encoded in the order of pages.
 5. Each page MUST use exactly one template from the provided catalogue.
@@ -80,6 +81,12 @@ export interface BuildStoryPromptOptions {
   learningGoal: string;
   /** Words from VocabularyRagService — the allowed vocabulary for this age/topic. */
   allowedWords: readonly string[];
+  /** 'child' = hero is the named child; 'observer' = invented third-person character. */
+  protagonistMode: 'child' | 'observer';
+  /** Child's gender, when known ('male' | 'female' | 'other'). */
+  gender?: string;
+  /** Free-text appearance of the child (used only in 'child' mode). */
+  appearance?: string;
   /**
    * Regeneration feedback from the previous failed attempt.
    * Undefined on the first attempt.
@@ -98,14 +105,28 @@ export interface BuildStoryPromptOptions {
  */
 export const buildStoryUserPrompt = (opts: BuildStoryPromptOptions): string => {
   const { childName, childAge, topic, learningGoal, allowedWords, feedback } = opts;
+  const gender = opts.gender ?? 'unspecified';
   const catalogue = buildTemplateCatalogue(childAge);
   const feedbackBlock = feedback
     ? `\nREGENERATION FEEDBACK (fix these issues):\n${feedback}\n`
     : '';
+
+  const protagonistBlock =
+    opts.protagonistMode === 'child'
+      ? `Protagonist: the child named "${childName}" (age ${childAge}, gender ${gender}).
+The hero's name MUST be "${childName}".
+Hero appearance: ${opts.appearance && opts.appearance.trim().length > 0 ? opts.appearance : 'invent a fitting, age-appropriate appearance'}.
+Set the characterProfile field to this hero's English visual description.`
+      : `Protagonist: an INVENTED character — NOT the child, and do NOT use the child's real name.
+Invent a fitting name and appearance for an age-${childAge} ${gender === 'unspecified' ? 'child' : gender} character.
+Tell the story in third person ("Жил-был…").
+Set the characterProfile field to the invented character's English visual description.`;
+
   return `
-Generate a personalised children's book in Russian for the following child:
-  Name: ${childName}
-  Age: ${childAge}
+Generate a personalised children's book in Russian.
+
+${protagonistBlock}
+
   Topic: ${topic}
   Learning goal: ${learningGoal}
 
@@ -116,16 +137,9 @@ ${BOOK_STRUCTURE_RULES}
 Allowed vocabulary (Russian words — use ONLY these plus common function words):
 ${allowedWords.join(', ')}
 
-Character profile (characterProfile field):
-  Define a brief English visual description of the protagonist: age, hair colour,
-  eye colour, key clothing or accessory. Max 100 characters.
-  Example: "5-year-old girl with brown curly hair, blue eyes, red dress"
-  This will be prepended to every illustration — write it with DALL-E in mind.
-
-For each page's illustrationPrompt: write a vivid DALL-E prompt in English.
-  Include the scene, mood, colours, and art style ("watercolour, children's book").
-  The character profile is added automatically — do NOT repeat it here.
-  Keep prompts under 180 characters.
+For each page's illustrationPrompt: write a vivid DALL-E prompt in English with the
+scene, mood, colours, and art style ("watercolour, children's book"). The character
+profile is added automatically — do NOT repeat it. Keep prompts under 180 characters.
 ${feedbackBlock}`.trim();
 };
 

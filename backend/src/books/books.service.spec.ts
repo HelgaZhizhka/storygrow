@@ -16,7 +16,13 @@ import { BooksService } from './books.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 const mockPrisma = {
-  child: { findMany: jest.fn(), findUnique: jest.fn(), findFirst: jest.fn(), create: jest.fn() },
+  child: {
+    findMany: jest.fn(),
+    findUnique: jest.fn(),
+    findFirst: jest.fn(),
+    create: jest.fn(),
+    upsert: jest.fn(),
+  },
   learningGoal: { findMany: jest.fn() },
   subscription: { findUnique: jest.fn() },
   book: {
@@ -118,9 +124,63 @@ describe('BooksService.createBook', () => {
         childId: 'other-child',
         learningGoalId: 'g1',
         mode: 'custom',
+        protagonistMode: 'child',
+        artStyle: 'watercolor',
       }),
     ).rejects.toThrow(HttpException);
     expect(mockPrisma.book.create).not.toHaveBeenCalled();
+  });
+
+  it('createChild stores appearance', async () => {
+    mockPrisma.child.upsert.mockResolvedValueOnce({ id: 'c1' });
+
+    await service.createChild('user-1', { name: 'Маша', age: 6, appearance: 'brown hair' });
+
+    expect(mockPrisma.child.upsert).toHaveBeenCalledWith({
+      where: { userId_name: { userId: 'user-1', name: 'Маша' } },
+      create: {
+        userId: 'user-1',
+        name: 'Маша',
+        age: 6,
+        gender: undefined,
+        appearance: 'brown hair',
+      },
+      update: { age: 6, gender: undefined, appearance: 'brown hair' },
+    });
+  });
+
+  it('createBook persists protagonistMode and artStyle', async () => {
+    mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1' });
+    mockPrisma.subscription.findUnique.mockResolvedValueOnce(null);
+    mockPrisma.book.count.mockResolvedValueOnce(0);
+    mockPrisma.book.create.mockResolvedValueOnce({
+      id: 'book-9',
+      status: 'pending',
+      childId: 'c1',
+      learningGoalId: 'g1',
+      createdAt: new Date(),
+    });
+
+    await service.createBook('user-1', {
+      childId: 'c1',
+      learningGoalId: 'g1',
+      mode: 'custom',
+      protagonistMode: 'observer',
+      artStyle: 'pixel',
+    });
+
+    expect(mockPrisma.book.create).toHaveBeenCalledWith({
+      data: {
+        userId: 'user-1',
+        childId: 'c1',
+        learningGoalId: 'g1',
+        title: '',
+        status: 'pending',
+        protagonistMode: 'observer',
+        artStyle: 'pixel',
+      },
+      select: { id: true, status: true, childId: true, learningGoalId: true, createdAt: true },
+    });
   });
 
   it('throws 402 when free quota (1 book) is exceeded', async () => {
@@ -129,7 +189,13 @@ describe('BooksService.createBook', () => {
     mockPrisma.book.count.mockResolvedValueOnce(1);
 
     await expect(
-      service.createBook('user-1', { childId: 'c1', learningGoalId: 'g1', mode: 'custom' }),
+      service.createBook('user-1', {
+        childId: 'c1',
+        learningGoalId: 'g1',
+        mode: 'custom',
+        protagonistMode: 'child',
+        artStyle: 'watercolor',
+      }),
     ).rejects.toThrow(HttpException);
   });
 
@@ -149,6 +215,8 @@ describe('BooksService.createBook', () => {
       childId: 'c1',
       learningGoalId: 'g1',
       mode: 'custom',
+      protagonistMode: 'child',
+      artStyle: 'watercolor',
     });
 
     expect(result.id).toBe('book-1');
@@ -171,7 +239,13 @@ describe('BooksService.createBook', () => {
     });
 
     await expect(
-      service.createBook('user-1', { childId: 'c1', learningGoalId: 'g1', mode: 'custom' }),
+      service.createBook('user-1', {
+        childId: 'c1',
+        learningGoalId: 'g1',
+        mode: 'custom',
+        protagonistMode: 'child',
+        artStyle: 'watercolor',
+      }),
     ).resolves.not.toThrow();
   });
 });

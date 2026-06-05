@@ -35,12 +35,13 @@ model User {
 // ─── Child ─────────────────────────────────────────────────────────────────
 
 model Child {
-  id        String   @id @default(cuid())
-  name      String
-  age       Int
-  gender    String?
-  interests String[]
-  userId    String
+  id         String   @id @default(cuid())
+  name       String
+  age        Int
+  gender     String?
+  appearance String?
+  interests  String[]
+  userId     String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   books     Book[]
 
@@ -56,6 +57,8 @@ model Book {
   storyJson      Json?
   imageKeys      String[]     @default([])
   pdfKey         String?
+  protagonistMode ProtagonistMode @default(child)
+  artStyle        ArtStyle        @default(watercolor)
   userId         String
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   childId        String
@@ -74,6 +77,19 @@ enum BookStatus {
   ready
   failed
   images_failed
+}
+
+enum ProtagonistMode {
+  child
+  observer
+}
+
+enum ArtStyle {
+  watercolor
+  cartoon
+  storybook
+  pixel
+  realistic
 }
 
 model BookPage {

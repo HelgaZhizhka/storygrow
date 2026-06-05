@@ -15,7 +15,9 @@ interface BookWithRelations {
   id: string;
   storyJson: Story | null;
   imageKeys: string[];
-  child: { name: string; age: number };
+  protagonistMode: 'child' | 'observer';
+  artStyle: 'watercolor' | 'cartoon' | 'storybook' | 'pixel' | 'realistic';
+  child: { name: string; age: number; gender: string | null; appearance: string | null };
   learningGoal: { title: string; description: string };
 }
 
@@ -70,6 +72,9 @@ export class GenerationProcessor extends WorkerHost {
           bookId,
           childName: book.child.name,
           childAge: book.child.age,
+          gender: book.child.gender ?? undefined,
+          appearance: book.child.appearance ?? undefined,
+          protagonistMode: book.protagonistMode,
           topic: book.learningGoal.title,
           learningGoal: book.learningGoal.description,
         });
@@ -94,7 +99,7 @@ export class GenerationProcessor extends WorkerHost {
         );
         imageKeys = book.imageKeys;
       } else {
-        imageKeys = await this.imageGenerator.generate({ story, bookId });
+        imageKeys = await this.imageGenerator.generate({ story, bookId, artStyle: book.artStyle });
         await this.prisma.book.update({
           where: { id: bookId },
           data: { imageKeys },
@@ -145,7 +150,9 @@ export class GenerationProcessor extends WorkerHost {
         id: true,
         storyJson: true,
         imageKeys: true,
-        child: { select: { name: true, age: true } },
+        protagonistMode: true,
+        artStyle: true,
+        child: { select: { name: true, age: true, gender: true, appearance: true } },
         learningGoal: { select: { title: true, description: true } },
       },
     });

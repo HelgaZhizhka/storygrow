@@ -3,7 +3,7 @@ import { Pool } from 'pg';
 import { openai } from '@ai-sdk/openai';
 import { generateImage } from 'ai';
 import { PrismaClient } from '../generated/prisma/client';
-import { IMAGE_MODEL, IMAGE_QUALITY, IMAGE_STYLE_SUFFIX } from '../ai/ai.config';
+import { IMAGE_MODEL, IMAGE_QUALITY, STYLE_SUFFIXES } from '../ai/ai.config';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { ALL_TAGS, type IllustrationTag } from '../fast-flow/tag-taxonomy';
 
@@ -51,7 +51,7 @@ const TAG_PROMPT_MAP: Record<IllustrationTag, string> = {
 };
 
 async function generateOne(tag: IllustrationTag, variation: number): Promise<string> {
-  const prompt = FAST_ILLUSTRATION_PROMPT_PREFIX + TAG_PROMPT_MAP[tag] + IMAGE_STYLE_SUFFIX;
+  const prompt = FAST_ILLUSTRATION_PROMPT_PREFIX + TAG_PROMPT_MAP[tag] + STYLE_SUFFIXES.watercolor;
 
   const result = await generateImage({
     model: openai.imageModel(IMAGE_MODEL),
