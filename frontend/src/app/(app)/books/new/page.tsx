@@ -35,8 +35,11 @@ const schema = z
     childName: z.string().optional(),
     childAge: z.coerce.number().int().min(1).max(18).optional(),
     childGender: z.enum(['male', 'female', 'other', '']).optional(),
+    childAppearance: z.string().optional(),
     learningGoalId: z.string().min(1, 'Выберите цель обучения'),
     mode: z.enum(['fast', 'custom']),
+    protagonistMode: z.enum(['child', 'observer']),
+    artStyle: z.enum(['watercolor', 'cartoon', 'storybook', 'pixel', 'realistic']),
   })
   .superRefine((val, ctx) => {
     if (val.childOption === 'existing' && !val.childId) {
@@ -68,7 +71,12 @@ export default function NewBookPage(): React.ReactElement {
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { childOption: 'existing', mode: 'custom' },
+    defaultValues: {
+      childOption: 'existing',
+      mode: 'custom',
+      protagonistMode: 'child',
+      artStyle: 'watercolor',
+    },
   });
 
   const childOption = watch('childOption');
@@ -92,6 +100,7 @@ export default function NewBookPage(): React.ReactElement {
           name: values.childName,
           age: values.childAge,
           gender: values.childGender || undefined,
+          appearance: values.childAppearance || undefined,
         });
         childId = created.id;
       }
@@ -109,6 +118,8 @@ export default function NewBookPage(): React.ReactElement {
           childId,
           learningGoalId: values.learningGoalId,
           mode: 'custom',
+          protagonistMode: values.protagonistMode,
+          artStyle: values.artStyle,
         });
         await api.post(`/books/${book.id}/generate`, {});
         router.replace(`/books/${book.id}/progress`);
@@ -185,6 +196,14 @@ export default function NewBookPage(): React.ReactElement {
                   <option value="other">Другой</option>
                 </select>
               </Field>
+              <Field label="Как выглядит (необязательно)" error={errors.childAppearance?.message}>
+                <textarea
+                  rows={2}
+                  placeholder="Например: кудрявые каштановые волосы, голубые глаза, красное платье"
+                  {...register('childAppearance')}
+                  className={inputCls}
+                />
+              </Field>
             </div>
           )}
         </fieldset>
@@ -234,6 +253,34 @@ export default function NewBookPage(): React.ReactElement {
             </span>
           </label>
         </fieldset>
+
+        {mode === 'custom' && (
+          <>
+            <fieldset className="flex flex-col gap-2">
+              <legend className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                Кто главный герой
+              </legend>
+              <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                <input type="radio" value="child" {...register('protagonistMode')} />
+                Ребёнок — главный герой
+              </label>
+              <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                <input type="radio" value="observer" {...register('protagonistMode')} />
+                История про другого персонажа
+              </label>
+            </fieldset>
+
+            <Field label="Стиль иллюстраций">
+              <select {...register('artStyle')} className={inputCls}>
+                <option value="watercolor">Акварель</option>
+                <option value="cartoon">Мультяшный</option>
+                <option value="storybook">Книжная иллюстрация</option>
+                <option value="pixel">Пиксель-арт</option>
+                <option value="realistic">Реалистичный</option>
+              </select>
+            </Field>
+          </>
+        )}
 
         {serverError && <p className="text-sm text-red-500">{serverError}</p>}
 
