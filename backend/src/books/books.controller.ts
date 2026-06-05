@@ -23,12 +23,17 @@ const createChildSchema = z.object({
   name: z.string().min(1).max(100),
   age: z.number().int().min(1).max(18),
   gender: z.enum(['male', 'female', 'other']).optional(),
+  appearance: z.string().max(500).optional(),
 });
 
 const createBookSchema = z.object({
   childId: z.string().min(1),
   learningGoalId: z.string().min(1),
   mode: z.enum(['fast', 'custom']),
+  protagonistMode: z.enum(['child', 'observer']).default('child'),
+  artStyle: z
+    .enum(['watercolor', 'cartoon', 'storybook', 'pixel', 'realistic'])
+    .default('watercolor'),
 });
 
 @Controller()

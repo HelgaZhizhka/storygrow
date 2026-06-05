@@ -6,12 +6,15 @@ interface CreateChildDto {
   name: string;
   age: number;
   gender?: 'male' | 'female' | 'other';
+  appearance?: string;
 }
 
 interface CreateBookDto {
   childId: string;
   learningGoalId: string;
   mode: 'fast' | 'custom';
+  protagonistMode: 'child' | 'observer';
+  artStyle: 'watercolor' | 'cartoon' | 'storybook' | 'pixel' | 'realistic';
 }
 
 export interface QuotaInfo {
@@ -42,8 +45,14 @@ export class BooksService {
   createChild(userId: string, dto: CreateChildDto) {
     return this.prisma.child.upsert({
       where: { userId_name: { userId, name: dto.name } },
-      create: { userId, name: dto.name, age: dto.age, gender: dto.gender },
-      update: { age: dto.age, gender: dto.gender },
+      create: {
+        userId,
+        name: dto.name,
+        age: dto.age,
+        gender: dto.gender,
+        appearance: dto.appearance,
+      },
+      update: { age: dto.age, gender: dto.gender, appearance: dto.appearance },
     });
   }
 
@@ -112,6 +121,8 @@ export class BooksService {
         learningGoalId: dto.learningGoalId,
         title: '',
         status: 'pending',
+        protagonistMode: dto.protagonistMode,
+        artStyle: dto.artStyle,
       },
       select: { id: true, status: true, childId: true, learningGoalId: true, createdAt: true },
     });
