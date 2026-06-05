@@ -1013,3 +1013,27 @@ Consolidated catch-up entry. 37 PRs squash-merged in one high-velocity day, grou
 
 **Blockers:**
 - None.
+
+---
+
+## 2026-06-05 — Character personalization + illustration style (PR #158)
+
+**Done:**
+- Brainstormed → spec → plan → implemented (9 tasks) the character feature for the custom (AI) flow:
+  - **Protagonist mode** per book: `child` (hero = the child, name + appearance used) vs `observer` (third-person story about an invented character; child's name/appearance NOT used — pedagogically safer for sensitive goals like tantrums/greed).
+  - **Appearance**: free-text `Child.appearance`, reusable; blank → LLM invents. Entered inline when creating a new child.
+  - **Art style** per book: watercolor (default) / cartoon / storybook / pixel / realistic → image-prompt suffix.
+  - Bug fix: child `gender` now reaches generation (was collected but ignored).
+- New Prisma enums `ProtagonistMode`/`ArtStyle` + columns + migration. `./init.sh` green (178 backend tests).
+- Spec: `docs/superpowers/specs/2026-06-05-character-personalization-design.md`; plan: `docs/superpowers/plans/2026-06-05-character-personalization.md`.
+
+**Decisions:**
+- Photo → vision-agent / reference-image models DEFERRED (privacy + model-swap risk before defense). Text-based consistency is maximized via `characterProfile` prepended to every page, not guaranteed.
+- Observer prompt never includes the child's name (avoids accidental leak into the story).
+
+**Next:**
+- Manual end-to-end verification of the two modes (live generation).
+- #29 deploy (do #155 verify.sh first), #32 defense prep.
+
+**Blockers:**
+- None.
