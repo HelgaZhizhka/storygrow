@@ -75,7 +75,7 @@ describe('ImageGeneratorService', () => {
     });
     mockS3.uploadObject.mockResolvedValue(undefined);
 
-    const keys = await service.generate({ story, bookId: 'book-1' });
+    const keys = await service.generate({ story, bookId: 'book-1', artStyle: 'watercolor' });
 
     expect(mockGenerateImage).toHaveBeenCalledTimes(3);
     expect(mockS3.uploadObject).toHaveBeenCalledTimes(3);
@@ -91,7 +91,7 @@ describe('ImageGeneratorService', () => {
     mockGenerateImage.mockResolvedValue({ image: { base64: Buffer.from('x').toString('base64') } });
     mockS3.uploadObject.mockResolvedValue(undefined);
 
-    await service.generate({ story, bookId: 'book-xyz' });
+    await service.generate({ story, bookId: 'book-xyz', artStyle: 'watercolor' });
 
     expect(mockS3.uploadObject).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -107,15 +107,15 @@ describe('ImageGeneratorService', () => {
     );
   });
 
-  it('appends style suffix to each prompt', async () => {
+  it('appends the artStyle suffix to each prompt', async () => {
     mockGenerateImage.mockResolvedValue({ image: { base64: Buffer.from('x').toString('base64') } });
     mockS3.uploadObject.mockResolvedValue(undefined);
 
-    await service.generate({ story, bookId: 'b' });
+    await service.generate({ story, bookId: 'b', artStyle: 'cartoon' });
 
     const calls = mockGenerateImage.mock.calls as Array<[{ prompt: string }]>;
     for (const [args] of calls) {
-      expect(args.prompt).toMatch(/children's book illustration style/);
+      expect(args.prompt).toMatch(/flat cartoon illustration/);
     }
   });
 
@@ -123,7 +123,7 @@ describe('ImageGeneratorService', () => {
     mockGenerateImage.mockResolvedValue({ image: { base64: Buffer.from('x').toString('base64') } });
     mockS3.uploadObject.mockResolvedValue(undefined);
 
-    await service.generate({ story, bookId: 'book-42' });
+    await service.generate({ story, bookId: 'book-42', artStyle: 'watercolor' });
 
     const calls = mockGenerateImage.mock.calls as Array<
       [{ maxRetries: number; providerOptions: { openai: { quality: string } } }]
@@ -140,7 +140,7 @@ describe('ImageGeneratorService', () => {
     mockGenerateText.mockResolvedValue({ text: 'simplified safe prompt' });
     mockS3.uploadObject.mockResolvedValue(undefined);
 
-    const keys = await service.generate({ story, bookId: 'b' });
+    const keys = await service.generate({ story, bookId: 'b', artStyle: 'watercolor' });
 
     expect(mockGenerateText).toHaveBeenCalledTimes(1);
     expect(mockGenerateImage).toHaveBeenCalledTimes(4); // 3 pages, page-1 retried once
@@ -152,14 +152,16 @@ describe('ImageGeneratorService', () => {
     mockGenerateImage.mockRejectedValue(policyErr);
     mockGenerateText.mockResolvedValue({ text: 'simplified prompt' });
 
-    await expect(service.generate({ story, bookId: 'b' })).rejects.toBeInstanceOf(
-      ImageContentPolicyError,
-    );
+    await expect(
+      service.generate({ story, bookId: 'b', artStyle: 'watercolor' }),
+    ).rejects.toBeInstanceOf(ImageContentPolicyError);
   });
 
   it('propagates non-content-policy errors as-is', async () => {
     mockGenerateImage.mockRejectedValueOnce(new Error('network timeout'));
 
-    await expect(service.generate({ story, bookId: 'b' })).rejects.toThrow('network timeout');
+    await expect(service.generate({ story, bookId: 'b', artStyle: 'watercolor' })).rejects.toThrow(
+      'network timeout',
+    );
   });
 });

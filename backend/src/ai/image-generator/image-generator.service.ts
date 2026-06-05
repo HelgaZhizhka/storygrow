@@ -7,7 +7,13 @@ import type { LanguageModel } from 'ai';
 import { type Story } from '../schemas';
 import { PAGE_TEMPLATES } from '../../pdf/page-templates/page-templates.config';
 import { S3Service } from '../../s3/s3.service';
-import { IMAGE_MODEL, IMAGE_QUALITY, IMAGE_STYLE_SUFFIX, GENERATION_MODEL } from '../ai.config';
+import {
+  IMAGE_MODEL,
+  IMAGE_QUALITY,
+  STYLE_SUFFIXES,
+  GENERATION_MODEL,
+  type ArtStyle,
+} from '../ai.config';
 import { ImageContentPolicyError } from './errors';
 import { simplifyIllustrationPrompt } from './prompt-simplifier';
 import { createTelemetry } from '../telemetry';
@@ -17,6 +23,7 @@ const IMAGE_GEN_MAX_RETRIES = 1;
 export interface ImageGenInput {
   story: Story;
   bookId: string;
+  artStyle: ArtStyle;
 }
 
 @Injectable()
@@ -51,6 +58,7 @@ export class ImageGeneratorService {
             pageNumber: index + 1,
             prompt: `${characterPrefix}${page.illustrationPrompt}`,
             template: page.template,
+            artStyle: input.artStyle,
           }),
         ),
       );
@@ -65,6 +73,7 @@ export class ImageGeneratorService {
     pageNumber: number;
     prompt: string;
     template: Story['pages'][number]['template'];
+    artStyle: ArtStyle;
   }): Promise<string> {
     return startActiveObservation(`image-generation.page-${opts.pageNumber}`, async (span) => {
       const slot = PAGE_TEMPLATES[opts.template].images[0];
@@ -85,13 +94,14 @@ export class ImageGeneratorService {
     bookId: string;
     pageNumber: number;
     prompt: string;
+    artStyle: ArtStyle;
     imageSize: (typeof PAGE_TEMPLATES)[keyof typeof PAGE_TEMPLATES]['images'][0]['imageSize'];
     span: { update: (data: Record<string, unknown>) => void };
   }): Promise<string> {
     const { bookId, pageNumber, imageSize, span } = opts;
 
     const tryGenerate = async (prompt: string): Promise<string> => {
-      const fullPrompt = `${prompt}${IMAGE_STYLE_SUFFIX}`;
+      const fullPrompt = `${prompt}${STYLE_SUFFIXES[opts.artStyle]}`;
       span.update({
         input: { prompt: fullPrompt, size: imageSize },
         metadata: { bookId, pageNumber, model: IMAGE_MODEL },

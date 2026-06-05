@@ -14,5 +14,16 @@ export const EVAL_MAX_RETRIES_DEFAULT = 2;
 
 export const IMAGE_MODEL = 'gpt-image-1';
 export const IMAGE_QUALITY = 'medium';
-export const IMAGE_STYLE_SUFFIX =
-  ", flat children's book illustration style, soft pastel colors, warm lighting, no text in image";
+export type ArtStyle = 'watercolor' | 'cartoon' | 'storybook' | 'pixel' | 'realistic';
+
+export const STYLE_SUFFIXES: Record<ArtStyle, string> = {
+  watercolor:
+    ', soft watercolour painting, children’s book illustration, gentle pastel colours, warm lighting, no text in image',
+  cartoon:
+    ', flat cartoon illustration, bold clean outlines, bright saturated colours, playful, no text in image',
+  storybook:
+    ', classic storybook illustration, richly detailed, warm traditional colours, no text in image',
+  pixel: ', pixel art, 16-bit retro game style, crisp pixels, vibrant palette, no text in image',
+  realistic:
+    ', semi-realistic 3D render, soft cinematic lighting, detailed, child-friendly, no text in image',
+};
