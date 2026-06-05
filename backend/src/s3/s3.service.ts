@@ -3,7 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
-const SIGNED_URL_TTL_SECONDS = 7 * 24 * 60 * 60;
+// Short-lived presigned URLs: assets are re-signed on demand per page load, so a
+// long TTL only widens the window for a leaked URL (history, logs, screenshots).
+const SIGNED_URL_TTL_SECONDS = 30 * 60;
 
 export interface UploadInput {
   key: string;

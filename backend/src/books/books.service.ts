@@ -47,11 +47,21 @@ export class BooksService {
     });
   }
 
-  async listLearningGoals(childId?: string) {
+  private async assertChildOwned(userId: string, childId: string): Promise<void> {
+    const child = await this.prisma.child.findFirst({
+      where: { id: childId, userId },
+      select: { id: true },
+    });
+    if (!child) {
+      throw new HttpException('Child not found', HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async listLearningGoals(userId: string, childId?: string) {
     let age: number | undefined;
     if (childId) {
-      const child = await this.prisma.child.findUnique({
-        where: { id: childId },
+      const child = await this.prisma.child.findFirst({
+        where: { id: childId, userId },
         select: { age: true },
       });
       age = child?.age;
@@ -85,6 +95,8 @@ export class BooksService {
   }
 
   async createBook(userId: string, dto: CreateBookDto) {
+    await this.assertChildOwned(userId, dto.childId);
+
     const { used, limit } = await this.getQuota(userId);
     if (limit !== null && used >= limit) {
       throw new HttpException(

@@ -16,7 +16,7 @@ import { BooksService } from './books.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 const mockPrisma = {
-  child: { findMany: jest.fn(), findUnique: jest.fn(), create: jest.fn() },
+  child: { findMany: jest.fn(), findUnique: jest.fn(), findFirst: jest.fn(), create: jest.fn() },
   learningGoal: { findMany: jest.fn() },
   subscription: { findUnique: jest.fn() },
   book: {
@@ -110,7 +110,21 @@ describe('BooksService.createBook', () => {
     service = module.get(BooksService);
   });
 
+  it('rejects a childId the user does not own', async () => {
+    mockPrisma.child.findFirst.mockResolvedValueOnce(null);
+
+    await expect(
+      service.createBook('user-1', {
+        childId: 'other-child',
+        learningGoalId: 'g1',
+        mode: 'custom',
+      }),
+    ).rejects.toThrow(HttpException);
+    expect(mockPrisma.book.create).not.toHaveBeenCalled();
+  });
+
   it('throws 402 when free quota (1 book) is exceeded', async () => {
+    mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1' });
     mockPrisma.subscription.findUnique.mockResolvedValueOnce(null);
     mockPrisma.book.count.mockResolvedValueOnce(1);
 
@@ -120,6 +134,7 @@ describe('BooksService.createBook', () => {
   });
 
   it('creates book when under quota', async () => {
+    mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1' });
     mockPrisma.subscription.findUnique.mockResolvedValueOnce(null);
     mockPrisma.book.count.mockResolvedValueOnce(0);
     mockPrisma.book.create.mockResolvedValueOnce({
@@ -141,6 +156,7 @@ describe('BooksService.createBook', () => {
   });
 
   it('does not enforce quota for premium plan', async () => {
+    mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1' });
     mockPrisma.subscription.findUnique.mockResolvedValueOnce({
       plan: SubscriptionPlan.premium,
       status: 'active',

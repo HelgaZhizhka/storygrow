@@ -31,7 +31,9 @@ export class FastFlowService {
   ) {}
 
   async generate(input: FastFlowInput): Promise<FastFlowResult> {
-    const child = await this.prisma.child.findUnique({ where: { id: input.childId } });
+    const child = await this.prisma.child.findFirst({
+      where: { id: input.childId, userId: input.userId },
+    });
     if (!child) throw new NotFoundException(`Child ${input.childId} not found`);
 
     const [template, goal] = await Promise.all([
