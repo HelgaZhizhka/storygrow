@@ -136,12 +136,17 @@ describe('BooksService.createBook', () => {
 
     await service.createChild('user-1', { name: 'Маша', age: 6, appearance: 'brown hair' });
 
-    expect(mockPrisma.child.upsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        create: expect.objectContaining({ appearance: 'brown hair' }),
-        update: expect.objectContaining({ appearance: 'brown hair' }),
-      }),
-    );
+    expect(mockPrisma.child.upsert).toHaveBeenCalledWith({
+      where: { userId_name: { userId: 'user-1', name: 'Маша' } },
+      create: {
+        userId: 'user-1',
+        name: 'Маша',
+        age: 6,
+        gender: undefined,
+        appearance: 'brown hair',
+      },
+      update: { age: 6, gender: undefined, appearance: 'brown hair' },
+    });
   });
 
   it('createBook persists protagonistMode and artStyle', async () => {
@@ -164,11 +169,18 @@ describe('BooksService.createBook', () => {
       artStyle: 'pixel',
     });
 
-    expect(mockPrisma.book.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ protagonistMode: 'observer', artStyle: 'pixel' }),
-      }),
-    );
+    expect(mockPrisma.book.create).toHaveBeenCalledWith({
+      data: {
+        userId: 'user-1',
+        childId: 'c1',
+        learningGoalId: 'g1',
+        title: '',
+        status: 'pending',
+        protagonistMode: 'observer',
+        artStyle: 'pixel',
+      },
+      select: { id: true, status: true, childId: true, learningGoalId: true, createdAt: true },
+    });
   });
 
   it('throws 402 when free quota (1 book) is exceeded', async () => {
