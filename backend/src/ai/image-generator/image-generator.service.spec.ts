@@ -45,6 +45,7 @@ const mockConfig = { getOrThrow: jest.fn().mockReturnValue('sk-test') };
 
 const story: Story = {
   title: 'Test',
+  characterProfile: '5-year-old girl with red hair',
   pages: [
     { template: 'cover', text: null, title: 'Cover', illustrationPrompt: 'cover prompt' },
     { template: 'image-top', text: 'page 1', title: null, illustrationPrompt: 'page 1 prompt' },

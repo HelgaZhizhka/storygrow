@@ -22,6 +22,7 @@ const mockGoal = { title: 'Делиться с другими' };
 
 const mockStory: Story = {
   title: 'Аня учится делиться',
+  characterProfile: '5-year-old girl with dark hair, blue dress',
   discussionQuestions: ['Q1', 'Q2', 'Q3', 'Q4', 'Q5'],
   pages: [
     { template: 'cover', text: null, title: 'Аня учится делиться', illustrationPrompt: 'cover' },

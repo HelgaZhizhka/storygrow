@@ -27,6 +27,7 @@ const mockS3 = {
 
 const story: Story = {
   title: 'Маша и кот <bad>',
+  characterProfile: '6-year-old girl with brown hair, blue dress',
   pages: [
     {
       template: 'cover',

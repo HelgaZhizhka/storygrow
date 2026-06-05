@@ -40,12 +40,16 @@ export class ImageGeneratorService {
         metadata: { bookId: input.bookId },
       });
 
+      const characterPrefix = input.story.characterProfile
+        ? `${input.story.characterProfile}. `
+        : '';
+
       const keys = await Promise.all(
         input.story.pages.map((page, index) =>
           this.generateOne({
             bookId: input.bookId,
             pageNumber: index + 1,
-            prompt: page.illustrationPrompt,
+            prompt: `${characterPrefix}${page.illustrationPrompt}`,
             template: page.template,
           }),
         ),

@@ -116,9 +116,16 @@ ${BOOK_STRUCTURE_RULES}
 Allowed vocabulary (Russian words — use ONLY these plus common function words):
 ${allowedWords.join(', ')}
 
-For each page's illustrationPrompt: write a vivid, detailed DALL-E 3 prompt
-in English. Include art style ("watercolour illustration, children's book style"),
-the scene, characters, mood, and colours. Keep prompts under 200 characters.
+Character profile (characterProfile field):
+  Define a brief English visual description of the protagonist: age, hair colour,
+  eye colour, key clothing or accessory. Max 100 characters.
+  Example: "5-year-old girl with brown curly hair, blue eyes, red dress"
+  This will be prepended to every illustration — write it with DALL-E in mind.
+
+For each page's illustrationPrompt: write a vivid DALL-E prompt in English.
+  Include the scene, mood, colours, and art style ("watercolour, children's book").
+  The character profile is added automatically — do NOT repeat it here.
+  Keep prompts under 180 characters.
 ${feedbackBlock}`.trim();
 };
 
