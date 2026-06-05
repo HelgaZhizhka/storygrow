@@ -23,6 +23,7 @@ import type { EvalCheckResult } from './story-evaluator.service';
 
 const validStory: Story = {
   title: 'Маша и кот',
+  characterProfile: '6-year-old girl with brown hair, blue dress',
   pages: [
     { template: 'cover', text: null, title: 'Маша и кот', illustrationPrompt: 'A girl with cat' },
     {

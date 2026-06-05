@@ -29,6 +29,7 @@ import type { Story } from '../ai/schemas';
 
 const mockStory: Story = {
   title: 'Test Story',
+  characterProfile: '6-year-old boy with blond hair',
   pages: [
     { template: 'cover', text: null, title: 'Test Story', illustrationPrompt: 'cover art' },
     { template: 'image-top', text: 'Once upon a time', title: null, illustrationPrompt: 'scene' },

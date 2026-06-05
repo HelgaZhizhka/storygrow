@@ -41,6 +41,14 @@ export const StorySchema = z.object({
   title: z.string().min(1).max(120),
 
   /**
+   * Visual description of the protagonist in English for DALL-E.
+   * Generated once and prepended to every illustrationPrompt to maintain
+   * character consistency across all pages.
+   * Example: "5-year-old girl with brown curly hair, blue eyes, red dress"
+   */
+  characterProfile: z.string().min(1).max(120),
+
+  /**
    * Exactly five open-ended questions for parent–child discussion.
    * Rendered on the final page alongside the moral.
    */

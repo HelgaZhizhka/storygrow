@@ -24,6 +24,7 @@ const finalPage = {
 };
 const makeStory = (overrides: Partial<Story> = {}): Story => ({
   title: 'Кот и мяч',
+  characterProfile: '5-year-old boy with blond hair, green shirt',
   pages: [
     coverPage,
     p('image-top', { text: 'Кот прыгал', illustrationPrompt: 'Cat jumping' }),
@@ -91,6 +92,7 @@ describe('checkCompliance', () => {
   it('computes fractional score for partial corpus matches', () => {
     const story: Story = {
       title: 'кот',
+      characterProfile: 'a boy',
       pages: [
         p('cover', { title: 'тест', illustrationPrompt: 'test' }),
         p('image-top', { text: 'кот прыгал бегемот слон' }),
@@ -109,6 +111,7 @@ describe('checkCompliance', () => {
   it('matches inflected story words against base-form corpus entries (stemming)', () => {
     const story: Story = {
       title: 'кот',
+      characterProfile: 'a boy',
       pages: [
         p('cover', { title: 'кот' }),
         // inflected forms; corpus holds only base forms
@@ -126,6 +129,7 @@ describe('checkCompliance', () => {
     expect(COMPLIANCE_THRESHOLD).toBe(0.4);
     const story: Story = {
       title: 'один',
+      characterProfile: 'a boy',
       pages: [
         p('cover', { title: 'один' }),
         p('image-top', { text: 'два три четыре пять шесть семь восемь девять десять' }),
@@ -156,6 +160,7 @@ describe('checkCompliance', () => {
   it('handles pages that have no text or title (illustration-only)', () => {
     const story: Story = {
       title: 'кот',
+      characterProfile: 'a boy',
       pages: [p('cover'), p('image-top'), p('final', { text: 'кот' })],
       discussionQuestions: ['?', '?', '?', '?', '?'],
     };
@@ -166,6 +171,7 @@ describe('checkCompliance', () => {
   it('checks story.title and discussionQuestions as well as page text', () => {
     const story: Story = {
       title: 'необычный заголовок',
+      characterProfile: 'a boy',
       pages: [coverPage, finalPage],
       discussionQuestions: ['странный вопрос?', '?', '?', '?', '?'],
     };
