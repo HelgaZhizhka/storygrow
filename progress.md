@@ -986,3 +986,30 @@ Consolidated catch-up entry. 37 PRs squash-merged in one high-velocity day, grou
 
 **Blockers:**
 - None.
+
+---
+
+## 2026-06-05 — External review (Codex) → security fixes + triage
+
+**Done:**
+- Reviewed a full-project audit done with Codex/GPT. Verified each finding against the code (treated the report as input, not truth).
+- **Security PR #153 (merged):** fixed broken object-level authorization (IDOR) — `createBook`, `FastFlowService.generate`, and `listLearningGoals` now scope `Child` lookups by `{ id, userId }`; an unowned `childId` is rejected with 404 (existence not leaked). Also cut S3 presigned-URL TTL from 7 days → 30 min. Tests cover cross-user `childId` rejection for both flows.
+- Filed issues for the deferred findings so nothing is lost:
+  - #154 quota TOCTOU race (medium; transaction fix, no ledger table)
+  - #155 release verification: builds + authenticated Playwright e2e (medium; before #29 deploy)
+  - #156 auth hardening: localStorage tokens + SSE query token → cookies/SSE ticket (before public launch, NOT before defense — risky refactor)
+  - #157 unify AI/env config (low; Fast Flow + EVAL_MAX_RETRIES via ConfigService; no factory)
+
+**Decisions:**
+- Did NOT do ledger table, AiProviderFactory, or cookie-auth refactor now — over-engineering for a course MVP before defense. Triaged to issues instead.
+- Security fix landed FIRST as its own PR, before resuming the character-personalization feature (which adds more `childId` surface).
+
+**In progress (paused):**
+- Character personalization + illustration style feature. Spec + plan written and committed on branch `issue/character-personalization` (not pushed): `docs/superpowers/specs/2026-06-05-character-personalization-design.md`, `docs/superpowers/plans/2026-06-05-character-personalization.md`. Will rebase onto updated `main` before implementing (plan Task 7 touches `createBook`, which the security fix also changed).
+
+**Next:**
+- Resume character-personalization implementation (Tasks 1–9 in the plan).
+- Then #29 deploy (do #155 verify.sh first), #32 defense prep.
+
+**Blockers:**
+- None.
