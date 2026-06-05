@@ -15,6 +15,9 @@ export interface GenerateStoryInput {
   learningGoal: string;
   bookId: string;
   allowedWords: readonly string[];
+  protagonistMode: 'child' | 'observer';
+  gender?: string;
+  appearance?: string;
   feedback?: string;
 }
 

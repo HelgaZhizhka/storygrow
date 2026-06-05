@@ -58,6 +58,7 @@ const input: GenerateStoryInput = {
   topic: 'дружба',
   learningGoal: 'научиться дружить',
   allowedWords: ['маша', 'кот', 'дружба'],
+  protagonistMode: 'child',
 };
 
 describe('StoryGeneratorService', () => {
