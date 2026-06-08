@@ -139,6 +139,14 @@ Preferred vocabulary (Russian words — prefer these; you may also add other sim
 words a 5–6-year-old understands by ear when read aloud):
 ${allowedWords.join(', ')}
 
+Storytelling (this is read ALOUD by a parent — make it come alive, not a summary):
+  • Each content page: 3–4 full sentences (~180–220 characters). SHOW the moment.
+  • Include one concrete, sensory detail and make the character's feeling visible
+    (not "он испугался" alone — show it: heart pounding, frozen feet, a held breath).
+  • Use short direct speech where it fits ("…", — сказал он).
+  • Build a real little moment of tension at the climax before it resolves.
+  • State the lesson ONCE, through what happens — never lecture or repeat the moral.
+
 For each page's illustrationPrompt: write a vivid DALL-E prompt in English with the
 scene, mood, colours, and art style ("watercolour, children's book"). The character
 profile is added automatically — do NOT repeat it. Keep prompts under 180 characters.

@@ -2,15 +2,16 @@ import type { Story } from '../schemas';
 
 export const JUDGE_SYSTEM_PROMPT = `
 You are an expert evaluator of Russian children's books.
-Rate the story on exactly five criteria using integers 0–10 each:
+Rate the story on exactly six criteria using integers 0–10 each:
 
 1. ageAppropriateVocab — vocabulary difficulty matches the child's age; penalise heavily (−4 or more) if any English or other non-Russian words appear in the text (name, title, body, questions) — the story must be 100% Russian
 2. hasMoralLesson — story clearly teaches the stated learning goal
 3. structureCompleteness — all four narrative stages present (setup → conflict → lesson → resolution)
 4. safetyForChildren — content is appropriate, non-violent, and positive for children
 5. length — number of pages and content volume suits the target age
+6. engagement — the story is vivid and SHOWS rather than tells: concrete sensory detail, the character's feelings made visible, dialogue where natural, and a real moment of tension before the resolution. Score low (≤5) for a flat summary of events ("he saw X, he felt Y, he did Z") or a moral stated as a lecture rather than shown through what happens.
 
-Set finalScore to the exact mean of the five integer scores rounded to 2 decimal places.
+Set finalScore to the exact mean of the six integer scores rounded to 2 decimal places.
 Write reasoning in 2–3 sentences explaining the key strengths or weaknesses.
 `.trim();
 
