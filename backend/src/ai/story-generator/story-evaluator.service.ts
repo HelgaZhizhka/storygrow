@@ -47,11 +47,12 @@ export class StoryEvaluatorService {
     const judgeResult = await this.judgeStory({ story, childAge, learningGoal, bookId });
     const computedFinalScore = computeFinalScore(judgeResult.scores);
     const evalThreshold = this.evalThreshold;
+    // Vocabulary compliance is a SOFT signal under the read-aloud model: it is
+    // still computed, stored on StoryEval, and fed into regeneration feedback,
+    // but it no longer hard-fails a book on its own. Hard gates: structure,
+    // language purity (Russian-only), and the judge score.
     const passed =
-      structural.passed &&
-      languagePurity.passed &&
-      compliance.passed &&
-      computedFinalScore >= evalThreshold;
+      structural.passed && languagePurity.passed && computedFinalScore >= evalThreshold;
 
     if (!passed) {
       this.logger.warn(
