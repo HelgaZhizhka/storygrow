@@ -20,9 +20,10 @@ in valid JSON that exactly matches the provided schema.
 
 Hard rules:
 1. Write ENTIRELY in Russian. Every word must be Russian.
-2. Use ONLY vocabulary from the provided allowed-words list plus common
-   function words (prepositions, conjunctions, pronouns, particles).
-   Any word outside the list is a violation.
+2. PREFER the provided allowed-words list plus common function words. You MAY
+   also use other simple, age-appropriate Russian words that a child understands
+   when the story is read ALOUD by a parent. Favour concrete, emotionally clear
+   words (e.g. feelings) over rare or abstract ones.
 3. The protagonist is defined in the user prompt — either the named child or an
    invented character. Follow the user prompt's protagonist instruction exactly.
 4. The narrative arc MUST follow: setup → conflict → lesson → resolution,
@@ -134,7 +135,8 @@ ${catalogue}
 
 ${BOOK_STRUCTURE_RULES}
 
-Allowed vocabulary (Russian words — use ONLY these plus common function words):
+Preferred vocabulary (Russian words — prefer these; you may also add other simple
+words a 5–6-year-old understands by ear when read aloud):
 ${allowedWords.join(', ')}
 
 For each page's illustrationPrompt: write a vivid DALL-E prompt in English with the
