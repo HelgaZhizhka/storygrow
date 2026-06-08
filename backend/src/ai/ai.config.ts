@@ -1,6 +1,6 @@
 export const GENERATION_MODEL = 'gpt-4o-mini';
 export const EMBEDDING_MODEL = 'text-embedding-3-small';
-export const DEFAULT_TOP_K = 80;
+export const DEFAULT_TOP_K = 150;
 // Share of meaningful (non-stop) story words whose stem must appear in the
 // child's full grade-level corpus. Empirically calibrated: quality stories
 // score ~0.45–0.54 against the ~436-word grade-≤1 corpus (proper nouns and

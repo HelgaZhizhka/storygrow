@@ -59,13 +59,13 @@ export const PAGE_TEMPLATES: Readonly<Record<TemplateName, PageTemplateConfig>> 
   },
   'image-top': {
     htmlFile: 'image-top.html',
-    maxChars: { text: 120 },
+    maxChars: { text: 220 },
     images: [{ slot: 'illustration', aspect: 'landscape', imageSize: '1536x1024' }],
     suitableFor: [5, 6],
   },
   'image-bottom': {
     htmlFile: 'image-bottom.html',
-    maxChars: { text: 120 },
+    maxChars: { text: 220 },
     images: [{ slot: 'illustration', aspect: 'landscape', imageSize: '1536x1024' }],
     suitableFor: [5, 6],
   },

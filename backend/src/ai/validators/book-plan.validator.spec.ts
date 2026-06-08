@@ -49,7 +49,7 @@ describe('validateBookPlan', () => {
 
   describe('maxChars validation', () => {
     it('errors when text exceeds template maxChars.text', () => {
-      const longText = 'А'.repeat(121); // image-top allows 120
+      const longText = 'А'.repeat(221); // image-top allows 220
       const pages: Page[] = [
         validPages[0],
         makePage('image-top', { text: longText }),
@@ -57,11 +57,11 @@ describe('validateBookPlan', () => {
       ];
       const result = validateBookPlan(pages, 6);
       expect(result.passed).toBe(false);
-      expect(result.errors.some((e) => /120/.test(e))).toBe(true);
+      expect(result.errors.some((e) => /220/.test(e))).toBe(true);
     });
 
     it('passes when text is exactly at the limit', () => {
-      const exactText = 'А'.repeat(120); // image-top allows 120
+      const exactText = 'А'.repeat(220); // image-top allows 220
       const pages: Page[] = [
         validPages[0],
         makePage('image-top', { text: exactText }),
@@ -122,7 +122,7 @@ describe('validateBookPlan', () => {
 
   describe('collects multiple errors', () => {
     it('reports all violations, not just the first', () => {
-      const longText = 'А'.repeat(200); // exceeds image-top (120) and image-bottom (120)
+      const longText = 'А'.repeat(221); // exceeds image-top (220) and image-bottom (220)
       const pages: Page[] = [
         makePage('image-top', { text: longText }), // error: not cover + text too long
         makePage('image-bottom', { text: longText }), // error: text too long
