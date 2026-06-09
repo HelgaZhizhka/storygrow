@@ -1,101 +1,95 @@
-# Read-Aloud Text & Vocabulary Tuning — Design
+# Read-Aloud Story Quality — Design
 
-**Date:** 2026-06-08
-**Status:** Draft for review
-**Scope:** Custom (AI) flow story text + vocabulary. No schema, no UI, no image changes.
+**Date:** 2026-06-08 (revised after live testing + grilling session)
+**Status:** In progress — strategy revised; implementation on branch `issue/160-read-aloud-tuning` (PR #161, **not merged**)
+**Scope:** Custom (AI) flow story TEXT quality. No schema, no UI, no image changes.
 
 ## Problem
 
-For 5–6-year-olds the generated text is too short and lexically flat. Two coupled
-causes:
+For ages 5–6 (read-aloud model) the generated text is too short, lexically flat,
+and reads like captions to pictures rather than a story. Live testing also
+surfaced a **safety regression**: pushing for engagement (tension) made the model
+reach for a real physical danger (a wild bear the child approaches and befriends)
+— see [ADR-0004](../../docs/adr/0004-safe-conflict-boundary.md).
 
-1. **Char limits.** Most content pages for ages 5–6 are capped at **120 chars**
-   (`image-top` / `image-bottom`) — roughly 1–2 short sentences.
-2. **Vocabulary constraint.** The story prompt instructs the LLM to use *only*
-   the grade-level allowed-words list, and the evaluator **hard-fails** any story
-   whose vocabulary-compliance score is below `COMPLIANCE_THRESHOLD` (0.4). Even
-   if we raise the char limit, the narrow word pool keeps prose repetitive.
+Root insight: reactive prompt-tweaking does not converge. Each fix dents another
+(engagement → safety, anti-repetition → length). Abstract rules do not compose;
+the model imitates **examples** far better than it follows maxims.
 
-## Decision: the reading model is **parent-reads-aloud**
+## Strategy (resolved in the grilling session)
 
-The product is read-aloud (it already ships parent-facing discussion questions).
-This reframes the vocabulary constraint: it should target words the child
-**understands by ear**, not words the child can **decode** themselves. That is a
-much wider set, and it lets emotional/narrative words in ("испугался",
-"решился", "обрадовался") that make a 5–6 story richer.
+1. **Steer quality with Gold Exemplars (few-shot), not prose-rules.** 1 curated
+   gold story injected into the generation prompt sets length, richness, tone,
+   and safe conflict type by example. Rules stay only as a secondary backstop.
+   See `Gold Exemplar` in [CONTEXT.md](../../CONTEXT.md).
+2. **Exemplar provenance: draft → human approval.** A draft may be generated
+   cheaply (text-only harness), but it becomes an exemplar only after the
+   pedagogy expert approves it. Pure auto-generated, unreviewed stories are never
+   exemplars. Start with **2–3** exemplars across different learning goals.
+3. **Storage: static constants now, RAG later.** Exemplars live as TS constants
+   in `backend/src/ai/prompts/`, selected by a simple goal→exemplar map. With
+   only 2–3, retrieval is a lookup; pgvector RAG is over-engineering until the
+   library grows to dozens.
+4. **Safe-conflict boundary** ([ADR-0004](../../docs/adr/0004-safe-conflict-boundary.md)):
+   the constraint is on the modelled **action**, not the scary element.
+   Emotional/social/internal conflict is allowed; a real physical danger the hero
+   approaches/befriends is forbidden. Enforced in BOTH the generation prompt and
+   the judge's `safetyForChildren` criterion. Exemplars demonstrate it by example;
+   this is the enforcement backstop.
+5. **Text-only harness** (`pnpm --filter backend eval:text "<goal>" <age> [mode]`):
+   runs VocabularyRag → StoryGenerator → StoryEvaluator only (no images, no PDF,
+   no DB writes). Cents per run. This is the iteration loop AND the exemplar-draft
+   generator.
+6. **Eval enforces it.** The judge `engagement` criterion pushes thin stories to
+   regenerate; the widened `safetyForChildren` criterion pushes unsafe ones out.
 
-**The vocabulary RAG is NOT removed** — it remains one of the project's three
-AI-engineering differentiators. It is *reframed*: from "decoding word-list gate"
-to "comprehension-level vocabulary guidance + tracked quality signal."
+## Changes already made (on branch, NOT merged)
 
-## Changes
+- Page text limit `image-top`/`image-bottom` 120 → 220 (`page-templates.config.ts`).
+- `DEFAULT_TOP_K` 80 → 150 (wider vocabulary retrieval).
+- Prompt vocabulary reframed: "use ONLY" → "prefer; you may also use simple
+  spoken-comprehension words."
+- Vocabulary compliance decoupled from the hard pass-gate → soft signal (kept in
+  `StoryEval` + regeneration feedback).
+- Judge `engagement` criterion added (`JudgeSchema` now 6 criteria) + storytelling
+  brief in the generation prompt.
+- Moral-repetition fix (lesson shown on content pages, stated once on `final`).
+- Text-only eval harness (`backend/src/scripts/eval-text.ts`).
 
-### 1. Page text limits (`page-templates.config.ts`)
+These verified live: length up (≈120→150), richer prose (dialogue, sensory
+detail, show-don't-tell), regeneration loop engaging on `engagement`. But text is
+still on the short side, and **safe-conflict is not yet enforced** — so the branch
+can still produce unsafe stories.
 
-| Template | Current | New |
-|---|---|---|
-| `image-top` | 120 | **220** |
-| `image-bottom` | 120 | **220** |
-| `image-left` | 200 | 200 (unchanged) |
-| `text-focus` | 350 | 350 (unchanged) |
-| `final` | 200 | 200 (unchanged) |
-| `cover` (title) | 60 | 60 (unchanged) |
+## What's left (to finish before merge)
 
-`maxChars` is the single source of truth — the value flows into both the prompt
-catalogue (`buildTemplateCatalogue`) and the structural validator, so this one
-change propagates everywhere.
+1. **Enforce safe-conflict** (ADR-0004) in the generation prompt (hard constraint
+   on conflict type) and widen the judge `safetyForChildren` criterion to penalise
+   modelling approach to real danger.
+2. **Build 2–3 Gold Exemplars**: draft via the harness → expert approval → wire as
+   static few-shot constants with a goal→exemplar map.
+3. **Re-verify via the harness** (cheap) across the exemplar goals; confirm richer,
+   safe, age-appropriate text before any image spend.
 
-### 2. Wider vocabulary retrieval (`ai.config.ts`)
+## Disposition of PR #161
 
-`DEFAULT_TOP_K`: **80 → 150**. More allowed words per story gives the LLM more
-lexical room *from the corpus itself*, before any relaxation.
-
-### 3. Prompt reframe (`story-generator.prompt.ts`)
-
-- System rule 2 ("Use ONLY vocabulary from the provided allowed-words list…")
-  → "**Prefer** the provided allowed-words list. You may also use other simple,
-  age-appropriate Russian words a child understands when the story is **read
-  aloud** by a parent. Favour concrete, emotionally clear words."
-- User-prompt vocabulary line updated to match ("prefer these… read-aloud").
-
-### 4. Decouple vocabulary compliance from the hard pass-gate (`story-evaluator.service.ts`)
-
-Today: `passed = structural && languagePurity && compliance && finalScore≥threshold`.
-
-New: drop `compliance.passed` from the hard AND. Vocabulary compliance becomes a
-**soft signal**:
-- still computed and stored on `StoryEval.vocabularyCompliance` (defense metric intact);
-- still fed into regeneration feedback when low (the LLM is nudged toward simpler
-  words on retry);
-- no longer hard-fails a book on its own.
-
-Hard gates that **remain**: `structural`, `languagePurity` (no Latin/English),
-and `finalScore ≥ EVAL_THRESHOLD`. The judge already scores age-appropriate
-vocabulary, so quality is still protected — by a graded score, not a binary cliff.
+Do **not** merge yet (can produce unsafe stories) and do **not** revert (nothing
+is wrong, only incomplete). Finish the two items above on the same branch, verify
+with the harness, then merge one coherent "read-aloud story quality" PR.
 
 ## Out of scope
 
-- **Audio narration / TTS** — tracked separately (roadmap issue).
-- **Age-adaptive lengths** (different limits for 5 vs 6) — keep one limit for the
-  5–6 band for now; revisit if needed.
-- Schema, UI, image generation — untouched.
+- Photo / vision agent, reference-image models (separate, deferred).
+- RAG retrieval of exemplars (only once the exemplar library is large).
+- Fine-tuning (overkill for a course MVP).
+- Audio narration / TTS — separate roadmap issue (#159).
+- Age-adaptive lengths for 5 vs 6 (keep one band for now).
 
 ## Defense / metric note
 
-This intentionally changes the eval gate. "% of books passing on first attempt"
-will rise because vocabulary no longer hard-fails a book. The narrative improves:
-vocabulary compliance becomes a **weighted quality signal we track and optimize**,
-not a brittle binary gate — a more credible multi-signal eval story. Language
-purity (Russian-only) stays a hard gate, so the "no English words" guarantee is
-unchanged.
-
-## Testing
-
-- `vocabulary-compliance.spec`: unchanged scoring; still returns `score` + `outOfCorpus`.
-- `story-evaluator.spec`: update the gate expectation — a story with low
-  compliance but a passing judge score and clean language/structure now returns
-  `passed: true`. Add a test that low compliance still appears in regeneration
-  feedback.
-- `book-plan.validator` tests: confirm 220-char text passes for `image-top`/`bottom`.
-- Manual: regenerate a 6-year-old book and confirm noticeably richer 2–3-sentence
-  pages with intact Russian-only text.
+Decoupling vocabulary from the hard gate and widening the safety/engagement
+criteria changes "% passing on first attempt": vocabulary stops hard-failing
+books, while engagement and safety push more regenerations. Net narrative is
+stronger — vocabulary compliance becomes a tracked quality signal in a
+multi-signal eval, and the regeneration loop visibly improves both richness and
+safety. Language purity (Russian-only) remains a hard gate.
