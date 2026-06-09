@@ -1037,3 +1037,37 @@ Consolidated catch-up entry. 37 PRs squash-merged in one high-velocity day, grou
 
 **Blockers:**
 - None.
+
+---
+
+## 2026-06-09 — Read-aloud story quality: tuning, safety regression, strategy pivot
+
+**Context:** all work below is on branch `issue/160-read-aloud-tuning` (PR #161) and is **NOT merged** — it can still produce unsafe stories. Canonical decisions (CONTEXT.md terms, ADR-0004) were committed to `main`.
+
+**Done (on #161, unmerged):**
+- Read-aloud text tuning: page text limit 120→220 (`image-top`/`image-bottom`), `DEFAULT_TOP_K` 80→150, vocab prompt reframed ("prefer" not "only"), vocabulary compliance decoupled from the hard pass-gate → soft signal.
+- Judge `engagement` criterion added (`JudgeSchema` now 6 criteria) + storytelling brief; moral-repetition fix.
+- Text-only eval harness `pnpm --filter backend eval:text "<goal>" <age> [child|observer]` — runs Vocab→Generator→Evaluator only (no images/PDF/DB), cents per run. Also generates exemplar drafts.
+
+**Safety regression found (live):** pushing `engagement` (tension) made the model reach for a real danger — a *wild bear the child approaches and befriends* (goal Смелость). Passed the judge's `safetyForChildren` (a friendly bear isn't "violent"). → models dangerous real-world behaviour for a 5yo.
+
+**Strategy pivot (grilling session, decisions):**
+1. Steer quality with **Gold Exemplars (few-shot)**, not prose-rules (rules don't compose; each fix dents another).
+2. Exemplar provenance: **draft → human (pedagogy-expert) approval**; 2–3 across goals; never pure auto-gen.
+3. Storage: **static constants now**, RAG/pgvector later when the library grows.
+4. **Safe-conflict boundary** (ADR-0004): constraint is on the modelled *action*, not the scary element. Emotional/social/internal conflict allowed; a real physical danger the hero approaches/befriends forbidden. Enforced in prompt + judge.
+5. **Text-only harness** = cheap iteration loop + exemplar-draft generator.
+
+**Committed to main:** `CONTEXT.md` terms (Gold Exemplar, Safe Conflict); `docs/adr/0004-safe-conflict-boundary.md`. Spec expanded with full strategy + status (on branch): `docs/superpowers/specs/2026-06-08-read-aloud-text-tuning-design.md`. Audio narration parked as issue #159.
+
+**Honest status:** this is a *strategy/hypothesis, not a proven solution*. Not yet built: safe-conflict enforcement, the exemplars. Proof comes only after building 1 exemplar + safe-conflict and verifying via the harness across several goals.
+
+**Next (to finish before merging #161):**
+1. Enforce safe-conflict (generation prompt hard constraint + widen judge `safetyForChildren`) per ADR-0004.
+2. Build 2–3 Gold Exemplars (harness draft → expert approval → wire as static few-shot).
+3. Re-verify via harness; then merge #161.
+
+**Merge-time doc TODO:** update `CONTEXT.md` "Judge Score" 5→6 criteria (+ engagement, widened safety) when #161 merges.
+
+**Blockers:**
+- None (decision-gated on building exemplars + safe-conflict).
