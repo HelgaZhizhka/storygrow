@@ -68,10 +68,13 @@ const BOOK_STRUCTURE_RULES = `Book structure requirements:
     Encode the narrative arc across these pages:
     first pages = setup (introduce protagonist and world),
     middle pages = conflict (challenge arises, protagonist struggles),
-    later pages = lesson (protagonist learns and applies the learning goal),
-    final content pages = resolution (story resolves, lesson reinforced).
-  • Last page: 'final' (moral summary in the page's 'text' field; discussion
-    questions in the top-level 'discussionQuestions' array).`;
+    later pages = lesson (the protagonist learns by DOING — show the change
+      through action and feeling, never as a stated maxim),
+    final content pages = resolution (the protagonist succeeds by applying what
+      they learned — show it; do NOT restate the moral here).
+  • Last page: 'final' — state the lesson exactly ONCE, in one short simple
+    sentence, in the page's 'text' field; discussion questions go in the
+    top-level 'discussionQuestions' array.`;
 
 // ─── User prompt ─────────────────────────────────────────────────────────────
 
@@ -145,7 +148,9 @@ Storytelling (this is read ALOUD by a parent — make it come alive, not a summa
     (not "он испугался" alone — show it: heart pounding, frozen feet, a held breath).
   • Use short direct speech where it fits ("…", — сказал он).
   • Build a real little moment of tension at the climax before it resolves.
-  • State the lesson ONCE, through what happens — never lecture or repeat the moral.
+  • Do NOT moralise on content pages — never write definitions like
+    "смелость — это значит…". Show the character living the lesson through what
+    they DO and FEEL. The moral is stated only ONCE, on the final page.
 
 For each page's illustrationPrompt: write a vivid DALL-E prompt in English with the
 scene, mood, colours, and art style ("watercolour, children's book"). The character

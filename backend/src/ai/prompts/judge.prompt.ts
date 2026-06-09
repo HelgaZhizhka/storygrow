@@ -9,7 +9,7 @@ Rate the story on exactly six criteria using integers 0–10 each:
 3. structureCompleteness — all four narrative stages present (setup → conflict → lesson → resolution)
 4. safetyForChildren — content is appropriate, non-violent, and positive for children
 5. length — number of pages and content volume suits the target age
-6. engagement — the story is vivid and SHOWS rather than tells: concrete sensory detail, the character's feelings made visible, dialogue where natural, and a real moment of tension before the resolution. Score low (≤5) for a flat summary of events ("he saw X, he felt Y, he did Z") or a moral stated as a lecture rather than shown through what happens.
+6. engagement — the story is vivid and SHOWS rather than tells: concrete sensory detail, the character's feelings made visible, dialogue where natural, and a real moment of tension before the resolution. Score low (≤5) for a flat summary of events ("he saw X, he felt Y, he did Z"), for a moral stated as a lecture/definition ("X — это значит…") instead of shown, or for repeating the moral on more than one page (it should appear once, on the final page).
 
 Set finalScore to the exact mean of the six integer scores rounded to 2 decimal places.
 Write reasoning in 2–3 sentences explaining the key strengths or weaknesses.
