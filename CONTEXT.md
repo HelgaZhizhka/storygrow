@@ -68,6 +68,16 @@ Free-text visual description of the child stored on `Child.appearance` (reusable
 
 **Avoid:** "avatar", "portrait" — there is no image of the child; this is a text description only.
 
+### Gold Exemplar
+A human-approved reference story used as a few-shot example to steer generation quality — its structure, richness, tone, and (critically) its **safe conflict type**. A draft may be machine-generated, but it becomes an exemplar only after the pedagogy expert approves it. An auto-generated, unreviewed story is never an exemplar. The approved exemplar set is also the source of truth from which the judge rubric is calibrated (we measure deviation from the gold set, not from hand-written rules).
+
+**Avoid:** "sample", "template" — an exemplar shows the craft to imitate, it is not a fill-in-the-blank skeleton.
+
+### Safe Conflict
+The narrative tension a story is allowed to use for ages 5–6. The boundary is about the **modeled action** in the resolution, not the scary element itself: a story may feature fear, but the resolution must never model a child approaching a real-world danger. **Allowed** — emotional/social/internal conflicts: fear of the dark, trying something new, speaking up, a friend upset, making a mistake, missing a parent. **Forbidden** — a real physical danger that the hero approaches or befriends: wild animal, stranger, fire, water, heights, getting lost. Test by the action: "a dog as a known friend" is fine; "approach an unknown dog" is not.
+
+**Avoid:** "no scary content" — fear is allowed and useful; the constraint is on the modeled action, not on the presence of tension.
+
 ### Art Style
 Per-book illustration style (`Book.artStyle`): `watercolor` (default) / `cartoon` / `storybook` / `pixel` / `realistic`. Maps to an English suffix (`STYLE_SUFFIXES` in `ai.config.ts`) appended to every illustration prompt. Custom Flow only; fast-flow uses its pre-rendered illustrations.
 
