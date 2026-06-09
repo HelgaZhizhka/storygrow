@@ -1071,3 +1071,28 @@ Consolidated catch-up entry. 37 PRs squash-merged in one high-velocity day, grou
 
 **Blockers:**
 - None (decision-gated on building exemplars + safe-conflict).
+
+---
+
+## 2026-06-09 — Read-aloud quality: completed safe-conflict + exemplars + gpt-4o (#161 ready)
+
+Continuation of the entry above. The three "Next" items are now **done** on branch `issue/160-read-aloud-tuning` (PR #161), verified via the text harness.
+
+**Done:**
+- **Safe-conflict enforced** (ADR-0004): hard rule 10 in the generation system prompt + widened judge `safetyForChildren`. Verified — the "bear" no longer appears (shadow→teddy, learning a scooter/shoelaces). Judge notes "no encouragement of risky behavior".
+- **Three Gold Exemplars** (`backend/src/ai/prompts/exemplars.ts`): courage (Миша), kindness (Соня), independence (Тёма), human-approved, injected as few-shot by goal.
+- **Story text → `gpt-4o`** (`STORY_MODEL`); judge + other calls stay on `gpt-4o-mini`. Text ~$0.02/book vs images ~$0.30/book. gpt-4o stopped copying the exemplar plot (original stories now).
+- Experiment journal for the presentation: `docs/process/ai-text-quality-evolution.md` (gitignored; `docs/process/` added to `.gitignore`).
+- Issue #162 filed: batch-eval harness + LangFuse datasets (for systematic version testing — later, YAGNI now).
+
+**Outcome:** safe + original + structured + decent read-aloud stories. **Known limitation (honest):** the witty *voice* of the human exemplars doesn't fully transfer — `engagement` plateaus ~7; a model-capability ceiling, not a prompt gap.
+
+**LangFuse clarification:** it IS wired and working in the real app (`instrument.ts` → `@langfuse/otel` NodeSDK; env keys set; `experimental_telemetry` on every LLM call). Only the standalone text harness emits no traces (by design). We already implement the tutorial pattern on a newer SDK — nothing to take.
+
+**Next:**
+- Merge #161 (ready). At merge: update `CONTEXT.md` "Judge Score" 5→6 (+ `engagement`, widened `safetyForChildren`) and note `gpt-4o` story-text model in `docs/ARCHITECTURE.md`.
+- Separate stage: UI/UX redesign (remove existing/new toggle; visual polish) with the user's Claude Design references — frontend, independent of text quality.
+- #29 deploy (do #155 verify.sh first); #32 defense prep.
+
+**Blockers:**
+- None.
