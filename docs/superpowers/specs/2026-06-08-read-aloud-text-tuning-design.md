@@ -55,27 +55,30 @@ the model imitates **examples** far better than it follows maxims.
   brief in the generation prompt.
 - Moral-repetition fix (lesson shown on content pages, stated once on `final`).
 - Text-only eval harness (`backend/src/scripts/eval-text.ts`).
+- **Safe-conflict enforced** (ADR-0004): hard rule 10 in the generation system
+  prompt + widened judge `safetyForChildren` criterion. Verified via harness —
+  the "bear" no longer appears across runs (shadow→teddy, learning a skill).
+- **Three Gold Exemplars** (`backend/src/ai/prompts/exemplars.ts`): courage
+  (Миша), kindness (Соня), independence (Тёма), injected as few-shot by goal.
+- **Story text now uses `gpt-4o`** (`STORY_MODEL`); judge + other calls stay on
+  `gpt-4o-mini`. Text ~$0.02/book vs images ~$0.30/book.
 
-These verified live: length up (≈120→150), richer prose (dialogue, sensory
-detail, show-don't-tell), regeneration loop engaging on `engagement`. But text is
-still on the short side, and **safe-conflict is not yet enforced** — so the branch
-can still produce unsafe stories.
+These verified live via the harness: safe conflict (no real danger), original
+plots (gpt-4o stopped copying the exemplar), clean structure, decent prose.
 
-## What's left (to finish before merge)
+## Outcome
 
-1. **Enforce safe-conflict** (ADR-0004) in the generation prompt (hard constraint
-   on conflict type) and widen the judge `safetyForChildren` criterion to penalise
-   modelling approach to real danger.
-2. **Build 2–3 Gold Exemplars**: draft via the harness → expert approval → wire as
-   static few-shot constants with a goal→exemplar map.
-3. **Re-verify via the harness** (cheap) across the exemplar goals; confirm richer,
-   safe, age-appropriate text before any image spend.
+The branch now produces **safe + original + structured + decent** read-aloud
+stories. Known limitation (honest): the lively, witty *voice* of the human-written
+exemplars does not fully transfer — `engagement` plateaus around 7. This is a
+model-capability ceiling, not a prompt gap. Future levers: more exemplars over
+time, a stronger model, or fine-tuning.
 
 ## Disposition of PR #161
 
-Do **not** merge yet (can produce unsafe stories) and do **not** revert (nothing
-is wrong, only incomplete). Finish the two items above on the same branch, verify
-with the harness, then merge one coherent "read-aloud story quality" PR.
+Ready to merge — the three "what's left" items are done and verified. At merge:
+update `CONTEXT.md` "Judge Score" (5→6 criteria, + `engagement`, widened
+`safetyForChildren`) and note the `gpt-4o` story-text model in `docs/ARCHITECTURE.md`.
 
 ## Out of scope
 
