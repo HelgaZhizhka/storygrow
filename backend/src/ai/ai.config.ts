@@ -1,4 +1,8 @@
 export const GENERATION_MODEL = 'gpt-4o-mini';
+// Story TEXT uses a stronger model: voice, humour and originality are the
+// bottleneck, and the text call (~$0.02/book) is negligible beside images
+// (~$0.30/book). The judge and other calls stay on the cheaper model.
+export const STORY_MODEL = 'gpt-4o';
 export const EMBEDDING_MODEL = 'text-embedding-3-small';
 export const DEFAULT_TOP_K = 150;
 // Share of meaningful (non-stop) story words whose stem must appear in the

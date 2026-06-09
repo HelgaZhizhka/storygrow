@@ -4,6 +4,7 @@ import {
   TemplateName,
 } from '../../pdf/page-templates/page-templates.config';
 import { type JudgeResult } from '../schemas';
+import { pickExemplar } from './exemplars';
 
 // ─── System prompt ───────────────────────────────────────────────────────────
 
@@ -161,6 +162,12 @@ Storytelling (this is read ALOUD by a parent — make it come alive, not a summa
   • Do NOT moralise on content pages — never write definitions like
     "смелость — это значит…". Show the character living the lesson through what
     they DO and FEEL. The moral is stated only ONCE, on the final page.
+
+EXAMPLE of the quality, lively voice, gentle humour and SAFE conflict to match.
+Match its CRAFT — do NOT copy its plot, names, characters, or setting:
+"""
+${pickExemplar(topic).text}
+"""
 
 For each page's illustrationPrompt: write a vivid DALL-E prompt in English with the
 scene, mood, colours, and art style ("watercolour, children's book"). The character
