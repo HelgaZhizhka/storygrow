@@ -34,6 +34,14 @@ Hard rules:
 8. The last page MUST use the 'final' template.
 9. DALL-E illustration prompts MUST be in English (DALL-E performs better
    with English prompts). All other fields are Russian.
+10. SAFE CONFLICT (non-negotiable). The story's tension must come from an
+    EMOTIONAL, SOCIAL or INTERNAL challenge — fear of the dark, trying something
+    new, speaking up, a friend is upset, making a mistake and fixing it, missing
+    a parent. The hero must NEVER approach, befriend, or be rescued by a real
+    physical danger: wild/unknown animals, strangers, fire, water, heights, or
+    exploring dangerous places (caves, forests alone). The lesson must never
+    model a child doing something unsafe in real life. The scary thing may exist,
+    but the resolution must not teach the child to approach it.
 `.trim();
 
 // ─── Template catalogue builder ───────────────────────────────────────────────
@@ -147,7 +155,9 @@ Storytelling (this is read ALOUD by a parent — make it come alive, not a summa
   • Include one concrete, sensory detail and make the character's feeling visible
     (not "он испугался" alone — show it: heart pounding, frozen feet, a held breath).
   • Use short direct speech where it fits ("…", — сказал он).
-  • Build a real little moment of tension at the climax before it resolves.
+  • Build a real little moment of tension at the climax — but the tension is
+    EMOTIONAL/SOCIAL (will I be brave enough? what if they laugh? can I do it?),
+    never a physical danger the hero approaches. See hard rule 10.
   • Do NOT moralise on content pages — never write definitions like
     "смелость — это значит…". Show the character living the lesson through what
     they DO and FEEL. The moral is stated only ONCE, on the final page.

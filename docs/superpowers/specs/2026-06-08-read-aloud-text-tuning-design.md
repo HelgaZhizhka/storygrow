@@ -1,6 +1,6 @@
 # Read-Aloud Story Quality — Design
 
-**Date:** 2026-06-08 (revised after live testing + grilling session)
+**Date:** 2026-06-09 (revised after live testing + grilling session)
 **Status:** In progress — strategy revised; implementation on branch `issue/160-read-aloud-tuning` (PR #161, **not merged**)
 **Scope:** Custom (AI) flow story TEXT quality. No schema, no UI, no image changes.
 
