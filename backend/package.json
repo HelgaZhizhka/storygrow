@@ -24,6 +24,7 @@
     "seed:templates": "dotenv -e .env -- tsx src/scripts/seed-fast-flow-templates.ts",
     "seed:illustrations": "dotenv -e .env -- tsx src/scripts/seed-fast-illustrations.ts",
     "langfuse:test": "tsx src/scripts/test-langfuse.ts",
+    "eval:text": "dotenv -e .env -- tsx src/scripts/eval-text.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
