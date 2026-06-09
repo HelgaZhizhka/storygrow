@@ -1,7 +1,7 @@
 # ADR-0004: Safe-conflict boundary for generated stories
 
 **Status:** Accepted
-**Date:** 2026-06-08
+**Date:** 2026-06-09
 
 ## Context
 
