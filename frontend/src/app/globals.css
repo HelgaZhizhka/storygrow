@@ -1,26 +1,158 @@
 @import 'tailwindcss';
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ============================================================
+   StoryGrow — Design Tokens  («магическое издательство»)
+   Indigo · Teal · Warm Gold. Light default, dark via [data-theme='dark'].
+   Adopted from the Claude Design handoff (tokens.css).
+   ============================================================ */
+
+:root,
+:root[data-theme='light'] {
+  --bg: oklch(0.99 0.004 258);
+  --bg-2: oklch(0.975 0.007 262);
+  --bg-aura:
+    radial-gradient(900px 500px at 12% -8%, oklch(0.92 0.05 285 / 0.55), transparent 60%),
+    radial-gradient(800px 520px at 92% 4%, oklch(0.93 0.04 195 / 0.5), transparent 58%);
+  --surface: oklch(1 0 0);
+  --surface-2: oklch(0.978 0.006 260);
+  --surface-inset: oklch(0.965 0.008 262);
+
+  --border: oklch(0.92 0.008 264);
+  --border-strong: oklch(0.86 0.012 266);
+
+  --text: oklch(0.28 0.03 272);
+  --text-2: oklch(0.5 0.025 268);
+  --text-3: oklch(0.62 0.02 266);
+  --text-on-primary: oklch(0.99 0.005 260);
+
+  --primary: oklch(0.55 0.18 268);
+  --primary-hover: oklch(0.48 0.19 270);
+  --primary-soft: oklch(0.95 0.028 270);
+  --primary-border: oklch(0.84 0.06 270);
+
+  --secondary: oklch(0.62 0.1 190);
+  --secondary-soft: oklch(0.95 0.03 192);
+
+  --accent: oklch(0.72 0.12 65);
+  --accent-soft: oklch(0.95 0.045 72);
+
+  --success: oklch(0.6 0.13 150);
+  --success-soft: oklch(0.95 0.04 150);
+  --danger: oklch(0.57 0.2 25);
+  --danger-soft: oklch(0.95 0.04 25);
+  --warning: oklch(0.74 0.13 75);
+  --warning-soft: oklch(0.96 0.05 80);
+
+  --grad-magic: linear-gradient(
+    135deg,
+    oklch(0.58 0.18 270),
+    oklch(0.6 0.16 305) 55%,
+    oklch(0.72 0.11 200)
+  );
+  --grad-text: linear-gradient(100deg, oklch(0.55 0.18 270), oklch(0.62 0.14 300));
+
+  --sh-sm: 0 1px 2px oklch(0.45 0.08 270 / 0.08), 0 1px 1px oklch(0.45 0.08 270 / 0.04);
+  --sh-md: 0 4px 16px -4px oklch(0.45 0.09 270 / 0.14), 0 1px 3px oklch(0.45 0.08 270 / 0.06);
+  --sh-lg: 0 24px 48px -20px oklch(0.4 0.1 270 / 0.32), 0 4px 12px -6px oklch(0.4 0.09 270 / 0.12);
 }
 
+:root[data-theme='dark'] {
+  --bg: oklch(0.19 0.025 272);
+  --bg-2: oklch(0.22 0.028 272);
+  --bg-aura:
+    radial-gradient(900px 520px at 12% -8%, oklch(0.4 0.1 285 / 0.5), transparent 60%),
+    radial-gradient(820px 540px at 92% 4%, oklch(0.42 0.08 200 / 0.4), transparent 58%);
+  --surface: oklch(0.235 0.028 272);
+  --surface-2: oklch(0.275 0.03 272);
+  --surface-inset: oklch(0.2 0.025 272);
+
+  --border: oklch(0.34 0.03 274);
+  --border-strong: oklch(0.44 0.035 274);
+
+  --text: oklch(0.96 0.01 262);
+  --text-2: oklch(0.75 0.022 266);
+  --text-3: oklch(0.6 0.02 266);
+  --text-on-primary: oklch(0.16 0.02 272);
+
+  --primary: oklch(0.74 0.15 274);
+  --primary-hover: oklch(0.8 0.14 274);
+  --primary-soft: oklch(0.32 0.07 272);
+  --primary-border: oklch(0.45 0.09 272);
+
+  --secondary: oklch(0.76 0.1 190);
+  --secondary-soft: oklch(0.32 0.05 195);
+
+  --accent: oklch(0.82 0.12 72);
+  --accent-soft: oklch(0.34 0.06 68);
+
+  --success: oklch(0.72 0.13 152);
+  --success-soft: oklch(0.32 0.06 152);
+  --danger: oklch(0.68 0.18 25);
+  --danger-soft: oklch(0.33 0.08 25);
+  --warning: oklch(0.82 0.13 78);
+  --warning-soft: oklch(0.35 0.07 75);
+
+  --sh-sm: 0 1px 2px oklch(0 0 0 / 0.4);
+  --sh-md: 0 6px 20px -6px oklch(0 0 0 / 0.55);
+  --sh-lg: 0 28px 56px -22px oklch(0 0 0 / 0.7);
+}
+
+/* ----- Map tokens → Tailwind v4 utilities (additive; default zinc utilities still work) ----- */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-inset: var(--surface-inset);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-border-subtle: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-text: var(--text);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-on-primary: var(--text-on-primary);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-border: var(--primary-border);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-soft: var(--secondary-soft);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+
+  --shadow-token-sm: var(--sh-sm);
+  --shadow-token-md: var(--sh-md);
+  --shadow-token-lg: var(--sh-lg);
+
+  --radius-token-sm: 10px;
+  --radius-token-md: 14px;
+  --radius-token-lg: 18px;
+  --radius-token-xl: 26px;
+
+  --font-display: var(--font-head), 'Trebuchet MS', sans-serif;
+  --font-sans: var(--font-body), system-ui, -apple-system, sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-aura), var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+.text-grad {
+  background: var(--grad-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }

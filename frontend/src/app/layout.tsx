@@ -1,16 +1,21 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Unbounded, Manrope } from 'next/font/google';
 
 import './globals.css';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+// The design's fonts (Bricolage display, Outfit body) have NO Cyrillic, but the
+// UI is Russian. Cyrillic-capable substitutes that keep the intent — a
+// distinctive display + a clean geometric body: Unbounded + Manrope.
+const fontDisplay = Unbounded({
+  variable: '--font-head',
   subsets: ['latin', 'cyrillic'],
+  display: 'swap',
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
+const fontBody = Manrope({
+  variable: '--font-body',
+  subsets: ['latin', 'cyrillic'],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -23,7 +28,11 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>): React.ReactElement {
   return (
-    <html lang="ru" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html
+      lang="ru"
+      data-theme="light"
+      className={`${fontDisplay.variable} ${fontBody.variable} h-full antialiased`}
+    >
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );
