@@ -101,7 +101,9 @@ storygrow/
          │ 2. StoryGenerator.generate(input, words)  │
          │      → buildPrompt(prompts/STORY_SYSTEM)  │
          │      → ai.generateObject({                 │
-         │          model: openai('gpt-4o-mini'),    │
+         │          model: openai('gpt-4o'),          │
+         │          // story TEXT uses gpt-4o for     │
+         │          // voice; judge stays gpt-4o-mini │
          │          schema: StorySchema,             │
          │          prompt,                           │
          │          experimental_telemetry: {...}    │

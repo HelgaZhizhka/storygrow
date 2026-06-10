@@ -76,9 +76,10 @@ time, a stronger model, or fine-tuning.
 
 ## Disposition of PR #161
 
-Ready to merge — the three "what's left" items are done and verified. At merge:
-update `CONTEXT.md` "Judge Score" (5→6 criteria, + `engagement`, widened
-`safetyForChildren`) and note the `gpt-4o` story-text model in `docs/ARCHITECTURE.md`.
+Ready to merge — all items done and verified, and the doc updates are now
+**included in this branch** (`CONTEXT.md` "Judge Score" 5→6 with `engagement` +
+widened `safetyForChildren`; `docs/ARCHITECTURE.md` `gpt-4o` story-text model).
+No manual merge-time doc steps remain.
 
 ## Out of scope
 

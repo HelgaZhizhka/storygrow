@@ -39,7 +39,7 @@ Numeric age-difficulty band used in RAG retrieval. Mapped from child's age via a
 **Avoid:** "age level", "difficulty" alone.
 
 ### Judge Score
-A numeric rating (0-10) produced by `StoryEvaluator` for a single criterion. Five criteria: `ageAppropriateVocab`, `hasMoralLesson`, `structureCompleteness`, `safetyForChildren`, `length`. The mean across criteria is the **final score**; if below threshold (default 7.0), the story is regenerated (max 2 retries).
+A numeric rating (0-10) produced by `StoryEvaluator` for a single criterion. Six criteria: `ageAppropriateVocab`, `hasMoralLesson`, `structureCompleteness`, `safetyForChildren` (widened to penalise modelling a child approaching real-world danger — see [Safe Conflict]), `length`, `engagement` (story is vivid and SHOWS rather than tells). The mean across criteria is the **final score**; if below threshold (default 7.0), the story is regenerated (max 2 retries).
 
 **Avoid:** "rating", "evaluation result".
 
