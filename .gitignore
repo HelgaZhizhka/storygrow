@@ -48,3 +48,4 @@ backend/prisma/generated/
 
 # Personal scratch notes (not part of tracked docs)
 docs/process-evolution.md
+docs/process/

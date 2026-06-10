@@ -6,7 +6,7 @@ const scoreField = () => z.number().int().min(0).max(10);
 /**
  * JudgeScoreSchema — individual criterion scores produced by StoryEvaluator.
  *
- * Each criterion is independently rated 0–10. The mean across all five
+ * Each criterion is independently rated 0–10. The mean across all six
  * is the finalScore compared against the eval threshold (default 7.0).
  */
 export const JudgeScoreSchema = z.object({
@@ -27,6 +27,14 @@ export const JudgeScoreSchema = z.object({
 
   /** Story length is appropriate for the target age (not too short/long). */
   length: scoreField(),
+
+  /**
+   * Story is vivid and engaging for read-aloud: it SHOWS rather than tells —
+   * concrete sensory detail, the character's feelings made visible, dialogue
+   * where natural, and a real moment of tension before the resolution. Flat
+   * event-summaries and moralising are penalised.
+   */
+  engagement: scoreField(),
 });
 
 export type JudgeScores = z.infer<typeof JudgeScoreSchema>;
@@ -47,7 +55,7 @@ export const JudgeSchema = z.object({
   reasoning: z.string().min(1),
 
   /**
-   * Mean of all five criterion scores, rounded to 2 decimal places.
+   * Mean of all six criterion scores, rounded to 2 decimal places.
    * Compared against EVAL_THRESHOLD to decide regeneration.
    */
   finalScore: z.number().min(0).max(10),

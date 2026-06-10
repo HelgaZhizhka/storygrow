@@ -58,9 +58,10 @@ const passingJudge = {
     structureCompleteness: 8,
     safetyForChildren: 10,
     length: 8,
+    engagement: 9,
   },
   reasoning: 'Good story.',
-  finalScore: 8.6,
+  finalScore: 8.67,
 };
 
 const failingJudge = {
@@ -70,9 +71,10 @@ const failingJudge = {
     structureCompleteness: 4,
     safetyForChildren: 6,
     length: 5,
+    engagement: 4,
   },
   reasoning: 'Needs improvement.',
-  finalScore: 4.8,
+  finalScore: 4.67,
 };
 
 const corpusWords = [
@@ -148,8 +150,8 @@ describe('StoryEvaluatorService', () => {
     expect(result.structuralErrors.some((e) => /cover/i.test(e))).toBe(true);
   });
 
-  it('returns passed=false when vocabulary compliance is below threshold', async () => {
-    const storyWithForeignWords: Story = {
+  it('does NOT hard-fail on low vocabulary compliance (soft signal), but still reports it', async () => {
+    const storyWithRareWords: Story = {
       ...validStory,
       title: 'бегемот жираф слон антилопа носорог лемур',
       pages: validStory.pages.map((page) =>
@@ -159,11 +161,13 @@ describe('StoryEvaluatorService', () => {
     mockGenerateObject.mockResolvedValueOnce({ object: passingJudge } as never);
     const result = await service.evaluate({
       ...baseInput,
-      story: storyWithForeignWords,
+      story: storyWithRareWords,
       corpusWords: ['кот'],
     });
-    expect(result.passed).toBe(false);
-    expect(result.outOfCorpus.length).toBeGreaterThan(0);
+    // Judge + structure + language purity pass; vocabulary is now a soft signal.
+    expect(result.passed).toBe(true);
+    expect(result.outOfCorpus.length).toBeGreaterThan(0); // still reported
+    expect(result.vocabularyCompliance).toBeLessThan(0.4); // still computed
   });
 
   it('calls generateObject with story-evaluator telemetry', async () => {

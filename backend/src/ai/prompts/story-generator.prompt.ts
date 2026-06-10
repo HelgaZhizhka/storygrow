@@ -4,6 +4,7 @@ import {
   TemplateName,
 } from '../../pdf/page-templates/page-templates.config';
 import { type JudgeResult } from '../schemas';
+import { pickExemplar } from './exemplars';
 
 // ─── System prompt ───────────────────────────────────────────────────────────
 
@@ -20,9 +21,10 @@ in valid JSON that exactly matches the provided schema.
 
 Hard rules:
 1. Write ENTIRELY in Russian. Every word must be Russian.
-2. Use ONLY vocabulary from the provided allowed-words list plus common
-   function words (prepositions, conjunctions, pronouns, particles).
-   Any word outside the list is a violation.
+2. PREFER the provided allowed-words list plus common function words. You MAY
+   also use other simple, age-appropriate Russian words that a child understands
+   when the story is read ALOUD by a parent. Favour concrete, emotionally clear
+   words (e.g. feelings) over rare or abstract ones.
 3. The protagonist is defined in the user prompt — either the named child or an
    invented character. Follow the user prompt's protagonist instruction exactly.
 4. The narrative arc MUST follow: setup → conflict → lesson → resolution,
@@ -33,6 +35,14 @@ Hard rules:
 8. The last page MUST use the 'final' template.
 9. DALL-E illustration prompts MUST be in English (DALL-E performs better
    with English prompts). All other fields are Russian.
+10. SAFE CONFLICT (non-negotiable). The story's tension must come from an
+    EMOTIONAL, SOCIAL or INTERNAL challenge — fear of the dark, trying something
+    new, speaking up, a friend is upset, making a mistake and fixing it, missing
+    a parent. The hero must NEVER approach, befriend, or be rescued by a real
+    physical danger: wild/unknown animals, strangers, fire, water, heights, or
+    exploring dangerous places (caves, forests alone). The lesson must never
+    model a child doing something unsafe in real life. The scary thing may exist,
+    but the resolution must not teach the child to approach it.
 `.trim();
 
 // ─── Template catalogue builder ───────────────────────────────────────────────
@@ -67,10 +77,13 @@ const BOOK_STRUCTURE_RULES = `Book structure requirements:
     Encode the narrative arc across these pages:
     first pages = setup (introduce protagonist and world),
     middle pages = conflict (challenge arises, protagonist struggles),
-    later pages = lesson (protagonist learns and applies the learning goal),
-    final content pages = resolution (story resolves, lesson reinforced).
-  • Last page: 'final' (moral summary in the page's 'text' field; discussion
-    questions in the top-level 'discussionQuestions' array).`;
+    later pages = lesson (the protagonist learns by DOING — show the change
+      through action and feeling, never as a stated maxim),
+    final content pages = resolution (the protagonist succeeds by applying what
+      they learned — show it; do NOT restate the moral here).
+  • Last page: 'final' — state the lesson exactly ONCE, in one short simple
+    sentence, in the page's 'text' field; discussion questions go in the
+    top-level 'discussionQuestions' array.`;
 
 // ─── User prompt ─────────────────────────────────────────────────────────────
 
@@ -134,8 +147,27 @@ ${catalogue}
 
 ${BOOK_STRUCTURE_RULES}
 
-Allowed vocabulary (Russian words — use ONLY these plus common function words):
+Preferred vocabulary (Russian words — prefer these; you may also add other simple
+words a 5–6-year-old understands by ear when read aloud):
 ${allowedWords.join(', ')}
+
+Storytelling (this is read ALOUD by a parent — make it come alive, not a summary):
+  • Each content page: 3–4 full sentences (~180–220 characters). SHOW the moment.
+  • Include one concrete, sensory detail and make the character's feeling visible
+    (not "он испугался" alone — show it: heart pounding, frozen feet, a held breath).
+  • Use short direct speech where it fits ("…", — сказал он).
+  • Build a real little moment of tension at the climax — but the tension is
+    EMOTIONAL/SOCIAL (will I be brave enough? what if they laugh? can I do it?),
+    never a physical danger the hero approaches. See hard rule 10.
+  • Do NOT moralise on content pages — never write definitions like
+    "смелость — это значит…". Show the character living the lesson through what
+    they DO and FEEL. The moral is stated only ONCE, on the final page.
+
+EXAMPLE of the quality, lively voice, gentle humour and SAFE conflict to match.
+Match its CRAFT — do NOT copy its plot, names, characters, or setting:
+"""
+${pickExemplar(topic).text}
+"""
 
 For each page's illustrationPrompt: write a vivid DALL-E prompt in English with the
 scene, mood, colours, and art style ("watercolour, children's book"). The character
