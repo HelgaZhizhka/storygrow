@@ -1115,3 +1115,47 @@ Continuation of the entry above. The three "Next" items are now **done** on bran
 **Next (separate stages, per user):** landing `/`, login, pricing `/pricing`, theme toggle. Then #29 deploy (do #155 verify.sh first), #32 defense prep.
 
 **Blockers:** None.
+
+---
+
+## 2026-06-11 — Art-style preview thumbnails (PR #165)
+
+**Done:** Replaced the gradient color swatches in the new-book art-style picker with real reference images. Each preview is one neutral scene (child + fox in a park) rendered through the **actual** book pipeline (`gpt-image-1` + `STYLE_SUFFIXES`), so the picker honestly shows what each style produces.
+- One-off generator `backend/src/scripts/gen-style-previews.ts`; PNGs in `frontend/public/styles/` (downscaled with `sips -Z 360`).
+- New-book form uses `next/image` over `.sg-style-sw`.
+
+**Notes:** the generator is a committed dev tool (reproducible if a style suffix changes), never wired into runtime.
+
+**Blockers:** None.
+
+---
+
+## 2026-06-11 — Public marketing screens: landing + login + pricing (PR #167, closes #166)
+
+**Done:** Built the three public screens from the Claude Design handoff, completing the UI redesign (#164 covered the authed app screens).
+- **Landing `/`** — `PublicNav`, hero with an animated CSS 3D book cover + trust row, features (3), how-it-works steps (3), sample spreads (3), gradient CTA, footer.
+- **Login `/login`** — design-system auth card on aura background; real Google OAuth preserved.
+- **Pricing `/pricing`** — Basic/Premium (Premium featured); Stripe subscribe flow + auth gate preserved; copy fixed to "Иллюстрации ИИ".
+- **Theme toggle** — stateless, CSS-driven icon via `[data-theme]`; `ThemeInit` applies the stored theme on every route. No `dangerouslySetInnerHTML` (rejected as a smell).
+- **CTA routing** — auth-aware: guest → `/login`, authenticated → `/books/new`.
+- Marketing-only classes in a separate `marketing.css` (`@layer components`), imported after `globals.css` to keep `globals.css` under the 400-line guideline. (A `@import` inside `globals.css` did not resolve under Tailwind v4 + Turbopack → imported as a sibling stylesheet in `layout.tsx`.)
+- Spec: `docs/superpowers/specs/2026-06-11-public-marketing-screens-design.md`.
+- Verified live in-browser (light + dark, theme persists across routes, app screens unaffected).
+
+**Notes:**
+- Landing sample spreads + hero cover are decorative gradients (no real cover URL yet).
+- Out of scope: SEO/OG tags (#28), deploy.
+
+**Blockers:** None.
+
+---
+
+## 2026-06-11 — Docs + CI cleanup (PR #169, #171)
+
+Found while auditing docs and chasing a red CI:
+- **#169 (closes #168)** — `ARCHITECTURE.md` had drifted: fixed backend module tree (`billing`/`s3`/`instrument.ts`/`admin`/`fast-flow`/`prisma`/`generated`), flat public frontend routes + `marketing.css`, 6 judge criteria (added `engagement`), `LearningGoal`/`Template`/`Subscription` schema, RAG top-K 150. (`CONTEXT.md` was already current.)
+- **#171 (closes #170)** — `main` CI was **red**: `gen-style-previews.ts` used `import.meta.dirname`, but the backend compiles to CommonJS, so `tsc --noEmit` failed (`TS1470`). It shipped red via #165 (runs fine under `tsx`, but `init.sh` runs `tsc`); #169 inherited the red. Fixed by switching to `__dirname`.
+
+**Lesson:** `init.sh` typechecks with `tsc`, not just `tsx` — one-off scripts in `backend/src/scripts/` must be CommonJS-compatible (`__dirname`, not `import.meta`). Don't self-merge before CI is green.
+
+**Blockers:** None.
