@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -256,7 +257,15 @@ export default function NewBookPage(): React.ReactElement {
                     data-active={artStyle === s.id}
                     onClick={() => setValue('artStyle', s.id)}
                   >
-                    <div className={`sg-style-sw sg-sw-${s.id}`} />
+                    <div className="sg-style-sw relative">
+                      <Image
+                        src={`/styles/${s.id}.png`}
+                        alt={s.label}
+                        fill
+                        sizes="160px"
+                        className="object-cover"
+                      />
+                    </div>
                     <span className="sg-style-nm">{s.label}</span>
                   </button>
                 ))}
