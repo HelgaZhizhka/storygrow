@@ -12,7 +12,8 @@ import { openai } from '@ai-sdk/openai';
 import { IMAGE_MODEL, STYLE_SUFFIXES, type ArtStyle } from '../ai/ai.config';
 
 const SCENE = 'A cheerful young child playing with a friendly little fox in a sunny green park';
-const OUT_DIR = resolve(import.meta.dirname, '../../../frontend/public/styles');
+// __dirname (CommonJS) — the backend compiles to CJS, so import.meta is unavailable here.
+const OUT_DIR = resolve(__dirname, '../../../frontend/public/styles');
 
 const STYLES: ArtStyle[] = ['watercolor', 'cartoon', 'storybook', 'pixel', 'realistic'];
 
