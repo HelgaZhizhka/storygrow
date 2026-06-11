@@ -10,32 +10,34 @@ High-level structure of the monorepo, AI pipeline, and data flow.
 storygrow/
 ├── backend/                    # NestJS application
 │   ├── src/
-│   │   ├── main.ts             # bootstrap
+│   │   ├── main.ts             # bootstrap (imports instrument.ts first)
+│   │   ├── instrument.ts       # LangFuse OTEL NodeSDK init (before Nest boots)
 │   │   ├── app.module.ts
-│   │   ├── config/             # ConfigService, env validation
+│   │   ├── health.controller.ts
 │   │   ├── auth/               # Google OAuth, JWT guards
-│   │   ├── users/              # User + Child entities
-│   │   ├── books/              # Book + BookPage CRUD, status
-│   │   ├── learning-goals/     # Admin-managed pedagogical goals
+│   │   ├── books/              # Book CRUD + status; SSE progress (progress.controller)
+│   │   ├── admin/              # admin dashboard: books + learning-goal mgmt, eval metrics
 │   │   ├── ai/
 │   │   │   ├── ai.module.ts
-│   │   │   ├── prompts/        # Prompt constants (system, judge, ...)
-│   │   │   ├── schemas/        # Zod schemas (StorySchema, JudgeSchema)
-│   │   │   ├── vocabulary-rag.service.ts
-│   │   │   ├── story-generator.service.ts
-│   │   │   ├── story-evaluator.service.ts
-│   │   │   ├── image-generator.service.ts
-│   │   │   └── langfuse.module.ts
-│   │   ├── generation/         # BullMQ producer + processor
+│   │   │   ├── ai.config.ts            # models, STYLE_SUFFIXES, thresholds
+│   │   │   ├── telemetry.ts            # LangFuse helper for AI calls
+│   │   │   ├── prompts/                # prompt constants + Gold Exemplars
+│   │   │   ├── schemas/                # Zod schemas (story.schema, judge.schema)
+│   │   │   ├── story-generator/        # orchestrator + generator + evaluator services
+│   │   │   ├── image-generator/        # gpt-image-1 service + prompt simplifier
+│   │   │   ├── rag/                    # vocabulary-rag.service + age-grade map
+│   │   │   └── validators/             # book-plan validator
+│   │   ├── generation/         # BullMQ producer + processor + stale-book sweeper
+│   │   ├── fast-flow/          # synchronous fast-flow generation (templates)
 │   │   ├── pdf/                # Puppeteer renderer
-│   │   ├── storage/            # S3/MinIO module
-│   │   ├── payments/           # Stripe checkout + webhooks
-│   │   ├── eval/               # StoryEval aggregations, admin metrics
-│   │   └── sse/                # SSE channels for progress
+│   │   ├── s3/                 # S3/MinIO module
+│   │   ├── billing/            # Stripe checkout + webhooks
+│   │   ├── prisma/             # PrismaService module
+│   │   ├── generated/prisma/   # generated Prisma client (output target)
+│   │   └── scripts/            # one-off: corpus indexing, eval-text harness, gen-style-previews
 │   ├── prisma/
 │   │   ├── schema.prisma
 │   │   └── migrations/
-│   ├── scripts/                # one-off: corpus indexing, seed
 │   ├── test/                   # e2e tests
 │   ├── eslint.config.js
 │   ├── tsconfig.json
@@ -43,13 +45,18 @@ storygrow/
 │
 ├── frontend/                   # Next.js (App Router)
 │   ├── src/
-│   │   ├── app/                # Route groups
-│   │   │   ├── (marketing)/    # public SEO pages
-│   │   │   ├── (app)/          # authed app
-│   │   │   └── admin/          # admin dashboard
-│   │   ├── components/         # shared UI
-│   │   ├── lib/                # API client, hooks, utils
-│   │   └── styles/
+│   │   ├── app/
+│   │   │   ├── page.tsx        # public landing
+│   │   │   ├── login/          # public login (Google OAuth)
+│   │   │   ├── pricing/        # public pricing (Stripe)
+│   │   │   ├── subscription/   # post-checkout success
+│   │   │   ├── auth/           # OAuth callback
+│   │   │   ├── (app)/          # authed app (books list, new, detail)
+│   │   │   ├── admin/          # admin dashboard
+│   │   │   ├── globals.css     # design tokens + sg-* component layer
+│   │   │   └── marketing.css   # landing/login/pricing component layer
+│   │   ├── components/         # shared UI (PublicNav, ThemeToggle, ...)
+│   │   └── lib/                # API client, auth, utils
 │   ├── eslint.config.js
 │   ├── tsconfig.json
 │   └── package.json
@@ -92,7 +99,7 @@ storygrow/
          │      → SELECT word, gradeLevel            │
          │        FROM vocabulary_entry              │
          │        WHERE gradeLevel = $age_band       │
-         │        ORDER BY embedding <-> $q LIMIT 50 │
+         │        ORDER BY embedding <-> $q LIMIT 150│
          │      → returns word list                  │
          └───────────────────────────────────────────┘
                               │
@@ -200,13 +207,13 @@ model Child {
 }
 
 model LearningGoal {
-  id           String  @id @default(cuid())
-  slug         String  @unique     // 'sharing', 'fear-of-dark'
-  titleRu      String
+  id           String     @id @default(cuid())
+  title        String
   description  String
-  ageRangeMin  Int
-  ageRangeMax  Int
+  ageRangeMin  Int        @default(1)
+  ageRangeMax  Int        @default(18)
   books        Book[]
+  templates    Template[]
 }
 
 model Book {
@@ -239,7 +246,7 @@ model StoryEval {
   id                   String   @id @default(cuid())
   bookId               String
   attempt              Int
-  judgeScores          Json     // { ageAppropriateVocab, hasMoralLesson, structureCompleteness, safetyForChildren, length }
+  judgeScores          Json     // 6 criteria: { ageAppropriateVocab, hasMoralLesson, structureCompleteness, safetyForChildren, length, engagement }
   judgeReasoning       String?
   finalScore           Float
   vocabularyCompliance Float?
@@ -257,26 +264,32 @@ model VocabularyEntry {
 }
 
 model Template {
-  id            String  @id @default(cuid())
-  slug          String  @unique
-  titleRu       String
-  ageRangeMin   Int
-  ageRangeMax   Int
-  body          String     // template text with {{placeholders}}
-  illustrations Json       // [{ tag, s3Key }, ...]
+  id               String       @id @default(cuid())
+  title            String
+  content          Json             // template body with {{placeholders}}
+  learningGoalId   String
+  learningGoal     LearningGoal @relation(fields: [learningGoalId], references: [id])
+  illustrationTags String[]         // tags → FastIllustration lookup
+}
+
+model FastIllustration {
+  id    String   @id @default(cuid())
+  url   String
+  tags  String[]
 }
 
 model Subscription {
-  id                    String   @id @default(cuid())
-  userId                String   @unique
-  user                  User     @relation(fields: [userId], references: [id])
-  stripeSubscriptionId  String   @unique
-  plan                  String   // 'free' | 'basic' | 'pro'
-  status                String
+  id                    String              @id @default(cuid())
+  userId                String              @unique
+  user                  User                @relation(fields: [userId], references: [id])
+  stripeSubscriptionId  String              @unique
+  plan                  SubscriptionPlan    @default(free)  // enum: free | basic | premium
+  status                SubscriptionStatus                  // enum: active | canceled | past_due | trialing
   periodEnd             DateTime
-  booksThisPeriod       Int      @default(0)
 }
 ```
+
+> Per-period quota is derived from the user's `plan` against book counts, not stored as a column. Auth fields (`User.role`, `refreshToken`), `StripeWebhookEvent`, and the `BookStatus`/`ProtagonistMode`/`ArtStyle` enums are omitted from this sketch — see `backend/prisma/schema.prisma` for the canonical definitions.
 
 ---
 
