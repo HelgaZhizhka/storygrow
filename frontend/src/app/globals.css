@@ -11,9 +11,14 @@
   --r-md: 14px;
   --r-lg: 18px;
   --r-xl: 26px;
+  --r-2xl: 34px;
   --r-pill: 999px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --dur: 0.22s;
+
+  /* Theme-independent brand accents (used by the landing). */
+  --indigo-strong: oklch(0.48 0.19 270);
+  --gold: oklch(0.79 0.12 72);
 }
 
 :root,
@@ -64,6 +69,7 @@
   --sh-sm: 0 1px 2px oklch(0.45 0.08 270 / 0.08), 0 1px 1px oklch(0.45 0.08 270 / 0.04);
   --sh-md: 0 4px 16px -4px oklch(0.45 0.09 270 / 0.14), 0 1px 3px oklch(0.45 0.08 270 / 0.06);
   --sh-lg: 0 24px 48px -20px oklch(0.4 0.1 270 / 0.32), 0 4px 12px -6px oklch(0.4 0.09 270 / 0.12);
+  --sh-glow: 0 10px 30px -8px oklch(0.55 0.18 270 / 0.5);
 }
 
 :root[data-theme='dark'] {
@@ -105,6 +111,7 @@
   --sh-sm: 0 1px 2px oklch(0 0 0 / 0.4);
   --sh-md: 0 6px 20px -6px oklch(0 0 0 / 0.55);
   --sh-lg: 0 28px 56px -22px oklch(0 0 0 / 0.7);
+  --sh-glow: 0 12px 36px -8px oklch(0.55 0.18 272 / 0.6);
 }
 
 /* ----- Map tokens → Tailwind v4 utilities (additive; default zinc utilities still work) ----- */

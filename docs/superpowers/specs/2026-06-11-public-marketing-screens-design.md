@@ -93,10 +93,13 @@ stored value on mount to avoid a flash where practical.
 ## CSS
 
 - New marketing-only classes live in **`frontend/src/app/marketing.css`**,
-  imported at the top of `globals.css` (after `@import 'tailwindcss'`) so
-  Tailwind processes the `@layer components` block in the same context.
-  Rationale: `globals.css` is already ~618 lines; adding ~250 lines of landing
-  CSS would push it well past the project's 400-line file guideline.
+  imported in `layout.tsx` right after `globals.css`. Its `@layer components`
+  block merges into Tailwind's `components` cascade layer natively (the layer
+  order is established by `globals.css` loading first). Note: a `@import
+  './marketing.css'` inside `globals.css` did NOT resolve under Tailwind v4 +
+  Turbopack, so the file is imported as a sibling stylesheet instead.
+  Rationale for the split: `globals.css` is already ~618 lines; adding ~250
+  lines of landing CSS would push it well past the project's 400-line guideline.
 - Classes ported from the prototype: `lp-nav`, `lp-nav__links`, `lp-hero`,
   `lp-hero__*`, `book-3d` (+ `__spine`, `__face`), `cover-*`, `float-star`,
   `lp-section` (+ `--alt`, `__head`), `eyebrow`, `lp-h2`, `lp-features`,
