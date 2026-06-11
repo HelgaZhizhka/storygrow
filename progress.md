@@ -1096,3 +1096,22 @@ Continuation of the entry above. The three "Next" items are now **done** on bran
 
 **Blockers:**
 - None.
+
+---
+
+## 2026-06-11 — UI redesign: design system + core screens (PR #164)
+
+**Done:** Adopted the Claude Design handoff (path A) and restyled the core authenticated screens onto it.
+- **Design system** (`globals.css`): OKLCH token palette (Indigo/Teal/Gold), light + dark via `[data-theme]`, gradients/shadows/radii mapped into Tailwind v4 (`@theme inline`) + a `sg-*` component layer (cards, inputs, segments, radio-cards, badges, buttons, style grid, page rows). Body aura background.
+- **Fonts:** the design's Bricolage/Outfit have NO Cyrillic (UI is Russian) → swapped to Cyrillic-capable **Unbounded** (display) + **Manrope** (body) via next/font.
+- **New-book form** restyled + the agreed structural change: **existing/new toggle removed** (always inline child; submit upserts the child by name), appearance shown only in child-hero mode, art style as a visual swatch grid.
+- **Books list** → cover-card grid (gradient placeholders, status badge overlay). **Book detail** → display header, stats card, image+text page rows, gradient question numbers. **StatusBadge** → design badge variants.
+- Verified live on real data (auth + real illustrations). `./init.sh` green.
+
+**Notes:**
+- Cover placeholders are gradients (the list endpoint has no cover URL). Real covers = a later backend tweak.
+- Font swap from the design's choice is the one deliberate deviation (Cyrillic); one-line to change in `layout.tsx`.
+
+**Next (separate stages, per user):** landing `/`, login, pricing `/pricing`, theme toggle. Then #29 deploy (do #155 verify.sh first), #32 defense prep.
+
+**Blockers:** None.
