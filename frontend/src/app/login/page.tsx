@@ -1,27 +1,33 @@
+import Link from 'next/link';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 export default function LoginPage(): React.ReactElement {
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-8 px-6 py-24 text-center">
-      <div className="flex flex-col items-center gap-3">
-        <p className="text-sm font-medium uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+    <main className="auth-shell">
+      <div className="auth-bg" />
+      <div className="auth-card">
+        <Link href="/" className="sg-wordmark text-[22px]">
+          <span className="sg-spark" />
           StoryGrow
-        </p>
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Войдите в аккаунт
-        </h1>
-        <p className="max-w-sm text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+        </Link>
+        <h1 className="h-display mt-[18px] mb-2 text-[30px]">Войдите в аккаунт</h1>
+        <p className="muted mb-[26px] leading-[1.55]">
           Чтобы создавать персонализированные книги, войдите через Google.
         </p>
-      </div>
 
-      <a
-        href={`${API_URL}/auth/google`}
-        className="inline-flex items-center gap-3 rounded-lg bg-zinc-900 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-      >
-        <GoogleIcon />
-        Войти через Google
-      </a>
+        <a
+          href={`${API_URL}/auth/google`}
+          className="sg-btn sg-btn-ghost sg-btn-lg w-full gap-[11px]"
+        >
+          <GoogleIcon />
+          Войти через Google
+        </a>
+
+        <p className="muted mt-[22px] text-center text-[12.5px]">
+          Продолжая, вы соглашаетесь с условиями использования
+        </p>
+      </div>
     </main>
   );
 }
