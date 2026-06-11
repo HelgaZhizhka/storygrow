@@ -26,10 +26,7 @@ interface Quota {
 }
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'long',
-  });
+  return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
 }
 
 export default function BooksPage(): React.ReactElement {
@@ -63,88 +60,63 @@ export default function BooksPage(): React.ReactElement {
   const atLimit = quota && quota.limit !== null && quota.used >= quota.limit;
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-6 py-12">
-      <div className="mb-8 flex items-center justify-between">
+    <main className="mx-auto w-full max-w-[940px] px-7 py-10">
+      <div className="mb-8 flex items-start justify-between gap-5">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Мои книги
-          </h1>
-          {quotaLabel && (
-            <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">{quotaLabel}</p>
-          )}
+          <h1 className="sg-page-title">Мои книги</h1>
+          {quotaLabel && <p className="mt-2 text-sm text-text-3">{quotaLabel}</p>}
         </div>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/books/new"
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-          >
+        <div className="flex shrink-0 items-center gap-3">
+          <Link href="/books/new" className="sg-btn sg-btn-primary">
             + Новая книга
           </Link>
-          <button
-            onClick={() => void handleLogout()}
-            className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-          >
+          <button onClick={() => void handleLogout()} className="sg-btn sg-btn-ghost">
             Выйти
           </button>
         </div>
       </div>
 
       {atLimit && (
-        <div className="mb-6 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+        <div className="sg-card mb-6 border-warning-soft !py-3 text-sm text-text-2">
           Лимит книг для тарифа «{quota.plan}» исчерпан.{' '}
-          <Link href="/pricing" className="font-medium underline">
+          <Link href="/pricing" className="font-semibold text-primary underline">
             Обновить тариф
           </Link>
         </div>
       )}
 
       {books.length === 0 ? (
-        <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed border-zinc-200 px-6 py-16 text-center dark:border-zinc-700">
+        <div className="sg-card flex flex-col items-center gap-4 !py-16 text-center">
           <div className="text-4xl">📚</div>
           <div>
-            <p className="mb-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              Пока нет ни одной книги
-            </p>
-            <p className="text-sm text-zinc-400 dark:text-zinc-500">
+            <p className="mb-1 font-semibold text-text">Пока нет ни одной книги</p>
+            <p className="text-sm text-text-2">
               Создайте первую персонализированную историю для вашего ребёнка
             </p>
           </div>
-          <Link
-            href="/books/new"
-            className="rounded-lg bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900"
-          >
+          <Link href="/books/new" className="sg-btn sg-btn-primary">
             Создать книгу
           </Link>
         </div>
       ) : (
-        <ul className="flex flex-col gap-3">
-          {books.map((book) => (
-            <li key={book.id}>
-              <Link
-                href={`/books/${book.id}`}
-                className="group flex items-center justify-between gap-3 rounded-lg border border-zinc-200 p-4 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800/50"
-              >
-                <div className="flex min-w-0 flex-col gap-1">
-                  <span className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-50">
-                    {book.title || `Книга для ${book.child.name}`}
-                  </span>
-                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                    {book.child.name} · {book.child.age} лет · {book.learningGoal.title}
-                  </span>
-                  <span className="text-xs text-zinc-400 dark:text-zinc-500">
-                    {formatDate(book.createdAt)}
-                  </span>
-                </div>
-                <div className="flex shrink-0 items-center gap-3">
+        <div className="sg-book-grid">
+          {books.map((book, i) => (
+            <Link key={book.id} href={`/books/${book.id}`} className="sg-book-card">
+              <div className={`sg-book-cover sg-cover-${i % 5}`}>
+                <span className="sg-book-cover-badge">
                   <StatusBadge status={book.status} />
-                  <span className="text-zinc-300 transition-colors group-hover:text-zinc-500 dark:text-zinc-600 dark:group-hover:text-zinc-400">
-                    →
-                  </span>
+                </span>
+              </div>
+              <div className="sg-book-body">
+                <h3 className="sg-book-title">{book.title || `Книга для ${book.child.name}`}</h3>
+                <div className="sg-book-meta">
+                  {book.child.name} · {book.child.age} лет · {book.learningGoal.title}
                 </div>
-              </Link>
-            </li>
+                <div className="sg-book-date">{formatDate(book.createdAt)}</div>
+              </div>
+            </Link>
           ))}
-        </ul>
+        </div>
       )}
     </main>
   );

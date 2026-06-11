@@ -450,4 +450,168 @@ body {
   .sg-sw-realistic {
     background: linear-gradient(135deg, oklch(0.7 0.03 260), oklch(0.52 0.04 270));
   }
+
+  /* — badge variants — */
+  .sg-badge-success {
+    background: var(--success-soft);
+    color: var(--success);
+    border-color: transparent;
+  }
+  .sg-badge-warning {
+    background: var(--warning-soft);
+    color: oklch(0.5 0.12 70);
+    border-color: transparent;
+  }
+  .sg-badge-danger {
+    background: var(--danger-soft);
+    color: var(--danger);
+    border-color: transparent;
+  }
+  .sg-badge-dot::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: currentColor;
+  }
+
+  /* — books grid — */
+  .sg-book-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 24px;
+  }
+  .sg-book-card {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    box-shadow: var(--sh-sm);
+    transition:
+      transform var(--dur) var(--ease),
+      box-shadow var(--dur) var(--ease);
+  }
+  .sg-book-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--sh-lg);
+  }
+  .sg-book-cover {
+    position: relative;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+  }
+  .sg-book-cover-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+  }
+  .sg-book-body {
+    padding: 16px 18px 18px;
+  }
+  .sg-book-title {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0 0 6px;
+    color: var(--text);
+  }
+  .sg-book-meta {
+    font-size: 13px;
+    color: var(--text-2);
+  }
+  .sg-book-date {
+    font-size: 12px;
+    color: var(--text-3);
+    margin-top: 8px;
+  }
+  .sg-cover-0 {
+    background: linear-gradient(135deg, oklch(0.7 0.13 285), oklch(0.78 0.1 320));
+  }
+  .sg-cover-1 {
+    background: linear-gradient(135deg, oklch(0.72 0.1 200), oklch(0.8 0.09 240));
+  }
+  .sg-cover-2 {
+    background: linear-gradient(135deg, oklch(0.8 0.12 72), oklch(0.72 0.11 40));
+  }
+  .sg-cover-3 {
+    background: linear-gradient(135deg, oklch(0.72 0.12 150), oklch(0.78 0.1 185));
+  }
+  .sg-cover-4 {
+    background: linear-gradient(135deg, oklch(0.74 0.12 350), oklch(0.7 0.13 310));
+  }
+
+  /* — detail — */
+  .sg-section-title {
+    font-family: var(--font-display);
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: var(--text);
+  }
+  .sg-stat-l {
+    font-size: 12.5px;
+    color: var(--text-3);
+  }
+  .sg-stat-v {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .sg-page-row {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 20px;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 16px;
+    box-shadow: var(--sh-sm);
+  }
+  .sg-page-img {
+    aspect-ratio: 1;
+    border-radius: var(--r-md);
+    overflow: hidden;
+    position: relative;
+    background: var(--surface-inset);
+  }
+  .sg-page-n {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 8px;
+  }
+  .sg-page-text {
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: var(--text);
+    margin: 0;
+  }
+  .sg-q-num {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 14px;
+    color: #fff;
+    background: var(--grad-magic);
+  }
+
+  @media (max-width: 560px) {
+    .sg-page-row {
+      grid-template-columns: 1fr;
+    }
+  }
 }
