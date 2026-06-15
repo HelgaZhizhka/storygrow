@@ -5,6 +5,12 @@ date: 2026-05-26
 
 # ADR 0002 — Page Templates as LLM–PDF contract
 
+> **Update (2026-06-15):** the template-contract decision below still stands, but
+> the image model has since moved from DALL-E 3 to **`gpt-image-1`** (#118/#136),
+> and the `dalleSize` slot field was renamed `imageSize` with the supported size
+> set remapped accordingly. References to "DALL-E" / `dalleSize` below are kept as
+> the original point-in-time record.
+
 ## Context
 
 StoryGrow generates personalised children's books and renders them as PDFs. The AI pipeline produces a story (text + illustration prompts) and then passes it to a PDF renderer (Puppeteer).

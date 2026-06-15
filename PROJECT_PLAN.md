@@ -37,7 +37,7 @@ The project is built within the **"Course on building and launching a SaaS servi
 | Queue | BullMQ + Redis |
 | Storage | S3 / MinIO (local via docker-compose) |
 | AI SDK | **Vercel AI SDK** (`ai`, `@ai-sdk/openai`, `zod`) — no LangChain |
-| LLM | OpenAI `gpt-4o-mini` (text + judge), `text-embedding-3-small` (embeddings) |
+| LLM | OpenAI `gpt-4o` (story text), `gpt-4o-mini` (judge + fast flow), `text-embedding-3-small` (embeddings) |
 | Image gen | OpenAI `gpt-image-1` (no Flux/IP-Adapter in MVP) |
 | Observability | **LangFuse** (self-hosted in docker-compose) |
 | PDF | Puppeteer |
@@ -65,11 +65,11 @@ User → form (child, age, goal)
   3. StoryEvaluator.evaluate(story)
        → a second LLM call with a judge prompt
        → JudgeSchema: ageAppropriateVocab, hasMoralLesson,
-         structureCompleteness, safetyForChildren, length (all 0–10)
+         structureCompleteness, safetyForChildren, length, engagement (all 0–10)
        → if the mean score < 7 → goto step 2 (max 2 retries)
                 ↓
   4. ImageGenerator.generate(illustrationPrompts)
-       → DALL-E 3 per page
+       → gpt-image-1 per page
                 ↓
   5. PDFRenderer.render(story, images)
        → Puppeteer → PDF in S3
@@ -147,7 +147,7 @@ Template (for the fast generation flow)
 
 ## Out of scope (explicitly NOT in the MVP)
 
-- Character consistency via Flux/SDXL with IP-Adapter — we stay on DALL-E 3
+- Character consistency via Flux/SDXL with IP-Adapter — we stay on gpt-image-1
 - Referral programme
 - Adaptive feedback loop from the parent
 - Quiz as interactive tests (only a list of questions in the PDF)
