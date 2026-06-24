@@ -145,18 +145,28 @@ describe('ImageGeneratorService', () => {
       mockGenerateText.mockResolvedValue({ text: 'simplified safe prompt' });
       mockS3.uploadObject.mockResolvedValue(undefined);
 
-      // First page: first call rejected with a content policy error (provider wraps → ImageGenerationError)
-      // Second call (after simplification): succeeds
+      // First call: throw an error that unambiguously maps to ImageGenerationError('refused')
+      // via the provider's isContentPolicyError cause.code check.
+      // Second call (after simplification): succeeds.
+      const contentPolicyErr = Object.assign(new Error('image generation failed'), {
+        cause: { code: 'content_policy_violation' },
+      });
       mockGenerateImage
-        .mockRejectedValueOnce(new Error('content_policy_violation'))
-        .mockResolvedValue({ image: { uint8Array: new Uint8Array([1]) } });
+        .mockRejectedValueOnce(contentPolicyErr)
+        .mockResolvedValue({ image: { uint8Array: new Uint8Array([9, 8, 7]) } });
 
       const story = makeStory({ pageCount: 1 });
       const result = await service.generate({ story, bookId: 'b', artStyle: 'watercolor' });
 
+      // Simplify step must have been called exactly once (the retry path was taken)
       expect(mockGenerateText).toHaveBeenCalledTimes(1);
+      // Provider was called twice: original attempt + simplified retry
       expect(mockGenerateImage).toHaveBeenCalledTimes(2);
-      expect(result.imageKeys).toHaveLength(1);
+      // The page was ultimately produced and uploaded to S3
+      expect(mockS3.uploadObject).toHaveBeenCalledWith(
+        expect.objectContaining({ key: 'books/b/page-1.png', contentType: 'image/png' }),
+      );
+      expect(result.imageKeys).toEqual(['books/b/page-1.png']);
     });
 
     it('throws ImageContentPolicyError when both original and simplified prompt are rejected', async () => {

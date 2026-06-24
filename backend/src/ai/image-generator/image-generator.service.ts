@@ -87,10 +87,11 @@ export class ImageGeneratorService {
   private async maybePortrait(
     input: ImageGenInput,
   ): Promise<{ key: string; bytes: Uint8Array } | null> {
-    if (!this.provider.usesReference || !input.story.characterProfile) return null;
+    const { characterProfile } = input.story;
+    if (!this.provider.usesReference || !characterProfile) return null;
     return startActiveObservation('image-generation.portrait', async (span) => {
       const bytes = await this.provider.generatePortrait({
-        characterProfile: input.story.characterProfile as string,
+        characterProfile,
         artStyle: input.artStyle,
       });
       const key = `books/${input.bookId}/portrait.png`;
