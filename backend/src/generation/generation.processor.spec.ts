@@ -112,7 +112,10 @@ describe('GenerationProcessor', () => {
       attempts: 1,
     });
     const keys = ['books/book-1/page-1.png', 'books/book-1/page-2.png', 'books/book-1/page-3.png'];
-    mockImageGen.generate.mockResolvedValueOnce(keys);
+    mockImageGen.generate.mockResolvedValueOnce({
+      imageKeys: keys,
+      characterPortraitKey: 'books/book-1/portrait.png',
+    });
     mockBookImage.signKeys.mockResolvedValueOnce([
       'https://signed/p1',
       'https://signed/p2',
@@ -145,7 +148,7 @@ describe('GenerationProcessor', () => {
     });
     expect(mockPrisma.book.update).toHaveBeenNthCalledWith(3, {
       where: { id: 'book-1' },
-      data: { imageKeys: keys },
+      data: { imageKeys: keys, characterPortraitKey: 'books/book-1/portrait.png' },
     });
     expect(mockBookImage.signKeys).toHaveBeenCalledWith(keys);
     expect(mockPdfRender.render).toHaveBeenCalledWith({
@@ -169,7 +172,10 @@ describe('GenerationProcessor', () => {
       evalId: 'eval-1',
       attempts: 1,
     });
-    mockImageGen.generate.mockResolvedValueOnce(['k1', 'k2', 'k3']);
+    mockImageGen.generate.mockResolvedValueOnce({
+      imageKeys: ['k1', 'k2', 'k3'],
+      characterPortraitKey: null,
+    });
     mockBookImage.signKeys.mockResolvedValueOnce(['u1', 'u2', 'u3']);
     mockPdfRender.render.mockRejectedValueOnce(new Error('puppeteer crashed'));
 
@@ -189,7 +195,7 @@ describe('GenerationProcessor', () => {
     });
     expect(mockPrisma.book.update).toHaveBeenNthCalledWith(3, {
       where: { id: 'book-1' },
-      data: { imageKeys: ['k1', 'k2', 'k3'] },
+      data: { imageKeys: ['k1', 'k2', 'k3'], characterPortraitKey: null },
     });
     expect(mockPrisma.book.update).toHaveBeenNthCalledWith(4, {
       where: { id: 'book-1' },
@@ -266,7 +272,7 @@ describe('GenerationProcessor', () => {
     mockPrisma.book.update.mockResolvedValue({});
     mockPrisma.book.findUnique.mockResolvedValueOnce(bookWithStory);
     const keys = ['k1', 'k2', 'k3'];
-    mockImageGen.generate.mockResolvedValueOnce(keys);
+    mockImageGen.generate.mockResolvedValueOnce({ imageKeys: keys, characterPortraitKey: null });
     mockBookImage.signKeys.mockResolvedValueOnce(['u1', 'u2', 'u3']);
     mockPdfRender.render.mockResolvedValueOnce('books/book-1/book.pdf');
 
