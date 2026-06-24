@@ -55,8 +55,9 @@ model Book {
   title          String
   status         BookStatus   @default(pending)
   storyJson      Json?
-  imageKeys      String[]     @default([])
-  pdfKey         String?
+  imageKeys             String[]     @default([])
+  characterPortraitKey  String?
+  pdfKey                String?
   protagonistMode ProtagonistMode @default(child)
   artStyle        ArtStyle        @default(watercolor)
   userId         String
