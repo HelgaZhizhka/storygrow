@@ -34,6 +34,9 @@ coverage/
 # Prisma generated client
 backend/prisma/generated/
 
+# Spike output (Gemini consistency experiment — throwaway images)
+backend/spike-gemini*/
+
 # Generated artifacts (if any heavy output)
 /generated/
 
