@@ -6,6 +6,8 @@ describe('image-portrait prompts', () => {
     expect(p).toContain('a girl with red curls');
     expect(p.toLowerCase()).toContain('watercolour');
     expect(p.toLowerCase()).toContain('portrait');
+    expect(p).not.toContain('background.,');
+    expect(p).toContain('background,');
   });
 
   it('page prompt wraps with a keep-character instruction and the style suffix', () => {

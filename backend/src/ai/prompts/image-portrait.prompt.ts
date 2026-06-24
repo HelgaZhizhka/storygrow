@@ -4,7 +4,7 @@ import { STYLE_SUFFIXES } from '../ai.config';
 export function buildPortraitPrompt(characterProfile: string, artStyle: ArtStyle): string {
   return (
     `Full-body character reference portrait of ${characterProfile}. ` +
-    `The character is centered and clearly visible on a plain neutral background.` +
+    `The character is centered and clearly visible on a plain neutral background` +
     STYLE_SUFFIXES[artStyle]
   );
 }

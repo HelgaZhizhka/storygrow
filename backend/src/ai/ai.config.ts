@@ -1,3 +1,5 @@
+import type { ImageSize } from '../pdf/page-templates/page-templates.config';
+
 export const GENERATION_MODEL = 'gpt-4o-mini';
 // Story TEXT uses a stronger model: voice, humour and originality are the
 // bottleneck, and the text call (~$0.02/book) is negligible beside images
@@ -31,8 +33,6 @@ export const STYLE_SUFFIXES: Record<ArtStyle, string> = {
   realistic:
     ', semi-realistic 3D render, soft cinematic lighting, detailed, child-friendly, no text in image',
 };
-
-import type { ImageSize } from '../pdf/page-templates/page-templates.config';
 
 export type ImageProviderName = 'gemini' | 'openai';
 export const DEFAULT_IMAGE_PROVIDER: ImageProviderName = 'gemini';
