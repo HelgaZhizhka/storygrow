@@ -77,24 +77,37 @@ interface ImageProvider {
 }
 ```
 
-- `GeminiImageProvider` — `generateText(google(model), [...])`; portrait prompt
-  is text-only; page prompt is `[{ type: 'text', text: keepCharacterWrapper(...) },
-  { type: 'file', data: reference, mediaType: 'image/png' }]`; image read from
-  `result.files.find(f => f.mediaType.startsWith('image/'))`; `aspectRatio` from
-  the map. Empty `files` (safety refusal) → throws a typed error.
-- `OpenAiImageProvider` — wraps the current `generateImage({ openai.imageModel,
-  size, quality })` path; `usesReference = false`; `generatePortrait` is a no-op
-  (never called when provider is openai).
+Both providers use the SAME `generateImage` shape (verified via spike), so the
+service's S3 upload is uniform — each returns `result.image` (`.uint8Array`):
+
+- `GeminiImageProvider` — `generateImage({ model: google.image(GEMINI_IMAGE_MODEL),
+  prompt, aspectRatio })`. Portrait: `prompt` is the text portrait prompt.
+  Page: `prompt = { text: keepCharacterWrapper(pagePrompt), images: [reference] }`
+  (the portrait bytes) — this is the reference-editing path. `aspectRatio` from
+  the map. `usesReference = true`. A `NoImageGeneratedError` from the SDK (safety
+  refusal) → mapped to the typed `ImageGenerationError({ refused: true })`.
+- `OpenAiImageProvider` — wraps the current `generateImage({ model:
+  openai.imageModel(IMAGE_MODEL), size, providerOptions: { openai: { quality }}})`
+  path; `usesReference = false`; `generatePortrait` is never called when provider
+  is openai. Content-policy errors → `ImageGenerationError({ refused: true })`.
 
 `ImageGeneratorService.generate(input)` orchestrates (keeps S3 upload + LangFuse
-spans here, provider-agnostic):
+spans + the simplify-on-refusal retry here, provider-agnostic) and returns
+`{ imageKeys: string[]; characterPortraitKey: string | null }`:
 
 1. Resolve provider from config.
 2. If `provider.usesReference && story.characterProfile`: `generatePortrait` →
-   upload to `books/{bookId}/portrait.png` → persist `Book.characterPortraitKey`
-   → hold bytes as `reference`. (Span `image-generation.portrait`.)
+   upload to `books/{bookId}/portrait.png` → set `characterPortraitKey` → hold
+   bytes as `reference`. (Span `image-generation.portrait`.) Otherwise
+   `characterPortraitKey = null`, `reference = undefined`.
 3. For each page: `provider.generatePage({ prompt, artStyle, imageSize, reference })`
-   → upload to `books/{bookId}/page-{n}.png`. (Span per page, as today.)
+   → on `ImageGenerationError({ refused: true })`, simplify the prompt once and
+   retry; still refused → propagate → `images_failed`. Upload to
+   `books/{bookId}/page-{n}.png`. (Span per page, as today.)
+
+The **processor** (`generation.processor.ts`) persists the result — it already
+persists `imageKeys`; extend that update to also write `characterPortraitKey`.
+This keeps Prisma out of `ImageGeneratorService` (current separation).
 
 Prompt fragments live in `prompts/` as constants (rule #11/#4): the portrait
 prompt template and the `keepCharacterWrapper` ("keep this exact child — same
@@ -107,8 +120,8 @@ story (characterProfile, pages[]) + artStyle + bookId
   → resolve IMAGE_PROVIDER
   → [gemini] generatePortrait(characterProfile) → S3 portrait.png → Book.characterPortraitKey
   → for each page:
-        [gemini]  generateText(text=keepCharacterWrapper(prompt)+style, file=portrait) → files[0]
-        [openai]  generateImage(characterProfile-prefixed prompt+style, size)          → image
+        [gemini]  generateImage(prompt={text:keepCharacterWrapper(prompt)+style, images:[portrait]}, aspectRatio) → image
+        [openai]  generateImage(prompt=characterProfile-prefixed prompt+style, size)                              → image
      → S3 page-{n}.png
   → return imageKeys[]
 ```
