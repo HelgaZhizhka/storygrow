@@ -2,7 +2,7 @@ import { generateImage } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { IMAGE_MODEL, IMAGE_QUALITY, STYLE_SUFFIXES } from '../../ai.config';
 import { ImageGenerationError } from '../errors';
-import type { ImageProvider, PageInput, PortraitInput } from './image-provider.interface';
+import type { ImageProvider, PageInput } from './image-provider.interface';
 
 const OPENAI_MAX_RETRIES = 1;
 
@@ -10,7 +10,7 @@ export class OpenAiImageProvider implements ImageProvider {
   readonly usesReference = false;
   readonly modelLabel = IMAGE_MODEL;
 
-  generatePortrait(_input: PortraitInput): Promise<Uint8Array> {
+  generatePortrait(): Promise<Uint8Array> {
     return Promise.reject(new Error('OpenAiImageProvider does not generate portraits'));
   }
 

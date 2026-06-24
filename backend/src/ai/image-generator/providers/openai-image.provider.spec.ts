@@ -20,7 +20,7 @@ describe('OpenAiImageProvider', () => {
     });
     expect(out).toBe(bytes);
     expect(provider.usesReference).toBe(false);
-    const call = mockGenerateImage.mock.calls[0][0];
+    const [call] = mockGenerateImage.mock.calls[0] as [{ size?: string }];
     expect(call.size).toBe('1024x1024');
   });
 
@@ -35,8 +35,6 @@ describe('OpenAiImageProvider', () => {
   });
 
   it('does not generate portraits', async () => {
-    await expect(
-      new OpenAiImageProvider().generatePortrait({ characterProfile: 'x', artStyle: 'watercolor' }),
-    ).rejects.toThrow();
+    await expect(new OpenAiImageProvider().generatePortrait()).rejects.toThrow();
   });
 });

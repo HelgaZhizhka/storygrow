@@ -31,7 +31,8 @@ describe('GeminiImageProvider', () => {
       artStyle: 'watercolor',
     });
     expect(out).toBe(bytes);
-    expect(mockGenerateImage.mock.calls[0][0].aspectRatio).toBe('2:3');
+    const [portraitArg] = mockGenerateImage.mock.calls[0] as [{ aspectRatio?: string }];
+    expect(portraitArg.aspectRatio).toBe('2:3');
   });
 
   it('passes the reference image and the mapped aspect ratio on a page', async () => {
@@ -43,7 +44,9 @@ describe('GeminiImageProvider', () => {
       imageSize: '1536x1024',
       reference: ref,
     });
-    const arg = mockGenerateImage.mock.calls[0][0];
+    const [arg] = mockGenerateImage.mock.calls[0] as [
+      { aspectRatio?: string; prompt: { text?: string; images?: Uint8Array[] } },
+    ];
     expect(arg.aspectRatio).toBe('3:2');
     expect(arg.prompt.images).toEqual([ref]);
     expect(typeof arg.prompt.text).toBe('string');

@@ -42,7 +42,7 @@ jest.mock('../telemetry', () => ({
 import { Test } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { ImageGeneratorService } from './image-generator.service';
-import { ImageContentPolicyError, ImageGenerationError } from './errors';
+import { ImageContentPolicyError } from './errors';
 import { S3Service } from '../../s3/s3.service';
 import type { Story } from '../schemas';
 
@@ -53,7 +53,7 @@ const mockS3 = {
 
 const makeMockConfig = (imageProvider: string) => ({
   get: jest.fn((key: string) => (key === 'IMAGE_PROVIDER' ? imageProvider : undefined)),
-  getOrThrow: jest.fn((_key: string) => 'test-key'),
+  getOrThrow: jest.fn(() => 'test-key'),
 });
 
 const makeStory = (opts: { characterProfile?: string; pageCount?: number } = {}): Story => {
