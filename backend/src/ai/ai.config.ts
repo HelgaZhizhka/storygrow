@@ -22,7 +22,7 @@ export type ArtStyle = 'watercolor' | 'cartoon' | 'storybook' | 'pixel' | 'reali
 
 export const STYLE_SUFFIXES: Record<ArtStyle, string> = {
   watercolor:
-    ', soft watercolour painting, children’s book illustration, gentle pastel colours, warm lighting, no text in image',
+    ", soft watercolour painting, children's book illustration, gentle pastel colours, warm lighting, no text in image",
   cartoon:
     ', flat cartoon illustration, bold clean outlines, bright saturated colours, playful, no text in image',
   storybook:
@@ -30,4 +30,19 @@ export const STYLE_SUFFIXES: Record<ArtStyle, string> = {
   pixel: ', pixel art, 16-bit retro game style, crisp pixels, vibrant palette, no text in image',
   realistic:
     ', semi-realistic 3D render, soft cinematic lighting, detailed, child-friendly, no text in image',
+};
+
+import type { ImageSize } from '../pdf/page-templates/page-templates.config';
+
+export type ImageProviderName = 'gemini' | 'openai';
+export const DEFAULT_IMAGE_PROVIDER: ImageProviderName = 'gemini';
+
+// Resolves to the GA id gemini-2.5-flash-preview-image. If it 404s, set that
+// explicit id here. Gemini takes no `size`, only an aspect ratio.
+export const GEMINI_IMAGE_MODEL = 'gemini-2.5-flash-image';
+
+export const IMAGE_SIZE_TO_ASPECT_RATIO: Record<ImageSize, '1:1' | '2:3' | '3:2'> = {
+  '1024x1024': '1:1',
+  '1024x1536': '2:3',
+  '1536x1024': '3:2',
 };
