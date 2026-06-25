@@ -12,7 +12,14 @@ describe('JudgeScoreSchema', () => {
   };
 
   it('requires the earnedResolution criterion', () => {
-    const { earnedResolution, ...withoutNew } = full;
+    const withoutNew = {
+      ageAppropriateVocab: 8,
+      hasMoralLesson: 8,
+      structureCompleteness: 8,
+      safetyForChildren: 10,
+      length: 8,
+      engagement: 7,
+    };
     expect(JudgeScoreSchema.safeParse(withoutNew).success).toBe(false);
     expect(JudgeScoreSchema.safeParse(full).success).toBe(true);
   });
