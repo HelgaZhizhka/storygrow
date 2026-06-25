@@ -138,6 +138,7 @@ export class BooksService {
         title: true,
         status: true,
         createdAt: true,
+        imageKeys: true,
         child: { select: { name: true, age: true } },
         learningGoal: { select: { title: true } },
       },

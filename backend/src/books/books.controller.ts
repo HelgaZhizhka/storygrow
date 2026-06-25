@@ -92,8 +92,17 @@ export class BooksController {
   }
 
   @Get('books')
-  listBooks(@CurrentUser() user: JwtPayload) {
-    return this.books.listBooks(user.sub);
+  async listBooks(@CurrentUser() user: JwtPayload) {
+    const books = await this.books.listBooks(user.sub);
+    return Promise.all(
+      books.map(async ({ imageKeys, ...book }) => ({
+        ...book,
+        coverUrl:
+          book.status === 'ready' && imageKeys[0]
+            ? await this.bookImage.signKey(imageKeys[0])
+            : null,
+      })),
+    );
   }
 
   @Get('books/:id')
