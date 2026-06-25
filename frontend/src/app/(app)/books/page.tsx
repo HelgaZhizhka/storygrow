@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { clearTokens, getAccessToken } from '@/lib/auth';
 import { api } from '@/lib/api';
 import type { BookStatus } from '@/lib/types';
@@ -15,6 +16,7 @@ interface Book {
   title: string;
   status: BookStatus;
   createdAt: string;
+  coverUrl: string | null;
   child: { name: string; age: number };
   learningGoal: { title: string };
 }
@@ -103,6 +105,16 @@ export default function BooksPage(): React.ReactElement {
           {books.map((book, i) => (
             <Link key={book.id} href={`/books/${book.id}`} className="sg-book-card">
               <div className={`sg-book-cover sg-cover-${i % 5}`}>
+                {book.coverUrl && (
+                  <Image
+                    src={book.coverUrl}
+                    alt={book.title || `Книга для ${book.child.name}`}
+                    fill
+                    unoptimized
+                    sizes="220px"
+                    className="object-cover"
+                  />
+                )}
                 <span className="sg-book-cover-badge">
                   <StatusBadge status={book.status} />
                 </span>

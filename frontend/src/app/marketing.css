@@ -227,12 +227,29 @@
   .cover-art {
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-      150deg,
-      oklch(0.62 0.16 285),
-      oklch(0.7 0.12 330) 60%,
-      oklch(0.78 0.1 60)
-    );
+    background:
+      repeating-linear-gradient(135deg, oklch(0.82 0.08 300 / 0.5) 0 20px, transparent 20px 48px),
+      linear-gradient(170deg, oklch(0.72 0.13 295), oklch(0.62 0.13 288) 55%, oklch(0.4 0.07 280));
+  }
+  .cover-art::before,
+  .cover-art::after {
+    content: '';
+    position: absolute;
+    background: #fff;
+    opacity: 0.92;
+    clip-path: polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%);
+  }
+  .cover-art::before {
+    width: 46px;
+    height: 46px;
+    top: 30%;
+    left: 12%;
+  }
+  .cover-art::after {
+    width: 30px;
+    height: 30px;
+    top: 18%;
+    right: 16%;
   }
   .cover-overlay {
     position: absolute;
