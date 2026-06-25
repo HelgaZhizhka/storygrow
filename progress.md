@@ -1159,3 +1159,34 @@ Found while auditing docs and chasing a red CI:
 **Lesson:** `init.sh` typechecks with `tsc`, not just `tsx` — one-off scripts in `backend/src/scripts/` must be CommonJS-compatible (`__dirname`, not `import.meta`). Don't self-merge before CI is green.
 
 **Blockers:** None.
+
+---
+
+## 2026-06-25 — Character-consistent illustrations via Gemini reference portrait (PR #175, closes #174)
+
+**Done (built via subagent-driven development — per-task review + final whole-branch review):**
+- **Provider strategy** (`backend/src/ai/image-generator/providers/`): `ImageProvider` interface + two impls behind `IMAGE_PROVIDER=gemini|openai`. Both use the SAME Vercel AI SDK `generateImage` shape.
+  - `GeminiImageProvider` — **Gemini 2.5 Flash Image** (`google.image('gemini-2.5-flash-image')`), `aspectRatio` from an `imageSize→aspectRatio` map, reference via `prompt.images`. **Default.**
+  - `OpenAiImageProvider` — the existing gpt-image-1 path wrapped behind the interface; config-selectable escape hatch.
+- **Portrait stage** — when the story has a `characterProfile`, generate one reference portrait → S3 + new `Book.characterPortraitKey` (migration `20260624000000`), reused on retries; passed as a reference to every page so the protagonist looks the same across all pages.
+- Prompt builders as constants; simplify-on-refusal retry preserved (`ImageGenerationError('refused')` → terminal `ImageContentPolicyError` → `images_failed`); LangFuse span `image-generation.portrait` + provider metadata.
+- **Cover fix** (`story-generator.prompt.ts` rule 11): illustration prompts must never request text/titles inside the image (Gemini was baking a hallucinated English title onto the cover).
+- New dep `@ai-sdk/google`. Needs a billing-enabled Google project with prepaid credits (free tier = 0 for image models); on quota exhaustion → `images_failed`, flip `IMAGE_PROVIDER=openai`.
+
+**Live e2e:** generated a custom book end-to-end on Gemini — the same red-haired girl in a green dress on all 7 pages, portrait stored, `characterPortraitKey` set, clean text-free cover (9.3/10). The win text-only `characterProfile` couldn't deliver.
+
+**Validation:** `./init.sh` green (backend 192 tests, frontend 13). Process learning recorded: subagent briefs must include a **lint** step — the implementers ran tsc+tests but not lint, so 12 lint errors slipped to the final `init.sh`; a `pnpm add` also re-linked node_modules and broke frontend eslint-config-next (fixed by `pnpm install`).
+
+---
+
+## 2026-06-25 — Real cover thumbnails + landing hero polish (PR #177, closes #176)
+
+**Done:**
+- **A — book list covers:** `/books` showed gradient placeholders. `listBooks` now returns a signed `coverUrl` (`imageKeys[0]` of ready books); cards render it via `next/image` **`unoptimized`** (signed MinIO URLs aren't server-optimizable — matches the detail page). Placeholder kept for not-ready books.
+- **B — landing hero cover:** `.cover-art` was a plain gradient; now a diagonal striped purple gradient + white sparkles, matching the Claude Design mock.
+
+**Verified in-browser** on real data (red-haired-girl covers + status badge; hero matches the mock). `tsc`/`lint` clean.
+
+**Next:** PDF page templates from the Claude Design handoff (`pdf-templates/*.html`) — the renderer still uses the old templates; this is a separate feature (own brainstorm → spec → plan).
+
+**Blockers:** None.
