@@ -22,3 +22,12 @@ export function genitiveName(name: string): string {
   if (INDECLINABLE_ENDINGS.has(last)) return n;
   return n + 'а'; // consonant ending (Иван → Ивана)
 }
+
+/** Russian plural for "year": 1 год, 2–4 года, 5–20 лет. */
+export function pluralYears(n: number): string {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return 'год';
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 'года';
+  return 'лет';
+}

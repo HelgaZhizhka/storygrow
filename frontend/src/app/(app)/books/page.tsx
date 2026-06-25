@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { clearTokens, getAccessToken } from '@/lib/auth';
 import { api } from '@/lib/api';
-import { genitiveName } from '@/lib/ru';
+import { genitiveName, pluralYears } from '@/lib/ru';
 import type { BookStatus } from '@/lib/types';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 
@@ -125,7 +125,8 @@ export default function BooksPage(): React.ReactElement {
                   {book.title || `Книга для ${genitiveName(book.child.name)}`}
                 </h3>
                 <div className="sg-book-meta">
-                  {book.child.name} · {book.child.age} лет · {book.learningGoal.title}
+                  {book.child.name} · {book.child.age} {pluralYears(book.child.age)} ·{' '}
+                  {book.learningGoal.title}
                 </div>
                 <div className="sg-book-date">{formatDate(book.createdAt)}</div>
               </div>

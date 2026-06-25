@@ -1,4 +1,4 @@
-import { genitiveName } from './ru';
+import { genitiveName, pluralYears } from './ru';
 
 describe('genitiveName', () => {
   it.each([
@@ -25,5 +25,22 @@ describe('genitiveName', () => {
   it('handles empty/short input gracefully', () => {
     expect(genitiveName('')).toBe('');
     expect(genitiveName('Я')).toBe('Я');
+  });
+});
+
+describe('pluralYears', () => {
+  it.each([
+    [1, 'год'],
+    [2, 'года'],
+    [3, 'года'],
+    [4, 'года'],
+    [5, 'лет'],
+    [7, 'лет'],
+    [11, 'лет'],
+    [12, 'лет'],
+    [21, 'год'],
+    [22, 'года'],
+  ])('%i → %s', (n, expected) => {
+    expect(pluralYears(n)).toBe(expected);
   });
 });
