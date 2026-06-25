@@ -27,8 +27,8 @@ Hard rules:
    words (e.g. feelings) over rare or abstract ones.
 3. The protagonist is defined in the user prompt — either the named child or an
    invented character. Follow the user prompt's protagonist instruction exactly.
-4. The narrative arc MUST follow: setup → conflict → lesson → resolution,
-   encoded in the order of pages.
+4. The narrative arc MUST follow the beat sheet given in the user prompt (it
+   depends on the story's arc type), encoded in the order of pages.
 5. Each page MUST use exactly one template from the provided catalogue.
 6. Text and title lengths MUST NOT exceed the limits shown for each template.
 7. The first page MUST use the 'cover' template.
@@ -74,22 +74,48 @@ const buildTemplateCatalogue = (childAge: number): string => {
   return lines.join('\n');
 };
 
-// ─── Static book structure block ─────────────────────────────────────────────
+// ─── Arc beat sheets ─────────────────────────────────────────────────────────
 
-const BOOK_STRUCTURE_RULES = `Book structure requirements:
+export const BEAT_SHEETS: Record<'virtue' | 'flaw', string> = {
+  virtue: `Narrative arc for THIS story — VIRTUE-ACQUISITION (the hero gains a good
+quality through effort). Encode these beats across the content pages, in order:
+    1. Завязка — introduce the hero and their world.
+    2. Конфликт — a challenge appears that calls for the quality.
+    3. Внутренняя борьба — the hero hesitates or struggles inside.
+    4. Поворот — the hero gathers themselves and tries.
+    5. Развязка — the hero succeeds by acting on the quality (show it).
+    6. Закрепление через действие — the change is shown in what the hero now does.`,
+  flaw: `Narrative arc for THIS story — FLAW-CONSEQUENCE (a flaw backfires, then is
+repaired at a cost). Encode these beats across the content pages, in order:
+    1. Завязка — introduce the hero and their flaw, shown in action, charmingly
+       (the flaw looks harmless or even fun). Do NOT preach.
+    2. Проступок — the flaw plays out (the hero lies / breaks a promise / lashes
+       out / is careless / hoards / cannot wait). Still feels consequence-free.
+    3. Расплата — THE FLAW COSTS THE HERO SOMETHING. The price is EMOTIONAL or
+       SOCIAL, never physical danger: e.g. lied → now no one believes a truth
+       that matters; lashed out → broke a thing he loved; hoarded → left alone.
+    4. Осознание — the hero feels the cost; the low point; show the feeling.
+    5. Исправление — the hero DOES something to make it right (effort, not a free
+       pass).
+    6. Заслуженный финал — it mends BECAUSE the hero tried. NO instant or
+       unconditional forgiveness, NO unearned reward.`,
+};
+
+const buildBookStructureRules = (
+  arcType: 'virtue' | 'flaw',
+): string => `Book structure requirements:
   • Minimum 6 pages, maximum 12 pages.
   • Page 1: 'cover' (title only — no text body on the cover).
-  • Pages 2–(N-1): content pages using age-appropriate templates.
-    Encode the narrative arc across these pages:
-    first pages = setup (introduce protagonist and world),
-    middle pages = conflict (challenge arises, protagonist struggles),
-    later pages = lesson (the protagonist learns by DOING — show the change
-      through action and feeling, never as a stated maxim),
-    final content pages = resolution (the protagonist succeeds by applying what
-      they learned — show it; do NOT restate the moral here).
+  • Pages 2–(N-1): content pages. ${BEAT_SHEETS[arcType]}
   • Last page: 'final' — state the lesson exactly ONCE, in one short simple
     sentence, in the page's 'text' field; discussion questions go in the
-    top-level 'discussionQuestions' array.`;
+    top-level 'discussionQuestions' array.${
+      arcType === 'flaw'
+        ? `\n  • FLAW RULE: the flaw MUST visibly cost the hero (the Расплата beat is
+    mandatory), and the resolution MUST be earned (заслуженным) by the hero's own
+    effort — instant or unconditional forgiveness is forbidden.`
+        : ''
+    }`;
 
 // ─── User prompt ─────────────────────────────────────────────────────────────
 
@@ -106,12 +132,8 @@ export interface BuildStoryPromptOptions {
   gender?: string;
   /** Free-text appearance of the child (used only in 'child' mode). */
   appearance?: string;
-  /**
-   * Narrative arc of the learning goal: virtue (hero demonstrates a positive trait)
-   * or flaw (hero acts on a flaw, faces consequences, corrects course).
-   * Defaults to 'virtue' for backward compatibility until Task 4 threads it through.
-   */
-  arcType?: 'virtue' | 'flaw';
+  /** Narrative arc for this learning goal: 'virtue' (acquire a quality) or 'flaw' (a flaw backfires). */
+  arcType: 'virtue' | 'flaw';
   /**
    * Regeneration feedback from the previous failed attempt.
    * Undefined on the first attempt.
@@ -129,8 +151,7 @@ export interface BuildStoryPromptOptions {
  * - Regeneration feedback (if retrying)
  */
 export const buildStoryUserPrompt = (opts: BuildStoryPromptOptions): string => {
-  const { childName, childAge, topic, learningGoal, allowedWords, feedback } = opts;
-  const arcType = opts.arcType ?? 'virtue';
+  const { childName, childAge, topic, learningGoal, allowedWords, feedback, arcType } = opts;
   const gender = opts.gender ?? 'unspecified';
   const catalogue = buildTemplateCatalogue(childAge);
   const feedbackBlock = feedback
@@ -158,7 +179,7 @@ ${protagonistBlock}
 
 ${catalogue}
 
-${BOOK_STRUCTURE_RULES}
+${buildBookStructureRules(arcType)}
 
 Preferred vocabulary (Russian words — prefer these; you may also add other simple
 words a 5–6-year-old understands by ear when read aloud):
@@ -169,6 +190,9 @@ Storytelling (this is read ALOUD by a parent — make it come alive, not a summa
   • Include one concrete, sensory detail and make the character's feeling visible
     (not "он испугался" alone — show it: heart pounding, frozen feet, a held breath).
   • Use short direct speech where it fits ("…", — сказал он).
+  • The story must have real STAKES — the listener should feel something is at
+    risk (a friend's trust, a treasured thing, not being believed) before the
+    resolution. The resolution is EARNED, never given for free.
   • Build a real little moment of tension at the climax — but the tension is
     EMOTIONAL/SOCIAL (will I be brave enough? what if they laugh? can I do it?),
     never a physical danger the hero approaches. See hard rule 10.
