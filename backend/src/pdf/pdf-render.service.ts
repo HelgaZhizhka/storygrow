@@ -24,6 +24,7 @@ export interface RenderInput {
 export class PdfRenderService implements OnModuleInit {
   private readonly logger = new Logger(PdfRenderService.name);
   private templates!: Readonly<Record<TemplateName, string>>;
+  private fontFaceCss!: string;
 
   constructor(private readonly s3: S3Service) {}
 
@@ -33,6 +34,9 @@ export class PdfRenderService implements OnModuleInit {
       return [name, readFileSync(join(TEMPLATES_DIR, file), 'utf-8')] as const;
     });
     this.templates = Object.fromEntries(entries) as Record<TemplateName, string>;
+    // Self-hosted Cyrillic book fonts, base64-inlined — embedded once so Puppeteer
+    // renders with no network font fetch. A missing file fails fast here.
+    this.fontFaceCss = readFileSync(join(TEMPLATES_DIR, 'fonts.css'), 'utf-8');
   }
 
   async render(input: RenderInput): Promise<string> {
@@ -69,8 +73,9 @@ export class PdfRenderService implements OnModuleInit {
 <meta charset="utf-8" />
 <title>${escapeHtml(input.story.title)}</title>
 <style>
+${this.fontFaceCss}
   @page { size: ${A5_WIDTH_PX}px ${A5_HEIGHT_PX}px; margin: 0; }
-  html, body { margin: 0; padding: 0; font-family: 'Helvetica', 'Arial', sans-serif; }
+  html, body { margin: 0; padding: 0; font-family: 'Literata', Georgia, serif; }
   .page { page-break-after: always; break-after: page; }
   .page:last-child { page-break-after: auto; break-after: auto; }
 </style>
