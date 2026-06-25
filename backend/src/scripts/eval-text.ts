@@ -11,6 +11,9 @@
  *   pnpm --filter backend eval:text "<goal>" <age> [child|observer]
  * Example:
  *   pnpm --filter backend eval:text "Смелость" 6 child
+ *
+ * The arc type (virtue|flaw) is taken from the LearningGoal row, so a flaw goal
+ * (e.g. Честность) is generated with the flaw beat sheet + exemplar automatically.
  */
 import type { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
@@ -45,10 +48,11 @@ const main = async (): Promise<void> => {
 
   const goal = await prisma.learningGoal.findFirst({
     where: { title: goalTitle },
-    select: { title: true, description: true },
+    select: { title: true, description: true, arcType: true },
   });
   const topic = goal?.title ?? goalTitle;
   const learningGoal = goal?.description ?? goalTitle;
+  const arcType = goal?.arcType ?? 'virtue';
 
   const gradeLevel = ageToGradeLevel(age);
   const allowedWords = await vocab.retrieve({ topic, learningGoal, gradeLevel });
@@ -62,7 +66,7 @@ const main = async (): Promise<void> => {
     learningGoal,
     allowedWords,
     protagonistMode: mode,
-    arcType: 'virtue',
+    arcType,
   });
 
   const checks = await evaluator.evaluate({
@@ -76,7 +80,9 @@ const main = async (): Promise<void> => {
   const lengths = story.pages.filter((p) => p.text != null).map((p) => (p.text as string).length);
   const avg = Math.round(lengths.reduce((a, b) => a + b, 0) / lengths.length);
 
-  console.log(`\n=== "${story.title}" | goal=${goalTitle} | age=${age} | mode=${mode} ===\n`);
+  console.log(
+    `\n=== "${story.title}" | goal=${goalTitle} | arc=${arcType} | age=${age} | mode=${mode} ===\n`,
+  );
   story.pages.forEach((p, i) => {
     const len = p.text ? ` [${p.text.length}]` : '';
     console.log(`[${i + 1}] ${p.template}${len}\n    ${p.text ?? `(${p.template}, no text)`}\n`);
