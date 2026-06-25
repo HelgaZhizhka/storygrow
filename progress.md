@@ -1253,7 +1253,7 @@ Found while auditing docs and chasing a red CI:
 **Decisions:**
 - Safe Conflict (ADR-0004) is NOT relaxed — emotional/social consequences are the engine of the flaw arc, not physical danger.
 - `arcType` defaults to `virtue` on backfill so existing goals and exemplars are unaffected.
-- `earnedResolution` is arc-sensitive in the judge rubric: virtue-arc stories that clearly model the lesson score full marks even without a visible "Расплата".
+- `earnedResolution`: the judge is NOT told the arc — it applies one uniform "the resolution must be earned" bar to every story. The criterion text makes the flaw-cost ("Расплата") requirement conditional on the story being a flaw story, so a virtue story that earns its resolution scores full marks without a visible Расплата.
 
 **Next:**
 - **T7** — Run `./init.sh` (must exit 0), then trigger a live regeneration for a flaw-goal book and confirm the consequence beat appears in the output + `StoryEval` holds 7 criteria. Update staged-books.md with a re-staged fallback book once verified.
