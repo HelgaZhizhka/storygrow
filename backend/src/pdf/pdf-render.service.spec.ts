@@ -223,9 +223,9 @@ describe('PdfRenderService', () => {
     expect(html).toContain("font-family: 'Comfortaa'");
     expect(html).toContain("font-family: 'Literata'");
     expect(html).toContain('data:font/woff2;base64,');
-    // book body font, not the old Helvetica default
+    // the document body default is now the book serif, not the old Helvetica
     expect(html).toContain("font-family: 'Literata', Georgia, serif");
-    expect(html).not.toContain("'Helvetica'");
+    expect(html).not.toContain("font-family: 'Helvetica', 'Arial', sans-serif");
     expect(html).not.toContain('fonts.googleapis.com');
   });
 });

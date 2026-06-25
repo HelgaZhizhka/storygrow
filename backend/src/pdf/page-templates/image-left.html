@@ -5,26 +5,49 @@
       flex-direction: row;
       width: 874px;
       height: 1240px;
-      font-family: inherit;
+      font-family: 'Literata', 'Helvetica', sans-serif;
+      background: oklch(0.986 0.012 250);
     }
     .page--image-left__illustration {
-      width: 50%;
+      width: 48%;
       height: 100%;
       object-fit: cover;
       flex-shrink: 0;
     }
     .page--image-left__text-block {
+      position: relative;
       flex: 1;
       display: flex;
-      align-items: center;
-      padding: 48px 40px;
-      background: #fefce8;
+      flex-direction: column;
+      justify-content: center;
+      gap: 32px;
+      padding: 56px 52px;
+    }
+    /* soft seam shadow where art meets paper */
+    .page--image-left__text-block::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 40px;
+      height: 100%;
+      background: linear-gradient(to right, rgba(40, 30, 80, 0.1), transparent);
+    }
+    .page--image-left__mark {
+      width: 22px;
+      height: 22px;
+      background: oklch(0.74 0.13 268);
+      opacity: 0.6;
+      clip-path: polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%);
     }
     .page--image-left__text {
       margin: 0;
-      font-size: 26px;
-      line-height: 1.7;
-      color: #1c1917;
+      font-size: 27px;
+      font-weight: 500;
+      line-height: 1.66;
+      letter-spacing: -0.005em;
+      color: oklch(0.33 0.035 272);
+      text-wrap: pretty;
     }
   </style>
 
@@ -34,6 +57,7 @@
     alt="{{illustrationPrompt}}"
   />
   <div class="page--image-left__text-block">
+    <span class="page--image-left__mark"></span>
     <p class="page--image-left__text">{{text}}</p>
   </div>
 </section>

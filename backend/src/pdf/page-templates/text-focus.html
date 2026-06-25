@@ -5,37 +5,51 @@
       flex-direction: column;
       width: 874px;
       height: 1240px;
-      background: #fefce8;
-      font-family: inherit;
+      background: oklch(0.986 0.012 250);
+      font-family: 'Literata', 'Helvetica', sans-serif;
     }
     .page--text-focus__text-block {
       flex: 2;
       display: flex;
-      align-items: center;
-      padding: 56px 64px 32px;
+      flex-direction: column;
+      justify-content: center;
+      gap: 28px;
+      padding: 72px 72px 36px;
+    }
+    .page--text-focus__mark {
+      width: 22px;
+      height: 22px;
+      background: oklch(0.74 0.13 268);
+      opacity: 0.6;
+      clip-path: polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%);
     }
     .page--text-focus__text {
       margin: 0;
-      font-size: 24px;
-      line-height: 1.8;
-      color: #1c1917;
+      font-size: 26px;
+      font-weight: 500;
+      line-height: 1.74;
+      letter-spacing: -0.005em;
+      color: oklch(0.33 0.035 272);
+      text-wrap: pretty;
     }
     .page--text-focus__illustration-block {
       flex: 1;
       min-height: 0;
-      padding: 0 64px 40px;
+      padding: 0 72px 64px;
       display: flex;
     }
     .page--text-focus__illustration {
       flex: 1;
       min-height: 0;
       width: 100%;
-      object-fit: contain;
-      border-radius: 12px;
+      object-fit: cover;
+      border-radius: 20px;
+      box-shadow: 0 18px 40px -18px rgba(40, 30, 90, 0.45);
     }
   </style>
 
   <div class="page--text-focus__text-block">
+    <span class="page--text-focus__mark"></span>
     <p class="page--text-focus__text">{{text}}</p>
   </div>
   <div class="page--text-focus__illustration-block">

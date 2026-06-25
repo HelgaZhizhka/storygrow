@@ -5,7 +5,8 @@
       width: 874px;
       height: 1240px;
       overflow: hidden;
-      font-family: inherit;
+      font-family: 'Literata', 'Helvetica', sans-serif;
+      background: oklch(0.22 0.04 270);
     }
     .page--cover__illustration {
       position: absolute;
@@ -14,25 +15,118 @@
       height: 100%;
       object-fit: cover;
     }
+    /* Soft top vignette for the wordmark */
+    .page--cover__top-veil {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 220px;
+      background: linear-gradient(to bottom, rgba(20, 18, 48, 0.55), transparent);
+    }
+    .page--cover__wordmark {
+      position: absolute;
+      top: 40px;
+      left: 48px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: #ffffff;
+    }
+    .page--cover__spark {
+      width: 18px;
+      height: 18px;
+      background: oklch(0.84 0.13 75);
+      -webkit-mask:
+        radial-gradient(circle, transparent 64%, #000 65%) center/100% 100%,
+        conic-gradient(#000 0 0);
+      /* 4-point sparkle */
+      clip-path: polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%);
+    }
     .page--cover__title-bar {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
-      padding: 32px 40px;
-      background: linear-gradient(transparent, rgba(0, 0, 0, 0.65));
+      padding: 200px 56px 64px;
+      background: linear-gradient(
+        to top,
+        rgba(18, 16, 44, 0.92) 12%,
+        rgba(18, 16, 44, 0.7) 42%,
+        transparent
+      );
+    }
+    .page--cover__eyebrow {
+      margin: 0 0 14px;
+      font-family: 'Literata', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: oklch(0.84 0.13 75);
     }
     .page--cover__title {
       margin: 0;
-      font-size: 48px;
-      font-weight: 700;
+      font-family: 'Comfortaa', 'Helvetica', sans-serif;
+      font-size: 60px;
+      font-weight: 800;
       color: #ffffff;
-      line-height: 1.2;
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+      text-wrap: balance;
+    }
+    .page--cover__rule {
+      margin-top: 28px;
+      width: 84px;
+      height: 5px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, oklch(0.7 0.16 268), oklch(0.78 0.12 190));
+    }
+    /* decorative sparkles scattered over art */
+    .page--cover__star {
+      position: absolute;
+      background: #ffffff;
+      opacity: 0.85;
+      clip-path: polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%);
+    }
+    .page--cover__star--a {
+      top: 150px;
+      right: 90px;
+      width: 26px;
+      height: 26px;
+      opacity: 0.9;
+    }
+    .page--cover__star--b {
+      top: 250px;
+      right: 160px;
+      width: 14px;
+      height: 14px;
+      opacity: 0.6;
+    }
+    .page--cover__star--c {
+      top: 120px;
+      left: 120px;
+      width: 12px;
+      height: 12px;
+      opacity: 0.55;
     }
   </style>
 
   <img class="page--cover__illustration" src="{{illustrationUrl}}" alt="{{illustrationPrompt}}" />
+  <div class="page--cover__top-veil"></div>
+  <span class="page--cover__star page--cover__star--a"></span>
+  <span class="page--cover__star page--cover__star--b"></span>
+  <span class="page--cover__star page--cover__star--c"></span>
+  <div class="page--cover__wordmark">
+    <span class="page--cover__spark"></span>
+    StoryGrow
+  </div>
   <div class="page--cover__title-bar">
+    <p class="page--cover__eyebrow">Волшебная история</p>
     <h1 class="page--cover__title">{{title}}</h1>
+    <div class="page--cover__rule"></div>
   </div>
 </section>
