@@ -87,16 +87,19 @@ quality through effort). Encode these beats across the content pages, in order:
     6. Закрепление через действие — the change is shown in what the hero now does.`,
   flaw: `Narrative arc for THIS story — FLAW-CONSEQUENCE (a flaw backfires, then is
 repaired at a cost). Encode these beats across the content pages, in order:
-    1. Завязка — introduce the hero and their flaw, shown in action, charmingly
-       (the flaw looks harmless or even fun). Do NOT preach.
-    2. Проступок — the flaw plays out (the hero lies / breaks a promise / lashes
-       out / is careless / hoards / cannot wait). Still feels consequence-free.
-    3. Расплата — THE FLAW COSTS THE HERO SOMETHING. The price is EMOTIONAL or
-       SOCIAL, never physical danger: e.g. lied → now no one believes a truth
-       that matters; lashed out → broke a thing he loved; hoarded → left alone.
+    1. Завязка — introduce the hero and their flaw, shown through what the hero
+       does (the flaw can look harmless or fun). Do NOT preach.
+    2. Проступок — the hero acts on the flaw once more (lies / breaks a promise /
+       lashes out / is careless / hoards / cannot wait); the cost has not landed yet.
+    3. Расплата — the flaw backfires with a CONCRETE, EXTERNAL consequence the
+       listener can picture: a specific thing is broken or lost, a real chance is
+       missed, or people act differently toward the hero — e.g. lied → no one
+       believes a truth that matters; lashed out → a loved object is broken;
+       hoarded → friends go off and play without him. The price is EMOTIONAL or
+       SOCIAL, never physical danger. NOT a vague "everyone was upset".
     4. Осознание — the hero feels the cost; the low point; show the feeling.
-    5. Исправление — the hero DOES something to make it right (effort, not a free
-       pass).
+    5. Исправление — the hero DOES something real to make it right (effort, not a
+       free pass).
     6. Заслуженный финал — it mends BECAUSE the hero tried. NO instant or
        unconditional forgiveness, NO unearned reward.`,
 };
@@ -199,6 +202,12 @@ Storytelling (this is read ALOUD by a parent — make it come alive, not a summa
   • Do NOT moralise on content pages — never write definitions like
     "смелость — это значит…". Show the character living the lesson through what
     they DO and FEEL. The moral is stated only ONCE, on the final page.
+  • NO narrator commentary about the plot itself — never state that an action is
+    harmless, has or lacks consequences, is important, or is "a lesson" (e.g.
+    NEVER write "но без последствий" or "это был урок"). Describe only what
+    happens and what the hero feels; let the listener draw the conclusion.
+  • Keep the hero's name consistent: use the SAME name on every page — never
+    rename the hero or introduce a second name for them.
 
 EXAMPLE of the quality, lively voice, gentle humour and SAFE conflict to match.
 Match its CRAFT — do NOT copy its plot, names, characters, or setting:
