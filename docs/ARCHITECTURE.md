@@ -24,7 +24,7 @@ storygrow/
 │   │   │   ├── prompts/                # prompt constants + Gold Exemplars
 │   │   │   ├── schemas/                # Zod schemas (story.schema, judge.schema)
 │   │   │   ├── story-generator/        # orchestrator + generator + evaluator services
-│   │   │   ├── image-generator/        # gpt-image-1 service + prompt simplifier
+│   │   │   ├── image-generator/        # providers (Gemini default, gpt-image-1) + portrait stage + simplifier
 │   │   │   ├── rag/                    # vocabulary-rag.service + age-grade map
 │   │   │   └── validators/             # book-plan validator
 │   │   ├── generation/         # BullMQ producer + processor + stale-book sweeper
@@ -136,10 +136,12 @@ storygrow/
                               ▼
          ┌───────────────────────────────────────────┐
          │ 4. ImageGenerator.generate(prompts)       │
-         │      → for each illustrationPrompt:        │
-         │          openai.images.generate(gpt-image-1)│
-         │          upload to S3 → store key in       │
-         │          Book.imageKeys[]                  │
+         │      → portrait from characterProfile,     │
+         │        then Gemini 2.5 Flash Image per page │
+         │        WITH the portrait as a reference     │
+         │        (gpt-image-1 fallback via config)    │
+         │      → upload to S3 → Book.imageKeys[]      │
+         │      → portrait key → Book.characterPortraitKey│
          └───────────────────────────────────────────┘
                               │
                               ▼
