@@ -107,6 +107,12 @@ export interface BuildStoryPromptOptions {
   /** Free-text appearance of the child (used only in 'child' mode). */
   appearance?: string;
   /**
+   * Narrative arc of the learning goal: virtue (hero demonstrates a positive trait)
+   * or flaw (hero acts on a flaw, faces consequences, corrects course).
+   * Defaults to 'virtue' for backward compatibility until Task 4 threads it through.
+   */
+  arcType?: 'virtue' | 'flaw';
+  /**
    * Regeneration feedback from the previous failed attempt.
    * Undefined on the first attempt.
    */
@@ -124,6 +130,7 @@ export interface BuildStoryPromptOptions {
  */
 export const buildStoryUserPrompt = (opts: BuildStoryPromptOptions): string => {
   const { childName, childAge, topic, learningGoal, allowedWords, feedback } = opts;
+  const arcType = opts.arcType ?? 'virtue';
   const gender = opts.gender ?? 'unspecified';
   const catalogue = buildTemplateCatalogue(childAge);
   const feedbackBlock = feedback
@@ -172,7 +179,7 @@ Storytelling (this is read ALOUD by a parent — make it come alive, not a summa
 EXAMPLE of the quality, lively voice, gentle humour and SAFE conflict to match.
 Match its CRAFT — do NOT copy its plot, names, characters, or setting:
 """
-${pickExemplar(topic).text}
+${pickExemplar(learningGoal, arcType).text}
 """
 
 For each page's illustrationPrompt: write a vivid DALL-E prompt in English with the
