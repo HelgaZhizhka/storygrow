@@ -179,7 +179,7 @@ Storytelling (this is read ALOUD by a parent — make it come alive, not a summa
 EXAMPLE of the quality, lively voice, gentle humour and SAFE conflict to match.
 Match its CRAFT — do NOT copy its plot, names, characters, or setting:
 """
-${pickExemplar(learningGoal, arcType).text}
+${pickExemplar(topic, arcType).text}
 """
 
 For each page's illustrationPrompt: write a vivid DALL-E prompt in English with the
