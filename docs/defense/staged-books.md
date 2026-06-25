@@ -30,11 +30,15 @@ Use these pre-generated books if the live demo fails (OpenAI outage, network iss
 **Demo talking point:**  
 > «Первая версия получила 9.8 от судьи — но не прошла детерминированную проверку языковой чистоты: в тексте оказалось английское слово. Система автоматически перегенерировала историю с явным фидбеком в промпте. Вторая версия — 10/10 по всем семи критериям.»
 
-**Judge scores (attempt 1):**
+> ⚠️ The JSON blocks below are **stale** — captured pre-#161, so they show only
+> **5 of the current 7** criteria (missing `engagement` and `earnedResolution`).
+> They will be replaced when the fallback book is re-staged (see the warning above).
+
+**Judge scores (attempt 1) — stale, 5/7 criteria:**
 ```json
 { "ageAppropriateVocab": 10, "hasMoralLesson": 10, "structureCompleteness": 10, "safetyForChildren": 10, "length": 9 }
 ```
-**Judge scores (attempt 2):**
+**Judge scores (attempt 2) — stale, 5/7 criteria:**
 ```json
 { "ageAppropriateVocab": 10, "hasMoralLesson": 10, "structureCompleteness": 10, "safetyForChildren": 10, "length": 10 }
 ```

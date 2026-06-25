@@ -1230,7 +1230,7 @@ Found while auditing docs and chasing a red CI:
 
 **Next (start here):**
 1. **#32 — defense prep** (primary): slides + demo script + eval-dashboard polish. `docs/defense/` is now accurate — build the presentation on it.
-2. **Re-stage the fallback demo book** (`docs/defense/staged-books.md`): the staged book is pre-`engagement` (5 criteria, empty title) — generate a fresh one under the current 6-criteria pipeline, update ID/scores/title.
+2. **Re-stage the fallback demo book** (`docs/defense/staged-books.md`): the staged book is pre-`engagement` (5 criteria, empty title) — generate a fresh one under the current 7-criteria pipeline (incl. `earnedResolution`), update ID/scores/title.
 3. **#162** — batch-eval harness + LangFuse datasets (strengthens the eval story).
 4. Backlog (lower priority / post-defense): #154 quota TOCTOU, #157 config unify, #156 auth hardening, #159 TTS, #128 photo-gen (GDPR), #30 monitoring, #28 SEO, #143 dev-warning.
 
