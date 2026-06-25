@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { api } from '@/lib/api';
+import { genitiveName, pluralYears } from '@/lib/ru';
 import type { BookStatus } from '@/lib/types';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 
@@ -163,7 +164,7 @@ export default function BookPage(): React.ReactElement {
       <div className="mb-7 mt-4">
         <div className="mb-2 flex flex-wrap items-center gap-3">
           <h1 className="sg-page-title">
-            {book.title || book.storyJson?.title || `Книга для ${book.child.name}`}
+            {book.title || book.storyJson?.title || `Книга для ${genitiveName(book.child.name)}`}
           </h1>
           <StatusBadge status={book.status} />
         </div>
@@ -311,12 +312,4 @@ function Stat({ label, value }: { label: string; value: string }): React.ReactEl
       <span className="sg-stat-v">{value}</span>
     </div>
   );
-}
-
-function pluralYears(n: number): string {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
-  if (mod10 === 1 && mod100 !== 11) return 'год';
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 'года';
-  return 'лет';
 }
