@@ -42,7 +42,10 @@ const schema = z.object({
   childName: z.string().min(1, 'Введите имя'),
   childAge: z.coerce.number({ message: 'Введите возраст' }).int().min(1).max(18),
   childGender: z.enum(['male', 'female', 'other', '']).optional(),
-  childAppearance: z.string().optional(),
+  childAppearance: z
+    .string()
+    .max(1500, 'Слишком длинное описание — максимум 1500 символов')
+    .optional(),
   learningGoalId: z.string().min(1, 'Выберите цель обучения'),
   mode: z.enum(['fast', 'custom']),
   protagonistMode: z.enum(['child', 'observer']),
@@ -173,9 +176,13 @@ export default function NewBookPage(): React.ReactElement {
                 placeholder="Например: кудрявые каштановые волосы, голубые глаза, красное платье"
                 {...register('childAppearance')}
               />
-              <span className="sg-field-hint">
-                Используется, чтобы нарисовать ребёнка героем книги.
-              </span>
+              {errors.childAppearance ? (
+                <span className="sg-field-hint text-danger">{errors.childAppearance.message}</span>
+              ) : (
+                <span className="sg-field-hint">
+                  Используется, чтобы нарисовать ребёнка героем книги.
+                </span>
+              )}
             </div>
           )}
         </div>
