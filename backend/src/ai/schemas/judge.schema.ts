@@ -6,7 +6,7 @@ const scoreField = () => z.number().int().min(0).max(10);
 /**
  * JudgeScoreSchema — individual criterion scores produced by StoryEvaluator.
  *
- * Each criterion is independently rated 0–10. The mean across all six
+ * Each criterion is independently rated 0–10. The mean across all seven
  * is the finalScore compared against the eval threshold (default 7.0).
  */
 export const JudgeScoreSchema = z.object({
@@ -35,6 +35,16 @@ export const JudgeScoreSchema = z.object({
    * event-summaries and moralising are penalised.
    */
   engagement: scoreField(),
+
+  /**
+   * The moral is EARNED, not asserted. There is a real stake/consequence in the
+   * story (the hero's flaw costs them something, or success is genuinely at
+   * risk), and the resolution follows from the protagonist's own action — not
+   * from instant/unconditional forgiveness, luck, or a stated maxim. Penalise
+   * heavily (≤4) a story where the lesson is simply announced at the end with no
+   * preceding cost, or where the hero is forgiven/rewarded without effort.
+   */
+  earnedResolution: scoreField(),
 });
 
 export type JudgeScores = z.infer<typeof JudgeScoreSchema>;
@@ -55,7 +65,7 @@ export const JudgeSchema = z.object({
   reasoning: z.string().min(1),
 
   /**
-   * Mean of all six criterion scores, rounded to 2 decimal places.
+   * Mean of all seven criterion scores, rounded to 2 decimal places.
    * Compared against EVAL_THRESHOLD to decide regeneration.
    */
   finalScore: z.number().min(0).max(10),

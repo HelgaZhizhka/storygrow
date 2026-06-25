@@ -91,22 +91,29 @@ function computeMeanCriterionScores(
   evals: { judgeScores: unknown; passed: boolean }[],
 ): Record<string, number> {
   const passedEvals = evals.filter((e) => e.passed);
-  if (passedEvals.length === 0) return Object.fromEntries(JUDGE_CRITERIA.map((k) => [k, 0]));
-
+  // Parse leniently so historical rows written before a criterion existed (e.g.
+  // 6-key rows predating `earnedResolution`) still contribute their present
+  // keys. Each criterion averages only over the rows that actually carry it.
+  const lenient = JudgeScoreSchema.partial();
   const sums = Object.fromEntries(JUDGE_CRITERIA.map((k) => [k, 0]));
-  let validCount = 0;
+  const counts = Object.fromEntries(JUDGE_CRITERIA.map((k) => [k, 0]));
 
   for (const evalRow of passedEvals) {
-    const parsed = JudgeScoreSchema.safeParse(evalRow.judgeScores);
+    const parsed = lenient.safeParse(evalRow.judgeScores);
     if (!parsed.success) continue;
-    validCount++;
     for (const key of JUDGE_CRITERIA) {
-      sums[key] = (sums[key] ?? 0) + (parsed.data[key] ?? 0);
+      const value = parsed.data[key];
+      if (typeof value === 'number') {
+        sums[key] = (sums[key] ?? 0) + value;
+        counts[key] = (counts[key] ?? 0) + 1;
+      }
     }
   }
 
-  if (validCount === 0) return Object.fromEntries(JUDGE_CRITERIA.map((k) => [k, 0]));
   return Object.fromEntries(
-    JUDGE_CRITERIA.map((k) => [k, Math.round(((sums[k] ?? 0) / validCount) * 100) / 100]),
+    JUDGE_CRITERIA.map((k) => {
+      const count = counts[k] ?? 0;
+      return [k, count === 0 ? 0 : Math.round(((sums[k] ?? 0) / count) * 100) / 100];
+    }),
   );
 }
