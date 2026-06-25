@@ -8,6 +8,12 @@ Use these pre-generated books if the live demo fails (OpenAI outage, network iss
 
 ### Book 1 — Custom Flow with visible retry
 
+> ⚠️ **Re-stage before the defense.** This book was generated before the
+> `engagement` criterion was added (#161), so its `StoryEval` rows hold **5**
+> criteria, not the current 6 — and its `title` is empty in the DB (the value
+> below is the intended title, not what's stored). Regenerate a fresh fallback
+> book under the current 6-criteria pipeline and update the ID/scores/title here.
+
 | Field | Value |
 |---|---|
 | **Title** | «Алиса и сила доброты» |
