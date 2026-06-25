@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { clearTokens, getAccessToken } from '@/lib/auth';
+import { genitiveName } from '@/lib/i18n';
 import { api } from '@/lib/api';
 import type { BookStatus } from '@/lib/types';
 import { StatusBadge } from '@/components/ui/StatusBadge';
@@ -108,7 +109,7 @@ export default function BooksPage(): React.ReactElement {
                 {book.coverUrl && (
                   <Image
                     src={book.coverUrl}
-                    alt={book.title || `Книга для ${book.child.name}`}
+                    alt={book.title || `Книга для ${genitiveName(book.child.name)}`}
                     fill
                     unoptimized
                     sizes="220px"
@@ -120,7 +121,7 @@ export default function BooksPage(): React.ReactElement {
                 </span>
               </div>
               <div className="sg-book-body">
-                <h3 className="sg-book-title">{book.title || `Книга для ${book.child.name}`}</h3>
+                <h3 className="sg-book-title">{book.title || `Книга для ${genitiveName(book.child.name)}`}</h3>
                 <div className="sg-book-meta">
                   {book.child.name} · {book.child.age} лет · {book.learningGoal.title}
                 </div>

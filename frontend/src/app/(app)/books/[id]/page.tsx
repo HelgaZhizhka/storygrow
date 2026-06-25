@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { api } from '@/lib/api';
 import type { BookStatus } from '@/lib/types';
+import { genitiveName } from '@/lib/i18n';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 
 interface DbPage {
@@ -163,7 +164,7 @@ export default function BookPage(): React.ReactElement {
       <div className="mb-7 mt-4">
         <div className="mb-2 flex flex-wrap items-center gap-3">
           <h1 className="sg-page-title">
-            {book.title || book.storyJson?.title || `Книга для ${book.child.name}`}
+            {book.title || book.storyJson?.title || `Книга для ${genitiveName(book.child.name)}`}
           </h1>
           <StatusBadge status={book.status} />
         </div>
