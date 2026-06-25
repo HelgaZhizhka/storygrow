@@ -99,10 +99,15 @@ export class GenerationProcessor extends WorkerHost {
         );
         imageKeys = book.imageKeys;
       } else {
-        imageKeys = await this.imageGenerator.generate({ story, bookId, artStyle: book.artStyle });
+        const generated = await this.imageGenerator.generate({
+          story,
+          bookId,
+          artStyle: book.artStyle,
+        });
+        imageKeys = generated.imageKeys;
         await this.prisma.book.update({
           where: { id: bookId },
-          data: { imageKeys },
+          data: { imageKeys, characterPortraitKey: generated.characterPortraitKey },
         });
       }
       this.bookProgress.emit(bookId, {
