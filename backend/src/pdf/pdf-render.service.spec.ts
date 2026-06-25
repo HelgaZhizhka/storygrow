@@ -212,4 +212,20 @@ describe('PdfRenderService', () => {
       }),
     );
   });
+
+  it('embeds the self-hosted book fonts and uses no remote font import', async () => {
+    mockS3.uploadObject.mockResolvedValue(undefined);
+    await service.render(input);
+
+    const calls = mockSetContent.mock.calls as Array<[string, ...unknown[]]>;
+    const html = calls[0][0];
+    expect(html).toContain('@font-face');
+    expect(html).toContain("font-family: 'Comfortaa'");
+    expect(html).toContain("font-family: 'Literata'");
+    expect(html).toContain('data:font/woff2;base64,');
+    // book body font, not the old Helvetica default
+    expect(html).toContain("font-family: 'Literata', Georgia, serif");
+    expect(html).not.toContain("'Helvetica'");
+    expect(html).not.toContain('fonts.googleapis.com');
+  });
 });
