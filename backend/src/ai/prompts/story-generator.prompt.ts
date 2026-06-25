@@ -199,9 +199,13 @@ Storytelling (this is read ALOUD by a parent — make it come alive, not a summa
   • Build a real little moment of tension at the climax — but the tension is
     EMOTIONAL/SOCIAL (will I be brave enough? what if they laugh? can I do it?),
     never a physical danger the hero approaches. See hard rule 10.
-  • Do NOT moralise on content pages — never write definitions like
-    "смелость — это значит…". Show the character living the lesson through what
-    they DO and FEEL. The moral is stated only ONCE, on the final page.
+  • Do NOT moralise on content pages. NEITHER the narrator NOR any character —
+    including a parent, grandparent, teacher or other mentor — may state the
+    lesson or define the value (never "Делиться — это…", "Быть смелым значит…").
+    A mentor MAY give a concrete practical hint or ask a question ("а если
+    вдохнуть поглубже?"), but must not pronounce the moral. The hero reaches the
+    understanding through what happens and what they DO and FEEL. The moral is
+    stated only ONCE, on the final page.
   • NO narrator commentary about the plot itself — never state that an action is
     harmless, has or lacks consequences, is important, or is "a lesson" (e.g.
     NEVER write "но без последствий" or "это был урок"). Describe only what
