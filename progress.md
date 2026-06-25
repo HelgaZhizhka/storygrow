@@ -1237,3 +1237,25 @@ Found while auditing docs and chasing a red CI:
 **Strategy reminder:** no deploy for the defense — defend from localhost + a recorded backup video (memory: `defense-no-deploy`).
 
 **Blockers:** None.
+
+---
+
+## 2026-06-25 — Two-arc story model + earnedResolution criterion (issue #188, branch `issue/188-two-arc-story-model`)
+
+**Done:**
+- **T1** — `LearningGoal.arcType` enum (`virtue` | `flaw`) added to Prisma schema + migration; seed backfills all existing goals to `virtue`.
+- **T2** — Flaw-arc Gold Exemplars added to `backend/src/ai/prompts/`; `pickExemplar()` is arc-aware (matches exemplar to goal title + arc type).
+- **T3** — Story-generator prompt builder selects arc-specific beat sheet: virtue arc uses the existing four-stage setup; flaw arc injects a "Расплата" (consequence) beat and an earned-resolution rule (no instant forgiveness).
+- **T4** — `arcType` threaded from `LearningGoal` through `StoryOrchestratorService` → `StoryGeneratorService` → `buildStoryUserPrompt`; `GenerateBookInput` carries it.
+- **T5** — `earnedResolution` added as the 7th judge criterion in `JudgeSchema` + `JUDGE_SYSTEM_PROMPT`; admin metrics dashboard now shows it alongside the other six.
+- **T6 (this session)** — Docs sync: ADR-0004 clarification (stakes vs danger), CONTEXT.md (Arc Type glossary entry + 7th criterion in Judge Score), ARCHITECTURE.md (arc routing in pipeline + StoryEval schema), qa-prep.md Q2 (6→7 criteria, Russian), staged-books.md (re-stage warning updated to 7 criteria), progress.md (this entry).
+
+**Decisions:**
+- Safe Conflict (ADR-0004) is NOT relaxed — emotional/social consequences are the engine of the flaw arc, not physical danger.
+- `arcType` defaults to `virtue` on backfill so existing goals and exemplars are unaffected.
+- `earnedResolution` is arc-sensitive in the judge rubric: virtue-arc stories that clearly model the lesson score full marks even without a visible "Расплата".
+
+**Next:**
+- **T7** — Run `./init.sh` (must exit 0), then trigger a live regeneration for a flaw-goal book and confirm the consequence beat appears in the output + `StoryEval` holds 7 criteria. Update staged-books.md with a re-staged fallback book once verified.
+
+**Blockers:** None.

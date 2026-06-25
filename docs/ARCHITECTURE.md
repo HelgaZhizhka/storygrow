@@ -107,6 +107,8 @@ storygrow/
          ┌───────────────────────────────────────────┐
          │ 2. StoryGenerator.generate(input, words)  │
          │      → buildPrompt(prompts/STORY_SYSTEM)  │
+         │        (orchestrator passes LearningGoal.arcType → prompt builder  │
+         │         selects arc-specific beat sheet + matching Gold Exemplar)  │
          │      → ai.generateObject({                 │
          │          model: openai('gpt-4o'),          │
          │          // story TEXT uses gpt-4o for     │
@@ -249,7 +251,7 @@ model StoryEval {
   id                   String   @id @default(cuid())
   bookId               String
   attempt              Int
-  judgeScores          Json     // 6 criteria: { ageAppropriateVocab, hasMoralLesson, structureCompleteness, safetyForChildren, length, engagement }
+  judgeScores          Json     // 7 criteria: { ageAppropriateVocab, hasMoralLesson, structureCompleteness, safetyForChildren, length, engagement, earnedResolution }
   judgeReasoning       String?
   finalScore           Float
   vocabularyCompliance Float?
