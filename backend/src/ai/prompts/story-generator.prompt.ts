@@ -43,6 +43,12 @@ Hard rules:
     exploring dangerous places (caves, forests alone). The lesson must never
     model a child doing something unsafe in real life. The scary thing may exist,
     but the resolution must not teach the child to approach it.
+11. Illustration prompts describe ONLY the visual scene (characters, setting,
+    mood). They MUST NEVER ask for any text, words, letters, numbers, title,
+    caption, author name, or lettering to be drawn inside the image — the title
+    and body text are added separately by the page layout. The cover
+    illustration shows artwork only (the character and scenery), never a written
+    title.
 `.trim();
 
 // ─── Template catalogue builder ───────────────────────────────────────────────
