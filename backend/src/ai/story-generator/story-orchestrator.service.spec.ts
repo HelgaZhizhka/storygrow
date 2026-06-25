@@ -113,6 +113,7 @@ const opts: GenerateStoryOptions = {
   topic: 'дружба',
   learningGoal: 'научиться дружить',
   protagonistMode: 'child',
+  arcType: 'virtue',
 };
 
 interface StoryEvalCreateArgs {

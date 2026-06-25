@@ -16,6 +16,7 @@ export interface GenerateStoryInput {
   bookId: string;
   allowedWords: readonly string[];
   protagonistMode: 'child' | 'observer';
+  arcType: 'virtue' | 'flaw';
   gender?: string;
   appearance?: string;
   feedback?: string;

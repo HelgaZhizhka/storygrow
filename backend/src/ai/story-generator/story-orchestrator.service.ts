@@ -17,6 +17,7 @@ export interface GenerateStoryOptions {
   topic: string;
   learningGoal: string;
   protagonistMode: 'child' | 'observer';
+  arcType: 'virtue' | 'flaw';
   gender?: string;
   appearance?: string;
 }

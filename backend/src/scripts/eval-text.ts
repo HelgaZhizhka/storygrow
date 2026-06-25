@@ -62,6 +62,7 @@ const main = async (): Promise<void> => {
     learningGoal,
     allowedWords,
     protagonistMode: mode,
+    arcType: 'virtue',
   });
 
   const checks = await evaluator.evaluate({

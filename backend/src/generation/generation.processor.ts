@@ -18,7 +18,7 @@ interface BookWithRelations {
   protagonistMode: 'child' | 'observer';
   artStyle: 'watercolor' | 'cartoon' | 'storybook' | 'pixel' | 'realistic';
   child: { name: string; age: number; gender: string | null; appearance: string | null };
-  learningGoal: { title: string; description: string };
+  learningGoal: { title: string; description: string; arcType: 'virtue' | 'flaw' };
 }
 
 // lockDuration: 6–8 pages × ~10 s Puppeteer render ≈ 60–80 s upper bound; 90 s gives headroom.
@@ -77,6 +77,7 @@ export class GenerationProcessor extends WorkerHost {
           protagonistMode: book.protagonistMode,
           topic: book.learningGoal.title,
           learningGoal: book.learningGoal.description,
+          arcType: book.learningGoal.arcType,
         });
         story = storyResult.story;
         this.bookProgress.emit(bookId, {
@@ -158,7 +159,7 @@ export class GenerationProcessor extends WorkerHost {
         protagonistMode: true,
         artStyle: true,
         child: { select: { name: true, age: true, gender: true, appearance: true } },
-        learningGoal: { select: { title: true, description: true } },
+        learningGoal: { select: { title: true, description: true, arcType: true } },
       },
     });
     if (!book) throw new Error(`Book ${bookId} not found for user ${userId}`);
