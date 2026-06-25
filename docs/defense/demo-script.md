@@ -40,7 +40,7 @@ Browser redirects to `/books/:id/progress`. SSE stream starts.
 
 > «Второй шаг — `generateObject` Vercel AI SDK с Zod-схемой: setup → conflict → lesson → resolution + 5 вопросов для обсуждения + промпты к иллюстрациям. Не просто текст — структурированный JSON, который мы можем валидировать.»
 
-> «Третий шаг — судья. Второй LLM-вызов оценивает историю по пяти критериям от 0 до 10. Порог — 7.0. Если история не прошла — цикл повторяется, максимум два раза.»
+> «Третий шаг — судья. Второй LLM-вызов оценивает историю по шести критериям от 0 до 10. Порог — 7.0. Если история не прошла — цикл повторяется, максимум два раза.»
 
 When the book finishes (or open the staged book `cmpzhjeac0000m2lpzi7sj5q3`), show the book detail:
 
@@ -83,8 +83,8 @@ User → form
   → BullMQ job
     1. VocabularyRag  (pgvector similarity, 812 слов в корпусе)
     2. StoryGenerator (generateObject + ZodSchema → structured JSON)
-    3. StoryEvaluator (LLM-judge, 5 критериев, retry loop)
-    4. ImageGenerator (gpt-image-1, по промпту на страницу)
+    3. StoryEvaluator (LLM-judge, 6 критериев, retry loop)
+    4. ImageGenerator (Gemini 2.5 Flash Image + портрет-референс → один герой; gpt-image-1 fallback)
     5. PDFRenderer    (Puppeteer → S3/MinIO)
   ← SSE progress → frontend
 ```

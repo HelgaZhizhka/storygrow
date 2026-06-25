@@ -227,9 +227,10 @@ model Book {
   title           String
   protagonistMode ProtagonistMode  // 'child' (hero = the child) | 'observer' (invented character)
   artStyle        ArtStyle    // 'watercolor'|'cartoon'|'storybook'|'pixel'|'realistic'
-  storyJson       Json?       // full Story payload (custom flow)
-  imageKeys       String[]    // S3 keys for page illustrations
-  pdfKey          String?     // S3 key for the rendered PDF
+  storyJson           Json?       // full Story payload (custom flow)
+  imageKeys           String[]    // S3 keys for page illustrations
+  characterPortraitKey String?    // S3 key of the Gemini reference portrait
+  pdfKey              String?     // S3 key for the rendered PDF
   pages           BookPage[]  // populated by fast flow
   evals           StoryEval[]
   createdAt       DateTime    @default(now())

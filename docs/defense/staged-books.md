@@ -22,12 +22,12 @@ Use these pre-generated books if the live demo fails (OpenAI outage, network iss
 | **Pages** | 10 (with AI illustrations) |
 | **StoryEval rows** | 2 |
 | **Attempt 1** | score 9.8 / 10, `passed = false` — language purity check caught an English word in the story; deterministic gate blocked it despite the high judge score |
-| **Attempt 2** | score 10.0 / 10, `passed = true` — perfect scores across all five criteria |
+| **Attempt 2** | score 10.0 / 10, `passed = true` — perfect scores across all six criteria (after re-staging) |
 
 **Local URL:** `http://localhost:3000/books/cmpzhjeac0000m2lpzi7sj5q3`
 
 **Demo talking point:**  
-> «Первая версия получила 9.8 от судьи — но не прошла детерминированную проверку языковой чистоты: в тексте оказалось английское слово. Система автоматически перегенерировала историю с явным фидбеком в промпте. Вторая версия — 10/10 по всем пяти критериям.»
+> «Первая версия получила 9.8 от судьи — но не прошла детерминированную проверку языковой чистоты: в тексте оказалось английское слово. Система автоматически перегенерировала историю с явным фидбеком в промпте. Вторая версия — 10/10 по всем шести критериям.»
 
 **Judge scores (attempt 1):**
 ```json
