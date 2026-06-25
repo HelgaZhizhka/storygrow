@@ -1219,3 +1219,21 @@ Found while auditing docs and chasing a red CI:
 **Open defense-prep tail:** `staged-books.md` Book 1 is flagged for re-staging (5-criteria, empty title) — regenerate a fresh fallback book under the current pipeline before the defense.
 
 **Blockers:** None.
+
+---
+
+## 2026-06-25 — Session checkpoint (clean handoff)
+
+**Verified state:** `main` green, **0 open PRs**, working tree clean. Shipped this stretch: Gemini character consistency (#174), PDF-template redesign + Cyrillic fonts (#179), real cover thumbnails + landing hero (#176), Russian label declension/plural (#181), and a full docs re-sync (core + defense docs now reflect 6 judge criteria + Gemini-default image model). A duplicate fork PR (#183) for #181 was closed.
+
+**Servers (local):** backend `:3001`, frontend `:3000`, docker infra up. `IMAGE_PROVIDER` defaults to gemini; needs a billing-enabled `GOOGLE_GENERATIVE_AI_API_KEY`.
+
+**Next (start here):**
+1. **#32 — defense prep** (primary): slides + demo script + eval-dashboard polish. `docs/defense/` is now accurate — build the presentation on it.
+2. **Re-stage the fallback demo book** (`docs/defense/staged-books.md`): the staged book is pre-`engagement` (5 criteria, empty title) — generate a fresh one under the current 6-criteria pipeline, update ID/scores/title.
+3. **#162** — batch-eval harness + LangFuse datasets (strengthens the eval story).
+4. Backlog (lower priority / post-defense): #154 quota TOCTOU, #157 config unify, #156 auth hardening, #159 TTS, #128 photo-gen (GDPR), #30 monitoring, #28 SEO, #143 dev-warning.
+
+**Strategy reminder:** no deploy for the defense — defend from localhost + a recorded backup video (memory: `defense-no-deploy`).
+
+**Blockers:** None.
