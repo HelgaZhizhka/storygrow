@@ -53,8 +53,9 @@ See [PROJECT_PLAN.md](PROJECT_PLAN.md) for full concept, scope, roadmap, and bud
 | Database | PostgreSQL + `pgvector` |
 | Queue | BullMQ + Redis |
 | Storage | S3 / MinIO |
-| AI SDK | Vercel AI SDK (`ai`, `@ai-sdk/openai`, `zod`) — **not LangChain** |
-| LLM | OpenAI `gpt-4o` (story text), `gpt-4o-mini` (judge + fast flow), `text-embedding-3-small`, `gpt-image-1` |
+| AI SDK | Vercel AI SDK (`ai`, `@ai-sdk/openai`, `@ai-sdk/google`, `zod`) — **not LangChain** |
+| LLM | OpenAI `gpt-4o` (story text), `gpt-4o-mini` (judge + fast flow), `text-embedding-3-small` |
+| Image gen | Google `gemini-2.5-flash-image` (default, reference-portrait consistency) · OpenAI `gpt-image-1` (fallback via `IMAGE_PROVIDER`) |
 | Observability | LangFuse (self-hosted) |
 | PDF | Puppeteer |
 | Payments | Stripe |

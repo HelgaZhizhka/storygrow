@@ -1190,3 +1190,32 @@ Found while auditing docs and chasing a red CI:
 **Next:** PDF page templates from the Claude Design handoff (`pdf-templates/*.html`) — the renderer still uses the old templates; this is a separate feature (own brainstorm → spec → plan).
 
 **Blockers:** None.
+
+---
+
+## 2026-06-25 — Claude Design PDF templates + Cyrillic book fonts (PR #180, closes #179)
+
+**Done (brainstorm → spec → plan → inline execution):**
+- Adopted the six redesigned "magic publishing" page templates (`backend/src/pdf/page-templates/*.html`) — cream paper, indigo ink, sparkles, full-bleed cover with a gradient curtain, final page with a moral accent phrase + numbered gradient question circles. Drop-in: same five `{{placeholders}}`, A5, classes → `pdf-render.service.ts` substitution + `page-templates.config.ts` unchanged.
+- **Fonts:** the design's Bricolage/Outfit have no Cyrillic → **Comfortaa** (headings) + **Literata** (body). Self-hosted: `gen-pdf-fonts.ts` inlines the Cyrillic woff2 as base64 into a committed `page-templates/fonts.css`; `buildDocument()` injects it **once** → no network font fetch at render. `nest-cli.json` now copies `*.css` to `dist` (missing `fonts.css` fails fast).
+
+**Live PDF e2e:** rendered a real book and inspected the PDF — cover, content pages, and final page all match the design; Russian renders in Comfortaa/Literata (no fallback); protagonist consistent (Gemini, #174). `./init.sh` green.
+
+**Lesson:** after pulling a branch that adds an asset, the running backend must be restarted so the build copies it into `dist` (the fail-fast surfaced this).
+
+---
+
+## 2026-06-25 — Russian labels: name declension + age plural (PR #182, closes #181)
+
+**Done:** the book-title fallback read "Книга для Маша" (wrong case). Added `frontend/src/lib/ru.ts` with `genitiveName()` (heuristic Russian first-name genitive — "Маша→Маши", "Тёма→Тёмы", "Иван→Ивана"; indeclinable/foreign names pass through) and moved `pluralYears()` there from the detail page. Used both in the `/books` card + detail title; the list age now pluralizes ("1 год / 2 года / 5 лет"). Unit-tested (`ru.test.ts`).
+
+---
+
+## 2026-06-25 — Docs sync (PR #173 + image-model follow-up)
+
+- **#173 (closes #168 follow-up):** a 10-day-old PR finally merged — `CLAUDE.md`/`PROJECT_PLAN.md` story model `gpt-4o-mini → gpt-4o`, 5→6 judge criteria, `DALL-E → gpt-image-1`, ADR-0002 supersede note, `staged-books.md` re-stage warning, removed `meetup-harness-walkthrough.md`.
+- **Image-model follow-up:** after #174 the default image model is **Gemini 2.5 Flash Image** (gpt-image-1 = fallback) — updated `CLAUDE.md`, `PROJECT_PLAN.md`, `CONTEXT.md`, `ARCHITECTURE.md` accordingly (character consistency moved from "out of scope" to done-via-reference-portrait).
+
+**Open defense-prep tail:** `staged-books.md` Book 1 is flagged for re-staging (5-criteria, empty title) — regenerate a fresh fallback book under the current pipeline before the defense.
+
+**Blockers:** None.

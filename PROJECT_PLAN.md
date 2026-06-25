@@ -38,7 +38,7 @@ The project is built within the **"Course on building and launching a SaaS servi
 | Storage | S3 / MinIO (local via docker-compose) |
 | AI SDK | **Vercel AI SDK** (`ai`, `@ai-sdk/openai`, `zod`) — no LangChain |
 | LLM | OpenAI `gpt-4o` (story text), `gpt-4o-mini` (judge + fast flow), `text-embedding-3-small` (embeddings) |
-| Image gen | OpenAI `gpt-image-1` (no Flux/IP-Adapter in MVP) |
+| Image gen | Google `gemini-2.5-flash-image` (default — reference-portrait character consistency) · OpenAI `gpt-image-1` (fallback) |
 | Observability | **LangFuse** (self-hosted in docker-compose) |
 | PDF | Puppeteer |
 | Payments | Stripe (test mode → production by defense time) |
@@ -69,7 +69,9 @@ User → form (child, age, goal)
        → if the mean score < 7 → goto step 2 (max 2 retries)
                 ↓
   4. ImageGenerator.generate(illustrationPrompts)
-       → gpt-image-1 per page
+       → reference portrait from characterProfile, then
+         Gemini 2.5 Flash Image per page WITH that portrait
+         → same protagonist on every page (gpt-image-1 fallback)
                 ↓
   5. PDFRenderer.render(story, images)
        → Puppeteer → PDF in S3
@@ -147,7 +149,7 @@ Template (for the fast generation flow)
 
 ## Out of scope (explicitly NOT in the MVP)
 
-- Character consistency via Flux/SDXL with IP-Adapter — we stay on gpt-image-1
+- Flux/SDXL + IP-Adapter for character consistency — not needed: consistency is achieved via the Gemini reference-portrait approach (#174), no extra model
 - Referral programme
 - Adaptive feedback loop from the parent
 - Quiz as interactive tests (only a list of questions in the PDF)
