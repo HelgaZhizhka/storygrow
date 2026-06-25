@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>StoryGrow · PDF-шаблоны</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Outfit:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ink: oklch(0.96 0.01 260);
+        --muted: oklch(0.74 0.03 265);
+        --indigo: oklch(0.7 0.15 270);
+        --gold: oklch(0.82 0.13 75);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+      }
+      body {
+        font-family: 'Outfit', system-ui, sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(1200px 700px at 15% -5%, oklch(0.32 0.08 285 / 0.8), transparent 60%),
+          radial-gradient(1100px 700px at 95% 10%, oklch(0.34 0.07 200 / 0.55), transparent 55%),
+          oklch(0.17 0.03 270);
+        min-height: 100vh;
+        padding: 56px 40px 120px;
+      }
+      .head {
+        max-width: 1160px;
+        margin: 0 auto 8px;
+      }
+      .wordmark {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        font-size: 19px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        color: var(--ink);
+      }
+      .wordmark .spark {
+        width: 20px;
+        height: 20px;
+        background: var(--gold);
+        clip-path: polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%);
+      }
+      h1 {
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 48px;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        margin: 22px 0 12px;
+        line-height: 1.05;
+        max-width: 18ch;
+      }
+      h1 .grad {
+        background: linear-gradient(100deg, oklch(0.78 0.13 285), oklch(0.82 0.12 200));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .sub {
+        margin: 0;
+        max-width: 60ch;
+        font-size: 17px;
+        line-height: 1.6;
+        color: var(--muted);
+      }
+
+      .grid {
+        max-width: 1160px;
+        margin: 56px auto 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+        gap: 56px 48px;
+      }
+      .card {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      .frame {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 874 / 1240;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow:
+          0 30px 60px -24px rgba(0, 0, 0, 0.7),
+          0 0 0 1px oklch(0.5 0.05 270 / 0.4);
+        background: oklch(0.985 0.012 250);
+      }
+      /* the A5 page is rendered at native size then scaled to fit the frame width */
+      .scaler {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 874px;
+        height: 1240px;
+        transform-origin: top left;
+      }
+      .meta {
+        padding: 0 4px;
+      }
+      .meta .name {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 7px;
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        line-height: 1.15;
+      }
+      .meta .name .label {
+        flex: 1;
+      }
+      .meta .file {
+        display: block;
+        font-family: 'Outfit', monospace;
+        font-size: 12.5px;
+        color: var(--indigo);
+        font-weight: 500;
+      }
+      .meta .desc {
+        margin: 6px 0 0;
+        font-size: 14px;
+        line-height: 1.5;
+        color: var(--muted);
+      }
+      .ages {
+        margin-left: auto;
+        font-size: 11.5px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        color: oklch(0.85 0.02 265);
+        background: oklch(0.42 0.06 270 / 0.5);
+        border: 1px solid oklch(0.6 0.06 270 / 0.4);
+        padding: 3px 9px;
+        border-radius: 999px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="head">
+      <div class="wordmark"><span class="spark"></span>StoryGrow</div>
+      <h1>PDF-шаблоны <span class="grad">страниц книги</span></h1>
+      <p class="sub">
+        Шесть макетов в едином «магическом издательском» стиле: прохладно-кремовая бумага,
+        индиго-чернила, заголовки Bricolage Grotesque, искры-орнаменты. Размер A5 (874×1240 px). Это
+        drop-in замены файлов в
+        <span style="font-family: monospace; color: var(--indigo)"
+          >backend/src/pdf/page-templates/</span
+        >.
+      </p>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <script>
+      // ---- placeholder illustration as a striped SVG data URI ----
+      function placeholder(label, w, h) {
+        const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}' viewBox='0 0 ${w} ${h}'>
+        <defs>
+          <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+            <stop offset='0' stop-color='oklch(0.86 0.06 285)'/>
+            <stop offset='1' stop-color='oklch(0.84 0.06 200)'/>
+          </linearGradient>
+          <pattern id='s' width='22' height='22' patternUnits='userSpaceOnUse' patternTransform='rotate(45)'>
+            <rect width='22' height='22' fill='url(#g)'/>
+            <rect width='11' height='22' fill='oklch(0.9 0.04 270 / 0.55)'/>
+          </pattern>
+        </defs>
+        <rect width='${w}' height='${h}' fill='url(#s)'/>
+        <text x='50%' y='50%' fill='oklch(0.38 0.05 275)' font-family='monospace' font-size='${Math.round(Math.min(w, h) / 16)}' font-weight='600' text-anchor='middle' dominant-baseline='middle'>${label}</text>
+      </svg>`;
+        return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+      }
+
+      const SAMPLE = {
+        title: 'Лучик и потерянная звезда',
+        texts: [
+          'Однажды вечером маленький лисёнок Лучик заметил, что на небе погасла самая яркая звезда.',
+          'Он надел тёплый шарф, взял фонарик и отправился в волшебный лес искать пропажу.',
+          'По дороге Лучик встретил мудрую сову, которая подсказала ему дорогу к Лунной поляне.',
+          'На поляне он увидел, что звёздочка просто запуталась в ветвях старого дуба и не могла взлететь.',
+        ],
+        moral:
+          'Даже самый маленький может сделать что-то по-настоящему большое, если не боится помочь другому.',
+        questions: [
+          'Как ты думаешь, почему Лучик решил помочь звезде?',
+          'Что бы ты взял с собой в волшебный лес?',
+          'Кому ты помог на этой неделе?',
+        ],
+      };
+
+      const TEMPLATES = [
+        {
+          file: 'cover.html',
+          name: 'Обложка',
+          desc: 'Полностраничная иллюстрация, градиентный занавес, название и искры.',
+          ages: 'cover',
+          slot: ['portrait'],
+        },
+        {
+          file: 'image-top.html',
+          name: 'Картинка сверху',
+          desc: 'Крупная иллюстрация сверху, центрированный текст на бумаге.',
+          ages: '5–6 лет',
+          slot: ['landscape'],
+        },
+        {
+          file: 'image-bottom.html',
+          name: 'Картинка снизу',
+          desc: 'Текст сверху, иллюстрация в основании страницы.',
+          ages: '5–6 лет',
+          slot: ['landscape'],
+        },
+        {
+          file: 'image-left.html',
+          name: 'Картинка слева',
+          desc: 'Квадратная иллюстрация и текст в колонке справа.',
+          ages: '6–8 лет',
+          slot: ['square'],
+        },
+        {
+          file: 'text-focus.html',
+          name: 'Акцент на тексте',
+          desc: 'Больше текста сверху, иллюстрация со скруглением снизу.',
+          ages: '7–8 лет',
+          slot: ['square'],
+        },
+        {
+          file: 'final.html',
+          name: 'Финал',
+          desc: 'Мораль истории и вопросы для обсуждения.',
+          ages: 'final',
+          slot: ['portrait'],
+        },
+      ];
+
+      const SIZES = { portrait: [874, 1240], landscape: [874, 520], square: [620, 620] };
+
+      function fill(html, i) {
+        const t = TEMPLATES[i];
+        const ph = placeholder(t.slot[0], ...(SIZES[t.slot[0]] || [800, 800]));
+        let text =
+          SAMPLE.texts[(i - 1 + SAMPLE.texts.length) % SAMPLE.texts.length] || SAMPLE.texts[0];
+        if (t.file === 'final.html') text = SAMPLE.moral;
+        const qs = SAMPLE.questions.map((q) => `<li>${q}</li>`).join('');
+        return html
+          .replaceAll('{{illustrationUrl}}', ph)
+          .replaceAll('{{illustrationPrompt}}', 'иллюстрация')
+          .replaceAll('{{title}}', SAMPLE.title)
+          .replaceAll('{{text}}', text)
+          .replaceAll('{{discussionQuestionsHtml}}', qs);
+      }
+
+      const grid = document.getElementById('grid');
+
+      function rescale() {
+        document.querySelectorAll('.frame').forEach((f, i) => {
+          const sc = document.getElementById('sc-' + i);
+          if (sc) sc.style.transform = 'scale(' + f.clientWidth / 874 + ')';
+        });
+      }
+
+      async function build() {
+        for (let i = 0; i < TEMPLATES.length; i++) {
+          const t = TEMPLATES[i];
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+          <div class="frame"><div class="scaler" id="sc-${i}"></div></div>
+          <div class="meta">
+            <div class="name"><span class="label">${t.name}</span> <span class="ages">${t.ages}</span></div>
+            <span class="file">${t.file}</span>
+            <p class="desc">${t.desc}</p>
+          </div>`;
+          grid.appendChild(card);
+          try {
+            const res = await fetch(t.file);
+            const raw = await res.text();
+            document.getElementById('sc-' + i).innerHTML = fill(raw, i);
+          } catch (e) {
+            document.getElementById('sc-' + i).textContent = 'load error: ' + t.file;
+          }
+        }
+        // scale each A5 page to its frame width — retry across frames to beat font/layout settle
+        rescale();
+        requestAnimationFrame(rescale);
+        setTimeout(rescale, 120);
+        setTimeout(rescale, 400);
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(rescale);
+      }
+      build();
+      window.addEventListener('resize', rescale);
+    </script>
+  </body>
+</html>
