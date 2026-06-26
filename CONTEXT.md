@@ -29,17 +29,26 @@ A pedagogical objective the parent picks for the book (e.g., *«научитьс
 **Avoid:** "topic", "theme" (these are descriptive, not pedagogical).
 
 ### Vocabulary Entry
-A single word indexed for age-appropriate retrieval. Stored in `VocabularyEntry` with fields: `word`, `gradeLevel` (Dale-Chall scale or AoA age), `frequency`, `embedding: vector(1536)`. Used by `VocabularyRagService` to retrieve allowed lexicon for a target age band.
+> **Deprecated (ADR-0005).** Vocabulary-RAG is removed from the pipeline; age-fit lives in the `ageAppropriateVocab` judge guardrail. The `pgvector` infra is retained but repurposed for possible future *craft-exemplar* retrieval, not vocabulary gating. Kept here for historical reference only.
+
+A single word indexed for age-appropriate retrieval. Stored in `VocabularyEntry` with fields: `word`, `gradeLevel` (Dale-Chall scale or AoA age), `frequency`, `embedding: vector(1536)`. Was used by `VocabularyRagService` to retrieve allowed lexicon for a target age band.
 
 **Avoid:** "lexicon entry" (too academic), "word record".
 
 ### Grade Level
-Numeric age-difficulty band used in RAG retrieval. Mapped from child's age via a fixed table (age 3-4 → grade 0, age 5-6 → grade 1, ..., age 9-10 → grade 4). Sourced from Dale-Chall scale on the English corpora.
+> **Deprecated (ADR-0005).** Only meaningful for the removed vocabulary-RAG retrieval. Age still maps to age-appropriate register via the judge guardrail and the rebuilt exemplars, not a numeric grade band.
+
+Numeric age-difficulty band formerly used in RAG retrieval. Mapped from child's age via a fixed table (age 3-4 → grade 0, age 5-6 → grade 1, ..., age 9-10 → grade 4). Sourced from Dale-Chall scale on the English corpora.
 
 **Avoid:** "age level", "difficulty" alone.
 
 ### Judge Score
-A numeric rating (0-10) produced by `StoryEvaluator` for a single criterion. Seven criteria: `ageAppropriateVocab`, `hasMoralLesson`, `structureCompleteness`, `safetyForChildren` (widened to penalise modelling a child approaching real-world danger — see [Safe Conflict]), `length`, `engagement` (story is vivid and SHOWS rather than tells), `earnedResolution` (the moral is earned by the plot, not announced; for flaw-arc stories the consequence beat "Расплата" must be present and the repair must be explicit, not instant forgiveness). The mean across criteria is the **final score**; if below threshold (default 7.0), the story is regenerated (max 2 retries).
+A numeric rating (0-10) produced by `StoryEvaluator` for a single criterion. Criteria split into two groups (see [docs/adr/0005-decomposed-generation-pipeline.md](docs/adr/0005-decomposed-generation-pipeline.md)):
+
+- **Guardrails** (pass/fail gates): `ageAppropriateVocab`, `hasMoralLesson`, `structureCompleteness`, `safetyForChildren` (widened to penalise modelling a child approaching real-world danger — see [Safe Conflict]), `length`, `earnedResolution` (the moral is earned by the plot, not announced; for flaw-arc stories the "Расплата" beat must be present and the repair explicit, not instant forgiveness).
+- **Craft** (the optimised signal): [Register Match] — the two-sided prose criterion that triggers regeneration.
+
+A story is accepted only if the guardrails clear **and** the craft score meets threshold (default 7.0). The craft signal is **not** averaged away into a mean-of-N — that dilution is exactly what ADR-0005 removes. (The pre-ADR-0005 model was a single `engagement` criterion averaged across seven; `engagement` is superseded by [Register Match].)
 
 **Avoid:** "rating", "evaluation result".
 
@@ -54,7 +63,7 @@ Synchronous generation path (~5 seconds): pick a pre-authored `Template`, fill p
 **Avoid:** "template flow" (acceptable informally, but "fast flow" is the term in code paths and docs).
 
 ### Custom Flow
-Asynchronous generation path (3-10 min): full AI pipeline via BullMQ job — `VocabularyRag` → `StoryGenerator` → `StoryEvaluator` (with regeneration loop) → `ImageGenerator` (Gemini 2.5 Flash Image per page with a reference portrait for character consistency; gpt-image-1 fallback) → `PDFRenderer` (Puppeteer). Progress streamed to frontend via SSE.
+Asynchronous generation path (3-10 min): full AI pipeline via BullMQ job — `StoryPlanner` → `ProseWriter` → `ReadAloudEditor` (optional) → `StoryEvaluator` (with regeneration loop) → `ImageGenerator` (Gemini 2.5 Flash Image per page with a reference portrait for character consistency; gpt-image-1 fallback) → `PDFRenderer` (Puppeteer). Progress streamed to frontend via SSE. (Pre-ADR-0005 this began with a `VocabularyRag` stage and a single `StoryGenerator`; both are superseded.)
 
 **Avoid:** "AI flow" (every flow technically uses AI somewhere — be specific), "slow flow" (negative framing).
 
@@ -79,9 +88,31 @@ The narrative arc assigned to a `LearningGoal`, stored as `LearningGoal.arcType`
 **Avoid:** "story type", "goal type" — the term is "arc type" with values `virtue` / `flaw`.
 
 ### Gold Exemplar
-A human-approved reference story used as a few-shot example to steer generation quality — its structure, richness, tone, and (critically) its **safe conflict type**. A draft may be machine-generated, but it becomes an exemplar only after the pedagogy expert approves it. An auto-generated, unreviewed story is never an exemplar. The approved exemplar set is also the source of truth from which the judge rubric is calibrated (we measure deviation from the gold set, not from hand-written rules). Each exemplar is arc-specific: virtue-arc goals use virtue exemplars; flaw-arc goals use flaw exemplars with a visible "Расплата" beat.
+A human-approved reference story used as a few-shot example to steer generation quality — its structure, richness, tone, and (critically) its **safe conflict type**. A draft may be machine-generated, but it becomes an exemplar only after the pedagogy expert approves it. An auto-generated, unreviewed story is never an exemplar. The approved exemplar set is also the source of truth from which the judge rubric is calibrated (we measure deviation from the gold set, not from hand-written rules — and per ADR-0005 the judge literally **sees** the exemplars when scoring [Register Match]). Each exemplar is arc-specific: virtue-arc goals use virtue exemplars; flaw-arc goals use flaw exemplars with a visible "Расплата" beat.
+
+The **target register** is spare + dialogue-forward + picture-trusting (short sentences, minimal simile, visual description left to the illustration) — the published-picture-book register, not a "writerly" adult-cute one. The pre-ADR-0005 exemplars were over-written (a simile per beat) and are being rebuilt to this sparer register. Exemplars are the operational definition of "good" and are used in **two** places: the `Prose Pass` few-shot target and the judge's [Register Match] calibration.
 
 **Avoid:** "sample", "template" — an exemplar shows the craft to imitate, it is not a fill-in-the-blank skeleton.
+
+### Story Plan
+The first-class intermediate artefact produced by the **Plan** phase of generation (own Zod schema `StoryPlanSchema`, own `generateObject` call, own LangFuse trace). The story "bible": fixed hero name, `characterProfile`, voice/trait, and the page-by-page beat list (including the chosen safe conflict and, for flaw arcs, the `Расплата` beat). It is the **consistency anchor** — both the `Prose Pass` and the image generator read it. See [docs/adr/0005-decomposed-generation-pipeline.md](docs/adr/0005-decomposed-generation-pipeline.md).
+
+**Avoid:** "outline", "draft" — the plan is the structural source of truth, not a rough sketch; the `Story` is rendered *from* it.
+
+### Prose Pass
+The single whole-story generation call that renders the `Story Plan`'s beats into page text in the target register (spare, dialogue-forward, picture-trusting), given one rebuilt `Gold Exemplar`. It carries no narrative prohibitions — their causes are resolved in the `Story Plan`. Decomposition is **by concern, not by page**: the Prose Pass sees the whole story in one context, so cross-page consistency is preserved.
+
+**Avoid:** "page generation", "per-page call" — generating pages independently is explicitly rejected (it causes name/tone/plot drift).
+
+### Read-Aloud Edit
+The optional whole-story revision phase that trims ornateness and length to register after the `Prose Pass`. Operates on the whole story, never per-page. This is where a strong-but-ornate model's overshoot is reined in.
+
+**Avoid:** "polish", "cleanup" — it is a register-tightening pass, not cosmetic.
+
+### Register Match
+The judge's **two-sided** craft criterion: how close the prose sits to the `Gold Exemplar` register. High = same register as gold; low if **flatter** (event-summary, no dialogue) **or** **more ornate** (dense metaphor, rare words, precious imagery). Measured against exemplars shown to the judge, not against hand-written rules. The craft signal that triggers regeneration — see [Judge Score].
+
+**Avoid:** "engagement" (the old single-sided criterion it replaces), "style score".
 
 ### Safe Conflict
 The narrative tension a story is allowed to use for ages 5–6. The boundary is about the **modeled action** in the resolution, not the scary element itself: a story may feature fear, but the resolution must never model a child approaching a real-world danger. **Allowed** — emotional/social/internal conflicts: fear of the dark, trying something new, speaking up, a friend upset, making a mistake, missing a parent. **Forbidden** — a real physical danger that the hero approaches or befriends: wild animal, stranger, fire, water, heights, getting lost. Test by the action: "a dog as a known friend" is fine; "approach an unknown dog" is not.
@@ -116,7 +147,7 @@ Synonym for [Story Structure] in conversation. In code, the Zod schema is named 
 ## Pipeline-level terms
 
 ### AI Pipeline
-End-to-end sequence in Custom Flow: retrieve → generate → evaluate → (regenerate?) → illustrate → render. Each stage is a class in `backend/src/ai/` and is independently testable.
+End-to-end sequence in Custom Flow: **plan → prose → (edit?) → evaluate → (regenerate?) → illustrate → render**. The former `retrieve` (vocabulary-RAG) stage is removed (ADR-0005); the former single `generate` stage is decomposed into `Story Plan` → `Prose Pass` → `Read-Aloud Edit`. Each stage is a class in `backend/src/ai/` and is independently testable (and independently runnable via `eval:text`).
 
 ### Regeneration Loop
 The retry behavior in `StoryEvaluator`: if `finalScore < threshold`, the story is re-generated up to 2 times (3 total attempts). Each attempt is logged as a separate `StoryEval` row with `attempt: 1|2|3`. The frontend shows progress including which attempt is running.
@@ -135,7 +166,7 @@ Quick-reference for pairs that are tempting to use interchangeably. When in doub
 | `Book` vs `Story` | Artefact (DB row, PDF, what the user buys) vs structured content (JSON, the AI output) | `Book` for the artefact; `Story` for the content |
 | `Book` vs `BookPage` | Whole book vs a single page inside it | `BookPage` for one page; don't say "book entry" or "book item" for a page |
 | `Story` vs `Story Structure` vs `StorySchema` | Content instance vs the pedagogical structure (setup/conflict/lesson/resolution) vs the Zod schema enforcing it | "Story" for content; "Story Structure" / "Pedagogical Schema" in prose; `StorySchema` only in code |
-| `StoryEval` vs `Judge Score` vs `Final Score` | DB row holding all scores for one attempt vs one criterion's 0-10 number vs the mean across criteria | `StoryEval` for the row; "judge score" for a criterion; "final score" for the mean |
+| `StoryEval` vs `Judge Score` vs `Final Score` | DB row holding all scores for one attempt vs one criterion's 0-10 number vs the accept/regenerate decision | `StoryEval` for the row; "judge score" for a criterion; "final score" for the craft-gated decision (post-ADR-0005: guardrails must clear AND craft ≥ threshold, not a mean) |
 | `Judge Score` vs `Eval Threshold` | The produced score (output) vs the cutoff for acceptance (config) | Don't say "judge threshold" |
 | `Fast Flow` vs `Custom Flow` | Synchronous template-fill (no AI) vs async full AI pipeline | Never "AI flow" or "slow flow" |
 | `Template` vs `StorySchema` | Pre-authored fast-flow story shell with placeholders vs Zod runtime/type schema for custom flow | `Template` is a DB row; `StorySchema` is code |
