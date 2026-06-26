@@ -236,11 +236,12 @@ describe('StoryOrchestratorService', () => {
     expect(secondCall.feedback).toContain('cover');
   });
 
-  it('retrieves allowed words using correct gradeLevel for childAge', async () => {
+  it('does not constrain generation vocabulary (Phase 1: lexicon freed)', async () => {
     await orchestrator.generate({ ...opts, childAge: 6 });
-    // age 6 → gradeLevel 1
-    expect(mockVocabRag.retrieve).toHaveBeenCalledWith(
-      expect.objectContaining({ gradeLevel: 1, topic: opts.topic }),
-    );
+    // The semantic word-list retrieval is no longer used at generation time.
+    expect(mockVocabRag.retrieve).not.toHaveBeenCalled();
+    // corpusWords (for the informational compliance metric) still come from the
+    // correct grade: age 6 → gradeLevel 1.
+    expect(mockVocabRag.listByGrade).toHaveBeenCalledWith(1);
   });
 });

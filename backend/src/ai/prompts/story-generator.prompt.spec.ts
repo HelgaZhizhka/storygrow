@@ -5,7 +5,6 @@ const base: BuildStoryPromptOptions = {
   childAge: 5,
   topic: 'Честность',
   learningGoal: 'Понимает, почему важно говорить правду.',
-  allowedWords: ['правда', 'друг', 'сказал'],
   protagonistMode: 'child',
   arcType: 'flaw',
 };

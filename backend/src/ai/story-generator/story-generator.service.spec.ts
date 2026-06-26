@@ -57,7 +57,6 @@ const input: GenerateStoryInput = {
   childAge: 6,
   topic: 'дружба',
   learningGoal: 'научиться дружить',
-  allowedWords: ['маша', 'кот', 'дружба'],
   protagonistMode: 'child',
   arcType: 'virtue',
 };

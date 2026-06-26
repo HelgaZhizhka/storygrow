@@ -30,7 +30,6 @@ export interface GenerateStoryResult {
 
 interface LoopContext {
   opts: GenerateStoryOptions;
-  allowedWords: readonly string[];
   corpusWords: readonly string[];
   maxAttempts: number;
 }
@@ -52,17 +51,14 @@ export class StoryOrchestratorService {
       });
 
       const gradeLevel = ageToGradeLevel(opts.childAge);
-      const allowedWords = await this.vocabularyRag.retrieve({
-        topic: opts.topic,
-        learningGoal: opts.learningGoal,
-        gradeLevel,
-      });
+      // Phase 1: the lexicon is no longer constrained at generation time (the
+      // allowed-words injection flattened prose). corpusWords still feeds the
+      // informational vocabularyCompliance metric; it does not limit generation.
       const corpusWords = await this.vocabularyRag.listByGrade(gradeLevel);
       const rawRetries = parseInt(process.env['EVAL_MAX_RETRIES'] ?? '', 10);
       const maxRetries = Number.isNaN(rawRetries) ? EVAL_MAX_RETRIES_DEFAULT : rawRetries;
       const result = await this.runLoop({
         opts,
-        allowedWords,
         corpusWords,
         maxAttempts: maxRetries + 1,
       });
@@ -83,7 +79,6 @@ export class StoryOrchestratorService {
     for (let attempt = 1; attempt <= ctx.maxAttempts; attempt++) {
       const story = await this.generator.generateStory({
         ...ctx.opts,
-        allowedWords: ctx.allowedWords,
         feedback,
       });
       const checks = await this.evaluator.evaluate({
@@ -96,11 +91,7 @@ export class StoryOrchestratorService {
       const eval_ = await this.writeEval(ctx.opts.bookId, checks, attempt);
       if (checks.passed) return { story, evalId: eval_.id, attempts: attempt };
       if (attempt < ctx.maxAttempts) {
-        feedback = buildRegenerationFeedback(
-          checks.outOfCorpus,
-          checks.judgeResult,
-          checks.structuralErrors,
-        );
+        feedback = buildRegenerationFeedback(checks.judgeResult, checks.structuralErrors);
       }
     }
     throw new StoryGenerationFailedError(ctx.opts.bookId, ctx.maxAttempts);

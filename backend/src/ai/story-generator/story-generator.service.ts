@@ -14,12 +14,13 @@ export interface GenerateStoryInput {
   topic: string;
   learningGoal: string;
   bookId: string;
-  allowedWords: readonly string[];
   protagonistMode: 'child' | 'observer';
   arcType: 'virtue' | 'flaw';
   gender?: string;
   appearance?: string;
   feedback?: string;
+  /** Override the story model (e.g. for text-only A/B via eval:text). Defaults to STORY_MODEL. */
+  model?: string;
 }
 
 @Injectable()
@@ -32,7 +33,7 @@ export class StoryGeneratorService {
 
   async generateStory(input: GenerateStoryInput): Promise<Story> {
     const { object } = await generateObject({
-      model: this.openai(STORY_MODEL),
+      model: this.openai(input.model ?? STORY_MODEL),
       schema: StorySchema,
       system: STORY_SYSTEM_PROMPT,
       prompt: buildStoryUserPrompt(input),

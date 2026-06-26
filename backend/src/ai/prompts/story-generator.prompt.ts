@@ -21,10 +21,10 @@ in valid JSON that exactly matches the provided schema.
 
 Hard rules:
 1. Write ENTIRELY in Russian. Every word must be Russian.
-2. PREFER the provided allowed-words list plus common function words. You MAY
-   also use other simple, age-appropriate Russian words that a child understands
-   when the story is read ALOUD by a parent. Favour concrete, emotionally clear
-   words (e.g. feelings) over rare or abstract ones.
+2. Use simple, age-appropriate Russian words that a child understands when the
+   story is read ALOUD by a parent. Favour concrete, sensory, emotionally clear
+   words over rare or abstract ones — but do NOT flatten the prose: vivid, lively
+   language built from simple words is the goal.
 3. The protagonist is defined in the user prompt — either the named child or an
    invented character. Follow the user prompt's protagonist instruction exactly.
 4. The narrative arc MUST follow the beat sheet given in the user prompt (it
@@ -127,8 +127,6 @@ export interface BuildStoryPromptOptions {
   childAge: number;
   topic: string;
   learningGoal: string;
-  /** Words from VocabularyRagService — the allowed vocabulary for this age/topic. */
-  allowedWords: readonly string[];
   /** 'child' = hero is the named child; 'observer' = invented third-person character. */
   protagonistMode: 'child' | 'observer';
   /** Child's gender, when known ('male' | 'female' | 'other'). */
@@ -150,11 +148,10 @@ export interface BuildStoryPromptOptions {
  * Includes:
  * - Child profile (name, age, topic, learning goal)
  * - Template catalogue filtered to age-appropriate layouts
- * - Allowed vocabulary word list
  * - Regeneration feedback (if retrying)
  */
 export const buildStoryUserPrompt = (opts: BuildStoryPromptOptions): string => {
-  const { childName, childAge, topic, learningGoal, allowedWords, feedback, arcType } = opts;
+  const { childName, childAge, topic, learningGoal, feedback, arcType } = opts;
   const gender = opts.gender ?? 'unspecified';
   const catalogue = buildTemplateCatalogue(childAge);
   const feedbackBlock = feedback
@@ -183,10 +180,6 @@ ${protagonistBlock}
 ${catalogue}
 
 ${buildBookStructureRules(arcType)}
-
-Preferred vocabulary (Russian words — prefer these; you may also add other simple
-words a 5–6-year-old understands by ear when read aloud):
-${allowedWords.join(', ')}
 
 Storytelling (this is read ALOUD by a parent — make it come alive, not a summary):
   • Each content page: 3–4 full sentences (~180–220 characters). SHOW the moment.
@@ -233,7 +226,6 @@ ${feedbackBlock}`.trim();
  * Used as the `feedback` parameter in the next call to buildStoryUserPrompt.
  */
 export const buildRegenerationFeedback = (
-  outOfCorpus: readonly string[],
   judge?: JudgeResult,
   structuralErrors?: readonly string[],
 ): string => {
@@ -241,15 +233,6 @@ export const buildRegenerationFeedback = (
 
   if (structuralErrors && structuralErrors.length > 0) {
     parts.push(`Structural errors (fix first): ${structuralErrors.join('; ')}.`);
-  }
-
-  if (outOfCorpus.length > 0) {
-    const sample = outOfCorpus.slice(0, 10).join(', ');
-    const more = outOfCorpus.length > 10 ? ` and ${outOfCorpus.length - 10} more` : '';
-    parts.push(
-      `Vocabulary violation: the following words are NOT in the allowed list: ${sample}${more}.` +
-        ` Use synonyms from the allowed vocabulary.`,
-    );
   }
 
   if (judge) {
