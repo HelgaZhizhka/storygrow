@@ -306,7 +306,7 @@ model Subscription {
   - % of books accepted on first attempt
   - Mean score per criterion (last 7 days)
   - Token spend per day
-- These metrics are the "eval story" shown on defense day.
+- These metrics track output quality over time and surface drift before users feel it.
 
 ---
 

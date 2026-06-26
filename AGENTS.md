@@ -29,7 +29,7 @@ Before writing any code, always do this:
 - **Don't mark an issue closed just because code was added.** Close only when Definition of Done (see [CLAUDE.md](CLAUDE.md)) is met.
 - **Don't silently change verification rules** during implementation.
 - **Prefer durable repository artifacts over chat summaries.** When a decision is made, write it: `progress.md` for session-level, `docs/adr/` for architectural, `docs/superpowers/specs/` for feature-level.
-- **AI-pipeline code requires extra scrutiny.** It's the substance of the defense — don't auto-generate it uncritically. Pair with TDD (`superpowers:test-driven-development`) and verify traces in LangFuse before closing the issue.
+- **AI-pipeline code requires extra scrutiny.** It's the heart of the product — don't auto-generate it uncritically. Pair with TDD (`superpowers:test-driven-development`) and verify traces in LangFuse before closing the issue.
 - **Frontend issues require a visual contract.** Before implementing any UI issue (#18/#19/#20/#27/#28/#78), check for a `docs/design/<issue>-*.png` mockup (created by user via Claude Design). Read it via the multimodal `Read` tool to ground your implementation in the real visual target. Pair this with a structural ASCII wireframe in the issue body for state/interaction logic. If neither exists, ask the user before scaffolding default-Tailwind UI.
 
 ---

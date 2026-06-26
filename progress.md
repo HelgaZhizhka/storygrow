@@ -1234,7 +1234,7 @@ Found while auditing docs and chasing a red CI:
 3. **#162** — batch-eval harness + LangFuse datasets (strengthens the eval story).
 4. Backlog (lower priority / post-defense): #154 quota TOCTOU, #157 config unify, #156 auth hardening, #159 TTS, #128 photo-gen (GDPR), #30 monitoring, #28 SEO, #143 dev-warning.
 
-**Strategy reminder:** no deploy for the defense — defend from localhost + a recorded backup video (memory: `defense-no-deploy`).
+**Strategy reminder:** ~~no deploy for the defense~~ **SUPERSEDED 2026-06-26** — deploy IS now wanted and defense is de-prioritized; see the 2026-06-26 priority-reset entry at the end of this file.
 
 **Blockers:** None.
 
@@ -1257,5 +1257,33 @@ Found while auditing docs and chasing a red CI:
 
 **Next:**
 - **T7** — Run `./init.sh` (must exit 0), then trigger a live regeneration for a flaw-goal book and confirm the consequence beat appears in the output + `StoryEval` holds 7 criteria. Update staged-books.md with a re-staged fallback book once verified.
+
+**Blockers:** None.
+
+---
+
+## 2026-06-26 — Priority reset + text-quality push (#188/#187 merged, #191 docs, RAG plan)
+
+**Done:**
+- **#188 (two-arc model) and #187 (appearance limit) merged to `main`** (`33e3731`, `d4bd213`). Live flaw regen verified the consequence beat + `earnedResolution` row.
+- **Text-quality fixes** (in #188): removed beat-meta leakage ("но без последствий"), enforced hero-name consistency, demanded concrete external consequences, forbade characters (incl. mentors) from pronouncing the moral. Verified on 3 flaw goals via `eval:text`.
+- **`eval:text` harness** now derives `arcType` from the goal — text-only A/B without burning image tokens.
+- **#191 (this entry)** — docs recalibrated away from "course defense as the priority/substance" toward product quality + deployment (CLAUDE.md, AGENTS.md, PROJECT_PLAN.md, CONTEXT.md, ARCHITECTURE.md). `docs/defense/*` materials and ADRs left intact (history + tools for the eventual defense).
+
+**Priority reset (supersedes earlier "defense prep (primary)" / "no deploy" notes above):**
+- The course defense is **no longer the priority** — it remains a later milestone, not the organizing principle.
+- **Priority 1: product quality** — genuinely good, non-banal story text. Blandness is the core problem.
+- **Priority 2: deployment** — the app WILL be deployed (Dokploy/Hetzner); the earlier "no deploy" plan is reversed.
+
+**RAG plan (agreed):** the vocabulary RAG constrains lexicon downward and contributes to banality.
+- **Phase 1 (next):** stop injecting the allowed-words list into generation (free the lexicon); keep the `ageAppropriateVocab` judge as the age guardrail; drop the out-of-corpus regeneration feedback. A/B a stronger creative model via `eval:text` (Anthropic model needs the `@ai-sdk/anthropic` dep — discuss before adding).
+- **Phase 2 (optional):** repurpose pgvector toward craft/exemplar retrieval (dynamic high-quality few-shot) so RAG serves voice.
+- **#190 (vocab corpus fix)** to be reoriented or closed — fixing a vocab *limiter* loses meaning if we free the lexicon.
+
+**Next:**
+1. Open `issue/191` PR (docs recalibration).
+2. RAG Phase 1 — separate issue/branch: remove vocab injection from generation + clean regen feedback; re-test text via `eval:text`.
+3. Discuss model A/B (dep decision) and run the comparison.
+4. Plan deployment as its own workstream (brainstorm → spec).
 
 **Blockers:** None.

@@ -41,7 +41,7 @@ The project is built within the **"Course on building and launching a SaaS servi
 | Image gen | Google `gemini-2.5-flash-image` (default — reference-portrait character consistency) · OpenAI `gpt-image-1` (fallback) |
 | Observability | **LangFuse** (self-hosted in docker-compose) |
 | PDF | Puppeteer |
-| Payments | Stripe (test mode → production by defense time) |
+| Payments | Stripe (test mode → production) |
 | Notifications | SSE (Server-Sent Events) for slow-generation progress |
 | Deploy | Dokploy on a VPS (Hetzner, ~€5/month, dev environment from week 2–3, production in week 5) |
 | Monitoring | Sentry + Loki/Grafana (minimal setup) |
@@ -140,7 +140,7 @@ Template (for the fast generation flow)
 - [ ] Admin: books list, judge scores, metrics (% of books passing on first attempt, average per-criterion scores)
 - [ ] SEO pages (Schema.org, OG tags) on a separate subdomain
 
-### Week 5 — Production + defense
+### Week 5 — Production deploy + defense prep
 - [ ] Production deploy to the VPS with domain + HTTPS
 - [ ] Sentry, basic monitoring (Loki/Grafana)
 - [ ] UI polish, bug fixes
@@ -159,7 +159,7 @@ Template (for the fast generation flow)
 ## Product language
 
 - **Product (UI, stories):** Russian
-- **RAG corpora:** English (Dale-Chall, AoA-Kuperman) used as a **difficulty-level proxy** — mapped into the system prompt as a level description, and GPT-4o adapts to Russian based on that description. No open Russian "word → age" corpora exist, so this is an honest architectural compromise that will be explained on defense.
+- **RAG corpora:** English (Dale-Chall, AoA-Kuperman) used as a **difficulty-level proxy** — mapped into the system prompt as a level description, and GPT-4o adapts to Russian based on that description. No open Russian "word → age" corpora exist, so this is an honest architectural compromise.
 
 ## Budget
 
@@ -181,7 +181,7 @@ Template (for the fast generation flow)
 - **Write from scratch** (no copy from storycraft) with AI agents
 - **Harness:** `CLAUDE.md` + `AGENTS.md` with project and style rules
 - **Superpowers skills:** brainstorming before each major feature, TDD for the AI pipeline, verification-before-completion before commits, systematic-debugging when something breaks
-- **Slow down and manual-verify** for the AI pipeline (RAG, structured gen, judge) — this is the substance of the defense; it cannot be auto-generated and forgotten
+- **Slow down and manual-verify** for the AI pipeline (RAG, structured gen, judge) — this is the heart of the product; it cannot be auto-generated and forgotten
 
 ## Defense talking points (draft)
 
