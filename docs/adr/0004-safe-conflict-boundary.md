@@ -45,6 +45,16 @@ This boundary is enforced in **two places**:
 Curated [Gold Exemplars](../../CONTEXT.md) remain the primary steer (they
 demonstrate safe conflict by example); this boundary is the enforcement backstop.
 
+## Clarification — Stakes vs Danger
+
+Real stakes and real consequences are **required** for an engaging story — the
+flaw-arc model (see `CONTEXT.md`) even mandates a "Расплата" (consequence) beat
+where the flaw visibly backfires. What ADR-0004 forbids is **physical danger**,
+not stakes. A consequence here is always EMOTIONAL or SOCIAL: losing a friend's
+trust, a treasured thing broken, being left out of the game. That kind of
+consequence is painful and age-appropriate — it is the engine of the lesson, not
+a safety violation. "No physical danger" ≠ "no consequences".
+
 ## Consequences
 
 - Engagement/tension may not come from physical peril — it must come from

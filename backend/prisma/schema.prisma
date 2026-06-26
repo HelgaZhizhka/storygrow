@@ -152,13 +152,19 @@ enum SubscriptionStatus {
 
 // ─── Catalogue ─────────────────────────────────────────────────────────────
 
+enum LearningGoalArcType {
+  virtue
+  flaw
+}
+
 model LearningGoal {
-  id            String     @id @default(cuid())
+  id            String              @id @default(cuid())
   title         String
   description   String
-  ageRangeMin   Int        @default(1)
-  ageRangeMax   Int        @default(18)
-  createdAt     DateTime   @default(now())
+  arcType       LearningGoalArcType @default(virtue)
+  ageRangeMin   Int                 @default(1)
+  ageRangeMax   Int                 @default(18)
+  createdAt     DateTime            @default(now())
   books         Book[]
   templates     Template[]
 }

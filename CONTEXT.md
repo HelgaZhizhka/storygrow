@@ -39,7 +39,7 @@ Numeric age-difficulty band used in RAG retrieval. Mapped from child's age via a
 **Avoid:** "age level", "difficulty" alone.
 
 ### Judge Score
-A numeric rating (0-10) produced by `StoryEvaluator` for a single criterion. Six criteria: `ageAppropriateVocab`, `hasMoralLesson`, `structureCompleteness`, `safetyForChildren` (widened to penalise modelling a child approaching real-world danger — see [Safe Conflict]), `length`, `engagement` (story is vivid and SHOWS rather than tells). The mean across criteria is the **final score**; if below threshold (default 7.0), the story is regenerated (max 2 retries).
+A numeric rating (0-10) produced by `StoryEvaluator` for a single criterion. Seven criteria: `ageAppropriateVocab`, `hasMoralLesson`, `structureCompleteness`, `safetyForChildren` (widened to penalise modelling a child approaching real-world danger — see [Safe Conflict]), `length`, `engagement` (story is vivid and SHOWS rather than tells), `earnedResolution` (the moral is earned by the plot, not announced; for flaw-arc stories the consequence beat "Расплата" must be present and the repair must be explicit, not instant forgiveness). The mean across criteria is the **final score**; if below threshold (default 7.0), the story is regenerated (max 2 retries).
 
 **Avoid:** "rating", "evaluation result".
 
@@ -68,8 +68,18 @@ Free-text visual description of the child stored on `Child.appearance` (reusable
 
 **Avoid:** "avatar", "portrait" — there is no image of the child; this is a text description only.
 
+### Arc Type
+The narrative arc assigned to a `LearningGoal`, stored as `LearningGoal.arcType` (`virtue` | `flaw`).
+
+- **`virtue`** — the protagonist *acquires* a good trait through effort and challenge (courage, generosity, honesty). Beat sheet: setup → temptation/challenge → attempt → partial failure → resolution-with-lesson.
+- **`flaw`** — the protagonist *has* a flaw that backfires. Beat sheet: setup → flaw-in-action → consequence ("Расплата": a friend's trust is lost, a treasured thing breaks, being left out) → reflection → earned repair. The repair must be shown, not declared; instant forgiveness scores zero on `earnedResolution`.
+
+`arcType` is assigned by the admin when creating or editing a `LearningGoal`, with a backfill default of `virtue` for existing goals. The orchestrator passes it to the prompt builder, which selects the matching beat sheet and a matching Gold Exemplar.
+
+**Avoid:** "story type", "goal type" — the term is "arc type" with values `virtue` / `flaw`.
+
 ### Gold Exemplar
-A human-approved reference story used as a few-shot example to steer generation quality — its structure, richness, tone, and (critically) its **safe conflict type**. A draft may be machine-generated, but it becomes an exemplar only after the pedagogy expert approves it. An auto-generated, unreviewed story is never an exemplar. The approved exemplar set is also the source of truth from which the judge rubric is calibrated (we measure deviation from the gold set, not from hand-written rules).
+A human-approved reference story used as a few-shot example to steer generation quality — its structure, richness, tone, and (critically) its **safe conflict type**. A draft may be machine-generated, but it becomes an exemplar only after the pedagogy expert approves it. An auto-generated, unreviewed story is never an exemplar. The approved exemplar set is also the source of truth from which the judge rubric is calibrated (we measure deviation from the gold set, not from hand-written rules). Each exemplar is arc-specific: virtue-arc goals use virtue exemplars; flaw-arc goals use flaw exemplars with a visible "Расплата" beat.
 
 **Avoid:** "sample", "template" — an exemplar shows the craft to imitate, it is not a fill-in-the-blank skeleton.
 

@@ -16,6 +16,7 @@ const GOALS = [
   {
     title: 'Честность',
     description: 'Понимает, почему важно говорить правду даже когда это сложно.',
+    arcType: 'flaw' as const,
     ageRangeMin: 4,
     ageRangeMax: 10,
   },
@@ -41,6 +42,7 @@ const GOALS = [
   {
     title: 'Делиться с другими',
     description: 'Учится делиться игрушками, едой и временем с другими детьми.',
+    arcType: 'flaw' as const,
     ageRangeMin: 2,
     ageRangeMax: 6,
   },
@@ -53,6 +55,7 @@ const GOALS = [
   {
     title: 'Ответственность',
     description: 'Учится выполнять обещания и брать на себя ответственность за свои поступки.',
+    arcType: 'flaw' as const,
     ageRangeMin: 5,
     ageRangeMax: 12,
   },
@@ -66,6 +69,7 @@ const GOALS = [
     title: 'Терпение',
     description:
       'Учится ждать и сохранять спокойствие, когда что-то происходит медленнее, чем хочется.',
+    arcType: 'flaw' as const,
     ageRangeMin: 3,
     ageRangeMax: 8,
   },
@@ -78,6 +82,7 @@ const GOALS = [
   {
     title: 'Управление гневом',
     description: 'Учится выражать злость и разочарование в конструктивной форме.',
+    arcType: 'flaw' as const,
     ageRangeMin: 4,
     ageRangeMax: 9,
   },
@@ -120,6 +125,7 @@ const GOALS = [
   {
     title: 'Бережное отношение к вещам',
     description: 'Учится ценить и беречь свои и чужие вещи.',
+    arcType: 'flaw' as const,
     ageRangeMin: 3,
     ageRangeMax: 7,
   },

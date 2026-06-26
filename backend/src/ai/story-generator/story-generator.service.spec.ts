@@ -59,6 +59,7 @@ const input: GenerateStoryInput = {
   learningGoal: 'научиться дружить',
   allowedWords: ['маша', 'кот', 'дружба'],
   protagonistMode: 'child',
+  arcType: 'virtue',
 };
 
 describe('StoryGeneratorService', () => {
@@ -97,5 +98,12 @@ describe('StoryGeneratorService', () => {
     await service.generateStory({ ...input, feedback: 'fix vocabulary' });
     const call = mockGenerateObject.mock.calls[0][0] as { prompt: string };
     expect(call.prompt).toContain('fix vocabulary');
+  });
+
+  it('passes arcType through to the user prompt', async () => {
+    mockGenerateObject.mockResolvedValueOnce({ object: validStory } as never);
+    await service.generateStory({ ...input, arcType: 'flaw' });
+    const call = mockGenerateObject.mock.calls[0][0] as { prompt: string };
+    expect(call.prompt).toContain('Расплата');
   });
 });

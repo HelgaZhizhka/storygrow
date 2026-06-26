@@ -1230,10 +1230,32 @@ Found while auditing docs and chasing a red CI:
 
 **Next (start here):**
 1. **#32 — defense prep** (primary): slides + demo script + eval-dashboard polish. `docs/defense/` is now accurate — build the presentation on it.
-2. **Re-stage the fallback demo book** (`docs/defense/staged-books.md`): the staged book is pre-`engagement` (5 criteria, empty title) — generate a fresh one under the current 6-criteria pipeline, update ID/scores/title.
+2. **Re-stage the fallback demo book** (`docs/defense/staged-books.md`): the staged book is pre-`engagement` (5 criteria, empty title) — generate a fresh one under the current 7-criteria pipeline (incl. `earnedResolution`), update ID/scores/title.
 3. **#162** — batch-eval harness + LangFuse datasets (strengthens the eval story).
 4. Backlog (lower priority / post-defense): #154 quota TOCTOU, #157 config unify, #156 auth hardening, #159 TTS, #128 photo-gen (GDPR), #30 monitoring, #28 SEO, #143 dev-warning.
 
 **Strategy reminder:** no deploy for the defense — defend from localhost + a recorded backup video (memory: `defense-no-deploy`).
+
+**Blockers:** None.
+
+---
+
+## 2026-06-25 — Two-arc story model + earnedResolution criterion (issue #188, branch `issue/188-two-arc-story-model`)
+
+**Done:**
+- **T1** — `LearningGoal.arcType` enum (`virtue` | `flaw`) added to Prisma schema + migration; seed backfills all existing goals to `virtue`.
+- **T2** — Flaw-arc Gold Exemplars added to `backend/src/ai/prompts/`; `pickExemplar()` is arc-aware (matches exemplar to goal title + arc type).
+- **T3** — Story-generator prompt builder selects arc-specific beat sheet: virtue arc uses the existing four-stage setup; flaw arc injects a "Расплата" (consequence) beat and an earned-resolution rule (no instant forgiveness).
+- **T4** — `arcType` threaded from `LearningGoal` through `StoryOrchestratorService` → `StoryGeneratorService` → `buildStoryUserPrompt`; `GenerateBookInput` carries it.
+- **T5** — `earnedResolution` added as the 7th judge criterion in `JudgeSchema` + `JUDGE_SYSTEM_PROMPT`; admin metrics dashboard now shows it alongside the other six.
+- **T6 (this session)** — Docs sync: ADR-0004 clarification (stakes vs danger), CONTEXT.md (Arc Type glossary entry + 7th criterion in Judge Score), ARCHITECTURE.md (arc routing in pipeline + StoryEval schema), qa-prep.md Q2 (6→7 criteria, Russian), staged-books.md (re-stage warning updated to 7 criteria), progress.md (this entry).
+
+**Decisions:**
+- Safe Conflict (ADR-0004) is NOT relaxed — emotional/social consequences are the engine of the flaw arc, not physical danger.
+- `arcType` defaults to `virtue` on backfill so existing goals and exemplars are unaffected.
+- `earnedResolution`: the judge is NOT told the arc — it applies one uniform "the resolution must be earned" bar to every story. The criterion text makes the flaw-cost ("Расплата") requirement conditional on the story being a flaw story, so a virtue story that earns its resolution scores full marks without a visible Расплата.
+
+**Next:**
+- **T7** — Run `./init.sh` (must exit 0), then trigger a live regeneration for a flaw-goal book and confirm the consequence beat appears in the output + `StoryEval` holds 7 criteria. Update staged-books.md with a re-staged fallback book once verified.
 
 **Blockers:** None.

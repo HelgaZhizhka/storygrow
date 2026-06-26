@@ -76,6 +76,7 @@ const passingEval: EvalCheckResult = {
       safetyForChildren: 10,
       length: 8,
       engagement: 9,
+      earnedResolution: 9,
     },
     reasoning: 'Well-structured story.',
     finalScore: 8.6,
@@ -96,6 +97,7 @@ const failingEval: EvalCheckResult = {
       safetyForChildren: 6,
       length: 5,
       engagement: 4,
+      earnedResolution: 4,
     },
     reasoning: 'Needs improvement.',
     finalScore: 4.8,
@@ -113,6 +115,7 @@ const opts: GenerateStoryOptions = {
   topic: 'дружба',
   learningGoal: 'научиться дружить',
   protagonistMode: 'child',
+  arcType: 'virtue',
 };
 
 interface StoryEvalCreateArgs {
