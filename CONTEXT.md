@@ -104,7 +104,7 @@ A single open-ended question for the parent to ask the child after reading. Five
 **Avoid:** "quiz question" (we explicitly do NOT do interactive quizzes), "comprehension check".
 
 ### LangFuse Trace
-A single observability record for one LLM call (text generation, embedding, or judge). Includes prompt, response, latency, token usage, cost, and any custom scores attached. Created via `experimental_telemetry` config in Vercel AI SDK calls. Aggregated into dashboards used for the eval story on the project defense.
+A single observability record for one LLM call (text generation, embedding, or judge). Includes prompt, response, latency, token usage, cost, and any custom scores attached. Created via `experimental_telemetry` config in Vercel AI SDK calls. Aggregated into dashboards used to track output quality over time.
 
 **Avoid:** "log entry", "AI log".
 
