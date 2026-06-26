@@ -1287,3 +1287,28 @@ Found while auditing docs and chasing a red CI:
 4. Plan deployment as its own workstream (brainstorm → spec).
 
 **Blockers:** None.
+
+---
+
+## 2026-06-27 — Text-quality design grill → ADR-0005 (decomposed pipeline)
+
+**Done:**
+- **Grilling session** (`/grill-with-docs`) on the core problem — story-TEXT quality (banal vs ornate). Reframed it from a single register dial to three root causes: (1) one overloaded `generate` call, (2) mis-calibrated "writerly" exemplars + a per-page density spec that manufactures over-writing, (3) a judge blind to register that dilutes craft 1:7.
+- **Studied a real published book** (Usborne First Reading, *The Boy Who Cried Wolf*, in `~/Downloads/book_example.pdf`) + picture-book craft sources. Target register = **spare + dialogue-forward + picture-trusting**: short plain sentences, dialogue carries the story, almost no simile, description is the illustrator's job. Our exemplars (e.g. "как два сонных червяка") are over-written by comparison.
+- **`ADR-0005` written + committed** (`99331cc`): decompose `generate` into **Plan → Prose → Edit** (by concern, not by page); `StoryPlan` as first-class consistency anchor; retarget register; rebuild exemplars (used by both prose and judge); **split judge into Guardrail gates + two-sided `registerMatch`** so the craft signal can't be averaged away; **drop vocabulary-RAG** (pgvector repurposed for future craft-exemplar retrieval).
+- **CONTEXT.md updated** (same commit): new terms `Story Plan`, `Prose Pass`, `Read-Aloud Edit`, `Register Match`; updated `AI Pipeline`, `Custom Flow`, `Judge Score`, `Gold Exemplar`; deprecated `Vocabulary Entry` / `Grade Level`.
+- **Validation-gate experiment** (per ADR) via `eval:text` on Честность + Смелость: retargeting the prose spec + 2 exemplars to the spare register shifted output decisively (avg **145→74** and **137→61** chars, dialogue-forward, no scenery padding, no mid-story moralising). The current judge stayed at engagement **7** / finalScore ~8.7 across the whole shift → **empirical proof the judge is register-blind**. Experiment edits reverted (clean tree); ADR/CONTEXT remain committed.
+
+**Decisions:**
+- Reference repo `yakovlef/storycraft` is **behind us**, not a model to copy (raw per-page calls, no judge/structure). Its only transferable idea — decomposition — is adopted.
+- **Exemplars are NOT dropped** — they are the operational definition of "good" and the judge's `registerMatch` yardstick. They are *rebuilt*, not removed.
+- Correction to sequencing: the `registerMatch` judge depends on trustworthy exemplars, so **"the meter" = rebuild exemplars (spare *and* lively) FIRST, then build the judge.** Sparse ≠ automatically lively (the quick spare rewrites tipped into terse-flat); liveliness must come from characterful, funny dialogue.
+- Issues: **#190 to close** (fixing a removed vocab limiter is moot); **#193 reframe** "free the lexicon" → "remove vocab-RAG from pipeline".
+
+**Next (the meter, then decomposition):**
+1. Rebuild exemplars → spare **and** lively (Usborne as north star), update `exemplars.spec.ts`.
+2. Build `registerMatch` judge: split schema (Guardrails gates + Craft), judge prompt shows exemplars, two-sided (penalise flatter AND ornate); stop averaging craft into the mean.
+3. Generation decomposition: `StoryPlan` schema + Plan/Prose/Edit phases; choose Prose-phase model via `eval:text` under the new meter.
+4. (Branch hygiene) Decide #193 PR scope now that it carries the ADR.
+
+**Blockers:** None.
