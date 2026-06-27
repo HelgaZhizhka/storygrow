@@ -3,10 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import { generateObject } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import type { OpenAIProvider } from '@ai-sdk/openai';
-import { StorySchema, type Story } from '../schemas';
-import { STORY_SYSTEM_PROMPT, buildStoryUserPrompt } from '../prompts/story-generator.prompt';
+import { StorySchema, StoryPlanSchema, type Story, type StoryPlan } from '../schemas';
+import { PLAN_SYSTEM_PROMPT, buildPlanPrompt } from '../prompts/plan.prompt';
+import { PROSE_SYSTEM_PROMPT, buildProsePrompt } from '../prompts/prose.prompt';
 import { createTelemetry } from '../telemetry';
-import { STORY_MODEL } from '../ai.config';
+import { PLAN_MODEL, PROSE_MODEL } from '../ai.config';
 
 export interface GenerateStoryInput {
   childName: string;
@@ -14,14 +15,23 @@ export interface GenerateStoryInput {
   topic: string;
   learningGoal: string;
   bookId: string;
-  allowedWords: readonly string[];
   protagonistMode: 'child' | 'observer';
   arcType: 'virtue' | 'flaw';
   gender?: string;
   appearance?: string;
   feedback?: string;
+  /** Override the model (e.g. for text-only A/B via eval:text). Defaults to STORY_MODEL. */
+  model?: string;
 }
 
+/**
+ * StoryGeneratorService — decomposed generation (ADR-0005): Plan → Prose.
+ *
+ * The Plan phase resolves structure, arc, safe conflict and hero identity into a
+ * StoryPlan; the Prose phase renders that plan into the target read-aloud
+ * register. Splitting the work by concern removes the single-call overload that
+ * flattened the prose. Both calls are traced separately in LangFuse.
+ */
 @Injectable()
 export class StoryGeneratorService {
   private readonly openai: OpenAIProvider;
@@ -31,12 +41,32 @@ export class StoryGeneratorService {
   }
 
   async generateStory(input: GenerateStoryInput): Promise<Story> {
+    const plan = await this.generatePlan(input);
+    return this.generateProse(plan, input);
+  }
+
+  private async generatePlan(input: GenerateStoryInput): Promise<StoryPlan> {
     const { object } = await generateObject({
-      model: this.openai(STORY_MODEL),
+      model: this.openai(input.model ?? PLAN_MODEL),
+      schema: StoryPlanSchema,
+      system: PLAN_SYSTEM_PROMPT,
+      prompt: buildPlanPrompt(input),
+      experimental_telemetry: createTelemetry('story-planner', {
+        childAge: input.childAge,
+        topic: input.topic,
+        bookId: input.bookId,
+      }),
+    });
+    return object;
+  }
+
+  private async generateProse(plan: StoryPlan, input: GenerateStoryInput): Promise<Story> {
+    const { object } = await generateObject({
+      model: this.openai(input.model ?? PROSE_MODEL),
       schema: StorySchema,
-      system: STORY_SYSTEM_PROMPT,
-      prompt: buildStoryUserPrompt(input),
-      experimental_telemetry: createTelemetry('story-generator', {
+      system: PROSE_SYSTEM_PROMPT,
+      prompt: buildProsePrompt(plan, input),
+      experimental_telemetry: createTelemetry('story-prose', {
         childAge: input.childAge,
         topic: input.topic,
         bookId: input.bookId,

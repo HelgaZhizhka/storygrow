@@ -95,49 +95,47 @@ storygrow/
                               │
                               ▼
          ┌───────────────────────────────────────────┐
-         │ 1. VocabularyRagService.retrieve(age)     │
-         │      → SELECT word, gradeLevel            │
-         │        FROM vocabulary_entry              │
-         │        WHERE gradeLevel = $age_band       │
-         │        ORDER BY embedding <-> $q LIMIT 150│
-         │      → returns word list                  │
+         │ 1. StoryGenerator.generateStory(input)    │
+         │    Decomposed (ADR-0005), two phases:      │
+         │                                            │
+         │  1a. Plan  [PLAN_MODEL = gpt-4o]           │
+         │      → generateObject(StoryPlanSchema)     │
+         │      → StoryPlan "bible": hero + fixed     │
+         │        name, page layout, per-page         │
+         │        beat + intent, safe conflict        │
+         │        (arc from LearningGoal.arcType),    │
+         │        lesson, discussion questions        │
+         │      trace: story-planner                  │
+         │                                            │
+         │  1b. Prose  [PROSE_MODEL = gpt-5]          │
+         │      → generateObject(StorySchema)         │
+         │      → renders the plan in the Сутеев      │
+         │        read-aloud register (one Gold       │
+         │        Exemplar shown); structure already  │
+         │        fixed, so the call only does VOICE  │
+         │      trace: story-prose                    │
+         │  (No vocabulary-RAG step — removed in      │
+         │   ADR-0005; age-fit lives in the judge.)   │
          └───────────────────────────────────────────┘
                               │
                               ▼
          ┌───────────────────────────────────────────┐
-         │ 2. StoryGenerator.generate(input, words)  │
-         │      → buildPrompt(prompts/STORY_SYSTEM)  │
-         │        (orchestrator passes LearningGoal.arcType → prompt builder  │
-         │         selects arc-specific beat sheet + matching Gold Exemplar)  │
-         │      → ai.generateObject({                 │
-         │          model: openai('gpt-4o'),          │
-         │          // story TEXT uses gpt-4o for     │
-         │          // voice; judge stays gpt-4o-mini │
-         │          schema: StorySchema,             │
-         │          prompt,                           │
-         │          experimental_telemetry: {...}    │
-         │        })                                  │
-         │      → typed Story                         │
-         └───────────────────────────────────────────┘
-                              │
-                              ▼
-         ┌───────────────────────────────────────────┐
-         │ 3. StoryEvaluator.evaluate(story, input)  │
-         │      → ai.generateObject({                 │
-         │          schema: JudgeSchema,              │
-         │          prompt: judgePrompt(story)        │
-         │        })                                  │
-         │      → judgeScores                         │
+         │ 2. StoryEvaluator.evaluate(story, input)  │
+         │      → generateObject(JudgeSchema)         │
+         │      → scores split: Guardrails (gates) +  │
+         │        Craft = registerMatch (two-sided)   │
          │      → persist StoryEval(attempt, scores)  │
-         │      → final = mean(scores)                │
-         │      → if final < EVAL_THRESHOLD &&        │
-         │           attempt < EVAL_MAX_RETRIES       │
-         │           → goto step 2 (attempt+=1)       │
+         │      → finalScore = registerMatch          │
+         │      → accept iff guardrails ≥ floor AND   │
+         │        registerMatch ≥ EVAL_THRESHOLD      │
+         │      → else, while attempt < MAX_RETRIES,  │
+         │        regenerate (back to step 1 with     │
+         │        register feedback)                  │
          └───────────────────────────────────────────┘
                               │
                               ▼
          ┌───────────────────────────────────────────┐
-         │ 4. ImageGenerator.generate(prompts)       │
+         │ 3. ImageGenerator.generate(prompts)       │
          │      → portrait from characterProfile,     │
          │        then Gemini 2.5 Flash Image per page │
          │        WITH the portrait as a reference     │
@@ -148,7 +146,7 @@ storygrow/
                               │
                               ▼
          ┌───────────────────────────────────────────┐
-         │ 5. PDFRenderer.render(story, images)      │
+         │ 4. PDFRenderer.render(story, images)      │
          │      → Puppeteer: HTML template → PDF      │
          │      → upload to S3                        │
          │      → update Book.status='ready'          │
@@ -251,9 +249,9 @@ model StoryEval {
   id                   String   @id @default(cuid())
   bookId               String
   attempt              Int
-  judgeScores          Json     // 7 criteria: { ageAppropriateVocab, hasMoralLesson, structureCompleteness, safetyForChildren, length, engagement, earnedResolution }
+  judgeScores          Json     // Guardrails { ageAppropriateVocab, hasMoralLesson, structureCompleteness, safetyForChildren, length, earnedResolution } + Craft { registerMatch } (ADR-0005)
   judgeReasoning       String?
-  finalScore           Float
+  finalScore           Float    // = registerMatch (craft signal); guardrails are gates, not averaged in
   vocabularyCompliance Float?
   passed               Boolean
   generatedAt          DateTime @default(now())

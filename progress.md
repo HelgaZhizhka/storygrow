@@ -1287,3 +1287,84 @@ Found while auditing docs and chasing a red CI:
 4. Plan deployment as its own workstream (brainstorm → spec).
 
 **Blockers:** None.
+
+---
+
+## 2026-06-27 — Text-quality design grill → ADR-0005 (decomposed pipeline)
+
+**Done:**
+- **Grilling session** (`/grill-with-docs`) on the core problem — story-TEXT quality (banal vs ornate). Reframed it from a single register dial to three root causes: (1) one overloaded `generate` call, (2) mis-calibrated "writerly" exemplars + a per-page density spec that manufactures over-writing, (3) a judge blind to register that dilutes craft 1:7.
+- **Studied a real published book** (Usborne First Reading, *The Boy Who Cried Wolf*, in `~/Downloads/book_example.pdf`) + picture-book craft sources. Target register = **spare + dialogue-forward + picture-trusting**: short plain sentences, dialogue carries the story, almost no simile, description is the illustrator's job. Our exemplars (e.g. "как два сонных червяка") are over-written by comparison.
+- **`ADR-0005` written + committed** (`99331cc`): decompose `generate` into **Plan → Prose → Edit** (by concern, not by page); `StoryPlan` as first-class consistency anchor; retarget register; rebuild exemplars (used by both prose and judge); **split judge into Guardrail gates + two-sided `registerMatch`** so the craft signal can't be averaged away; **drop vocabulary-RAG** (pgvector repurposed for future craft-exemplar retrieval).
+- **CONTEXT.md updated** (same commit): new terms `Story Plan`, `Prose Pass`, `Read-Aloud Edit`, `Register Match`; updated `AI Pipeline`, `Custom Flow`, `Judge Score`, `Gold Exemplar`; deprecated `Vocabulary Entry` / `Grade Level`.
+- **Validation-gate experiment** (per ADR) via `eval:text` on Честность + Смелость: retargeting the prose spec + 2 exemplars to the spare register shifted output decisively (avg **145→74** and **137→61** chars, dialogue-forward, no scenery padding, no mid-story moralising). The current judge stayed at engagement **7** / finalScore ~8.7 across the whole shift → **empirical proof the judge is register-blind**. Experiment edits reverted (clean tree); ADR/CONTEXT remain committed.
+
+**Decisions:**
+- Reference repo `yakovlef/storycraft` is **behind us**, not a model to copy (raw per-page calls, no judge/structure). Its only transferable idea — decomposition — is adopted.
+- **Exemplars are NOT dropped** — they are the operational definition of "good" and the judge's `registerMatch` yardstick. They are *rebuilt*, not removed.
+- Correction to sequencing: the `registerMatch` judge depends on trustworthy exemplars, so **"the meter" = rebuild exemplars (spare *and* lively) FIRST, then build the judge.** Sparse ≠ automatically lively (the quick spare rewrites tipped into terse-flat); liveliness must come from characterful, funny dialogue.
+- Issues: **#190 to close** (fixing a removed vocab limiter is moot); **#193 reframe** "free the lexicon" → "remove vocab-RAG from pipeline".
+
+**Next (the meter, then decomposition):**
+1. Rebuild exemplars → spare **and** lively (Usborne as north star), update `exemplars.spec.ts`.
+2. Build `registerMatch` judge: split schema (Guardrails gates + Craft), judge prompt shows exemplars, two-sided (penalise flatter AND ornate); stop averaging craft into the mean.
+3. Generation decomposition: `StoryPlan` schema + Plan/Prose/Edit phases; choose Prose-phase model via `eval:text` under the new meter.
+4. (Branch hygiene) Decide #193 PR scope now that it carries the ADR.
+
+**Blockers:** None.
+
+---
+
+## 2026-06-27 (cont.) — register corrected (Сутеев) + exemplars rebuilt + age bands
+
+**What changed since the entry above (important reversal):**
+- The "spare register" direction from the entry above was **WRONG and is reversed.** A spare experiment was rejected by the product owner as "оборвано, скупо, плоско". Root cause: Usborne *First Reading* is an early-**decoding** reader (child reads it), not our genre. Our genre is **parent-read-aloud illustrated storybook**.
+- **New north star: Сутеев / Russian folk-tale read-aloud voice** (portal `deti-online.com/skazki/dlya-detey-4-5-let`). Rich, warm, musical: warm narrator ("Жил-был…"), folk rhythm/inversion, gentle humour, natural dialogue, real feeling, lesson emerging once. Enemy is two-sided — flat summary AND adult preciousness; **richness of voice is the GOAL**.
+
+**Done (committed `46e5cc5`):**
+- All 6 gold exemplars rebuilt to the Сутеев register (5–6 band). Converged via tight loop on ONE (Гриша) until product owner approved ("это подходит"), then propagated. tsc 0, prompt tests 11/11, lint 0.
+- ADR-0005 amended (register correction + age bands); CONTEXT.md `Gold Exemplar` / `Prose Pass` wording corrected.
+
+**Decisions (new):**
+- **Age bands: 3–4 and 5–6; drop 7–8** (independent readers, different product). **5–6 = flagship** (both arcs, Сутеев). **3–4 = simpler, repetition-driven, virtue-only** (flaw "Расплата" too heavy for 3–4). Register/exemplars/template caps become **per band**.
+- "More text" = **more pages** (page stays short + image), not denser pages; the Plan phase spreads the arc across age-capped pages.
+- **Personalization** (user supplies interests / motifs / soft words / child's likes → more personal, less generic) = **separate workstream, deferred**, needs its own discussion → likely its own issue. Seeds feed the Plan phase; words are SOFT (weave-if-natural), never hard constraints (avoid recreating vocab-injection flattening). Directly attacks banality (generic input → generic output).
+
+**Next:**
+1. (When postgres is up) `eval:text` a flaw + virtue goal to see generation under the new exemplars (judge still register-blind — eyeball only).
+2. Build `registerMatch` judge: split schema (Guardrail gates + Craft), judge prompt shows exemplars, two-sided. Then the prose signal stops being averaged away.
+3. Generation decomposition (`StoryPlan` → Plan/Prose/Edit); choose Prose model via `eval:text` under the new meter.
+4. 3–4 band profile (simpler exemplars + smaller template caps) after 5–6 is solid.
+5. Personalization: brainstorm → spec → issue.
+
+**Blockers:** postgres/docker stack was down at end of session (`eval:text` needs it); user runs the stack themselves.
+
+---
+
+## 2026-06-27 (cont. 2) — registerMatch judge built + model A/B done
+
+**Done (committed):**
+- `e872a3c` — **`registerMatch` judge**: split criteria into Guardrails (gates) + Craft; judge shows 2 exemplars and scores register **two-sided**; accept = guardrails ≥ floor (6) AND registerMatch ≥ threshold (7); `computeFinalScore` = registerMatch (no mean). Replaces single-sided `engagement`. Acceptance: text that scored a flat 9.43 (praising "туча заволокла солнце") now scores 7–8 with register-specific reasoning. tsc 0, ai tests 96/96, lint 0.
+- **Model A/B under the new meter** (3 runs × {gpt-4o, gpt-5, gpt-4.1} × {Смелость, Честность}): registerMatch means 7.5 / 7.83 / 8.0 — all within noise. **gpt-4.1 disqualified** (passed 1/6 — overflows page caps). **Decision: stay on gpt-4o** — model is NOT the lever; the ~7–8 ceiling is set by the overloaded single call. Recorded in `docs/process/ai-text-quality-evolution.md` (Глава 2).
+
+**Next:** generation **decomposition** (`StoryPlanSchema` + Plan/Prose/Edit) — the last big lever, now measurable. Then revisit Prose-phase model under the meter; then 3–4 band; then personalization.
+
+**Blockers:** none (docker up).
+
+---
+
+## 2026-06-27 (cont. 3) — decomposition built; the lever is Plan + gpt-5 prose
+
+**Done (committed):**
+- `0a3cfec` — **decomposition Plan → Prose** (ADR-0005): `StoryPlanSchema` (bible: hero/name, page layout, per-page beat+intent, lesson, questions) + `plan.prompt` (structure, gpt-4o) → `prose.prompt` (voice, gpt-5) rendering the plan in the Сутеев register. `StoryGeneratorService.generateStory` runs both, traced separately. Model split `PLAN_MODEL=gpt-4o` / `PROSE_MODEL=gpt-5`.
+- `f3a75a3` — lint fix. **`./init.sh` exit 0** (backend + frontend tsc/lint/test all green).
+- Journal Глава 2 / Эксп. 9 updated (`docs/process/ai-text-quality-evolution.md`).
+
+**Key result (measured under registerMatch):** the lever is the **combination** — decomposition alone on gpt-4o stays flat (6–8); gpt-5 alone on the old single call was noise; **gpt-5 on the isolated Prose phase** finally delivers warm, show-don't-tell prose (rm 7–8, judge: "warm, avoids both flatness and ornamentation"). This *revises* cont.2's "stay on gpt-4o" — that held for the single call; for the decomposed Prose phase gpt-5 wins.
+
+**Next:**
+1. **Push branch + open PR** (per plan: build decomposition first, then one PR). Branch `issue/193-…` now carries RAG-phase1 + ADR-0005 + exemplars + judge + decomposition + process docs → PR `Closes #193`; also close #190.
+2. Edit pass (optional) if registerMatch dips; raise threshold over time.
+3. 3–4 band profile; personalization workstream; delete legacy mega-prompt.
+
+**Blockers:** none.

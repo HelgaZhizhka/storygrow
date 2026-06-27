@@ -75,11 +75,10 @@ const passingEval: EvalCheckResult = {
       structureCompleteness: 8,
       safetyForChildren: 10,
       length: 8,
-      engagement: 9,
       earnedResolution: 9,
+      registerMatch: 9,
     },
     reasoning: 'Well-structured story.',
-    finalScore: 8.6,
   },
   computedFinalScore: 8.6,
   outOfCorpus: [],
@@ -96,11 +95,10 @@ const failingEval: EvalCheckResult = {
       structureCompleteness: 4,
       safetyForChildren: 6,
       length: 5,
-      engagement: 4,
       earnedResolution: 4,
+      registerMatch: 4,
     },
     reasoning: 'Needs improvement.',
-    finalScore: 4.8,
   },
   computedFinalScore: 4.8,
   outOfCorpus: ['чужое'],
@@ -236,11 +234,12 @@ describe('StoryOrchestratorService', () => {
     expect(secondCall.feedback).toContain('cover');
   });
 
-  it('retrieves allowed words using correct gradeLevel for childAge', async () => {
+  it('does not constrain generation vocabulary (Phase 1: lexicon freed)', async () => {
     await orchestrator.generate({ ...opts, childAge: 6 });
-    // age 6 → gradeLevel 1
-    expect(mockVocabRag.retrieve).toHaveBeenCalledWith(
-      expect.objectContaining({ gradeLevel: 1, topic: opts.topic }),
-    );
+    // The semantic word-list retrieval is no longer used at generation time.
+    expect(mockVocabRag.retrieve).not.toHaveBeenCalled();
+    // corpusWords (for the informational compliance metric) still come from the
+    // correct grade: age 6 → gradeLevel 1.
+    expect(mockVocabRag.listByGrade).toHaveBeenCalledWith(1);
   });
 });

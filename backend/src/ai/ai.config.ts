@@ -2,9 +2,15 @@ import type { ImageSize } from '../pdf/page-templates/page-templates.config';
 
 export const GENERATION_MODEL = 'gpt-4o-mini';
 // Story TEXT uses a stronger model: voice, humour and originality are the
-// bottleneck, and the text call (~$0.02/book) is negligible beside images
-// (~$0.30/book). The judge and other calls stay on the cheaper model.
+// bottleneck, and the text call is negligible beside images (~$0.30/book).
+// The judge and other calls stay on the cheaper model.
 export const STORY_MODEL = 'gpt-4o';
+// Decomposed generation (ADR-0005). The Plan phase is structural reasoning, so a
+// cheaper model suffices. The Prose phase carries the VOICE — measured under the
+// registerMatch judge, gpt-5 clearly beats gpt-4o on prose ONLY once the plan
+// frees it from structure (gpt-5 on the old single call was within noise).
+export const PLAN_MODEL = 'gpt-4o';
+export const PROSE_MODEL = 'gpt-5';
 export const EMBEDDING_MODEL = 'text-embedding-3-small';
 export const DEFAULT_TOP_K = 150;
 // Share of meaningful (non-stop) story words whose stem must appear in the
@@ -17,6 +23,10 @@ export const PAGES_MAX = 12;
 export const DISCUSSION_QUESTIONS_COUNT = 5;
 export const EVAL_THRESHOLD_DEFAULT = 7.0;
 export const EVAL_MAX_RETRIES_DEFAULT = 2;
+// Floor each guardrail criterion must clear for a story to be accepted (ADR-0005).
+// Guardrails are pass/fail gates; the craft signal (registerMatch) is gated
+// separately at EVAL_THRESHOLD so prose quality is never averaged away.
+export const GUARDRAIL_FLOOR_DEFAULT = 6;
 
 export const IMAGE_MODEL = 'gpt-image-1';
 export const IMAGE_QUALITY = 'medium';

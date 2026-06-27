@@ -1,33 +1,32 @@
-import { buildStoryUserPrompt, BuildStoryPromptOptions } from './story-generator.prompt';
+import { buildPlanPrompt } from './plan.prompt';
+import type { BuildStoryPromptOptions } from './story-generator.prompt';
 
 const base: BuildStoryPromptOptions = {
   childName: 'Коля',
   childAge: 5,
   topic: 'Честность',
   learningGoal: 'Понимает, почему важно говорить правду.',
-  allowedWords: ['правда', 'друг', 'сказал'],
   protagonistMode: 'child',
   arcType: 'flaw',
 };
 
-describe('buildStoryUserPrompt arc routing', () => {
-  it('flaw arc injects the consequence beat sheet and earned-resolution rule', () => {
-    const out = buildStoryUserPrompt(base);
+describe('buildPlanPrompt arc routing', () => {
+  it('flaw arc encodes the consequence beat sheet (Расплата)', () => {
+    const out = buildPlanPrompt(base);
     expect(out).toContain('Расплата');
-    expect(out).toContain('заслуженн'); // earned resolution wording
-    expect(out).toContain('[Расплата]'); // the flaw exemplar is injected
+    expect(out).toContain('Заслуженный финал');
   });
 
-  it('virtue arc injects the virtue beat sheet', () => {
-    const out = buildStoryUserPrompt({ ...base, topic: 'Смелость', arcType: 'virtue' });
+  it('virtue arc encodes the virtue beat sheet, not the flaw consequence', () => {
+    const out = buildPlanPrompt({ ...base, topic: 'Смелость', arcType: 'virtue' });
     expect(out).toContain('Внутренняя борьба');
-    expect(out).not.toContain('[Расплата]');
+    expect(out).not.toContain('Расплата');
   });
 });
 
-describe('buildStoryUserPrompt protagonist modes', () => {
+describe('buildPlanPrompt protagonist modes', () => {
   it('child mode: names the child as the hero and uses appearance', () => {
-    const p = buildStoryUserPrompt({
+    const p = buildPlanPrompt({
       ...base,
       protagonistMode: 'child',
       gender: 'female',
@@ -39,7 +38,7 @@ describe('buildStoryUserPrompt protagonist modes', () => {
   });
 
   it('observer mode: does NOT use the child name and asks for an invented character', () => {
-    const p = buildStoryUserPrompt({
+    const p = buildPlanPrompt({
       ...base,
       protagonistMode: 'observer',
       gender: 'female',
@@ -48,6 +47,5 @@ describe('buildStoryUserPrompt protagonist modes', () => {
     expect(p).not.toContain('Коля');
     expect(p).not.toContain('brown curly hair');
     expect(p.toLowerCase()).toContain('invent');
-    expect(p.toLowerCase()).toContain('third person');
   });
 });

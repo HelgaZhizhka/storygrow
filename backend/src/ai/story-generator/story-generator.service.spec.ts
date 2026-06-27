@@ -8,9 +8,25 @@ import { ConfigService } from '@nestjs/config';
 import { generateObject } from 'ai';
 import { StoryGeneratorService } from './story-generator.service';
 import type { GenerateStoryInput } from './story-generator.service';
-import type { Story } from '../schemas';
+import type { Story, StoryPlan } from '../schemas';
 
 const mockGenerateObject = generateObject as jest.MockedFunction<typeof generateObject>;
+
+const validPlan: StoryPlan = {
+  title: 'Маша и кот',
+  heroName: 'Маша',
+  characterProfile: '6-year-old girl with brown hair, blue dress',
+  lesson: 'Дружба важна',
+  discussionQuestions: ['Что случилось?', 'Почему?', 'Как?', 'Что узнала?', 'Что важно?'],
+  pages: [
+    { template: 'cover', beat: 'Обложка', intent: 'Маша и кот на лугу' },
+    { template: 'image-top', beat: 'Завязка', intent: 'Маша играет с котом' },
+    { template: 'image-bottom', beat: 'Конфликт', intent: 'Кот убежал' },
+    { template: 'image-left', beat: 'Внутренняя борьба', intent: 'Маша ищет кота' },
+    { template: 'image-left', beat: 'Развязка', intent: 'Маша нашла кота' },
+    { template: 'final', beat: 'Финал', intent: 'Снова вместе' },
+  ],
+};
 
 const validStory: Story = {
   title: 'Маша и кот',
@@ -21,7 +37,7 @@ const validStory: Story = {
       template: 'image-top',
       text: 'Маша играла с котом',
       title: null,
-      illustrationPrompt: 'Girl playing',
+      illustrationPrompt: 'Playing',
     },
     {
       template: 'image-bottom',
@@ -33,20 +49,15 @@ const validStory: Story = {
       template: 'image-left',
       text: 'Маша искала кота',
       title: null,
-      illustrationPrompt: 'Girl searching',
+      illustrationPrompt: 'Searching',
     },
     {
       template: 'image-left',
       text: 'Маша нашла кота',
       title: null,
-      illustrationPrompt: 'Girl found cat',
+      illustrationPrompt: 'Found cat',
     },
-    {
-      template: 'final',
-      text: 'Дружба важна',
-      title: null,
-      illustrationPrompt: 'Girl and cat friends',
-    },
+    { template: 'final', text: 'Дружба важна', title: null, illustrationPrompt: 'Friends' },
   ],
   discussionQuestions: ['Что случилось?', 'Почему?', 'Как?', 'Что узнала?', 'Что важно?'],
 };
@@ -57,9 +68,15 @@ const input: GenerateStoryInput = {
   childAge: 6,
   topic: 'дружба',
   learningGoal: 'научиться дружить',
-  allowedWords: ['маша', 'кот', 'дружба'],
   protagonistMode: 'child',
   arcType: 'virtue',
+};
+
+/** Mock the two sequential calls: Plan, then Prose. */
+const mockPlanThenProse = (): void => {
+  mockGenerateObject
+    .mockResolvedValueOnce({ object: validPlan } as never)
+    .mockResolvedValueOnce({ object: validStory } as never);
 };
 
 describe('StoryGeneratorService', () => {
@@ -76,34 +93,42 @@ describe('StoryGeneratorService', () => {
     service = module.get(StoryGeneratorService);
   });
 
-  it('returns Story from generateObject', async () => {
-    mockGenerateObject.mockResolvedValueOnce({ object: validStory } as never);
+  it('runs Plan then Prose and returns the Prose Story', async () => {
+    mockPlanThenProse();
     const result = await service.generateStory(input);
     expect(result).toEqual(validStory);
+    expect(mockGenerateObject).toHaveBeenCalledTimes(2);
   });
 
-  it('calls generateObject with StorySchema and telemetry', async () => {
-    mockGenerateObject.mockResolvedValueOnce({ object: validStory } as never);
+  it('traces the two phases separately (story-planner, then story-prose)', async () => {
+    mockPlanThenProse();
     await service.generateStory(input);
-    expect(mockGenerateObject).toHaveBeenCalledWith(
-      expect.objectContaining({
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        experimental_telemetry: expect.objectContaining({ functionId: 'story-generator' }),
-      }),
-    );
+    const calls = mockGenerateObject.mock.calls as unknown as Array<
+      [{ experimental_telemetry: { functionId: string } }]
+    >;
+    expect(calls[0][0].experimental_telemetry.functionId).toBe('story-planner');
+    expect(calls[1][0].experimental_telemetry.functionId).toBe('story-prose');
   });
 
-  it('passes feedback into the user prompt when provided', async () => {
-    mockGenerateObject.mockResolvedValueOnce({ object: validStory } as never);
+  it('passes feedback into the Plan prompt when provided', async () => {
+    mockPlanThenProse();
     await service.generateStory({ ...input, feedback: 'fix vocabulary' });
-    const call = mockGenerateObject.mock.calls[0][0] as { prompt: string };
-    expect(call.prompt).toContain('fix vocabulary');
+    const planCall = mockGenerateObject.mock.calls[0][0] as { prompt: string };
+    expect(planCall.prompt).toContain('fix vocabulary');
   });
 
-  it('passes arcType through to the user prompt', async () => {
-    mockGenerateObject.mockResolvedValueOnce({ object: validStory } as never);
+  it('encodes the flaw beat sheet in the Plan prompt (Расплата)', async () => {
+    mockPlanThenProse();
     await service.generateStory({ ...input, arcType: 'flaw' });
-    const call = mockGenerateObject.mock.calls[0][0] as { prompt: string };
-    expect(call.prompt).toContain('Расплата');
+    const planCall = mockGenerateObject.mock.calls[0][0] as { prompt: string };
+    expect(planCall.prompt).toContain('Расплата');
+  });
+
+  it('feeds the approved plan into the Prose prompt', async () => {
+    mockPlanThenProse();
+    await service.generateStory(input);
+    const proseCall = mockGenerateObject.mock.calls[1][0] as { prompt: string };
+    expect(proseCall.prompt).toContain('Маша');
+    expect(proseCall.prompt).toContain(validPlan.pages[1].intent);
   });
 });

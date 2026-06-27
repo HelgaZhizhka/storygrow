@@ -32,11 +32,16 @@ const configShim = {
 } as unknown as ConfigService;
 
 const main = async (): Promise<void> => {
-  const goalTitle = process.argv[2];
-  const age = Number(process.argv[3] ?? '6');
-  const mode = (process.argv[4] ?? 'child') as 'child' | 'observer';
+  const positional = process.argv.slice(2).filter((a) => !a.startsWith('--'));
+  const goalTitle = positional[0];
+  const age = Number(positional[1] ?? '6');
+  const mode = (positional[2] ?? 'child') as 'child' | 'observer';
+  const modelFlag = process.argv.find((a) => a.startsWith('--model='));
+  const model = modelFlag ? modelFlag.slice('--model='.length) : undefined;
   if (!goalTitle) {
-    console.error('Usage: pnpm --filter backend eval:text "<goal>" <age> [child|observer]');
+    console.error(
+      'Usage: pnpm --filter backend eval:text "<goal>" <age> [child|observer] [--model=<id>]',
+    );
     process.exit(1);
   }
 
@@ -55,18 +60,17 @@ const main = async (): Promise<void> => {
   const arcType = goal?.arcType ?? 'virtue';
 
   const gradeLevel = ageToGradeLevel(age);
-  const allowedWords = await vocab.retrieve({ topic, learningGoal, gradeLevel });
   const corpusWords = await vocab.listByGrade(gradeLevel);
 
   const story = await generator.generateStory({
     bookId: 'dry-run',
-    childName: 'Тест',
+    childName: 'Алиса',
     childAge: age,
     topic,
     learningGoal,
-    allowedWords,
     protagonistMode: mode,
     arcType,
+    model,
   });
 
   const checks = await evaluator.evaluate({
@@ -81,7 +85,7 @@ const main = async (): Promise<void> => {
   const avg = Math.round(lengths.reduce((a, b) => a + b, 0) / lengths.length);
 
   console.log(
-    `\n=== "${story.title}" | goal=${goalTitle} | arc=${arcType} | age=${age} | mode=${mode} ===\n`,
+    `\n=== "${story.title}" | goal=${goalTitle} | arc=${arcType} | age=${age} | mode=${mode} | model=${model ?? 'default'} ===\n`,
   );
   story.pages.forEach((p, i) => {
     const len = p.text ? ` [${p.text.length}]` : '';
@@ -91,7 +95,9 @@ const main = async (): Promise<void> => {
     `pages w/ text: ${lengths.length} | avg chars: ${avg} | max: ${Math.max(...lengths)}`,
   );
   console.log(`judge scores: ${JSON.stringify(checks.judgeResult.scores)}`);
-  console.log(`finalScore: ${checks.computedFinalScore} | passed: ${checks.passed}`);
+  console.log(
+    `registerMatch (finalScore): ${checks.computedFinalScore}/10 | passed: ${checks.passed}`,
+  );
   console.log(`vocabularyCompliance: ${checks.vocabularyCompliance.toFixed(2)}`);
   if (checks.structuralErrors.length > 0) console.log(`structural:`, checks.structuralErrors);
   if (checks.outOfCorpus.length > 0)

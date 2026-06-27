@@ -58,10 +58,10 @@ const passingJudge = {
     structureCompleteness: 8,
     safetyForChildren: 10,
     length: 8,
-    engagement: 9,
+    earnedResolution: 8,
+    registerMatch: 9,
   },
   reasoning: 'Good story.',
-  finalScore: 8.67,
 };
 
 const failingJudge = {
@@ -71,10 +71,10 @@ const failingJudge = {
     structureCompleteness: 4,
     safetyForChildren: 6,
     length: 5,
-    engagement: 4,
+    earnedResolution: 4,
+    registerMatch: 4,
   },
   reasoning: 'Needs improvement.',
-  finalScore: 4.67,
 };
 
 const corpusWords = [
