@@ -249,9 +249,9 @@ model StoryEval {
   id                   String   @id @default(cuid())
   bookId               String
   attempt              Int
-  judgeScores          Json     // 7 criteria: { ageAppropriateVocab, hasMoralLesson, structureCompleteness, safetyForChildren, length, engagement, earnedResolution }
+  judgeScores          Json     // Guardrails { ageAppropriateVocab, hasMoralLesson, structureCompleteness, safetyForChildren, length, earnedResolution } + Craft { registerMatch } (ADR-0005)
   judgeReasoning       String?
-  finalScore           Float
+  finalScore           Float    // = registerMatch (craft signal); guardrails are gates, not averaged in
   vocabularyCompliance Float?
   passed               Boolean
   generatedAt          DateTime @default(now())
