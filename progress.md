@@ -1350,3 +1350,21 @@ Found while auditing docs and chasing a red CI:
 **Next:** generation **decomposition** (`StoryPlanSchema` + Plan/Prose/Edit) — the last big lever, now measurable. Then revisit Prose-phase model under the meter; then 3–4 band; then personalization.
 
 **Blockers:** none (docker up).
+
+---
+
+## 2026-06-27 (cont. 3) — decomposition built; the lever is Plan + gpt-5 prose
+
+**Done (committed):**
+- `0a3cfec` — **decomposition Plan → Prose** (ADR-0005): `StoryPlanSchema` (bible: hero/name, page layout, per-page beat+intent, lesson, questions) + `plan.prompt` (structure, gpt-4o) → `prose.prompt` (voice, gpt-5) rendering the plan in the Сутеев register. `StoryGeneratorService.generateStory` runs both, traced separately. Model split `PLAN_MODEL=gpt-4o` / `PROSE_MODEL=gpt-5`.
+- `f3a75a3` — lint fix. **`./init.sh` exit 0** (backend + frontend tsc/lint/test all green).
+- Journal Глава 2 / Эксп. 9 updated (`docs/process/ai-text-quality-evolution.md`).
+
+**Key result (measured under registerMatch):** the lever is the **combination** — decomposition alone on gpt-4o stays flat (6–8); gpt-5 alone on the old single call was noise; **gpt-5 on the isolated Prose phase** finally delivers warm, show-don't-tell prose (rm 7–8, judge: "warm, avoids both flatness and ornamentation"). This *revises* cont.2's "stay on gpt-4o" — that held for the single call; for the decomposed Prose phase gpt-5 wins.
+
+**Next:**
+1. **Push branch + open PR** (per plan: build decomposition first, then one PR). Branch `issue/193-…` now carries RAG-phase1 + ADR-0005 + exemplars + judge + decomposition + process docs → PR `Closes #193`; also close #190.
+2. Edit pass (optional) if registerMatch dips; raise threshold over time.
+3. 3–4 band profile; personalization workstream; delete legacy mega-prompt.
+
+**Blockers:** none.
