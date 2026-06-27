@@ -1,0 +1,14 @@
+# Build context is the repo root for both backend/Dockerfile and frontend/Dockerfile.
+**/node_modules
+**/dist
+**/.next
+**/.turbo
+**/coverage
+**/playwright-report
+**/test-results
+.git
+.github
+**/.env
+**/.env.*
+!**/.env.example
+**/*.log

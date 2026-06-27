@@ -125,6 +125,10 @@ S3_BUCKET=storygrow
 OPENAI_API_KEY=sk-proj-...
 ```
 
+> The key MUST have access to **`gpt-5`** — since ADR-0005 the Prose phase runs on
+> `PROSE_MODEL=gpt-5` (the Plan phase uses `gpt-4o`, the judge `gpt-4o-mini`).
+> Models are set in `backend/src/ai/ai.config.ts`, not via env.
+
 ### LangFuse (app credentials — from LangFuse UI after first login)
 
 ```env
@@ -233,25 +237,23 @@ docker exec -it <container_id> npx prisma migrate deploy
 docker exec -it <container_id> node dist/scripts/seed-learning-goals.js
 docker exec -it <container_id> node dist/scripts/seed-fast-flow-templates.js
 docker exec -it <container_id> node dist/scripts/seed-fast-illustrations.js
-docker exec -it <container_id> node dist/scripts/seed-vocabulary.js
 ```
 
 > These scripts are compiled to `dist/scripts/` by `nest build` and require `DATABASE_URL`
 > to be set in the container environment (handled by Dokploy env vars).
+>
+> **ADR-0005:** vocabulary-RAG is removed from the pipeline, so `seed-vocabulary`
+> is **no longer required** (age-fit lives in the judge). Skip it — and step 13.
 
 - [ ] `LearningGoal` rows present (20)
 - [ ] `Template` rows present (5)
-- [ ] `VocabularyEntry` rows present (~820)
 
 ---
 
-## 13. HNSW index
+## 13. HNSW index — SKIP (ADR-0005)
 
-```bash
-docker exec -it <container_id> npx prisma db execute --file prisma/sql/hnsw-index.sql
-```
-
-- [ ] HNSW index created on `VocabularyEntry.embedding`
+> No longer required: vocabulary-RAG is removed from the pipeline, so there is no
+> vector search on `VocabularyEntry.embedding` to index. Skip this step.
 
 ---
 
