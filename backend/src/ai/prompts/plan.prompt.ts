@@ -4,6 +4,7 @@ import {
   type TemplateName,
 } from '../../pdf/page-templates/page-templates.config';
 import { BEAT_SHEETS, type BuildStoryPromptOptions } from './story-generator.prompt';
+import { pickExemplar } from './exemplars';
 
 /**
  * PLAN_SYSTEM_PROMPT — the Plan phase (ADR-0005). Produces the StoryPlan "bible":
@@ -16,9 +17,13 @@ You design the STRUCTURE of a story as a JSON plan that matches the schema — y
 do NOT write the final prose. That is a separate later step.
 
 Hard rules:
-1. Output a PLAN, not a story. Each page's "intent" says WHAT HAPPENS and the
-   emotional beat in Russian — it is NOT the final sentence the child will hear.
-   Keep intents short and concrete (a clause or two), never polished prose.
+1. ADAPT THE PROVEN STORY given in the user prompt — do NOT invent a new premise.
+   Keep its plot: the same premise and the same sequence of events, recast with
+   THIS hero (setting details may be lightly adjusted). Map its events onto the
+   pages. A retold proven plot beats an invented one — free invention here
+   produces contrived, far-fetched stories. THEN output a PLAN, not a story:
+   each page's "intent" says WHAT HAPPENS and the emotional beat in Russian — it
+   is NOT the final sentence; keep intents short and concrete, never polished prose.
 2. title, lesson, intent and discussionQuestions are in Russian.
    characterProfile is in ENGLISH (it seeds the illustrations).
 3. Fix the hero's name once (heroName) so it can never drift between pages.
@@ -80,13 +85,21 @@ ${buildProtagonistBlock(opts)}
 
 ${buildTemplateCatalogue(opts.childAge)}
 
-Narrative arc to encode across the content pages, in order:
+Narrative arc the proven story already follows (use as the beat reference):
 ${BEAT_SHEETS[opts.arcType]}
 
+PROVEN STORY to adapt — keep its plot and the sequence of events; recast it for
+the hero above. Do NOT invent a different premise (no random fantasy, no
+far-fetched events):
+"""
+${pickExemplar(opts.topic, opts.arcType).text}
+"""
+
 Produce the plan:
-  • 6–12 pages total. Page 1 'cover', last page 'final'.
-  • Each content page: one arc beat (in order) + an "intent" (what happens +
-    the feeling), short and concrete — NOT the final sentence.
+  • Adapt the proven story above. 6–12 pages total. Page 1 'cover', last page 'final'.
+  • Each content page: one arc beat (in order) + an "intent" that retells what
+    happens at that beat in the proven story, recast for this hero — short and
+    concrete, NOT the final sentence.
   • Spread the arc generously across pages so the Prose phase has room for a warm,
     unhurried read-aloud story.
   • heroName fixed; characterProfile in English; lesson in one short Russian
