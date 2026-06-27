@@ -90,7 +90,7 @@ The narrative arc assigned to a `LearningGoal`, stored as `LearningGoal.arcType`
 ### Gold Exemplar
 A human-approved reference story used as a few-shot example to steer generation quality — its structure, richness, tone, and (critically) its **safe conflict type**. A draft may be machine-generated, but it becomes an exemplar only after the pedagogy expert approves it. An auto-generated, unreviewed story is never an exemplar. The approved exemplar set is also the source of truth from which the judge rubric is calibrated (we measure deviation from the gold set, not from hand-written rules — and per ADR-0005 the judge literally **sees** the exemplars when scoring [Register Match]). Each exemplar is arc-specific: virtue-arc goals use virtue exemplars; flaw-arc goals use flaw exemplars with a visible "Расплата" beat.
 
-The **target register** is spare + dialogue-forward + picture-trusting (short sentences, minimal simile, visual description left to the illustration) — the published-picture-book register, not a "writerly" adult-cute one. The pre-ADR-0005 exemplars were over-written (a simile per beat) and are being rebuilt to this sparer register. Exemplars are the operational definition of "good" and are used in **two** places: the `Prose Pass` few-shot target and the judge's [Register Match] calibration.
+The **target register** (ADR-0005, amended 2026-06-27) is a **rich, warm, read-aloud storybook voice in the Сутеев / Russian folk-tale tradition**: warm narrator ("Жил-был…"), folk rhythm, gentle humour, natural dialogue, real feeling, lesson emerging from the events and stated once. The enemy is two-sided — flat event-summary AND adult preciousness ("свет, как чай с мёдом"); richness of voice is the GOAL. (An earlier "spare/picture-trusting" framing, inferred from an early-decoding reader, was tried and rejected — see ADR-0005.) Exemplars are the operational definition of "good" and are used in **two** places: the `Prose Pass` few-shot target and the judge's [Register Match] calibration. Register and exemplars are **per age band** — the 5–6 band (both arcs) is the flagship; the 3–4 band is simpler and repetition-driven (virtue arcs only).
 
 **Avoid:** "sample", "template" — an exemplar shows the craft to imitate, it is not a fill-in-the-blank skeleton.
 
@@ -100,7 +100,7 @@ The first-class intermediate artefact produced by the **Plan** phase of generati
 **Avoid:** "outline", "draft" — the plan is the structural source of truth, not a rough sketch; the `Story` is rendered *from* it.
 
 ### Prose Pass
-The single whole-story generation call that renders the `Story Plan`'s beats into page text in the target register (spare, dialogue-forward, picture-trusting), given one rebuilt `Gold Exemplar`. It carries no narrative prohibitions — their causes are resolved in the `Story Plan`. Decomposition is **by concern, not by page**: the Prose Pass sees the whole story in one context, so cross-page consistency is preserved.
+The single whole-story generation call that renders the `Story Plan`'s beats into page text in the target register (rich, warm, read-aloud Сутеev voice — see [Gold Exemplar]), given one rebuilt `Gold Exemplar`. It carries no narrative prohibitions — their causes are resolved in the `Story Plan`. Decomposition is **by concern, not by page**: the Prose Pass sees the whole story in one context, so cross-page consistency is preserved.
 
 **Avoid:** "page generation", "per-page call" — generating pages independently is explicitly rejected (it causes name/tone/plot drift).
 

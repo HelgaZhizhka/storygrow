@@ -1,7 +1,24 @@
 # ADR-0005: Decomposed generation pipeline + drop vocabulary-RAG
 
 **Status:** Accepted
-**Date:** 2026-06-26
+**Date:** 2026-06-26 (amended 2026-06-27)
+
+> **Amendment (2026-06-27) — register correction + age bands.** The original
+> decision below described the target register as **"spare + dialogue-forward +
+> picture-trusting"**, inferred from Usborne *First Reading* (*The Boy Who Cried
+> Wolf*). A validation experiment in that register was **rejected by the product
+> owner** as "оборвано, скупо, плоско" (choppy, sparse, flat). Root cause of the
+> mis-step: Usborne *First Reading* is an **early-decoding reader** (the child
+> reads it), a different genre from our **parent-read-aloud illustrated storybook**.
+> The corrected north star is **Сутеев / Russian folk-tale read-aloud voice**:
+> rich, warm, musical, gentle humour, real feeling — the lesson emerging from the
+> events. The enemy stays **two-sided** (flat summary AND adult preciousness), but
+> richness of voice is the GOAL, not something to strip. Read sections 2–3 of the
+> Decision through this correction. Additional decision: **target age bands are
+> 3–4 and 5–6** (7–8 dropped — they are independent readers); **5–6 is the
+> flagship band** (both arcs, Сутеев register); **3–4 is a simpler, repetition-
+> driven profile, virtue arcs only** (the flaw-arc "Расплата" is too heavy for
+> 3–4). Register, exemplars, and template caps are therefore **per age band**.
 
 ## Context
 
@@ -70,12 +87,17 @@ Decomposition is **by concern, not by page.** Per-page generation (as in naive
 implementations) is rejected: it blinds each call to the others and causes name /
 tone / plot drift.
 
-**2. Retarget the register to spare + dialogue-forward + picture-trusting.**
-The text leans on the illustration; visual description moves out of the text and
-into the image prompt. Short sentences, minimal simile, dialogue carries the
-story. The per-page density spec is removed.
+**2. Retarget the register** (see Amendment 2026-06-27 — supersedes the original
+"spare" wording). Target = a **rich, warm, read-aloud storybook voice in the
+Сутеев / Russian folk-tale tradition**: warm narrator ("Жил-был…"), folk rhythm
+and inversion, gentle humour, natural dialogue, real feeling, lesson emerging
+from the events and stated once. Text may carry vivid concrete detail; it leans
+on the illustration for the scene but is not stripped to a skeleton. The rigid
+per-page density spec ("3–4 sentences, ~180–220 chars, one sensory detail") is
+removed — richness comes from voice and rhythm, and length comes from MORE pages,
+not denser pages. Enemy is two-sided: flat summary AND adult preciousness.
 
-**3. Rebuild the gold exemplars** to this sparer register. Exemplars remain the
+**3. Rebuild the gold exemplars** to this rich Сутеев register (5–6 band). Exemplars remain the
 **core quality anchor** — the operational definition of "good" — and are used in
 **two** places: as the Prose phase's few-shot target and as the Judge's
 calibration reference. Exemplars are *not* dropped; describing register with
