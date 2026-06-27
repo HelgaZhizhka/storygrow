@@ -12,7 +12,14 @@ describe('JudgeScoreSchema', () => {
   };
 
   it('requires the registerMatch craft criterion', () => {
-    const { registerMatch: _omitted, ...withoutCraft } = full;
+    const withoutCraft = {
+      ageAppropriateVocab: 8,
+      hasMoralLesson: 8,
+      structureCompleteness: 8,
+      safetyForChildren: 10,
+      length: 8,
+      earnedResolution: 7,
+    };
     expect(JudgeScoreSchema.safeParse(withoutCraft).success).toBe(false);
     expect(JudgeScoreSchema.safeParse(full).success).toBe(true);
   });
