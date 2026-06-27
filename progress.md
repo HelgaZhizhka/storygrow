@@ -1312,3 +1312,29 @@ Found while auditing docs and chasing a red CI:
 4. (Branch hygiene) Decide #193 PR scope now that it carries the ADR.
 
 **Blockers:** None.
+
+---
+
+## 2026-06-27 (cont.) — register corrected (Сутеев) + exemplars rebuilt + age bands
+
+**What changed since the entry above (important reversal):**
+- The "spare register" direction from the entry above was **WRONG and is reversed.** A spare experiment was rejected by the product owner as "оборвано, скупо, плоско". Root cause: Usborne *First Reading* is an early-**decoding** reader (child reads it), not our genre. Our genre is **parent-read-aloud illustrated storybook**.
+- **New north star: Сутеев / Russian folk-tale read-aloud voice** (portal `deti-online.com/skazki/dlya-detey-4-5-let`). Rich, warm, musical: warm narrator ("Жил-был…"), folk rhythm/inversion, gentle humour, natural dialogue, real feeling, lesson emerging once. Enemy is two-sided — flat summary AND adult preciousness; **richness of voice is the GOAL**.
+
+**Done (committed `46e5cc5`):**
+- All 6 gold exemplars rebuilt to the Сутеев register (5–6 band). Converged via tight loop on ONE (Гриша) until product owner approved ("это подходит"), then propagated. tsc 0, prompt tests 11/11, lint 0.
+- ADR-0005 amended (register correction + age bands); CONTEXT.md `Gold Exemplar` / `Prose Pass` wording corrected.
+
+**Decisions (new):**
+- **Age bands: 3–4 and 5–6; drop 7–8** (independent readers, different product). **5–6 = flagship** (both arcs, Сутеев). **3–4 = simpler, repetition-driven, virtue-only** (flaw "Расплата" too heavy for 3–4). Register/exemplars/template caps become **per band**.
+- "More text" = **more pages** (page stays short + image), not denser pages; the Plan phase spreads the arc across age-capped pages.
+- **Personalization** (user supplies interests / motifs / soft words / child's likes → more personal, less generic) = **separate workstream, deferred**, needs its own discussion → likely its own issue. Seeds feed the Plan phase; words are SOFT (weave-if-natural), never hard constraints (avoid recreating vocab-injection flattening). Directly attacks banality (generic input → generic output).
+
+**Next:**
+1. (When postgres is up) `eval:text` a flaw + virtue goal to see generation under the new exemplars (judge still register-blind — eyeball only).
+2. Build `registerMatch` judge: split schema (Guardrail gates + Craft), judge prompt shows exemplars, two-sided. Then the prose signal stops being averaged away.
+3. Generation decomposition (`StoryPlan` → Plan/Prose/Edit); choose Prose model via `eval:text` under the new meter.
+4. 3–4 band profile (simpler exemplars + smaller template caps) after 5–6 is solid.
+5. Personalization: brainstorm → spec → issue.
+
+**Blockers:** postgres/docker stack was down at end of session (`eval:text` needs it); user runs the stack themselves.
