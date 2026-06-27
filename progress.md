@@ -1338,3 +1338,15 @@ Found while auditing docs and chasing a red CI:
 5. Personalization: brainstorm → spec → issue.
 
 **Blockers:** postgres/docker stack was down at end of session (`eval:text` needs it); user runs the stack themselves.
+
+---
+
+## 2026-06-27 (cont. 2) — registerMatch judge built + model A/B done
+
+**Done (committed):**
+- `e872a3c` — **`registerMatch` judge**: split criteria into Guardrails (gates) + Craft; judge shows 2 exemplars and scores register **two-sided**; accept = guardrails ≥ floor (6) AND registerMatch ≥ threshold (7); `computeFinalScore` = registerMatch (no mean). Replaces single-sided `engagement`. Acceptance: text that scored a flat 9.43 (praising "туча заволокла солнце") now scores 7–8 with register-specific reasoning. tsc 0, ai tests 96/96, lint 0.
+- **Model A/B under the new meter** (3 runs × {gpt-4o, gpt-5, gpt-4.1} × {Смелость, Честность}): registerMatch means 7.5 / 7.83 / 8.0 — all within noise. **gpt-4.1 disqualified** (passed 1/6 — overflows page caps). **Decision: stay on gpt-4o** — model is NOT the lever; the ~7–8 ceiling is set by the overloaded single call. Recorded in `docs/process/ai-text-quality-evolution.md` (Глава 2).
+
+**Next:** generation **decomposition** (`StoryPlanSchema` + Plan/Prose/Edit) — the last big lever, now measurable. Then revisit Prose-phase model under the meter; then 3–4 band; then personalization.
+
+**Blockers:** none (docker up).
