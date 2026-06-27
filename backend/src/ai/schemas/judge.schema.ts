@@ -4,10 +4,25 @@ import { z } from 'zod';
 const scoreField = () => z.number().int().min(0).max(10);
 
 /**
- * JudgeScoreSchema — individual criterion scores produced by StoryEvaluator.
+ * Guardrail criteria — pass/fail gates (ADR-0005). Each must clear the guardrail
+ * floor for a story to be accepted. They are NOT averaged into the craft signal.
+ */
+export const GUARDRAIL_KEYS = [
+  'ageAppropriateVocab',
+  'hasMoralLesson',
+  'structureCompleteness',
+  'safetyForChildren',
+  'length',
+  'earnedResolution',
+] as const;
+
+/**
+ * JudgeScoreSchema — criterion scores produced by StoryEvaluator.
  *
- * Each criterion is independently rated 0–10. The mean across all seven
- * is the finalScore compared against the eval threshold (default 7.0).
+ * Two groups (ADR-0005):
+ *   - Guardrails (GUARDRAIL_KEYS): safety/structure/age gates, pass/fail.
+ *   - Craft: `registerMatch` — the two-sided quality signal that drives
+ *     regeneration. It is gated on its own and never diluted by averaging.
  */
 export const JudgeScoreSchema = z.object({
   /** Vocabulary is appropriate for the child's age / grade level. */
@@ -16,35 +31,30 @@ export const JudgeScoreSchema = z.object({
   /** Story contains a clear moral lesson tied to the learning goal. */
   hasMoralLesson: scoreField(),
 
-  /**
-   * All four narrative stages are present and coherent:
-   * setup → conflict → lesson → resolution.
-   */
+  /** A complete narrative arc is present (setup → conflict → resolution). */
   structureCompleteness: scoreField(),
 
-  /** Content is safe, non-violent, and appropriate for children. */
+  /** Content is safe; models no real-world danger the hero approaches. */
   safetyForChildren: scoreField(),
 
-  /** Story length is appropriate for the target age (not too short/long). */
+  /** Story length is appropriate for the target age. */
   length: scoreField(),
 
   /**
-   * Story is vivid and engaging for read-aloud: it SHOWS rather than tells —
-   * concrete sensory detail, the character's feelings made visible, dialogue
-   * where natural, and a real moment of tension before the resolution. Flat
-   * event-summaries and moralising are penalised.
-   */
-  engagement: scoreField(),
-
-  /**
-   * The moral is EARNED, not asserted. There is a real stake/consequence in the
-   * story (the hero's flaw costs them something, or success is genuinely at
-   * risk), and the resolution follows from the protagonist's own action — not
-   * from instant/unconditional forgiveness, luck, or a stated maxim. Penalise
-   * heavily (≤4) a story where the lesson is simply announced at the end with no
-   * preceding cost, or where the hero is forgiven/rewarded without effort.
+   * The moral is EARNED, not asserted: a real stake/consequence precedes the
+   * resolution (a flaw visibly costs the hero), and the ending follows from the
+   * hero's own action — not instant forgiveness, luck, or a stated maxim.
    */
   earnedResolution: scoreField(),
+
+  /**
+   * CRAFT signal (ADR-0005). Two-sided register match against the gold
+   * exemplars (warm Сутеев read-aloud voice): score low both when the prose is
+   * FLATTER than the exemplars (dry summary, no dialogue, feelings merely named)
+   * and when it is MORE ORNATE (decorative adult similes/clichés, rare or
+   * abstract words, word-painting of what the picture should show).
+   */
+  registerMatch: scoreField(),
 });
 
 export type JudgeScores = z.infer<typeof JudgeScoreSchema>;
@@ -52,30 +62,25 @@ export type JudgeScores = z.infer<typeof JudgeScoreSchema>;
 /**
  * JudgeSchema — full evaluation result for one generation attempt.
  *
- * Stored as `judgeScores` (JSON) + `finalScore` in the StoryEval table.
- * If finalScore < EVAL_THRESHOLD, the story is regenerated (max 2 retries).
+ * The headline `finalScore` stored on StoryEval is computed server-side from
+ * these scores (see computeFinalScore) — the judge does not self-report it.
  */
 export const JudgeSchema = z.object({
   scores: JudgeScoreSchema,
 
-  /**
-   * Judge's concise reasoning explaining the scores.
-   * Used for debugging and audit trail in LangFuse traces.
-   */
+  /** Judge's concise reasoning (names the key register strengths/weaknesses). */
   reasoning: z.string().min(1),
-
-  /**
-   * Mean of all seven criterion scores, rounded to 2 decimal places.
-   * Compared against EVAL_THRESHOLD to decide regeneration.
-   */
-  finalScore: z.number().min(0).max(10),
 });
 
 export type JudgeResult = z.infer<typeof JudgeSchema>;
 
-/** Compute finalScore from raw criterion scores. */
-export const computeFinalScore = (scores: JudgeScores): number => {
-  const values = Object.values(scores);
-  const sum = values.reduce((acc, v) => acc + v, 0);
-  return Math.round((sum / values.length) * 100) / 100;
-};
+/**
+ * Headline score = the craft signal (registerMatch). Guardrails are gates, not
+ * averaged in — a high guardrail mean can no longer mask flat or ornate prose.
+ * Stored as StoryEval.finalScore and tracked on the quality dashboard.
+ */
+export const computeFinalScore = (scores: JudgeScores): number => scores.registerMatch;
+
+/** True when every guardrail criterion clears the floor. */
+export const passesGuardrails = (scores: JudgeScores, floor: number): boolean =>
+  GUARDRAIL_KEYS.every((key) => scores[key] >= floor);

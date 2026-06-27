@@ -91,7 +91,11 @@ export class StoryOrchestratorService {
       const eval_ = await this.writeEval(ctx.opts.bookId, checks, attempt);
       if (checks.passed) return { story, evalId: eval_.id, attempts: attempt };
       if (attempt < ctx.maxAttempts) {
-        feedback = buildRegenerationFeedback(checks.judgeResult, checks.structuralErrors);
+        feedback = buildRegenerationFeedback(
+          checks.judgeResult,
+          checks.computedFinalScore,
+          checks.structuralErrors,
+        );
       }
     }
     throw new StoryGenerationFailedError(ctx.opts.bookId, ctx.maxAttempts);

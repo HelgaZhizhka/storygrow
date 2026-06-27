@@ -122,6 +122,13 @@ const EXEMPLARS: readonly Exemplar[] = [COURAGE, KINDNESS, INDEPENDENCE, HONESTY
  * requested arc. Falls back to the canonical exemplar of that arc:
  * HONESTY for flaw, COURAGE for virtue.
  */
+/**
+ * Two canonical exemplars (one per arc) shown to the judge to anchor the target
+ * register for Register Match scoring. The judge scores VOICE against these, not
+ * arc-fit, so a fixed pair is enough regardless of the story's arc.
+ */
+export const getRegisterReferences = (): readonly Exemplar[] => [COURAGE, HONESTY];
+
 export const pickExemplar = (goalTitle: string, arcType: 'virtue' | 'flaw'): Exemplar => {
   const normalized = goalTitle.trim().toLowerCase();
   const inArc = EXEMPLARS.filter((e) => e.arcType === arcType);

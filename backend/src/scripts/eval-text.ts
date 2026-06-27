@@ -95,7 +95,9 @@ const main = async (): Promise<void> => {
     `pages w/ text: ${lengths.length} | avg chars: ${avg} | max: ${Math.max(...lengths)}`,
   );
   console.log(`judge scores: ${JSON.stringify(checks.judgeResult.scores)}`);
-  console.log(`finalScore: ${checks.computedFinalScore} | passed: ${checks.passed}`);
+  console.log(
+    `registerMatch (finalScore): ${checks.computedFinalScore}/10 | passed: ${checks.passed}`,
+  );
   console.log(`vocabularyCompliance: ${checks.vocabularyCompliance.toFixed(2)}`);
   if (checks.structuralErrors.length > 0) console.log(`structural:`, checks.structuralErrors);
   if (checks.outOfCorpus.length > 0)

@@ -227,6 +227,7 @@ ${feedbackBlock}`.trim();
  */
 export const buildRegenerationFeedback = (
   judge?: JudgeResult,
+  finalScore?: number,
   structuralErrors?: readonly string[],
 ): string => {
   const parts: string[] = [];
@@ -236,10 +237,12 @@ export const buildRegenerationFeedback = (
   }
 
   if (judge) {
+    const scoreStr =
+      finalScore !== undefined ? ` (register match ${finalScore.toFixed(1)}/10)` : '';
     parts.push(
-      `Quality score: ${judge.finalScore.toFixed(1)}/10.` +
-        ` Judge feedback: ${judge.reasoning}` +
-        ` Address the feedback above to raise the score above the required threshold.`,
+      `Quality feedback${scoreStr}: ${judge.reasoning}` +
+        ` Bring the voice closer to the warm Сутеев read-aloud register — neither flat` +
+        ` (dry summary, no dialogue) nor ornate (decorative similes, rare/abstract words).`,
     );
   }
 
