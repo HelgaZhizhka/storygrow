@@ -15,6 +15,9 @@ COPY packages ./packages
 RUN pnpm install --frozen-lockfile --filter=frontend...
 
 COPY frontend ./frontend
+# Next inlines NEXT_PUBLIC_* at BUILD time, so the API URL must be a build arg.
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN pnpm --filter frontend build
 
 
