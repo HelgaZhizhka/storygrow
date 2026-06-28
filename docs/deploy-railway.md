@@ -125,17 +125,14 @@ NEXT_PUBLIC_API_URL=https://<api-domain>
 
 ## 8. Database migrations + seed
 
-> **Note (to finalize at deploy time):** the production image is pruned to prod
-> deps, so the `prisma` CLI is not in it by default. To run migrations from the
-> container we either (a) move `prisma` to `dependencies` so the CLI ships, or
-> (b) run a Railway one-off with the build image. This will be wired during the
-> deploy session.
-
-Once the mechanism is in place:
+The `prisma` CLI ships in the production image (it is a prod dependency), and the
+schema + `prisma.config.ts` are present — so migrations run directly in the
+container (a Railway one-off, or a pre-deploy command). `DATABASE_URL` must be set
+(it is, from the Postgres service).
 
 ```bash
-# in the backend container / one-off:
-prisma migrate deploy
+# in the backend container / Railway one-off (WORKDIR /app):
+node_modules/.bin/prisma migrate deploy
 # seed reference data (NOT vocabulary — removed in ADR-0005):
 node dist/scripts/seed-learning-goals.js
 node dist/scripts/seed-fast-flow-templates.js
@@ -163,6 +160,5 @@ node dist/scripts/seed-fast-illustrations.js
 
 ## Known follow-ups
 - Drop the dead `VocabularyEntry`/`vector` schema → plain Postgres (no pgvector).
-- Finalize the migrations mechanism (prisma CLI in prod, step 8).
 - Turn on LangFuse Cloud (set `LANGFUSE_PUBLIC_KEY`/`SECRET_KEY`/`HOST`, remove
   `LANGFUSE_ENABLED=false`).
