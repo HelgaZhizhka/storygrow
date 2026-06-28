@@ -5,6 +5,11 @@ generator client {
   provider        = "prisma-client"
   previewFeatures = ["postgresqlExtensions"]
   output          = "../src/generated/prisma"
+  // Emit .js import specifiers + CJS so the compiled client (dist/) resolves at
+  // runtime under `node dist/main`. A fresh generate otherwise emits .ts
+  // specifiers that survive compilation and crash in production (issue #208).
+  importFileExtension = "js"
+  moduleFormat        = "cjs"
 }
 
 datasource db {
