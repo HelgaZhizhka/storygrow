@@ -6,8 +6,12 @@ RUN corepack enable && corepack prepare pnpm@10.29.3 --activate
 WORKDIR /app
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+# Root base tsconfig — frontend/tsconfig.json extends ../tsconfig.base.json.
+COPY tsconfig.base.json ./
 COPY backend/package.json ./backend/
 COPY frontend/package.json ./frontend/
+# Workspace package referenced by frontend's devDeps (@storygrow/eslint-config).
+COPY packages ./packages
 RUN pnpm install --frozen-lockfile --filter=frontend...
 
 COPY frontend ./frontend
