@@ -68,8 +68,10 @@ ENV PUPPETEER_SKIP_DOWNLOAD=true
 COPY --from=pruner /deploy/node_modules ./node_modules
 # Compiled NestJS app.
 COPY --from=builder /app/backend/dist ./dist
-# Prisma schema + migrations (needed for prisma migrate deploy in CI/CD).
+# Prisma schema + migrations + config (for `prisma migrate deploy` in the container;
+# prisma ships in prod deps so the CLI is present).
 COPY --from=builder /app/backend/prisma ./prisma
+COPY --from=builder /app/backend/prisma.config.ts ./prisma.config.ts
 
 EXPOSE 3001
 CMD ["node", "dist/main"]
