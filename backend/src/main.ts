@@ -1,5 +1,6 @@
 import './instrument';
 import { NestFactory } from '@nestjs/core';
+import { Logger } from '@nestjs/common';
 
 import { AppModule } from './app.module';
 
@@ -12,7 +13,10 @@ async function bootstrap(): Promise<void> {
     credentials: true,
   });
   const port = Number(process.env.PORT ?? DEFAULT_PORT);
-  await app.listen(port);
+  // Bind to 0.0.0.0 so the Railway HTTP proxy can reach the container (the Node
+  // default binds IPv6-only in the container, which causes a 502). Log the port.
+  await app.listen(port, '0.0.0.0');
+  Logger.log(`API listening on 0.0.0.0:${port}`, 'Bootstrap');
 }
 
 void bootstrap();
