@@ -1368,3 +1368,34 @@ Found while auditing docs and chasing a red CI:
 3. 3–4 band profile; personalization workstream; delete legacy mega-prompt.
 
 **Blockers:** none.
+
+---
+
+## 2026-06-28/29 — Railway deploy: LIVE ✅
+
+**StoryGrow is deployed and generating books in production.**
+
+**Stack:** Railway — backend (NestJS) + frontend (Next.js) + Postgres (pgvector) + Redis. Cloudflare R2 for S3 (images/PDF). LangFuse off. Google OAuth login working. Full custom-flow verified end-to-end: login → create child → generate book (Plan→Prose gpt-5 → judge → Gemini images in R2 → PDF).
+
+**Domains:**
+- API: `https://storygrow-production.up.railway.app`
+- Web: `https://storygrow-web-production.up.railway.app`
+
+**Deploy bugs found and fixed (all in main):**
+- `#203` — backend Docker build: prisma schema before install, tsconfig.base.json, system Chromium, pnpm deploy --legacy, packages/ workspace, dummy DATABASE_URL for prisma generate.
+- `#205` — frontend Dockerfile: NEXT_PUBLIC_API_URL as build ARG; Railway deploy guide `docs/deploy-railway.md`.
+- `#207` — prisma CLI in prod image for in-container migrate deploy.
+- `#209` — prisma client emits `.js` imports (not `.ts`); dockerignore src/generated so builds regenerate consistently.
+- `#211` — bind API to `0.0.0.0` (Node binds IPv6-only by default in container → Railway proxy 502).
+- **Railway-specific gotcha:** Railway injects `PORT=8080`, not the app's default (3001/3000). Domain **Target Port must = 8080**. Pre-Deploy Command: `prisma migrate deploy && seed scripts`.
+
+**Seeds:** LearningGoal (20), Template (5) — idempotent, safe to keep in Pre-Deploy. fast-illustrations skipped (requires real R2 + Gemini; re-run manually when needed).
+
+**Next open workstreams:**
+1. Text quality follow-ups: #196 (3–4 age band), #197 (personalization).
+2. Drop dead VocabularyEntry/vector schema → plain Postgres (no pgvector required).
+3. LangFuse Cloud (add keys, remove LANGFUSE_ENABLED=false).
+4. Stripe real keys when payments needed.
+5. Custom domain (optional).
+
+**Blockers:** none.
