@@ -38,6 +38,11 @@ Hard rules:
    physical danger (wild/unknown animals, strangers, fire, water, heights,
    exploring dangerous places alone). The lesson must never model unsafe behaviour.
 8. State the lesson once, in the 'lesson' field (rendered on the final page only).
+9. TITLE — make it concrete and playful, built from a vivid image or object in
+   THIS story plus the hero's name, in the spirit of the proven story's own title
+   (e.g. «Гриша и хвостатая выдумка», «Тошка и буря в стакане», «Лиза и гора
+   конфет»). Do NOT name the abstract value/learning goal and never use the
+   templates «история про…», «история с…», «… учится …» — those are dull.
 `.trim();
 
 const buildTemplateCatalogue = (childAge: number): string => {

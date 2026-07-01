@@ -6,7 +6,6 @@ import { api } from '@/lib/api';
 import { getAccessToken } from '@/lib/auth';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
-const MAX_SSE_ERRORS = 5;
 
 interface ProgressEvent {
   type: 'generating' | 'progress' | 'ready' | 'failed' | 'images_failed';
@@ -33,80 +32,63 @@ export default function BookProgressPage(): React.ReactElement {
   const esRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
-    let errorCount = 0;
+    let settled = false;
+    let pollId: ReturnType<typeof setInterval> | null = null;
 
-    // Check current status first; api auto-refreshes the access token if expired.
-    api
-      .get<BookStatus>(`/books/${id}`)
-      .then((book) => {
-        if (cancelled) return;
-        if (book.status === 'ready') {
-          router.replace(`/books/${id}`);
-          return;
-        }
-        if (TERMINAL_FAILED.has(book.status)) {
-          setFailed(true);
-          return;
-        }
+    const cleanup = (): void => {
+      esRef.current?.close();
+      if (pollId) clearInterval(pollId);
+    };
+    // Resolve once, regardless of which signal (SSE event or status poll) wins.
+    const settle = (action: () => void): void => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      action();
+    };
+    const goReady = (): void => settle(() => router.replace(`/books/${id}`));
+    const goFailed = (): void => settle(() => setFailed(true));
 
-        // EventSource cannot send Authorization headers — pass token as query param.
-        const token = getAccessToken();
-        const qs = token ? `?token=${encodeURIComponent(token)}` : '';
-        const es = new EventSource(`${API_URL}/books/${id}/progress${qs}`);
-        esRef.current = es;
+    // Poll book status. SSE over a proxy (Railway) can connect but never deliver
+    // events, so polling is the reliable way to detect a terminal state.
+    const checkStatus = (): Promise<void> =>
+      api
+        .get<BookStatus>(`/books/${id}`)
+        .then((b) => {
+          if (b.status === 'ready') goReady();
+          else if (TERMINAL_FAILED.has(b.status)) goFailed();
+        })
+        .catch(() => {
+          /* transient — a later poll or the SSE stream will resolve it */
+        });
 
-        es.onmessage = (ev: MessageEvent<string>) => {
-          const event = JSON.parse(ev.data) as ProgressEvent;
-          setLog((prev) => [
-            ...prev,
-            { message: event.message ?? event.type, progress: event.progress },
-          ]);
+    void checkStatus().then(() => {
+      if (settled) return;
 
-          if (event.type === 'ready') {
-            es.close();
-            router.replace(`/books/${id}`);
-          } else if (event.type === 'failed' || event.type === 'images_failed') {
-            es.close();
-            setFailed(true);
-          }
-        };
+      // EventSource cannot send Authorization headers — pass token as query param.
+      const token = getAccessToken();
+      const qs = token ? `?token=${encodeURIComponent(token)}` : '';
+      const es = new EventSource(`${API_URL}/books/${id}/progress${qs}`);
+      esRef.current = es;
 
-        es.onerror = () => {
-          if (cancelled) return;
-          errorCount++;
+      es.onmessage = (ev: MessageEvent<string>) => {
+        const event = JSON.parse(ev.data) as ProgressEvent;
+        setLog((prev) => [
+          ...prev,
+          { message: event.message ?? event.type, progress: event.progress },
+        ]);
+        if (event.type === 'ready') goReady();
+        else if (event.type === 'failed' || event.type === 'images_failed') goFailed();
+      };
+      es.onerror = () => void checkStatus();
 
-          // Poll to detect a terminal state. If the book is still generating and
-          // we haven't exceeded the error budget, don't close — let the browser's
-          // built-in SSE reconnect handle the transient blip.
-          api
-            .get<BookStatus>(`/books/${id}`)
-            .then((b) => {
-              if (cancelled) return;
-              if (b.status === 'ready') {
-                es.close();
-                router.replace(`/books/${id}`);
-              } else if (TERMINAL_FAILED.has(b.status)) {
-                es.close();
-                setFailed(true);
-              } else if (errorCount >= MAX_SSE_ERRORS) {
-                es.close();
-                setFailed(true);
-              }
-              // still generating and under error budget → browser reconnects automatically
-            })
-            .catch(() => {
-              if (!cancelled) setFailed(true);
-            });
-        };
-      })
-      .catch(() => {
-        if (!cancelled) setFailed(true);
-      });
+      // Fallback poll every 4s until a terminal state is reached.
+      pollId = setInterval(() => void checkStatus(), 4000);
+    });
 
     return () => {
-      cancelled = true;
-      esRef.current?.close();
+      settled = true;
+      cleanup();
     };
   }, [id, router]);
 
