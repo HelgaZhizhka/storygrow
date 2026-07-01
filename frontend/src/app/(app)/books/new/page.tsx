@@ -40,7 +40,11 @@ const ART_STYLES = [
 
 const schema = z.object({
   childName: z.string().min(1, 'Введите имя'),
-  childAge: z.coerce.number({ message: 'Введите возраст' }).int().min(1).max(18),
+  childAge: z.coerce
+    .number({ message: 'Введите возраст' })
+    .int()
+    .min(5, { message: 'Пока доступно только 5–6 лет' })
+    .max(6, { message: 'Пока доступно только 5–6 лет' }),
   childGender: z.enum(['male', 'female', 'other', '']).optional(),
   childAppearance: z
     .string()
@@ -144,11 +148,12 @@ export default function NewBookPage(): React.ReactElement {
               <input
                 className="sg-input"
                 type="number"
-                min={1}
-                max={18}
+                min={5}
+                max={6}
                 placeholder="5"
                 {...register('childAge')}
               />
+              <span className="sg-field-hint">Пока доступно только 5–6 лет</span>
               {errors.childAge && (
                 <span className="sg-field-hint text-danger">{errors.childAge.message}</span>
               )}
