@@ -24,7 +24,9 @@ export interface QuotaInfo {
 }
 
 const PLAN_LIMITS: Record<SubscriptionPlan, number | null> = {
-  [SubscriptionPlan.free]: 1,
+  // TEMPORARY: free is unlimited while Stripe is not wired in production, so the
+  // deployed app is testable without a paid plan. Restore to 1 once billing works.
+  [SubscriptionPlan.free]: null,
   [SubscriptionPlan.basic]: 10,
   [SubscriptionPlan.premium]: null,
 };
