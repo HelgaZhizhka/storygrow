@@ -45,13 +45,13 @@ describe('BooksService.getQuota', () => {
     service = module.get(BooksService);
   });
 
-  it('returns free plan with limit=1 when no subscription', async () => {
+  it('returns free plan with unlimited limit (temporary, no Stripe) when no subscription', async () => {
     mockPrisma.subscription.findUnique.mockResolvedValueOnce(null);
     mockPrisma.book.count.mockResolvedValueOnce(0);
 
     const quota = await service.getQuota('user-1');
 
-    expect(quota).toEqual({ plan: SubscriptionPlan.free, used: 0, limit: 1 });
+    expect(quota).toEqual({ plan: SubscriptionPlan.free, used: 0, limit: null });
   });
 
   it('returns basic plan with limit=10 for active basic subscription', async () => {
@@ -88,7 +88,7 @@ describe('BooksService.getQuota', () => {
     const quota = await service.getQuota('user-1');
 
     expect(quota.plan).toBe(SubscriptionPlan.free);
-    expect(quota.limit).toBe(1);
+    expect(quota.limit).toBe(null);
   });
 
   it('accepts trialing status as active', async () => {
@@ -183,10 +183,13 @@ describe('BooksService.createBook', () => {
     });
   });
 
-  it('throws 402 when free quota (1 book) is exceeded', async () => {
+  it('throws 402 when a plan quota is exceeded (basic: 10 books)', async () => {
     mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1' });
-    mockPrisma.subscription.findUnique.mockResolvedValueOnce(null);
-    mockPrisma.book.count.mockResolvedValueOnce(1);
+    mockPrisma.subscription.findUnique.mockResolvedValueOnce({
+      plan: SubscriptionPlan.basic,
+      status: 'active',
+    });
+    mockPrisma.book.count.mockResolvedValueOnce(10);
 
     await expect(
       service.createBook('user-1', {
