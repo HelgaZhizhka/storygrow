@@ -62,13 +62,14 @@ const buildTemplateCatalogue = (childAge: number): string => {
 const buildProtagonistBlock = (opts: BuildStoryPromptOptions): string => {
   const gender = opts.gender ?? 'unspecified';
   if (opts.protagonistMode === 'child') {
-    const appearance =
-      opts.appearance && opts.appearance.trim().length > 0
-        ? opts.appearance
-        : 'invent a fitting, age-appropriate appearance';
+    // NOTE: the child's real appearance is deliberately NOT passed here. Visual
+    // details (hair, clothes, accessories) belong to the illustrations only — the
+    // characterProfile is derived separately downstream and overrides this one.
+    // Keeping appearance out of the plot prevents a hair-bow etc. from leaking
+    // into the story/title.
     return `Protagonist: the child named "${opts.childName}" (age ${opts.childAge}, gender ${gender}).
-heroName MUST be "${opts.childName}". Hero appearance: ${appearance}.
-Set characterProfile to this hero's English visual description.`;
+heroName MUST be "${opts.childName}".
+Set characterProfile to a fitting, age-appropriate English visual description.`;
   }
   return `Protagonist: an INVENTED character — NOT the child, do NOT use the child's real name.
 Invent a fitting name and appearance for an age-${opts.childAge} ${gender === 'unspecified' ? 'child' : gender} character.

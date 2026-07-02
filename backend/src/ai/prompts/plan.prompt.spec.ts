@@ -25,7 +25,7 @@ describe('buildPlanPrompt arc routing', () => {
 });
 
 describe('buildPlanPrompt protagonist modes', () => {
-  it('child mode: names the child as the hero and uses appearance', () => {
+  it('child mode: names the child as the hero but keeps appearance OUT of the plot', () => {
     const p = buildPlanPrompt({
       ...base,
       protagonistMode: 'child',
@@ -33,7 +33,9 @@ describe('buildPlanPrompt protagonist modes', () => {
       appearance: 'brown curly hair, blue dress',
     });
     expect(p).toContain('Коля');
-    expect(p).toContain('brown curly hair, blue dress');
+    // Appearance is image-only; it must never reach the plot planner (a hair-bow
+    // etc. would otherwise leak into the story/title). It is derived separately.
+    expect(p).not.toContain('brown curly hair, blue dress');
     expect(p.toLowerCase()).toContain('protagonist');
   });
 

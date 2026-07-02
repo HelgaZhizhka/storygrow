@@ -38,6 +38,8 @@ const main = async (): Promise<void> => {
   const mode = (positional[2] ?? 'child') as 'child' | 'observer';
   const modelFlag = process.argv.find((a) => a.startsWith('--model='));
   const model = modelFlag ? modelFlag.slice('--model='.length) : undefined;
+  const appearanceFlag = process.argv.find((a) => a.startsWith('--appearance='));
+  const appearance = appearanceFlag ? appearanceFlag.slice('--appearance='.length) : undefined;
   if (!goalTitle) {
     console.error(
       'Usage: pnpm --filter backend eval:text "<goal>" <age> [child|observer] [--model=<id>]',
@@ -70,6 +72,7 @@ const main = async (): Promise<void> => {
     learningGoal,
     protagonistMode: mode,
     arcType,
+    appearance,
     model,
   });
 
@@ -87,6 +90,7 @@ const main = async (): Promise<void> => {
   console.log(
     `\n=== "${story.title}" | goal=${goalTitle} | arc=${arcType} | age=${age} | mode=${mode} | model=${model ?? 'default'} ===\n`,
   );
+  console.log(`characterProfile (image-only): ${story.characterProfile}\n`);
   story.pages.forEach((p, i) => {
     const len = p.text ? ` [${p.text.length}]` : '';
     console.log(`[${i + 1}] ${p.template}${len}\n    ${p.text ?? `(${p.template}, no text)`}\n`);

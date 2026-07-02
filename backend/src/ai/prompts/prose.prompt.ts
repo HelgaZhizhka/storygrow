@@ -28,8 +28,6 @@ Hard rules:
    bare line; unfold it with rhythm, a little dialogue, and feeling. Respect the
    template's character limit (given per page). The cover page has a title and no
    body text.
-4a. Do NOT describe the hero's appearance (hair, eyes, clothes) in the text — the
-   illustration shows that. Spend the words on action, feeling, and dialogue.
 5. State the moral only ONCE, on the final page, using the plan's lesson. On
    content pages neither narrator nor character states or defines the lesson.
 6. illustrationPrompt: a short ENGLISH description of the visual scene only
