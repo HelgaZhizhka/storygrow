@@ -15,6 +15,10 @@ interface CreateBookDto {
   mode: 'fast' | 'custom';
   protagonistMode: 'child' | 'observer';
   artStyle: 'watercolor' | 'cartoon' | 'storybook' | 'pixel' | 'realistic';
+  interests: string[];
+  motifs: string[];
+  favoriteWords: string[];
+  belongings: string[];
 }
 
 export interface QuotaInfo {
@@ -125,6 +129,10 @@ export class BooksService {
         status: 'pending',
         protagonistMode: dto.protagonistMode,
         artStyle: dto.artStyle,
+        interests: dto.interests,
+        motifs: dto.motifs,
+        favoriteWords: dto.favoriteWords,
+        belongings: dto.belongings,
       },
       select: { id: true, status: true, childId: true, learningGoalId: true, createdAt: true },
     });

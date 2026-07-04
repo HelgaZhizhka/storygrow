@@ -41,11 +41,26 @@ repaired at a cost). Encode these beats across the content pages, in order:
 
 // ─── Prompt options (shared by Plan and Prose phases) ────────────────────────
 
+/**
+ * Personalization seeds (#197) — soft, concrete per-book material that attacks
+ * banality with specifics. They flavour the hero's WORLD (props, setting, small
+ * touches) only; they never change premise, conflict, or lesson. `favoriteWords`
+ * are woven only where natural, never forced (forcing flattens prose).
+ */
+export interface StorySeeds {
+  interests: string[];
+  motifs: string[];
+  favoriteWords: string[];
+  belongings: string[];
+}
+
 export interface BuildStoryPromptOptions {
   childName: string;
   childAge: number;
   topic: string;
   learningGoal: string;
+  /** Optional personalization seeds (soft). */
+  seeds?: StorySeeds;
   /** 'child' = hero is the named child; 'observer' = invented third-person character. */
   protagonistMode: 'child' | 'observer';
   /** Child's gender, when known ('male' | 'female' | 'other'). */

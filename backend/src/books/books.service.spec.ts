@@ -105,6 +105,10 @@ describe('BooksService.getQuota', () => {
   });
 });
 
+// Personalization seeds (#197) default to empty; most createBook tests don't
+// exercise them, so spread this to satisfy the required DTO fields.
+const noSeeds = { interests: [], motifs: [], favoriteWords: [], belongings: [] };
+
 describe('BooksService.createBook', () => {
   let service: BooksService;
 
@@ -126,6 +130,7 @@ describe('BooksService.createBook', () => {
         mode: 'custom',
         protagonistMode: 'child',
         artStyle: 'watercolor',
+        ...noSeeds,
       }),
     ).rejects.toThrow(HttpException);
     expect(mockPrisma.book.create).not.toHaveBeenCalled();
@@ -167,6 +172,7 @@ describe('BooksService.createBook', () => {
       mode: 'custom',
       protagonistMode: 'observer',
       artStyle: 'pixel',
+      ...noSeeds,
     });
 
     expect(mockPrisma.book.create).toHaveBeenCalledWith({
@@ -178,6 +184,7 @@ describe('BooksService.createBook', () => {
         status: 'pending',
         protagonistMode: 'observer',
         artStyle: 'pixel',
+        ...noSeeds,
       },
       select: { id: true, status: true, childId: true, learningGoalId: true, createdAt: true },
     });
@@ -198,6 +205,7 @@ describe('BooksService.createBook', () => {
         mode: 'custom',
         protagonistMode: 'child',
         artStyle: 'watercolor',
+        ...noSeeds,
       }),
     ).rejects.toThrow(HttpException);
   });
@@ -220,6 +228,7 @@ describe('BooksService.createBook', () => {
       mode: 'custom',
       protagonistMode: 'child',
       artStyle: 'watercolor',
+      ...noSeeds,
     });
 
     expect(result.id).toBe('book-1');
@@ -248,6 +257,7 @@ describe('BooksService.createBook', () => {
         mode: 'custom',
         protagonistMode: 'child',
         artStyle: 'watercolor',
+        ...noSeeds,
       }),
     ).resolves.not.toThrow();
   });
