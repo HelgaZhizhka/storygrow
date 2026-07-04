@@ -3,11 +3,18 @@ import { ConfigService } from '@nestjs/config';
 import { generateObject } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import type { OpenAIProvider } from '@ai-sdk/openai';
+import { z } from 'zod';
 import { StorySchema, StoryPlanSchema, type Story, type StoryPlan } from '../schemas';
 import { PLAN_SYSTEM_PROMPT, buildPlanPrompt } from '../prompts/plan.prompt';
 import { PROSE_SYSTEM_PROMPT, buildProsePrompt } from '../prompts/prose.prompt';
+import {
+  CHARACTER_PROFILE_SYSTEM,
+  buildCharacterProfilePrompt,
+} from '../prompts/character-profile.prompt';
 import { createTelemetry } from '../telemetry';
-import { PLAN_MODEL, PROSE_MODEL } from '../ai.config';
+import { PLAN_MODEL, PROSE_MODEL, GENERATION_MODEL } from '../ai.config';
+
+const CharacterProfileSchema = z.object({ characterProfile: z.string() });
 
 export interface GenerateStoryInput {
   childName: string;
@@ -42,7 +49,27 @@ export class StoryGeneratorService {
 
   async generateStory(input: GenerateStoryInput): Promise<Story> {
     const plan = await this.generatePlan(input);
+    // Appearance is image-only: the Plan never sees it (so a hair-bow can't
+    // become plot). We derive the visual characterProfile separately here and
+    // override the plan's placeholder before the Prose phase carries it forward.
+    if (input.protagonistMode === 'child' && input.appearance) {
+      plan.characterProfile = await this.deriveCharacterProfile(input);
+    }
     return this.generateProse(plan, input);
+  }
+
+  private async deriveCharacterProfile(input: GenerateStoryInput): Promise<string> {
+    const { object } = await generateObject({
+      model: this.openai(GENERATION_MODEL),
+      schema: CharacterProfileSchema,
+      system: CHARACTER_PROFILE_SYSTEM,
+      prompt: buildCharacterProfilePrompt(input.appearance ?? '', input.childAge, input.gender),
+      experimental_telemetry: createTelemetry('character-profile', {
+        childAge: input.childAge,
+        bookId: input.bookId,
+      }),
+    });
+    return object.characterProfile;
   }
 
   private async generatePlan(input: GenerateStoryInput): Promise<StoryPlan> {
