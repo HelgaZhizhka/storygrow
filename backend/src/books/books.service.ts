@@ -1,6 +1,7 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
 import { SubscriptionPlan, SubscriptionStatus } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { S3Service } from '../s3/s3.service';
 
 interface CreateChildDto {
   name: string;
@@ -39,7 +40,10 @@ const PERIOD_DAYS = 30;
 
 @Injectable()
 export class BooksService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly s3: S3Service,
+  ) {}
 
   listChildren(userId: string) {
     return this.prisma.child.findMany({
@@ -172,5 +176,24 @@ export class BooksService {
         evals: { orderBy: { attempt: 'desc' }, take: 1 },
       },
     });
+  }
+
+  /**
+   * Delete a book the user owns. S3 assets are removed first (best-effort), then
+   * the row — pages and evals cascade via the schema. Throws 404 if the book is
+   * not the user's.
+   */
+  async deleteBook(userId: string, bookId: string): Promise<void> {
+    const book = await this.prisma.book.findFirst({
+      where: { id: bookId, userId },
+      select: { id: true, imageKeys: true, characterPortraitKey: true, pdfKey: true },
+    });
+    if (!book) throw new NotFoundException('Book not found');
+
+    const keys = [...book.imageKeys, book.characterPortraitKey, book.pdfKey].filter(
+      (k): k is string => Boolean(k),
+    );
+    await this.s3.deleteObjects(keys);
+    await this.prisma.book.delete({ where: { id: bookId } });
   }
 }

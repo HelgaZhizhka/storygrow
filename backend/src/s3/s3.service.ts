@@ -1,6 +1,11 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectsCommand,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 // Short-lived presigned URLs: assets are re-signed on demand per page load, so a
@@ -40,6 +45,17 @@ export class S3Service implements OnModuleInit {
         Key: input.key,
         Body: input.body,
         ContentType: input.contentType,
+      }),
+    );
+  }
+
+  /** Best-effort bulk delete; no-op for an empty key list. */
+  async deleteObjects(keys: string[]): Promise<void> {
+    if (keys.length === 0) return;
+    await this.client.send(
+      new DeleteObjectsCommand({
+        Bucket: this.bucket,
+        Delete: { Objects: keys.map((Key) => ({ Key })) },
       }),
     );
   }
