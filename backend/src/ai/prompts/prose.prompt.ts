@@ -34,6 +34,11 @@ Hard rules:
 6. illustrationPrompt: a short ENGLISH description of the visual scene only
    (no text/letters in the image). The characterProfile is prepended downstream —
    do NOT repeat it. Keep it under 180 characters.
+7. COMPANIONS: if the prompt lists companion descriptors (named pets/toys) and a
+   companion appears in a scene, describe it in that illustrationPrompt using its
+   FULL descriptor (name + species + look) EXACTLY as given — never by bare name.
+   This keeps the pet/toy visually consistent and stops it being drawn as a
+   person or a different animal.
 
 THE VOICE — match this register (warm Сутеев read-aloud):
   • Warm narrator ("Жил-был…"), folk rhythm and inversion, gentle humour.
@@ -55,8 +60,28 @@ const renderPlanPages = (plan: StoryPlan): string =>
     })
     .join('\n');
 
+/**
+ * Companion cast-sheet — recurring named pets/toys with a fixed English visual
+ * descriptor. The Prose phase must reuse each descriptor verbatim in any
+ * illustrationPrompt that features the companion, so it stays consistent across
+ * pages. Empty string when there are none.
+ */
+const buildCompanionBlock = (companions: string[]): string => {
+  if (companions.length === 0) return '';
+  return `
+Companion descriptors (name + species + look) — when a companion appears in a
+scene, describe it in that illustrationPrompt using its descriptor EXACTLY,
+never by bare name:
+${companions.map((c) => `  • ${c}`).join('\n')}
+`;
+};
+
 /** buildProsePrompt — the user-turn for the Prose phase. */
-export const buildProsePrompt = (plan: StoryPlan, opts: BuildStoryPromptOptions): string => {
+export const buildProsePrompt = (
+  plan: StoryPlan,
+  opts: BuildStoryPromptOptions,
+  companions: string[] = [],
+): string => {
   const exemplar = pickExemplar(opts.topic, opts.arcType);
   return `
 Write the final Russian read-aloud text for this approved plan.
@@ -65,7 +90,7 @@ Title: ${plan.title}
 Hero name (use on every page): ${plan.heroName}
 characterProfile (keep verbatim): ${plan.characterProfile}
 Lesson (final page only): ${plan.lesson}
-
+${buildCompanionBlock(companions)}
 Pages to render (follow exactly):
 ${renderPlanPages(plan)}
 
