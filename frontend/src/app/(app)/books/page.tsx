@@ -156,7 +156,7 @@ export default function BooksPage(): React.ReactElement {
                 type="button"
                 aria-label="Удалить книгу"
                 onClick={() => setConfirmId(book.id)}
-                className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-base leading-none text-white opacity-80 transition hover:bg-black/60 hover:opacity-100"
+                className="absolute left-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-base leading-none text-white opacity-0 transition hover:bg-black/60 focus-visible:opacity-100 group-hover:opacity-100"
               >
                 ×
               </button>
