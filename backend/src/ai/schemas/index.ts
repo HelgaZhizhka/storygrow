@@ -1,7 +1,7 @@
 export { StorySchema, PageSchema } from './story.schema';
 export type { Story, Page } from './story.schema';
 
-export { StoryPlanSchema, PlanPageSchema } from './story-plan.schema';
+export { StoryPlanSchema, PlanPageSchema, buildStoryPlanSchema } from './story-plan.schema';
 export type { StoryPlan, PlanPage } from './story-plan.schema';
 
 export {

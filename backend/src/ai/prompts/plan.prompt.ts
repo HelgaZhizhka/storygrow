@@ -1,6 +1,6 @@
 import {
   PAGE_TEMPLATES,
-  TEMPLATE_NAMES,
+  templatesForAge,
   type TemplateName,
 } from '../../pdf/page-templates/page-templates.config';
 import { BEAT_SHEETS, type BuildStoryPromptOptions } from './story-generator.prompt';
@@ -47,9 +47,8 @@ Hard rules:
 
 const buildTemplateCatalogue = (childAge: number): string => {
   const lines: string[] = ['Available page templates (use ONLY these):'];
-  TEMPLATE_NAMES.forEach((name: TemplateName) => {
+  templatesForAge(childAge).forEach((name: TemplateName) => {
     const config = PAGE_TEMPLATES[name];
-    if (!config.suitableFor.includes(childAge)) return;
     const limits: string[] = [];
     if (config.maxChars.title !== undefined) limits.push(`title max ${config.maxChars.title}`);
     if (config.maxChars.text !== undefined) limits.push(`text max ${config.maxChars.text}`);

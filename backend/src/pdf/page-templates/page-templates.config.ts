@@ -88,3 +88,12 @@ export const PAGE_TEMPLATES: Readonly<Record<TemplateName, PageTemplateConfig>> 
     suitableFor: [5, 6, 7, 8],
   },
 } as const;
+
+/**
+ * Template names pedagogically appropriate for a given child age — the single
+ * source of truth for age filtering, used both to build the Plan prompt
+ * catalogue and to constrain the Plan schema's template enum so an age-invalid
+ * template cannot be emitted in the first place.
+ */
+export const templatesForAge = (childAge: number): TemplateName[] =>
+  TEMPLATE_NAMES.filter((name) => PAGE_TEMPLATES[name].suitableFor.includes(childAge));
