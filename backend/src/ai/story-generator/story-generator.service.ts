@@ -11,11 +11,13 @@ import {
   CHARACTER_PROFILE_SYSTEM,
   buildCharacterProfilePrompt,
 } from '../prompts/character-profile.prompt';
+import { COMPANIONS_SYSTEM, buildCompanionsPrompt } from '../prompts/companions.prompt';
 import type { StorySeeds } from '../prompts/story-generator.prompt';
 import { createTelemetry } from '../telemetry';
 import { PLAN_MODEL, PROSE_MODEL, GENERATION_MODEL } from '../ai.config';
 
 const CharacterProfileSchema = z.object({ characterProfile: z.string() });
+const CompanionsSchema = z.object({ companions: z.array(z.string()) });
 
 export interface GenerateStoryInput {
   childName: string;
@@ -57,7 +59,27 @@ export class StoryGeneratorService {
     if (input.protagonistMode === 'child' && input.appearance) {
       plan.characterProfile = await this.deriveCharacterProfile(input);
     }
-    return this.generateProse(plan, input);
+    // Named pets/toys need a visual anchor too (the reference portrait fixes only
+    // the hero). Derive consistent descriptors so the Prose phase can name each
+    // companion by species + look in every illustrationPrompt (#223).
+    const companions = await this.deriveCompanions(input);
+    return this.generateProse(plan, input, companions);
+  }
+
+  private async deriveCompanions(input: GenerateStoryInput): Promise<string[]> {
+    const belongings = input.seeds?.belongings ?? [];
+    if (belongings.length === 0) return [];
+    const { object } = await generateObject({
+      model: this.openai(GENERATION_MODEL),
+      schema: CompanionsSchema,
+      system: COMPANIONS_SYSTEM,
+      prompt: buildCompanionsPrompt(belongings),
+      experimental_telemetry: createTelemetry('story-companions', {
+        childAge: input.childAge,
+        bookId: input.bookId,
+      }),
+    });
+    return object.companions;
   }
 
   private async deriveCharacterProfile(input: GenerateStoryInput): Promise<string> {
@@ -89,12 +111,16 @@ export class StoryGeneratorService {
     return object;
   }
 
-  private async generateProse(plan: StoryPlan, input: GenerateStoryInput): Promise<Story> {
+  private async generateProse(
+    plan: StoryPlan,
+    input: GenerateStoryInput,
+    companions: string[],
+  ): Promise<Story> {
     const { object } = await generateObject({
       model: this.openai(input.model ?? PROSE_MODEL),
       schema: StorySchema,
       system: PROSE_SYSTEM_PROMPT,
-      prompt: buildProsePrompt(plan, input),
+      prompt: buildProsePrompt(plan, input, companions),
       experimental_telemetry: createTelemetry('story-prose', {
         childAge: input.childAge,
         topic: input.topic,

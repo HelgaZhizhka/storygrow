@@ -110,7 +110,8 @@ const main = async (): Promise<void> => {
   console.log(`characterProfile (image-only): ${story.characterProfile}\n`);
   story.pages.forEach((p, i) => {
     const len = p.text ? ` [${p.text.length}]` : '';
-    console.log(`[${i + 1}] ${p.template}${len}\n    ${p.text ?? `(${p.template}, no text)`}\n`);
+    console.log(`[${i + 1}] ${p.template}${len}\n    ${p.text ?? `(${p.template}, no text)`}`);
+    console.log(`    IMG: ${p.illustrationPrompt}\n`);
   });
   console.log(
     `pages w/ text: ${lengths.length} | avg chars: ${avg} | max: ${Math.max(...lengths)}`,
