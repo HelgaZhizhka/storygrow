@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpException,
@@ -118,6 +119,12 @@ export class BooksController {
     const book = await this.books.getBook(user.sub, id);
     if (!book) throw new NotFoundException('Book not found');
     return book;
+  }
+
+  @Delete('books/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteBook(@CurrentUser() user: JwtPayload, @Param('id') id: string): Promise<void> {
+    await this.books.deleteBook(user.sub, id);
   }
 
   @Get('books/:id/pdf-url')

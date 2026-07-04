@@ -10,10 +10,11 @@ jest.mock('../generated/prisma/client', () => ({
 }));
 
 import { Test } from '@nestjs/testing';
-import { HttpException } from '@nestjs/common';
+import { HttpException, NotFoundException } from '@nestjs/common';
 import { SubscriptionPlan } from '../generated/prisma/client';
 import { BooksService } from './books.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { S3Service } from '../s3/s3.service';
 
 const mockPrisma = {
   child: {
@@ -31,8 +32,11 @@ const mockPrisma = {
     findMany: jest.fn(),
     findUnique: jest.fn(),
     findFirst: jest.fn(),
+    delete: jest.fn(),
   },
 };
+
+const mockS3 = { deleteObjects: jest.fn(), uploadObject: jest.fn(), getSignedUrl: jest.fn() };
 
 describe('BooksService.getQuota', () => {
   let service: BooksService;
@@ -40,7 +44,11 @@ describe('BooksService.getQuota', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     const module = await Test.createTestingModule({
-      providers: [BooksService, { provide: PrismaService, useValue: mockPrisma }],
+      providers: [
+        BooksService,
+        { provide: PrismaService, useValue: mockPrisma },
+        { provide: S3Service, useValue: mockS3 },
+      ],
     }).compile();
     service = module.get(BooksService);
   });
@@ -115,7 +123,11 @@ describe('BooksService.createBook', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     const module = await Test.createTestingModule({
-      providers: [BooksService, { provide: PrismaService, useValue: mockPrisma }],
+      providers: [
+        BooksService,
+        { provide: PrismaService, useValue: mockPrisma },
+        { provide: S3Service, useValue: mockS3 },
+      ],
     }).compile();
     service = module.get(BooksService);
   });
@@ -260,5 +272,47 @@ describe('BooksService.createBook', () => {
         ...noSeeds,
       }),
     ).resolves.not.toThrow();
+  });
+});
+
+describe('BooksService.deleteBook', () => {
+  let service: BooksService;
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    const module = await Test.createTestingModule({
+      providers: [
+        BooksService,
+        { provide: PrismaService, useValue: mockPrisma },
+        { provide: S3Service, useValue: mockS3 },
+      ],
+    }).compile();
+    service = module.get(BooksService);
+  });
+
+  it('deletes S3 assets then the book row when owned', async () => {
+    mockPrisma.book.findFirst.mockResolvedValueOnce({
+      id: 'book-1',
+      imageKeys: ['books/book-1/page-1.png'],
+      characterPortraitKey: 'books/book-1/portrait.png',
+      pdfKey: 'books/book-1/book.pdf',
+    });
+
+    await service.deleteBook('user-1', 'book-1');
+
+    expect(mockS3.deleteObjects).toHaveBeenCalledWith([
+      'books/book-1/page-1.png',
+      'books/book-1/portrait.png',
+      'books/book-1/book.pdf',
+    ]);
+    expect(mockPrisma.book.delete).toHaveBeenCalledWith({ where: { id: 'book-1' } });
+  });
+
+  it("throws 404 and does not delete when the book is not the user's", async () => {
+    mockPrisma.book.findFirst.mockResolvedValueOnce(null);
+
+    await expect(service.deleteBook('user-1', 'book-x')).rejects.toThrow(NotFoundException);
+    expect(mockS3.deleteObjects).not.toHaveBeenCalled();
+    expect(mockPrisma.book.delete).not.toHaveBeenCalled();
   });
 });

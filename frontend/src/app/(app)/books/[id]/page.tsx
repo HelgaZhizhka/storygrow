@@ -73,6 +73,7 @@ export default function BookPage(): React.ReactElement {
   const [imageUrlError, setImageUrlError] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     void api
@@ -106,6 +107,17 @@ export default function BookPage(): React.ReactElement {
       router.replace(`/books/${id}/progress`);
     } catch {
       setBusy(false);
+    }
+  }
+
+  async function handleDelete(): Promise<void> {
+    setBusy(true);
+    try {
+      await api.delete(`/books/${id}`);
+      router.replace('/books');
+    } catch {
+      setBusy(false);
+      setConfirmDelete(false);
     }
   }
 
@@ -221,6 +233,33 @@ export default function BookPage(): React.ReactElement {
             className="sg-btn sg-btn-ghost"
           >
             {busy ? 'Запускаем…' : 'Повторить создание изображений'}
+          </button>
+        )}
+
+        {confirmDelete ? (
+          <span className="ml-auto flex items-center gap-2">
+            <span className="text-sm text-text-2">Удалить книгу?</span>
+            <button
+              disabled={busy}
+              onClick={() => void handleDelete()}
+              className="sg-btn sg-btn-ghost text-danger"
+            >
+              {busy ? 'Удаляем…' : 'Да, удалить'}
+            </button>
+            <button
+              disabled={busy}
+              onClick={() => setConfirmDelete(false)}
+              className="sg-btn sg-btn-ghost"
+            >
+              Отмена
+            </button>
+          </span>
+        ) : (
+          <button
+            onClick={() => setConfirmDelete(true)}
+            className="sg-btn sg-btn-ghost ml-auto text-danger"
+          >
+            Удалить
           </button>
         )}
       </div>
