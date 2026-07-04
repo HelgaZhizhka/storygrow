@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { startActiveObservation } from '@langfuse/tracing';
 import { type Story } from '../schemas';
-import { buildRegenerationFeedback } from '../prompts/story-generator.prompt';
+import { buildRegenerationFeedback, type StorySeeds } from '../prompts/story-generator.prompt';
 import { VocabularyRagService } from '../rag/vocabulary-rag.service';
 import { ageToGradeLevel } from '../rag/age-grade.map';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -20,6 +20,7 @@ export interface GenerateStoryOptions {
   arcType: 'virtue' | 'flaw';
   gender?: string;
   appearance?: string;
+  seeds?: StorySeeds;
 }
 
 export interface GenerateStoryResult {

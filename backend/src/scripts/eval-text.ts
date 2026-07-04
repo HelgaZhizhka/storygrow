@@ -40,6 +40,22 @@ const main = async (): Promise<void> => {
   const model = modelFlag ? modelFlag.slice('--model='.length) : undefined;
   const appearanceFlag = process.argv.find((a) => a.startsWith('--appearance='));
   const appearance = appearanceFlag ? appearanceFlag.slice('--appearance='.length) : undefined;
+  const seedFlag = (name: string): string[] => {
+    const flag = process.argv.find((a) => a.startsWith(`--${name}=`));
+    return flag
+      ? flag
+          .slice(`--${name}=`.length)
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : [];
+  };
+  const seeds = {
+    interests: seedFlag('interests'),
+    belongings: seedFlag('belongings'),
+    motifs: seedFlag('motifs'),
+    favoriteWords: seedFlag('favoriteWords'),
+  };
   if (!goalTitle) {
     console.error(
       'Usage: pnpm --filter backend eval:text "<goal>" <age> [child|observer] [--model=<id>]',
@@ -73,6 +89,7 @@ const main = async (): Promise<void> => {
     protagonistMode: mode,
     arcType,
     appearance,
+    seeds,
     model,
   });
 

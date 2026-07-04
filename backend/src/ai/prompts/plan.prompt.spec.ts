@@ -10,6 +10,37 @@ const base: BuildStoryPromptOptions = {
   arcType: 'flaw',
 };
 
+describe('buildPlanPrompt personalization seeds', () => {
+  it('injects supplied seeds under a SOFT framing that protects the premise', () => {
+    const out = buildPlanPrompt({
+      ...base,
+      seeds: {
+        interests: ['динозавры'],
+        belongings: ['кот Барсик'],
+        motifs: ['дружба'],
+        favoriteWords: ['ура'],
+      },
+    });
+    expect(out).toContain('динозавры');
+    expect(out).toContain('кот Барсик');
+    expect(out).toContain('ура');
+    expect(out).toContain('SOFT');
+    expect(out).toMatch(/do NOT change the premise/i);
+  });
+
+  it('omits the seeds block entirely when no seeds are supplied', () => {
+    expect(buildPlanPrompt(base)).not.toContain('PERSONALIZATION SEEDS');
+  });
+
+  it('omits the seeds block when all seed lists are empty', () => {
+    const out = buildPlanPrompt({
+      ...base,
+      seeds: { interests: [], motifs: [], favoriteWords: [], belongings: [] },
+    });
+    expect(out).not.toContain('PERSONALIZATION SEEDS');
+  });
+});
+
 describe('buildPlanPrompt arc routing', () => {
   it('flaw arc encodes the consequence beat sheet (Расплата)', () => {
     const out = buildPlanPrompt(base);

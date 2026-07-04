@@ -26,6 +26,10 @@ const createChildSchema = z.object({
   appearance: z.string().max(1500).optional(),
 });
 
+// Personalization seeds (#197): soft, concrete per-book material. Capped to keep
+// the Plan prompt lean and to bound abuse; empty by default.
+const seedList = z.array(z.string().trim().min(1).max(60)).max(6).default([]);
+
 const createBookSchema = z.object({
   childId: z.string().min(1),
   learningGoalId: z.string().min(1),
@@ -34,6 +38,10 @@ const createBookSchema = z.object({
   artStyle: z
     .enum(['watercolor', 'cartoon', 'storybook', 'pixel', 'realistic'])
     .default('watercolor'),
+  interests: seedList,
+  motifs: seedList,
+  favoriteWords: seedList,
+  belongings: seedList,
 });
 
 @Controller()

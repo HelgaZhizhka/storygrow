@@ -17,6 +17,10 @@ interface BookWithRelations {
   imageKeys: string[];
   protagonistMode: 'child' | 'observer';
   artStyle: 'watercolor' | 'cartoon' | 'storybook' | 'pixel' | 'realistic';
+  interests: string[];
+  motifs: string[];
+  favoriteWords: string[];
+  belongings: string[];
   child: { name: string; age: number; gender: string | null; appearance: string | null };
   learningGoal: { title: string; description: string; arcType: 'virtue' | 'flaw' };
 }
@@ -78,6 +82,12 @@ export class GenerationProcessor extends WorkerHost {
           topic: book.learningGoal.title,
           learningGoal: book.learningGoal.description,
           arcType: book.learningGoal.arcType,
+          seeds: {
+            interests: book.interests,
+            motifs: book.motifs,
+            favoriteWords: book.favoriteWords,
+            belongings: book.belongings,
+          },
         });
         story = storyResult.story;
         this.bookProgress.emit(bookId, {
@@ -158,6 +168,10 @@ export class GenerationProcessor extends WorkerHost {
         imageKeys: true,
         protagonistMode: true,
         artStyle: true,
+        interests: true,
+        motifs: true,
+        favoriteWords: true,
+        belongings: true,
         child: { select: { name: true, age: true, gender: true, appearance: true } },
         learningGoal: { select: { title: true, description: true, arcType: true } },
       },

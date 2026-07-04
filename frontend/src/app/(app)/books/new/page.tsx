@@ -54,9 +54,30 @@ const schema = z.object({
   mode: z.enum(['fast', 'custom']),
   protagonistMode: z.enum(['child', 'observer']),
   artStyle: z.enum(['watercolor', 'cartoon', 'storybook', 'pixel', 'realistic']),
+  interests: z.string().optional(),
+  belongings: z.string().optional(),
+  motifs: z.string().optional(),
+  favoriteWords: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
+
+// Personalization seeds (#197): comma-separated free text → capped string list.
+// Matches the backend cap (≤6 items, ≤60 chars each); empty entries dropped.
+const toSeedList = (raw?: string): string[] =>
+  (raw ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .slice(0, 6)
+    .map((s) => s.slice(0, 60));
+
+const SEED_FIELDS = [
+  { name: 'interests', label: 'Интересы', placeholder: 'динозавры, космос, рисование' },
+  { name: 'belongings', label: 'Питомцы и игрушки', placeholder: 'кот Барсик, плюшевый мишка' },
+  { name: 'motifs', label: 'Мотивы', placeholder: 'дружба, поход в лес' },
+  { name: 'favoriteWords', label: 'Любимые слова', placeholder: 'ура, чудеса' },
+] as const;
 
 export default function NewBookPage(): React.ReactElement {
   const router = useRouter();
@@ -115,6 +136,10 @@ export default function NewBookPage(): React.ReactElement {
           mode: 'custom',
           protagonistMode: values.protagonistMode,
           artStyle: values.artStyle,
+          interests: toSeedList(values.interests),
+          belongings: toSeedList(values.belongings),
+          motifs: toSeedList(values.motifs),
+          favoriteWords: toSeedList(values.favoriteWords),
         });
         await api.post(`/books/${book.id}/generate`, {});
         router.replace(`/books/${book.id}/progress`);
@@ -282,6 +307,27 @@ export default function NewBookPage(): React.ReactElement {
                   </button>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Персонализация (custom only) ── */}
+        {mode === 'custom' && (
+          <div className="sg-card">
+            <span className="sg-section-label">
+              Персонализация <span className="sg-opt">необязательно</span>
+            </span>
+            <p className="sg-field-hint mb-3">
+              Конкретные детали делают историю живой. Мы вплетём их в мир героя, не меняя сюжет.
+              Несколько значений — через запятую.
+            </p>
+            <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
+              {SEED_FIELDS.map((f) => (
+                <div key={f.name}>
+                  <label className="sg-label">{f.label}</label>
+                  <input className="sg-input" placeholder={f.placeholder} {...register(f.name)} />
+                </div>
+              ))}
             </div>
           </div>
         )}

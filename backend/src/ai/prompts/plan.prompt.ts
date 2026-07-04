@@ -75,6 +75,30 @@ Invent a fitting name and appearance for an age-${opts.childAge} ${gender === 'u
 Set characterProfile to the invented character's English visual description.`;
 };
 
+/**
+ * Optional personalization seeds (#197). SOFT by design: they enrich the hero's
+ * world (props, setting, small touches) and must NOT change the premise,
+ * conflict, or lesson — those come from the proven story and the learning goal.
+ * favoriteWords are woven only where they fit naturally, never forced. Returns
+ * an empty string when no seeds are supplied, so the prompt is unchanged.
+ */
+const buildSeedsBlock = (seeds?: BuildStoryPromptOptions['seeds']): string => {
+  if (!seeds) return '';
+  const lines: string[] = [];
+  if (seeds.interests.length > 0) lines.push(`  Interests: ${seeds.interests.join(', ')}`);
+  if (seeds.belongings.length > 0)
+    lines.push(`  Pets/toys the hero owns: ${seeds.belongings.join(', ')}`);
+  if (seeds.motifs.length > 0) lines.push(`  Motifs to play with: ${seeds.motifs.join(', ')}`);
+  if (seeds.favoriteWords.length > 0)
+    lines.push(`  Favourite words (weave ONLY if natural): ${seeds.favoriteWords.join(', ')}`);
+  if (lines.length === 0) return '';
+  return `
+PERSONALIZATION SEEDS (SOFT — enrich the hero's WORLD, do NOT change the premise,
+conflict, or lesson; use as concrete props/setting/small touches where they fit):
+${lines.join('\n')}
+`;
+};
+
 /** buildPlanPrompt — the user-turn for the Plan phase. */
 export const buildPlanPrompt = (opts: BuildStoryPromptOptions): string => {
   const feedbackBlock = opts.feedback
@@ -87,7 +111,7 @@ ${buildProtagonistBlock(opts)}
 
   Topic: ${opts.topic}
   Learning goal: ${opts.learningGoal}
-
+${buildSeedsBlock(opts.seeds)}
 ${buildTemplateCatalogue(opts.childAge)}
 
 Narrative arc the proven story already follows (use as the beat reference):

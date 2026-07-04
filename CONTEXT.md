@@ -73,9 +73,14 @@ Per-book choice in the Custom Flow (`Book.protagonistMode`): `child` — the her
 **Avoid:** "narrator mode", "POV" — the term is "protagonist mode" with values `child` / `observer`.
 
 ### Character Appearance
-Free-text visual description of the child stored on `Child.appearance` (reusable across books). Fed into the story prompt in `child` protagonist mode to seed `characterProfile`. If blank, the LLM invents an age-appropriate appearance.
+Free-text visual description of the child stored on `Child.appearance` (reusable across books). **Image-only:** in `child` mode it is converted, by an isolated derivation step, into the English `characterProfile` that drives the illustrations. It is deliberately **never** shown to the Plan or Prose phase, so a visual detail (a hair-bow, a dress) cannot leak into the plot or title (#216). If blank, the LLM invents an age-appropriate `characterProfile`.
 
 **Avoid:** "avatar", "portrait" — there is no image of the child; this is a text description only.
+
+### Personalization Seeds
+Soft, concrete per-book material stored on `Book` (`interests`, `belongings`, `motifs`, `favoriteWords`) and supplied in the Custom Flow. Fed into the **Plan** phase to attack banality with specifics: they flavour the hero's **world** (props, setting, small touches) but never change the premise, conflict, or lesson — those come from the `Gold Exemplar` and `Learning Goal`. `favoriteWords` are woven only where natural, never forced (forcing flattens prose, per ADR-0005). Empty by default; when empty the Plan prompt is unchanged (#197).
+
+**Avoid:** "keywords", "constraints" — seeds are soft flavour, not hard requirements.
 
 ### Arc Type
 The narrative arc assigned to a `LearningGoal`, stored as `LearningGoal.arcType` (`virtue` | `flaw`).

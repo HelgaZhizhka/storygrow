@@ -11,6 +11,7 @@ import {
   CHARACTER_PROFILE_SYSTEM,
   buildCharacterProfilePrompt,
 } from '../prompts/character-profile.prompt';
+import type { StorySeeds } from '../prompts/story-generator.prompt';
 import { createTelemetry } from '../telemetry';
 import { PLAN_MODEL, PROSE_MODEL, GENERATION_MODEL } from '../ai.config';
 
@@ -26,6 +27,7 @@ export interface GenerateStoryInput {
   arcType: 'virtue' | 'flaw';
   gender?: string;
   appearance?: string;
+  seeds?: StorySeeds;
   feedback?: string;
   /** Override the model (e.g. for text-only A/B via eval:text). Defaults to STORY_MODEL. */
   model?: string;
