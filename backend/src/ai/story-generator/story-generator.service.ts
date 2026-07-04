@@ -4,7 +4,7 @@ import { generateObject } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import type { OpenAIProvider } from '@ai-sdk/openai';
 import { z } from 'zod';
-import { StorySchema, StoryPlanSchema, type Story, type StoryPlan } from '../schemas';
+import { StorySchema, buildStoryPlanSchema, type Story, type StoryPlan } from '../schemas';
 import { PLAN_SYSTEM_PROMPT, buildPlanPrompt } from '../prompts/plan.prompt';
 import { PROSE_SYSTEM_PROMPT, buildProsePrompt } from '../prompts/prose.prompt';
 import {
@@ -75,7 +75,7 @@ export class StoryGeneratorService {
   private async generatePlan(input: GenerateStoryInput): Promise<StoryPlan> {
     const { object } = await generateObject({
       model: this.openai(input.model ?? PLAN_MODEL),
-      schema: StoryPlanSchema,
+      schema: buildStoryPlanSchema(input.childAge),
       system: PLAN_SYSTEM_PROMPT,
       prompt: buildPlanPrompt(input),
       experimental_telemetry: createTelemetry('story-planner', {

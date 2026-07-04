@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { TEMPLATE_NAMES, type TemplateName } from '../../pdf/page-templates/page-templates.config';
+import {
+  TEMPLATE_NAMES,
+  templatesForAge,
+  type TemplateName,
+} from '../../pdf/page-templates/page-templates.config';
 import { DISCUSSION_QUESTIONS_COUNT, PAGES_MIN, PAGES_MAX } from '../ai.config';
 
 /**
@@ -57,3 +61,24 @@ export const StoryPlanSchema = z.object({
 });
 
 export type StoryPlan = z.infer<typeof StoryPlanSchema>;
+
+/**
+ * Age-constrained plan schema — restricts each page's `template` enum to the
+ * templates pedagogically valid for `childAge`. Used by the Plan phase so the
+ * model cannot emit an age-invalid template (e.g. `text-focus` for age 6),
+ * which would otherwise fail BookPlanValidator with `structural=false`.
+ *
+ * Falls back to the full template set if the age has no dedicated templates
+ * (z.enum requires a non-empty list); such ages are rejected upstream anyway.
+ */
+export const buildStoryPlanSchema = (childAge: number): typeof StoryPlanSchema => {
+  const allowed = templatesForAge(childAge);
+  const names = allowed.length > 0 ? allowed : [...TEMPLATE_NAMES];
+  const templateEnum = z.enum(names as [TemplateName, ...TemplateName[]]);
+  return StoryPlanSchema.extend({
+    pages: z
+      .array(PlanPageSchema.extend({ template: templateEnum }))
+      .min(PAGES_MIN)
+      .max(PAGES_MAX),
+  });
+};
