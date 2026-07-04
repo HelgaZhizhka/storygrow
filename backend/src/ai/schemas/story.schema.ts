@@ -1,6 +1,15 @@
 import { z } from 'zod';
-import { TEMPLATE_NAMES, type TemplateName } from '../../pdf/page-templates/page-templates.config';
+import {
+  PAGE_TEMPLATES,
+  TEMPLATE_NAMES,
+  type TemplateName,
+} from '../../pdf/page-templates/page-templates.config';
 import { DISCUSSION_QUESTIONS_COUNT, PAGES_MIN, PAGES_MAX } from '../ai.config';
+
+// The cover is the only template with a title; its cap (single-sourced from the
+// template config) is enforced here so the model cannot emit an over-length
+// cover title that BookPlanValidator would later reject (structural=false).
+const COVER_TITLE_MAX = PAGE_TEMPLATES.cover.maxChars.title ?? 60;
 
 /**
  * PageSchema — one page in the book.
@@ -13,8 +22,8 @@ export const PageSchema = z.object({
   template: z.enum([...TEMPLATE_NAMES] as [TemplateName, ...TemplateName[]]),
   /** Narrative body text for this page. Null only for cover template. */
   text: z.string().min(1).nullable(),
-  /** Title text — required for 'cover' template; null for all other templates. */
-  title: z.string().min(1).nullable(),
+  /** Title text — required for 'cover' template (≤ cover cap); null otherwise. */
+  title: z.string().min(1).max(COVER_TITLE_MAX).nullable(),
   /** Detailed DALL-E prompt describing the illustration for this page. */
   illustrationPrompt: z.string().min(1),
 });
