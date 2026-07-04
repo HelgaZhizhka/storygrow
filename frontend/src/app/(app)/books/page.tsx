@@ -36,11 +36,27 @@ export default function BooksPage(): React.ReactElement {
   const router = useRouter();
   const [books, setBooks] = useState<Book[]>([]);
   const [quota, setQuota] = useState<Quota | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     void api.get<Book[]>('/books').then(setBooks);
     void api.get<Quota>('/books/quota').then(setQuota);
   }, []);
+
+  async function handleDelete(id: string): Promise<void> {
+    setDeletingId(id);
+    try {
+      await api.delete(`/books/${id}`);
+      setBooks((prev) => prev.filter((b) => b.id !== id));
+      setConfirmId(null);
+      void api.get<Quota>('/books/quota').then(setQuota);
+    } catch {
+      /* leave the confirm open so the user can retry */
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   async function handleLogout(): Promise<void> {
     const token = getAccessToken();
@@ -104,7 +120,12 @@ export default function BooksPage(): React.ReactElement {
       ) : (
         <div className="sg-book-grid">
           {books.map((book, i) => (
-            <Link key={book.id} href={`/books/${book.id}`} className="sg-book-card">
+            <div key={book.id} className="sg-book-card group relative">
+              <Link
+                href={`/books/${book.id}`}
+                aria-label={book.title || `Книга для ${genitiveName(book.child.name)}`}
+                className="absolute inset-0 z-0"
+              />
               <div className={`sg-book-cover sg-cover-${i % 5}`}>
                 {book.coverUrl && (
                   <Image
@@ -130,7 +151,39 @@ export default function BooksPage(): React.ReactElement {
                 </div>
                 <div className="sg-book-date">{formatDate(book.createdAt)}</div>
               </div>
-            </Link>
+
+              <button
+                type="button"
+                aria-label="Удалить книгу"
+                onClick={() => setConfirmId(book.id)}
+                className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-base leading-none text-white opacity-80 transition hover:bg-black/60 hover:opacity-100"
+              >
+                ×
+              </button>
+
+              {confirmId === book.id && (
+                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 rounded-[inherit] bg-surface-inset p-4 text-center">
+                  <p className="text-sm font-medium text-text">Удалить книгу?</p>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      disabled={deletingId === book.id}
+                      onClick={() => void handleDelete(book.id)}
+                      className="sg-btn sg-btn-ghost text-danger"
+                    >
+                      {deletingId === book.id ? 'Удаляем…' : 'Удалить'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmId(null)}
+                      className="sg-btn sg-btn-ghost"
+                    >
+                      Отмена
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           ))}
         </div>
       )}
