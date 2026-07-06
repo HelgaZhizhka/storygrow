@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { api } from '@/lib/api';
 import { getAccessToken } from '@/lib/auth';
 
@@ -23,6 +24,16 @@ interface BookStatus {
 }
 
 const TERMINAL_FAILED = new Set(['failed', 'images_failed']);
+
+// Friendly fallback copy when an event carries no message (so raw event types
+// like "generating" never leak into the UI).
+const TYPE_LABELS: Record<ProgressEvent['type'], string> = {
+  generating: 'Придумываем историю…',
+  progress: 'Работаем над книгой…',
+  ready: 'Книга готова!',
+  failed: 'Не удалось создать книгу',
+  images_failed: 'Не удалось создать иллюстрации',
+};
 
 export default function BookProgressPage(): React.ReactElement {
   const { id } = useParams<{ id: string }>();
@@ -75,7 +86,10 @@ export default function BookProgressPage(): React.ReactElement {
         const event = JSON.parse(ev.data) as ProgressEvent;
         setLog((prev) => [
           ...prev,
-          { message: event.message ?? event.type, progress: event.progress },
+          {
+            message: event.message ?? TYPE_LABELS[event.type] ?? 'Работаем…',
+            progress: event.progress,
+          },
         ]);
         if (event.type === 'ready') goReady();
         else if (event.type === 'failed' || event.type === 'images_failed') goFailed();
@@ -93,53 +107,89 @@ export default function BookProgressPage(): React.ReactElement {
   }, [id, router]);
 
   const latest = log[log.length - 1];
+  const percent = latest?.progress ?? 0;
+
+  if (failed) {
+    return (
+      <main className="mx-auto flex w-full max-w-lg flex-col items-center px-6 py-16 text-center">
+        <div className="mb-5 text-5xl">😔</div>
+        <h1 className="sg-page-title mb-2">Что-то пошло не так</h1>
+        <p className="mb-8 text-sm text-text-2">
+          Книгу не удалось создать. Можно попробовать сгенерировать её заново.
+        </p>
+        <div className="flex gap-3">
+          <Link href={`/books/${id}`} className="sg-btn sg-btn-primary">
+            Вернуться к книге
+          </Link>
+          <Link href="/books" className="sg-btn sg-btn-ghost">
+            Ко всем книгам
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto w-full max-w-lg px-6 py-12">
-      <h1 className="mb-2 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-        Генерация книги
-      </h1>
-      <p className="mb-8 text-sm text-zinc-500 dark:text-zinc-400">
-        Ваша книга создаётся — это займёт 1–2 минуты.
-      </p>
+      <div className="sg-card flex flex-col items-center !py-10 text-center">
+        {/* Animated indicator */}
+        <div className="relative mb-6 flex h-24 w-24 items-center justify-center">
+          <span className="absolute inset-0 animate-ping rounded-full bg-primary-soft opacity-60" />
+          <span className="relative flex h-24 w-24 items-center justify-center rounded-full bg-primary-soft text-4xl">
+            <span className="animate-bounce">📖</span>
+          </span>
+        </div>
 
-      {latest?.progress !== undefined && (
-        <div className="mb-6">
-          <div className="mb-1 flex justify-between text-xs text-zinc-500">
-            <span>{latest.message}</span>
-            <span>{latest.progress}%</span>
+        <h1 className="sg-page-title mb-2">Создаём книгу</h1>
+        <p className="mb-8 text-sm text-text-2">
+          Придумываем историю и рисуем иллюстрации — это займёт 1–2 минуты. Страницу можно не
+          закрывать, мы всё сделаем сами.
+        </p>
+
+        {/* Progress */}
+        <div className="mb-6 w-full">
+          <div className="mb-1.5 flex justify-between text-xs font-medium text-text-2">
+            <span>{latest?.message}</span>
+            <span className="text-primary">{percent}%</span>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+          <div className="h-2.5 overflow-hidden rounded-full bg-surface-inset">
             <div
-              className="h-full rounded-full bg-zinc-900 transition-all duration-500 dark:bg-zinc-50"
-              style={{ width: `${latest.progress}%` }}
+              className="h-full rounded-full bg-primary transition-all duration-700 ease-out"
+              style={{ width: `${percent}%` }}
             />
           </div>
         </div>
-      )}
 
-      <ul className="flex flex-col gap-2">
-        {log.map((entry, i) => (
-          <li key={i} className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-zinc-400" />
-            {entry.message}
-          </li>
-        ))}
-      </ul>
+        {/* Step log */}
+        <ul className="flex w-full flex-col gap-2.5 text-left">
+          {log.map((entry, i) => {
+            const active = i === log.length - 1;
+            return (
+              <li
+                key={i}
+                className={`flex items-center gap-2.5 text-sm ${
+                  active ? 'font-medium text-text' : 'text-text-3'
+                }`}
+              >
+                {active ? (
+                  <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-primary" />
+                ) : (
+                  <span className="shrink-0 text-primary">✓</span>
+                )}
+                {entry.message}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
 
-      {failed && (
-        <div className="mt-8 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-950">
-          <p className="mb-3 text-sm font-medium text-red-700 dark:text-red-400">
-            Не удалось сгенерировать книгу.
-          </p>
-          <button
-            onClick={() => router.replace(`/books/${id}`)}
-            className="rounded-lg border border-red-200 px-4 py-2 text-xs font-medium text-red-700 transition-colors hover:bg-red-100 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900"
-          >
-            Вернуться к книге
-          </button>
-        </div>
-      )}
+      <p className="mt-6 text-center text-xs text-text-3">
+        Не хотите ждать? Книга появится в{' '}
+        <Link href="/books" className="font-medium text-primary underline">
+          списке книг
+        </Link>{' '}
+        — можно вернуться позже.
+      </p>
     </main>
   );
 }
