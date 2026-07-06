@@ -1,16 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { clearTokens, getAccessToken } from '@/lib/auth';
 import { api } from '@/lib/api';
 import { genitiveName, pluralYears } from '@/lib/ru';
 import type { BookStatus } from '@/lib/types';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 interface Book {
   id: string;
@@ -33,7 +29,6 @@ function formatDate(iso: string): string {
 }
 
 export default function BooksPage(): React.ReactElement {
-  const router = useRouter();
   const [books, setBooks] = useState<Book[]>([]);
   const [quota, setQuota] = useState<Quota | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
@@ -58,18 +53,6 @@ export default function BooksPage(): React.ReactElement {
     }
   }
 
-  async function handleLogout(): Promise<void> {
-    const token = getAccessToken();
-    if (token) {
-      await fetch(`${API_URL}/auth/logout`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      }).catch(() => {});
-    }
-    clearTokens();
-    router.replace('/login');
-  }
-
   const quotaLabel =
     quota &&
     (quota.limit === null
@@ -80,19 +63,9 @@ export default function BooksPage(): React.ReactElement {
 
   return (
     <main className="mx-auto w-full max-w-[940px] px-7 py-10">
-      <div className="mb-8 flex items-start justify-between gap-5">
-        <div>
-          <h1 className="sg-page-title">Мои книги</h1>
-          {quotaLabel && <p className="mt-2 text-sm text-text-3">{quotaLabel}</p>}
-        </div>
-        <div className="flex shrink-0 items-center gap-3">
-          <Link href="/books/new" className="sg-btn sg-btn-primary">
-            + Новая книга
-          </Link>
-          <button onClick={() => void handleLogout()} className="sg-btn sg-btn-ghost">
-            Выйти
-          </button>
-        </div>
+      <div className="mb-8">
+        <h1 className="sg-page-title">Мои книги</h1>
+        {quotaLabel && <p className="mt-2 text-sm text-text-3">{quotaLabel}</p>}
       </div>
 
       {atLimit && (

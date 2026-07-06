@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { isAuthenticated } from '@/lib/auth';
+import { AppHeader } from '@/components/ui/AppHeader';
 
 export default function AppLayout({ children }: { children: React.ReactNode }): React.ReactElement {
   const router = useRouter();
@@ -13,5 +14,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }): 
     }
   }, [router]);
 
-  return <>{children}</>;
+  return (
+    <>
+      <AppHeader />
+      {children}
+    </>
+  );
 }
