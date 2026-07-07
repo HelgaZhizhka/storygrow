@@ -1399,3 +1399,33 @@ Found while auditing docs and chasing a red CI:
 5. Custom domain (optional).
 
 **Blockers:** none.
+
+---
+
+## 2026-07-07 — quality/UX hardening pass; MVP at a shippable, complete state ✅
+
+All work below shipped to `main` and auto-deployed to Railway (backend + frontend live, `/health` ok, `/books` 200).
+
+**Structural fixes (schema/data-flow, not prompt whack-a-mole):**
+- `#217` (#216) — **appearance → images only.** Appearance leaked into the Plan and drove plot/title (a hair-bow became a magic gimmick). Now derived separately into `characterProfile` (image-only); Plan/Prose see only name+gender. Removed redundant prose rule 4a.
+- `#219` (#218) — **Plan templates constrained by age.** `buildStoryPlanSchema(childAge)` restricts the template enum to `templatesForAge()`, so an age-invalid template (`text-focus`@6) can't be emitted → no more `structural=false` fails.
+- `#222` (#221) — **cover title length gated in `StorySchema`** (single-sourced from `PAGE_TEMPLATES.cover.maxChars.title`); over-length cover titles can't be emitted.
+- `#224` (#223) — **companion anchor.** Named pets/toys (`belongings`) had no visual anchor → drifted (cat→plush, name→person). Isolated `deriveCompanions` step yields English descriptors; Prose names companions by descriptor verbatim in every illustrationPrompt.
+
+**Features:**
+- `#220` (#197) — **personalization seeds** (interests/motifs/favoriteWords/belongings) on `Book`, fed SOFT into the Plan (flavour the hero's world, never change premise/conflict/lesson). Form fields (custom mode), `eval:text` seed flags. CONTEXT.md updated.
+- `#226` (#225) — **delete a book** (DELETE endpoint + S3 cleanup + detail-page button).
+- `#228`/`#229` (#227) — delete from gallery card (overlay-link pattern; button top-left, reveal on hover).
+- `#231` (#230) — **persistent `AppHeader`** on all app pages (was: `(app)` layout was only an auth guard → generation screen trapped the user); **generation screen redesigned** into the design system with friendly Russian statuses (fixed raw `generating` leak).
+
+**Verdict (agreed with user):** the core product is a **complete, deployed MVP** that fulfils its promise — personalized, pedagogically-grounded children's books with quality control. Text quality reached the north star ("genuinely good, showable"): the Тёма/честность book reads as a real Сутеев-register story. Remaining items are **optional polish/hardening/growth, not missing core functionality.**
+
+**Known-but-deferred quality items (optional, not blockers):**
+- Title quality — Plan sometimes emits abstract titles that name the value («…с честностью») despite rule 9; needs a stronger structural nudge.
+- **Story-entity drift** — recurring *plot* animals (the rescued kitten changed colour black→ginger) aren't anchored; `#223` only covers user-supplied `belongings`. Generalize the companion anchor to recurring story entities.
+- Prose content quality — occasional weak beat (e.g. an absurd tall-tale that collides with the climax animal); a variance/selection concern, not systemic flatness.
+- #196 (3–4 age band), PDF discussion-question double-numbering, "Волшебная история" generic label.
+
+**Explicitly rejected this pass:** best-of-N selection (user preference).
+
+**Blockers:** none.
