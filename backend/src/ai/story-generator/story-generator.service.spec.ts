@@ -72,11 +72,16 @@ const input: GenerateStoryInput = {
   arcType: 'virtue',
 };
 
-/** Mock the two sequential calls: Plan, then Prose. */
+/**
+ * Mock the sequential calls for a no-seeds run: Plan, Prose, then Title.
+ * The title equals the story's own title (a concrete title that passes the
+ * validator), so the result still deep-equals validStory.
+ */
 const mockPlanThenProse = (): void => {
   mockGenerateObject
     .mockResolvedValueOnce({ object: validPlan } as never)
-    .mockResolvedValueOnce({ object: validStory } as never);
+    .mockResolvedValueOnce({ object: validStory } as never)
+    .mockResolvedValueOnce({ object: { title: validStory.title } } as never);
 };
 
 describe('StoryGeneratorService', () => {
@@ -93,11 +98,11 @@ describe('StoryGeneratorService', () => {
     service = module.get(StoryGeneratorService);
   });
 
-  it('runs Plan then Prose and returns the Prose Story', async () => {
+  it('runs Plan, Prose, Title and returns the Prose Story', async () => {
     mockPlanThenProse();
     const result = await service.generateStory(input);
     expect(result).toEqual(validStory);
-    expect(mockGenerateObject).toHaveBeenCalledTimes(2);
+    expect(mockGenerateObject).toHaveBeenCalledTimes(3);
   });
 
   it('traces the two phases separately (story-planner, then story-prose)', async () => {
@@ -132,25 +137,50 @@ describe('StoryGeneratorService', () => {
     expect(proseCall.prompt).toContain(validPlan.pages[1].intent);
   });
 
-  it('does NOT derive companions when there are no belongings (Plan, Prose only)', async () => {
+  it('titles from the finished story (story-title) after the Prose phase', async () => {
     mockPlanThenProse();
     await service.generateStory(input);
-    expect(mockGenerateObject).toHaveBeenCalledTimes(2);
+    const titleCall = mockGenerateObject.mock.calls[2][0] as {
+      experimental_telemetry: { functionId: string };
+    };
+    expect(titleCall.experimental_telemetry.functionId).toBe('story-title');
+  });
+
+  it('regenerates the title while it names the learning value', async () => {
+    mockGenerateObject
+      .mockResolvedValueOnce({ object: validPlan } as never)
+      .mockResolvedValueOnce({ object: validStory } as never)
+      // topic is 'дружба'; first title names it → rejected, second is concrete.
+      .mockResolvedValueOnce({ object: { title: 'Дружба и Маша' } } as never)
+      .mockResolvedValueOnce({ object: { title: 'Маша и беглый кот' } } as never);
+
+    const result = await service.generateStory(input);
+
+    expect(result.title).toBe('Маша и беглый кот');
+    expect(result.pages[0].title).toBe('Маша и беглый кот');
+    expect(mockGenerateObject).toHaveBeenCalledTimes(4);
+  });
+
+  it('does NOT derive companions when there are no belongings (Plan, Prose, Title only)', async () => {
+    mockPlanThenProse();
+    await service.generateStory(input);
+    expect(mockGenerateObject).toHaveBeenCalledTimes(3);
   });
 
   it('derives companions from belongings and feeds them into the Prose prompt', async () => {
-    // Plan → Companions → Prose (companions inserted between the two).
+    // Plan → Companions → Prose → Title.
     mockGenerateObject
       .mockResolvedValueOnce({ object: validPlan } as never)
       .mockResolvedValueOnce({ object: { companions: ['Mira, a small grey tabby cat'] } } as never)
-      .mockResolvedValueOnce({ object: validStory } as never);
+      .mockResolvedValueOnce({ object: validStory } as never)
+      .mockResolvedValueOnce({ object: { title: validStory.title } } as never);
 
     await service.generateStory({
       ...input,
       seeds: { interests: [], motifs: [], favoriteWords: [], belongings: ['кошка Мира'] },
     });
 
-    expect(mockGenerateObject).toHaveBeenCalledTimes(3);
+    expect(mockGenerateObject).toHaveBeenCalledTimes(4);
     expect(
       (mockGenerateObject.mock.calls[1][0] as { experimental_telemetry: { functionId: string } })
         .experimental_telemetry.functionId,

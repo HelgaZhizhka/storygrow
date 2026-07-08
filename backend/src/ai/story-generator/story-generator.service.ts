@@ -12,12 +12,15 @@ import {
   buildCharacterProfilePrompt,
 } from '../prompts/character-profile.prompt';
 import { COMPANIONS_SYSTEM, buildCompanionsPrompt } from '../prompts/companions.prompt';
+import { TITLE_SYSTEM, buildTitlePrompt, isConcreteTitle } from '../prompts/title.prompt';
 import type { StorySeeds } from '../prompts/story-generator.prompt';
 import { createTelemetry } from '../telemetry';
 import { PLAN_MODEL, PROSE_MODEL, GENERATION_MODEL } from '../ai.config';
 
 const CharacterProfileSchema = z.object({ characterProfile: z.string() });
 const CompanionsSchema = z.object({ companions: z.array(z.string()) });
+const TitleSchema = z.object({ title: z.string() });
+const TITLE_MAX_ATTEMPTS = 3;
 
 export interface GenerateStoryInput {
   childName: string;
@@ -63,7 +66,49 @@ export class StoryGeneratorService {
     // the hero). Derive consistent descriptors so the Prose phase can name each
     // companion by species + look in every illustrationPrompt (#223).
     const companions = await this.deriveCompanions(input);
-    return this.generateProse(plan, input, companions);
+    const story = await this.generateProse(plan, input, companions);
+    // Title from the finished, concrete story — not the abstract plan (#232).
+    const title = await this.deriveTitle(story, plan.heroName, input);
+    return this.applyTitle(story, title);
+  }
+
+  /**
+   * Derive a concrete, playful title from the written story, regenerating while
+   * the title names the learning value or matches a dull template. Falls back to
+   * the last attempt after TITLE_MAX_ATTEMPTS (the concrete-title prompt makes
+   * even the worst attempt better than the plan's value-naming default).
+   */
+  private async deriveTitle(
+    story: Story,
+    heroName: string,
+    input: GenerateStoryInput,
+  ): Promise<string> {
+    let candidate = story.title;
+    for (let attempt = 0; attempt < TITLE_MAX_ATTEMPTS; attempt++) {
+      const { object } = await generateObject({
+        model: this.openai(input.model ?? PLAN_MODEL),
+        schema: TitleSchema,
+        system: TITLE_SYSTEM,
+        prompt: buildTitlePrompt(heroName, story, input.topic),
+        experimental_telemetry: createTelemetry('story-title', {
+          childAge: input.childAge,
+          topic: input.topic,
+          bookId: input.bookId,
+        }),
+      });
+      candidate = object.title.trim();
+      if (isConcreteTitle(candidate, input.topic)) return candidate;
+    }
+    return candidate;
+  }
+
+  /** Apply the derived title to both the book title and the cover page. */
+  private applyTitle(story: Story, title: string): Story {
+    return {
+      ...story,
+      title,
+      pages: story.pages.map((p) => (p.template === 'cover' ? { ...p, title } : p)),
+    };
   }
 
   private async deriveCompanions(input: GenerateStoryInput): Promise<string[]> {
