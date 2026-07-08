@@ -39,6 +39,14 @@ Hard rules:
    FULL descriptor (name + species + look) EXACTLY as given — never by bare name.
    This keeps the pet/toy visually consistent and stops it being drawn as a
    person or a different animal.
+8. RECURRING CHARACTERS you invent: any animal or creature (other than the hero)
+   that appears on MORE THAN ONE page — a kitten, a puppy, a bird — must get ONE
+   fixed short visual descriptor (species + colour + one distinctive detail),
+   decided the first time it appears, and repeated VERBATIM in the
+   illustrationPrompt of EVERY page it appears on. Its colour and kind must never
+   change between pages (e.g. not a black kitten on one page and a ginger one on
+   the next). Put the descriptor in the English illustrationPrompt, not the
+   Russian body text.
 
 THE VOICE — match this register (warm Сутеев read-aloud):
   • Warm narrator ("Жил-был…"), folk rhythm and inversion, gentle humour.
