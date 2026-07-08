@@ -135,6 +135,23 @@ describe('PdfRenderService', () => {
     expect(occurrences).toBe(1);
   });
 
+  it('strips LLM-supplied "N." prefixes from questions (template numbers them)', async () => {
+    mockS3.uploadObject.mockResolvedValue(undefined);
+    await service.render({
+      ...input,
+      story: {
+        ...input.story,
+        discussionQuestions: ['1. Что случилось?', '2) Почему?', 'Q3', 'Q4', 'Q5'],
+      },
+    });
+
+    const calls = mockSetContent.mock.calls as Array<[string, ...unknown[]]>;
+    const html = calls[0][0];
+    expect(html).toContain('<li>Что случилось?</li>');
+    expect(html).toContain('<li>Почему?</li>');
+    expect(html).not.toContain('<li>1. Что случилось?</li>');
+  });
+
   it('closes the browser even when puppeteer.pdf() throws', async () => {
     mockPdf.mockRejectedValueOnce(new Error('headless crash'));
 
