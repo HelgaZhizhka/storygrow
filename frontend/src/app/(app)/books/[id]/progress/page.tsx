@@ -107,7 +107,11 @@ export default function BookProgressPage(): React.ReactElement {
   }, [id, router]);
 
   const latest = log[log.length - 1];
-  const percent = latest?.progress ?? 0;
+  // Use the most recent entry that actually carried a numeric progress. On SSE
+  // reconnect mid-generation the backend replays a bare `{ type: 'generating' }`
+  // (no progress) as the first event, so reading only `latest` would snap the
+  // bar back to 0% until the next real tick.
+  const percent = [...log].reverse().find((e) => e.progress !== undefined)?.progress ?? 0;
 
   if (failed) {
     return (
