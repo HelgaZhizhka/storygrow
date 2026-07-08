@@ -95,8 +95,10 @@ ${pageSections.join('\n')}
     discussionQuestions: readonly string[];
   }): string {
     const template = this.templates[ctx.template];
+    // The template numbers questions with a CSS counter; the LLM often prefixes
+    // its own "1. " — strip it so questions don't render double-numbered.
     const questionsHtml = ctx.discussionQuestions
-      .map((q) => `<li>${escapeHtml(q)}</li>`)
+      .map((q) => `<li>${escapeHtml(q.replace(/^\s*\d+\s*[.)]\s*/, ''))}</li>`)
       .join('\n');
     return template
       .replaceAll('{{title}}', escapeHtml(ctx.title))

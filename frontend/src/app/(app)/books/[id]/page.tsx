@@ -164,7 +164,11 @@ export default function BookPage(): React.ReactElement {
           imageUrl: imageUrls[i] ?? null,
         }));
 
-  const questions = book.storyJson?.discussionQuestions ?? [];
+  // The list renders its own number circles; the LLM often prefixes its own
+  // "1. " inside the question text — strip it to avoid double numbering.
+  const questions = (book.storyJson?.discussionQuestions ?? []).map((q) =>
+    q.replace(/^\s*\d+\s*[.)]\s*/, ''),
+  );
 
   return (
     <main className="mx-auto w-full max-w-[600px] px-7 py-10">
