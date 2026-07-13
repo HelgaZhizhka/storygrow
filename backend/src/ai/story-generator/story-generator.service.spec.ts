@@ -160,32 +160,4 @@ describe('StoryGeneratorService', () => {
     expect(result.pages[0].title).toBe('Маша и беглый кот');
     expect(mockGenerateObject).toHaveBeenCalledTimes(4);
   });
-
-  it('does NOT derive companions when there are no belongings (Plan, Prose, Title only)', async () => {
-    mockPlanThenProse();
-    await service.generateStory(input);
-    expect(mockGenerateObject).toHaveBeenCalledTimes(3);
-  });
-
-  it('derives companions from belongings and feeds them into the Prose prompt', async () => {
-    // Plan → Companions → Prose → Title.
-    mockGenerateObject
-      .mockResolvedValueOnce({ object: validPlan } as never)
-      .mockResolvedValueOnce({ object: { companions: ['Mira, a small grey tabby cat'] } } as never)
-      .mockResolvedValueOnce({ object: validStory } as never)
-      .mockResolvedValueOnce({ object: { title: validStory.title } } as never);
-
-    await service.generateStory({
-      ...input,
-      seeds: { interests: [], motifs: [], favoriteWords: [], belongings: ['кошка Мира'] },
-    });
-
-    expect(mockGenerateObject).toHaveBeenCalledTimes(4);
-    expect(
-      (mockGenerateObject.mock.calls[1][0] as { experimental_telemetry: { functionId: string } })
-        .experimental_telemetry.functionId,
-    ).toBe('story-companions');
-    const proseCall = mockGenerateObject.mock.calls[2][0] as { prompt: string };
-    expect(proseCall.prompt).toContain('Mira, a small grey tabby cat');
-  });
 });

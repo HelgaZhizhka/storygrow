@@ -52,7 +52,6 @@ const main = async (): Promise<void> => {
   };
   const seeds = {
     interests: seedFlag('interests'),
-    belongings: seedFlag('belongings'),
     motifs: seedFlag('motifs'),
     favoriteWords: seedFlag('favoriteWords'),
   };

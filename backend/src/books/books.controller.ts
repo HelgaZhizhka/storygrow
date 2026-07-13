@@ -42,7 +42,6 @@ const createBookSchema = z.object({
   interests: seedList,
   motifs: seedList,
   favoriteWords: seedList,
-  belongings: seedList,
 });
 
 @Controller()

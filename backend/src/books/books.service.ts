@@ -19,7 +19,6 @@ interface CreateBookDto {
   interests: string[];
   motifs: string[];
   favoriteWords: string[];
-  belongings: string[];
 }
 
 export interface QuotaInfo {
@@ -136,7 +135,6 @@ export class BooksService {
         interests: dto.interests,
         motifs: dto.motifs,
         favoriteWords: dto.favoriteWords,
-        belongings: dto.belongings,
       },
       select: { id: true, status: true, childId: true, learningGoalId: true, createdAt: true },
     });
