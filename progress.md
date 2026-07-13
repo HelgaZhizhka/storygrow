@@ -1429,3 +1429,34 @@ All work below shipped to `main` and auto-deployed to Railway (backend + fronten
 **Explicitly rejected this pass:** best-of-N selection (user preference).
 
 **Blockers:** none.
+
+---
+
+## 2026-07-08/13 — remaining quality items closed; ultra-review; docs-currency audit
+
+All shipped to `main`, auto-deployed to Railway.
+
+**Quality items closed (both deferred items from the 2026-07-07 pass):**
+- `#236` (#232) — **concrete titles.** Plan's title kept naming the abstract learning value («…с честностью») despite rule 9. New isolated `deriveTitle` step runs *after* Prose, titling from the finished concrete story; `isConcreteTitle` validator gates it (rejects value-naming/dull-template titles, ≤3 retries). Verified: «Алиса и рыжий кот на вершине горки» etc.
+- `#237` (#233) — **story-entity anchor.** `#223` anchored user-supplied `belongings` but not animals invented by Prose itself (the rescued kitten drifted black→ginger). New prose rule 8: any recurring non-hero animal gets one fixed descriptor at first appearance, reused verbatim in every illustrationPrompt. Verified: same kitten descriptor across all 4 pages it appears on.
+- `#239` (#238) — PDF polish: strip LLM-supplied «N.»/«N)» prefixes from discussion questions (were double-numbered against the template's own CSS counter); cover eyebrow «Волшебная история» → «Персональная история».
+
+**Ultra-review of #231 (AppHeader + progress screen) found 2 real regressions, both fixed in `#235`:**
+- `AppHeader` used undefined Tailwind v4 `@theme` tokens (`border-border`, `font-head`) that silently drop — fixed to `border-border-subtle` / `font-display`.
+- Progress bar snapped to 0% on SSE reconnect mid-generation (backend replays a bare `{type:'generating'}` with no `progress` on reconnect) — now reads the last log entry with a numeric progress.
+
+**Docs-currency audit (`#241`):** found and fixed real drift accumulated across `#197`/`#223`/`#232` and the Railway migration, none of which updated living docs:
+- `CONTEXT.md` — `Story`/`Story Structure` described a pre-ADR-0005 schema shape; `Custom Flow` named classes never built and omitted the Title/Companions phases; added a `Companion Descriptor` glossary term (previously undocumented).
+- `docs/ARCHITECTURE.md` — pipeline diagram missing Title/Companions; `Book` Prisma sketch missing the `#197` seed columns; **Deployment section still described Hetzner+Dokploy — the app is actually live on Railway** (the most significant gap).
+- `CLAUDE.md` — required env vars missing `GOOGLE_GENERATIVE_AI_API_KEY` (required — Gemini is the default image provider) and `IMAGE_PROVIDER`.
+
+**Verdict:** every known quality gap from the PDF book review is now closed. The MVP-complete verdict from 2026-07-07 stands and is now also true of the docs.
+
+**Next task (queued, not started): `#196` — 3–4 age-band profile.**
+- [ ] 3–4 template caps profile in `page-templates.config` (shorter pages than 5–6)
+- [ ] Simpler, repetition/refrain-driven exemplars for 3–4, **virtue arcs only** (flaw's "Расплата" beat is too heavy for this age)
+- [ ] Per-band exemplar/register selection wired through Plan/Prose + judge calibration
+- [ ] Frontend: lift the current `childAge.min(5)` form restriction (added in `#214` specifically because 3–4/7–8 had no template/exemplar support) once 3–4 is real
+- Branch before editing: `git switch -c issue/196-...` first (per house rule)
+
+**Blockers:** none.
