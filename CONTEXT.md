@@ -14,12 +14,12 @@ A single personalized children's book created for a specific child. Stored in th
 **Avoid:** "story" alone (story is the *content*; book is the *artefact* the user buys); "tale".
 
 ### Story
-The structured AI-generated content of a book. A `Story` is a JSON object matching `StorySchema` (Zod): `title`, `setup`, `conflict`, `lesson`, `resolution`, `discussionQuestions[5]`, `illustrationPrompts[N]`. It is the **direct output of the AI pipeline**, before being split into `BookPage` rows and rendered to PDF.
+The structured AI-generated content of a book. A `Story` is a JSON object matching `StorySchema` (Zod): `title`, `characterProfile`, `discussionQuestions[5]`, and an ordered `pages[]` array (each page: `template`, `text`, `title`, `illustrationPrompt`). It is the **direct output of the AI pipeline** (specifically the Prose phase, then titled — see [Story Plan]), before being split into `BookPage` rows and rendered to PDF.
 
 **Avoid:** "narrative", "text" (too generic).
 
 ### Story Structure
-The pedagogical schema enforced by `StorySchema`: four narrative stages (`setup → conflict → lesson → resolution`) plus discussion questions. This structure is **non-negotiable** in custom-flow generation — it is the educational backbone of the product.
+The pedagogical arc (setup → conflict → lesson → resolution) that the **Plan** phase encodes as ordered page beats — it is not separate top-level `Story` fields (that pre-ADR-0005 shape is gone). This structure is **non-negotiable** in custom-flow generation — it is the educational backbone of the product.
 
 **Avoid:** "plot", "outline".
 
@@ -63,7 +63,7 @@ Synchronous generation path (~5 seconds): pick a pre-authored `Template`, fill p
 **Avoid:** "template flow" (acceptable informally, but "fast flow" is the term in code paths and docs).
 
 ### Custom Flow
-Asynchronous generation path (3-10 min): full AI pipeline via BullMQ job — `StoryPlanner` → `ProseWriter` → `ReadAloudEditor` (optional) → `StoryEvaluator` (with regeneration loop) → `ImageGenerator` (Gemini 2.5 Flash Image per page with a reference portrait for character consistency; gpt-image-1 fallback) → `PDFRenderer` (Puppeteer). Progress streamed to frontend via SSE. (Pre-ADR-0005 this began with a `VocabularyRag` stage and a single `StoryGenerator`; both are superseded.)
+Asynchronous generation path (3-10 min): full AI pipeline via BullMQ job, all phases owned by `StoryGeneratorService` — **Plan** → **Companions** (only if `belongings` seeds given) → **Prose** → **Title** (derived from the finished story, not the abstract plan — see [Story Plan]) → `StoryEvaluator` (with regeneration loop) → `ImageGenerator` (Gemini 2.5 Flash Image per page with a reference portrait for character consistency; gpt-image-1 fallback) → `PDFRenderer` (Puppeteer). Progress streamed to frontend via SSE. (Pre-ADR-0005 this began with a `VocabularyRag` stage and a single mega-call; both are superseded. The ADR-0005 "Read-Aloud Edit" phase was never built — Plan+Prose alone met the quality bar.)
 
 **Avoid:** "AI flow" (every flow technically uses AI somewhere — be specific), "slow flow" (negative framing).
 
@@ -81,6 +81,11 @@ Free-text visual description of the child stored on `Child.appearance` (reusable
 Soft, concrete per-book material stored on `Book` (`interests`, `belongings`, `motifs`, `favoriteWords`) and supplied in the Custom Flow. Fed into the **Plan** phase to attack banality with specifics: they flavour the hero's **world** (props, setting, small touches) but never change the premise, conflict, or lesson — those come from the `Gold Exemplar` and `Learning Goal`. `favoriteWords` are woven only where natural, never forced (forcing flattens prose, per ADR-0005). Empty by default; when empty the Plan prompt is unchanged (#197).
 
 **Avoid:** "keywords", "constraints" — seeds are soft flavour, not hard requirements.
+
+### Companion Descriptor
+A short, fixed English visual descriptor (species + colour + one detail) for a recurring non-hero animal/creature, so it renders consistently across every page it appears on — the same anchoring idea as `characterProfile`, extended past the hero. Two sources: (1) **named companions** from the `belongings` seed (e.g. «кошка Мира» → `deriveCompanions` step, isolated `generateObject` call, own LangFuse trace) and (2) **story-invented recurring characters** (e.g. a rescued kitten with no seed behind it) — the Prose phase itself must invent and reuse one fixed descriptor per prose rule 8. Without an anchor, a recurring animal drifts (colour/species changes page to page) or a named companion's bare name gets illustrated as a person.
+
+**Avoid:** "pet profile", "character sheet" — it is a short visual tag for image consistency, not a personality description.
 
 ### Arc Type
 The narrative arc assigned to a `LearningGoal`, stored as `LearningGoal.arcType` (`virtue` | `flaw`).
@@ -100,7 +105,7 @@ The **target register** (ADR-0005, amended 2026-06-27) is a **rich, warm, read-a
 **Avoid:** "sample", "template" — an exemplar shows the craft to imitate, it is not a fill-in-the-blank skeleton.
 
 ### Story Plan
-The first-class intermediate artefact produced by the **Plan** phase of generation (own Zod schema `StoryPlanSchema`, own `generateObject` call, own LangFuse trace). The story "bible": fixed hero name, `characterProfile`, voice/trait, and the page-by-page beat list (including the chosen safe conflict and, for flaw arcs, the `Расплата` beat). It is the **consistency anchor** — both the `Prose Pass` and the image generator read it. See [docs/adr/0005-decomposed-generation-pipeline.md](docs/adr/0005-decomposed-generation-pipeline.md).
+The first-class intermediate artefact produced by the **Plan** phase of generation (own Zod schema `StoryPlanSchema`, own `generateObject` call, own LangFuse trace). The story "bible": fixed hero name, a placeholder `characterProfile`, voice/trait, and the page-by-page beat list (including the chosen safe conflict and, for flaw arcs, the `Расплата` beat). It is the **consistency anchor** — both the `Prose Pass` and the image generator read it. Its own `title` field is a working title only — the book's final title is decided **after** the Prose phase from the finished, concrete story, not from the Plan (the Plan's title kept naming the abstract learning value; deriving it from the finished story fixes that). See [docs/adr/0005-decomposed-generation-pipeline.md](docs/adr/0005-decomposed-generation-pipeline.md).
 
 **Avoid:** "outline", "draft" — the plan is the structural source of truth, not a rough sketch; the `Story` is rendered *from* it.
 
@@ -152,7 +157,7 @@ Synonym for [Story Structure] in conversation. In code, the Zod schema is named 
 ## Pipeline-level terms
 
 ### AI Pipeline
-End-to-end sequence in Custom Flow: **plan → prose → (edit?) → evaluate → (regenerate?) → illustrate → render**. The former `retrieve` (vocabulary-RAG) stage is removed (ADR-0005); the former single `generate` stage is decomposed into `Story Plan` → `Prose Pass` → `Read-Aloud Edit`. Each stage is a class in `backend/src/ai/` and is independently testable (and independently runnable via `eval:text`).
+End-to-end sequence in Custom Flow: **plan → companions? → prose → title → evaluate → (regenerate?) → illustrate → render**. The former `retrieve` (vocabulary-RAG) stage is removed (ADR-0005); the former single `generate` stage is decomposed into `Story Plan` → `Prose Pass` → title derivation (the ADR-0005 "Read-Aloud Edit" phase was never built). Each phase is a method on `StoryGeneratorService` (`backend/src/ai/story-generator/`) and is independently testable (and independently runnable via `eval:text`).
 
 ### Regeneration Loop
 The retry behavior in `StoryEvaluator`: if `finalScore < threshold`, the story is re-generated up to 2 times (3 total attempts). Each attempt is logged as a separate `StoryEval` row with `attempt: 1|2|3`. The frontend shows progress including which attempt is running.
