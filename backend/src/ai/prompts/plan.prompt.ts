@@ -76,27 +76,51 @@ Set characterProfile to the invented character's English visual description.`;
 };
 
 /**
- * Optional personalization seeds (#197). SOFT by design: they enrich the hero's
- * world (props, setting, small touches) and must NOT change the premise,
- * conflict, or lesson — those come from the proven story and the learning goal.
- * favoriteWords are woven only where they fit naturally, never forced. Returns
- * an empty string when no seeds are supplied, so the prompt is unchanged.
+ * Optional personalization seeds (#197). interests/motifs/favoriteWords are SOFT
+ * by design: they enrich the hero's world (props, setting, small touches) and
+ * must NOT change the premise, conflict, or lesson.
+ *
+ * belongings (named pets/toys) get a FIRMER guarantee: without it, testing found
+ * the model inconsistently dropped a given pet from the story (present in ~1 of
+ * 3 generations) because the proven story's own beat often needs the hero to
+ * discover an UNFAMILIAR stray creature — and a home pet can't play that role
+ * (everyone already knows it, so there's no "will they believe it's real?"
+ * tension). Left ambiguous, the model sometimes merged the two, sometimes
+ * dropped the seed pet entirely. Naming the conflict explicitly and requiring a
+ * minimum presence fixes both failure modes.
  */
 const buildSeedsBlock = (seeds?: BuildStoryPromptOptions['seeds']): string => {
   if (!seeds) return '';
-  const lines: string[] = [];
-  if (seeds.interests.length > 0) lines.push(`  Interests: ${seeds.interests.join(', ')}`);
-  if (seeds.belongings.length > 0)
-    lines.push(`  Pets/toys the hero owns: ${seeds.belongings.join(', ')}`);
-  if (seeds.motifs.length > 0) lines.push(`  Motifs to play with: ${seeds.motifs.join(', ')}`);
+  const softLines: string[] = [];
+  if (seeds.interests.length > 0) softLines.push(`  Interests: ${seeds.interests.join(', ')}`);
+  if (seeds.motifs.length > 0) softLines.push(`  Motifs to play with: ${seeds.motifs.join(', ')}`);
   if (seeds.favoriteWords.length > 0)
-    lines.push(`  Favourite words (weave ONLY if natural): ${seeds.favoriteWords.join(', ')}`);
-  if (lines.length === 0) return '';
-  return `
+    softLines.push(`  Favourite words (weave ONLY if natural): ${seeds.favoriteWords.join(', ')}`);
+  const softBlock =
+    softLines.length > 0
+      ? `
 PERSONALIZATION SEEDS (SOFT — enrich the hero's WORLD, do NOT change the premise,
 conflict, or lesson; use as concrete props/setting/small touches where they fit):
-${lines.join('\n')}
-`;
+${softLines.join('\n')}
+`
+      : '';
+
+  const belongingsBlock =
+    seeds.belongings.length > 0
+      ? `
+HERO'S OWN COMPANION (pet/toy the parent named — NOT soft, must appear):
+${seeds.belongings.map((b) => `  ${b}`).join('\n')}
+This companion MUST have a recurring presence with the hero — give it a line in
+at least two content pages' "intent" (beside the hero, drawn into a scene), not
+just a passing mention. If the proven story's beat needs the hero to discover an
+UNFAMILIAR stray/lost creature, that creature must be a DIFFERENT character —
+never make the hero's own named companion the "stranger nobody believes is
+real" (a known pet cannot carry that beat's tension). Both can exist in the same
+plan.
+`
+      : '';
+
+  return `${softBlock}${belongingsBlock}`;
 };
 
 /** buildPlanPrompt — the user-turn for the Plan phase. */
