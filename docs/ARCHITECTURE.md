@@ -96,7 +96,7 @@ storygrow/
                               ▼
          ┌───────────────────────────────────────────┐
          │ 1. StoryGenerator.generateStory(input)    │
-         │    Decomposed (ADR-0005), two phases:      │
+         │    Decomposed (ADR-0005), up to four calls: │
          │                                            │
          │  1a. Plan  [PLAN_MODEL = gpt-4o]           │
          │      → generateObject(StoryPlanSchema)     │
@@ -104,16 +104,34 @@ storygrow/
          │        name, page layout, per-page         │
          │        beat + intent, safe conflict        │
          │        (arc from LearningGoal.arcType),    │
-         │        lesson, discussion questions        │
+         │        lesson, discussion questions,       │
+         │        a working title (overridden later)  │
          │      trace: story-planner                  │
          │                                            │
-         │  1b. Prose  [PROSE_MODEL = gpt-5]          │
+         │  1b. Companions [GENERATION_MODEL]         │
+         │      → only if seeds.belongings non-empty  │
+         │      → English descriptor per named pet/   │
+         │        toy, reused verbatim in that page's  │
+         │        illustrationPrompt (image anchor,    │
+         │        #223); Prose also self-anchors any   │
+         │        recurring story-invented animal      │
+         │      trace: story-companions                │
+         │                                            │
+         │  1c. Prose  [PROSE_MODEL = gpt-5]          │
          │      → generateObject(StorySchema)         │
          │      → renders the plan in the Сутеев      │
          │        read-aloud register (one Gold       │
          │        Exemplar shown); structure already  │
          │        fixed, so the call only does VOICE  │
          │      trace: story-prose                    │
+         │                                            │
+         │  1d. Title  [PLAN_MODEL = gpt-4o]          │
+         │      → generateObject({title})              │
+         │      → concrete title from the FINISHED     │
+         │        story (not the abstract plan, which  │
+         │        kept naming the learning value);     │
+         │        isConcreteTitle gate, ≤3 retries      │
+         │      trace: story-title                     │
          │  (No vocabulary-RAG step — removed in      │
          │   ADR-0005; age-fit lives in the judge.)   │
          └───────────────────────────────────────────┘
@@ -227,6 +245,10 @@ model Book {
   title           String
   protagonistMode ProtagonistMode  // 'child' (hero = the child) | 'observer' (invented character)
   artStyle        ArtStyle    // 'watercolor'|'cartoon'|'storybook'|'pixel'|'realistic'
+  interests       String[]    // personalization seeds (#197) — soft Plan input
+  motifs          String[]    // "
+  favoriteWords   String[]    // "
+  belongings      String[]    // "  also feeds Companions anchoring (#223)
   storyJson           Json?       // full Story payload (custom flow)
   imageKeys           String[]    // S3 keys for page illustrations
   characterPortraitKey String?    // S3 key of the Gemini reference portrait
@@ -316,15 +338,15 @@ Our pipeline is **deterministic** (input → retrieve → generate → judge →
 
 ## Deployment
 
+**Live on Railway** (not the Hetzner+Dokploy path originally planned — see [docs/deploy-railway.md](deploy-railway.md) for the full setup and [docs/deploy-checklist.md](deploy-checklist.md) for the Dokploy alternative, kept as a fallback but not in use):
+
 ```
-Hetzner CX22 (or CX32) ─── Dokploy ─── stories.example.com
-                                  │
-                                  ├── frontend (Next.js, port 3000)
-                                  ├── backend  (NestJS, port 3001)
-                                  ├── postgres + pgvector
-                                  ├── redis
-                                  ├── minio
-                                  └── langfuse
+Railway project "storygrow"
+  ├── storygrow-api  (backend,  Dockerfile, port 3001 → Railway PORT=8080)
+  ├── storygrow-web  (frontend, Dockerfile, port 3000 → Railway PORT=8080)
+  ├── Postgres (pgvector template)
+  └── Redis
+Cloudflare R2 ── S3-compatible object storage (images, portraits, PDFs)
 ```
 
-Domain → Cloudflare (proxied) → Dokploy → Traefik (built-in) → containers. HTTPS via Let's Encrypt managed by Dokploy.
+Each service gets a Railway-generated `*.up.railway.app` domain (custom domain not yet configured). HTTPS is Railway-managed. `LANGFUSE_ENABLED=false` in production (self-hosted LangFuse only runs in local `docker compose`); LangFuse Cloud is a known follow-up.
