@@ -51,7 +51,6 @@ export interface StorySeeds {
   interests: string[];
   motifs: string[];
   favoriteWords: string[];
-  belongings: string[];
 }
 
 export interface BuildStoryPromptOptions {

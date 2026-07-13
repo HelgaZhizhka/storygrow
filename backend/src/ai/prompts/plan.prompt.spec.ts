@@ -16,13 +16,11 @@ describe('buildPlanPrompt personalization seeds', () => {
       ...base,
       seeds: {
         interests: ['динозавры'],
-        belongings: ['кот Барсик'],
         motifs: ['дружба'],
         favoriteWords: ['ура'],
       },
     });
     expect(out).toContain('динозавры');
-    expect(out).toContain('кот Барсик');
     expect(out).toContain('ура');
     expect(out).toContain('SOFT');
     expect(out).toMatch(/do NOT change the premise/i);
@@ -35,31 +33,9 @@ describe('buildPlanPrompt personalization seeds', () => {
   it('omits the seeds block when all seed lists are empty', () => {
     const out = buildPlanPrompt({
       ...base,
-      seeds: { interests: [], motifs: [], favoriteWords: [], belongings: [] },
+      seeds: { interests: [], motifs: [], favoriteWords: [] },
     });
     expect(out).not.toContain('PERSONALIZATION SEEDS');
-  });
-
-  it('gives belongings a firm (not soft) presence requirement, distinct from the soft seeds', () => {
-    const out = buildPlanPrompt({
-      ...base,
-      seeds: { interests: [], motifs: [], favoriteWords: [], belongings: ['собака Рекс'] },
-    });
-    expect(out).toContain('собака Рекс');
-    expect(out).toMatch(/NOT soft, must appear/i);
-    expect(out).toMatch(/at least two content pages/i);
-    // No interests/motifs/favoriteWords given, so the soft block must be absent —
-    // only the firm companion block should render.
-    expect(out).not.toContain('PERSONALIZATION SEEDS');
-  });
-
-  it('tells the model not to conflate the named companion with a stray/unfamiliar creature beat', () => {
-    const out = buildPlanPrompt({
-      ...base,
-      seeds: { interests: [], motifs: [], favoriteWords: [], belongings: ['кот Барсик'] },
-    });
-    expect(out).toMatch(/UNFAMILIAR stray\/lost creature/i);
-    expect(out).toMatch(/DIFFERENT character/i);
   });
 });
 

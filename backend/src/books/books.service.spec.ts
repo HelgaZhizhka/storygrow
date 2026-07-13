@@ -115,7 +115,7 @@ describe('BooksService.getQuota', () => {
 
 // Personalization seeds (#197) default to empty; most createBook tests don't
 // exercise them, so spread this to satisfy the required DTO fields.
-const noSeeds = { interests: [], motifs: [], favoriteWords: [], belongings: [] };
+const noSeeds = { interests: [], motifs: [], favoriteWords: [] };
 
 describe('BooksService.createBook', () => {
   let service: BooksService;

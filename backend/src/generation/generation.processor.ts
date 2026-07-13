@@ -20,7 +20,6 @@ interface BookWithRelations {
   interests: string[];
   motifs: string[];
   favoriteWords: string[];
-  belongings: string[];
   child: { name: string; age: number; gender: string | null; appearance: string | null };
   learningGoal: { title: string; description: string; arcType: 'virtue' | 'flaw' };
 }
@@ -86,7 +85,6 @@ export class GenerationProcessor extends WorkerHost {
             interests: book.interests,
             motifs: book.motifs,
             favoriteWords: book.favoriteWords,
-            belongings: book.belongings,
           },
         });
         story = storyResult.story;
@@ -171,7 +169,6 @@ export class GenerationProcessor extends WorkerHost {
         interests: true,
         motifs: true,
         favoriteWords: true,
-        belongings: true,
         child: { select: { name: true, age: true, gender: true, appearance: true } },
         learningGoal: { select: { title: true, description: true, arcType: true } },
       },

@@ -55,7 +55,6 @@ const schema = z.object({
   protagonistMode: z.enum(['child', 'observer']),
   artStyle: z.enum(['watercolor', 'cartoon', 'storybook', 'pixel', 'realistic']),
   interests: z.string().optional(),
-  belongings: z.string().optional(),
   motifs: z.string().optional(),
   favoriteWords: z.string().optional(),
 });
@@ -74,7 +73,6 @@ const toSeedList = (raw?: string): string[] =>
 
 const SEED_FIELDS = [
   { name: 'interests', label: 'Интересы', placeholder: 'динозавры, космос, рисование' },
-  { name: 'belongings', label: 'Питомцы и игрушки', placeholder: 'кот Барсик, плюшевый мишка' },
   { name: 'motifs', label: 'Мотивы', placeholder: 'дружба, поход в лес' },
   { name: 'favoriteWords', label: 'Любимые слова', placeholder: 'ура, чудеса' },
 ] as const;
@@ -137,7 +135,6 @@ export default function NewBookPage(): React.ReactElement {
           protagonistMode: values.protagonistMode,
           artStyle: values.artStyle,
           interests: toSeedList(values.interests),
-          belongings: toSeedList(values.belongings),
           motifs: toSeedList(values.motifs),
           favoriteWords: toSeedList(values.favoriteWords),
         });

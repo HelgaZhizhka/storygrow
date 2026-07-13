@@ -69,10 +69,11 @@ model Book {
   // phase to attack banality with concrete detail. They flavour the hero's world
   // (props, setting, small touches); they never change premise, conflict, or
   // lesson. favoriteWords are woven only where natural, never forced.
+  // (A `belongings` seed was tried and removed — #245: it needed a firm
+  // presence guarantee per exemplar, an ongoing whack-a-mole risk.)
   interests       String[]        @default([])
   motifs          String[]        @default([])
   favoriteWords   String[]        @default([])
-  belongings      String[]        @default([])
   userId         String
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   childId        String
