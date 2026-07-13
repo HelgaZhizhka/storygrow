@@ -1452,6 +1452,22 @@ All shipped to `main`, auto-deployed to Railway.
 
 **Verdict:** every known quality gap from the PDF book review is now closed. The MVP-complete verdict from 2026-07-07 stands and is now also true of the docs.
 
+**Blockers:** none.
+
+---
+
+## 2026-07-13 — belongings seed: found broken in prod, fixed, then removed (net simplification)
+
+User reported a personalized pet (`belongings`) didn't appear in a prod-generated book — asked whether that's expected.
+
+**Diagnosis (`#243`):** reproduced with `eval:text --belongings` — the named pet was present in only ~1 of 3 generations. Root cause: the honesty/flaw exemplar's [Расплата] beat requires the hero to discover an **unfamiliar stray** creature — the "nobody believes it's real" tension only works if the animal is a stranger, not the hero's own pet. The seeds instruction was fully soft ("use where it fits"), so the model inconsistently guessed how to reconcile a given pet with that beat.
+
+**Fix shipped (`#244`):** split `belongings` out of the soft seeds block into a firm standalone instruction (must appear on ≥2 pages; the stray-creature beat, if present, must use a different character). Verified 3/3 completed runs — companion present every page.
+
+**Then reversed (`#246`), per user judgment call:** the fix was validated against only ONE exemplar; with ~20 learning goals × 2 arc types, other exemplars likely have similar hidden conflicts — meaning `#243` wasn't a one-time fix, it was the start of a per-exemplar whack-a-mole category. `belongings` was also the only seed requiring its own sub-pipeline (derivation call, schema, prose rule, firm-presence carve-out) versus `interests`/`motifs`/`favoriteWords`, which are simple soft text with zero issues since `#197`. Removed entirely: Prisma column + migration, `companions.prompt.ts`, `deriveCompanions`, prose rule for named descriptors, the form field, docs. `#237` (story-invented recurring character anchor — the rescued-kitten fix) is **independent and unchanged** — it's about animals the story itself invents, not user-supplied pets.
+
+**Lesson:** a fix validated against one test case can still be the wrong call if the underlying mechanism (soft data conflicting with exemplar-specific plot beats) will keep recurring per-exemplar. Recognizing "this fix works but doesn't generalize cheaply" and cutting scope is sometimes better than shipping a narrow patch.
+
 **Next task (queued, not started): `#196` — 3–4 age-band profile.**
 - [ ] 3–4 template caps profile in `page-templates.config` (shorter pages than 5–6)
 - [ ] Simpler, repetition/refrain-driven exemplars for 3–4, **virtue arcs only** (flaw's "Расплата" beat is too heavy for this age)
