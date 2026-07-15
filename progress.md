@@ -1468,11 +1468,19 @@ User reported a personalized pet (`belongings`) didn't appear in a prod-generate
 
 **Lesson:** a fix validated against one test case can still be the wrong call if the underlying mechanism (soft data conflicting with exemplar-specific plot beats) will keep recurring per-exemplar. Recognizing "this fix works but doesn't generalize cheaply" and cutting scope is sometimes better than shipping a narrow patch.
 
-**Next task (queued, not started): `#196` — 3–4 age-band profile.**
-- [ ] 3–4 template caps profile in `page-templates.config` (shorter pages than 5–6)
-- [ ] Simpler, repetition/refrain-driven exemplars for 3–4, **virtue arcs only** (flaw's "Расплата" beat is too heavy for this age)
-- [ ] Per-band exemplar/register selection wired through Plan/Prose + judge calibration
-- [ ] Frontend: lift the current `childAge.min(5)` form restriction (added in `#214` specifically because 3–4/7–8 had no template/exemplar support) once 3–4 is real
-- Branch before editing: `git switch -c issue/196-...` first (per house rule)
+**Blockers:** none.
+
+---
+
+## 2026-07-13 — `#196` design + implementation plan complete (execution deferred to a new session)
+
+Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process for `#196` (3–4 age-band profile). Both artefacts are written, self-reviewed, and merged to `main`:
+
+- **Spec:** `docs/superpowers/specs/2026-07-13-age-band-3-4-design.md` (`#248`). Key finding during brainstorming: **no page template currently accepts age 3 or 4 at all** (`suitableFor` never includes 3/4 for any template) — this is not "shorten the text," it's "make it work at all." Design: a single `AgeBand = '3-4' | '5-6'` type drives everything (extends the existing `templatesForAge` pattern); per-band `maxChars`/page-count; a simplified 5-beat virtue-only beat sheet (drops "Внутренняя борьба"); 2 draft exemplars (Катя/горка, Мишка/Ёжик) pending pedagogy review; judge recalibrated so repetition is the 3-4 target register, not a "flat" defect; flaw-arc goals hidden from 3-4 parents at the `listLearningGoals` query level; `StorySchema` factored into `buildStorySchema(ageBand)` for Custom Flow only — **Fast Flow explicitly untouched** (its templates aren't age-filtered and weren't designed for per-band caps).
+- **Plan:** `docs/superpowers/plans/2026-07-13-age-band-3-4.md` (`#249`). 15 TDD tasks, full real code in every step (no placeholders), covering all ~17 touched files. Self-review caught and fixed 3 real bugs before merge: (1) the original `StorySchema`/`buildStorySchema` draft would have silently dropped Fast Flow's cover-title cap entirely — fixed so `StorySchema` literally **is** `buildStorySchema('5-6')`, byte-identical behavior; (2) a dead `buildStorySchemaForAge` helper with no caller — removed; (3) an unused import left over from that removal, plus a duplicate-import in the validator task — fixed. Also closed one spec-coverage gap (added the "buildStoryPlanSchema rejects a 5-6-only template for age 3" test the spec called for but the first draft plan omitted).
+
+**Explicitly deferred to a new session, per user request:** actual execution (Tasks 1–15). Do NOT start coding in a continuation of this session — the next session should read the plan file and either run `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans` starting at Task 1.
+
+**Entry point for the next session:** `docs/superpowers/plans/2026-07-13-age-band-3-4.md`. `session-handoff.md` is intentionally left empty — this isn't a mid-feature interruption (spec+plan are a complete, closed unit of work), it's a deliberate handoff boundary, same as any other "next task queued" entry in this journal.
 
 **Blockers:** none.
