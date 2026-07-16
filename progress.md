@@ -273,3 +273,21 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Remaining audit recs: #162 batch-eval (the big verification gap), permissions hygiene in `.claude/settings.local.json`.
 
 **Blockers:** none. NOTE for next session: hooks in `.claude/settings.json` will ask for approval on first run — approve them.
+
+---
+
+## 2026-07-16 (cont.) — #162 batch-eval harness (last big verification gap)
+
+**Done:**
+- **`eval:batch`** (`backend/src/scripts/eval-batch.ts`): runs a fixed 10-case eval set (both arcs × both protagonist modes × ages 5–6, including two fallback-exemplar goals) through the text-only pipeline with bounded concurrency; prints a per-run table + per-criterion mean/min aggregates + pass rate; `--out=` writes JSON for before/after diffing; exit 1 if any run errored. First-attempt quality only (no regeneration loop) — the metric is "% passing on first attempt".
+- **Shared runner extracted** (`scripts/lib/eval-run.ts`) — `eval:text` refactored onto it, output unchanged.
+- **Pure aggregation module** (`scripts/lib/eval-aggregate.ts`) — TDD'd (5 unit tests: pass-rate/mean/min, all-failed batch, table/summary formatting).
+- **LangFuse tracing in both harnesses** (issue scope item 2): `instrument.ts` imported + `shutdownTelemetry()` flush on exit — batch runs land on the local dashboard when LANGFUSE_* keys are set.
+- **Baseline recorded**: `docs/process/eval-baselines/2026-07-16-baseline.json` — the "before" reference for future prompt/model comparisons.
+- Scope item 3 (LangFuse datasets/experiments) intentionally skipped — the issue itself marks it optional; YAGNI until we actually compare versions in the dashboard.
+
+**Next:**
+- `#196` execution (3–4 age band) — after it ships, extend DEFAULT_SET with age-3/4 cases.
+- Re-run `eval:batch` after any prompt/model change and diff against the baseline JSON.
+
+**Blockers:** none.

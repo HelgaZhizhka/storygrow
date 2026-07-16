@@ -1,35 +1,23 @@
 /**
  * Text-only generation harness — iterate on story TEXT quality cheaply.
  *
- * Runs ONLY VocabularyRag → StoryGenerator → StoryEvaluator (no images, no PDF,
- * no DB writes). Costs cents (gpt-4o-mini text + judge), seconds to run.
- *
- * Services are instantiated manually (NOT via NestFactory): tsx/esbuild does not
- * emit `emitDecoratorMetadata`, so Nest DI cannot resolve constructor params here.
+ * Single verbose run: full page text + judge reasoning printed. For systematic
+ * multi-goal comparison use eval-batch.ts (#162). Shared run logic lives in
+ * lib/eval-run.ts.
  *
  * Usage:
- *   pnpm --filter backend eval:text "<goal>" <age> [child|observer]
+ *   pnpm --filter backend eval:text "<goal>" <age> [child|observer] [--model=<id>]
  * Example:
  *   pnpm --filter backend eval:text "Смелость" 6 child
  *
  * The arc type (virtue|flaw) is taken from the LearningGoal row, so a flaw goal
  * (e.g. Честность) is generated with the flaw beat sheet + exemplar automatically.
+ *
+ * Traces land in LangFuse when LANGFUSE_PUBLIC_KEY/SECRET_KEY are set (#162).
  */
-import type { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../prisma/prisma.service';
-import { VocabularyRagService } from '../ai/rag/vocabulary-rag.service';
-import { StoryGeneratorService } from '../ai/story-generator/story-generator.service';
-import { StoryEvaluatorService } from '../ai/story-generator/story-evaluator.service';
-import { ageToGradeLevel } from '../ai/rag/age-grade.map';
-
-const configShim = {
-  getOrThrow: (key: string): string => {
-    const value = process.env[key];
-    if (value == null || value === '') throw new Error(`Missing env: ${key}`);
-    return value;
-  },
-  get: (key: string): string | undefined => process.env[key],
-} as unknown as ConfigService;
+import '../instrument';
+import { shutdownTelemetry } from '../instrument';
+import { createEvalServices, runTextEval } from './lib/eval-run';
 
 const main = async (): Promise<void> => {
   const positional = process.argv.slice(2).filter((a) => !a.startsWith('--'));
@@ -62,46 +50,15 @@ const main = async (): Promise<void> => {
     process.exit(1);
   }
 
-  const prisma = new PrismaService();
-  await prisma.onModuleInit();
-  const vocab = new VocabularyRagService(prisma, configShim);
-  const generator = new StoryGeneratorService(configShim);
-  const evaluator = new StoryEvaluatorService(configShim);
-
-  const goal = await prisma.learningGoal.findFirst({
-    where: { title: goalTitle },
-    select: { title: true, description: true, arcType: true },
-  });
-  const topic = goal?.title ?? goalTitle;
-  const learningGoal = goal?.description ?? goalTitle;
-  const arcType = goal?.arcType ?? 'virtue';
-
-  const gradeLevel = ageToGradeLevel(age);
-  const corpusWords = await vocab.listByGrade(gradeLevel);
-
-  const story = await generator.generateStory({
-    bookId: 'dry-run',
-    childName: 'Алиса',
-    childAge: age,
-    topic,
-    learningGoal,
-    protagonistMode: mode,
-    arcType,
+  const services = await createEvalServices();
+  const { story, checks, arcType, avgChars, maxChars } = await runTextEval(services, {
+    goalTitle,
+    age,
+    mode,
+    model,
     appearance,
     seeds,
-    model,
   });
-
-  const checks = await evaluator.evaluate({
-    story,
-    childAge: age,
-    learningGoal,
-    bookId: 'dry-run',
-    corpusWords,
-  });
-
-  const lengths = story.pages.filter((p) => p.text != null).map((p) => (p.text as string).length);
-  const avg = Math.round(lengths.reduce((a, b) => a + b, 0) / lengths.length);
 
   console.log(
     `\n=== "${story.title}" | goal=${goalTitle} | arc=${arcType} | age=${age} | mode=${mode} | model=${model ?? 'default'} ===\n`,
@@ -112,9 +69,8 @@ const main = async (): Promise<void> => {
     console.log(`[${i + 1}] ${p.template}${len}\n    ${p.text ?? `(${p.template}, no text)`}`);
     console.log(`    IMG: ${p.illustrationPrompt}\n`);
   });
-  console.log(
-    `pages w/ text: ${lengths.length} | avg chars: ${avg} | max: ${Math.max(...lengths)}`,
-  );
+  const pagesWithText = story.pages.filter((p) => p.text != null).length;
+  console.log(`pages w/ text: ${pagesWithText} | avg chars: ${avgChars} | max: ${maxChars}`);
   console.log(`judge scores: ${JSON.stringify(checks.judgeResult.scores)}`);
   console.log(
     `registerMatch (finalScore): ${checks.computedFinalScore}/10 | passed: ${checks.passed}`,
@@ -127,7 +83,8 @@ const main = async (): Promise<void> => {
     );
   console.log(`\njudge reasoning: ${checks.judgeResult.reasoning}\n`);
 
-  await prisma.$disconnect();
+  await services.prisma.$disconnect();
+  await shutdownTelemetry();
 };
 
 main().catch((e: unknown) => {
