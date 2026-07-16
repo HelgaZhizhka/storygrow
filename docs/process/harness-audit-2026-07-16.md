@@ -4,6 +4,8 @@
 
 Это снимок на дату аудита, а не контракт — актуальные правила живут в [`CLAUDE.md`](../../CLAUDE.md) и [`AGENTS.md`](../../AGENTS.md). Ретроспектива того, как харнесс дошёл до этого состояния — в [`process-evolution.md`](process-evolution.md).
 
+> **Статус рекомендаций (обновлено 2026-07-16, тот же день):** реализованы в PR #252 — **№1** (ротация `progress.md`, 127 KB → 25 KB), **№2** (CI — required check + auto-merge), **№3** (SessionStart-хук ориентации + merge-gate на `gh pr merge`), **№5** (правило `eval:text` закреплено в AGENTS.md) + вычищено устаревшее visual-contract правило. Детали — [`process-evolution.md` § Волна 8](process-evolution.md). **Открыты:** №4 (#162 batch-eval — главный verification-пробел) и №6 (гигиена permissions/глобальных MCP).
+
 ---
 
 ## Кратко
