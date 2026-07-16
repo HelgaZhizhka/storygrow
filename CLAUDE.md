@@ -105,8 +105,8 @@ Full rationale: [docs/adr/0001-git-workflow.md](docs/adr/0001-git-workflow.md). 
 - PR body: `Closes #<N>` so the issue auto-closes on merge.
 - PR title and squash-commit subject follow **Conventional Commits**: `type(area): short imperative subject`.
   Types: `feat | fix | chore | docs | refactor | test | perf | ci`.
-- `main` is protected — no direct push, no force push.
-- Self-merge OK after `./init.sh` is green and Definition of Done is met.
+- `main` is protected — no direct push, no force push, **CI (`./init.sh` + PR-title lint) is a required check** (since 2026-07-16).
+- Self-merge OK after `./init.sh` is green and Definition of Done is met. Use `--auto`: the merge lands when CI passes — do not sit and poll CI.
 
 ```bash
 # Typical loop
@@ -115,8 +115,8 @@ git switch -c issue/1-pnpm-workspace
 # ...work, commit incrementally...
 git push -u origin issue/1-pnpm-workspace
 gh pr create --title "chore(repo): scaffold pnpm workspace" --body "Closes #1"
-# after ./init.sh is green
-gh pr merge --squash --delete-branch
+# after ./init.sh is green — queues the squash-merge for when CI passes
+gh pr merge --squash --delete-branch --auto
 ```
 
 ---
