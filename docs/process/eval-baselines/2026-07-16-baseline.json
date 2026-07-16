@@ -1,0 +1,272 @@
+{
+  "generatedAt": "2026-07-16T13:07:43.341Z",
+  "model": "default",
+  "results": [
+    {
+      "goal": "Смелость",
+      "age": 6,
+      "mode": "child",
+      "arcType": "virtue",
+      "title": "Алиса и тень ёжика на ночном ковре",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 9,
+        "safetyForChildren": 10,
+        "length": 9,
+        "earnedResolution": 9,
+        "registerMatch": 8
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 145,
+      "maxChars": 171,
+      "durationMs": 153781,
+      "error": null
+    },
+    {
+      "goal": "Доброта",
+      "age": 5,
+      "mode": "child",
+      "arcType": "virtue",
+      "title": "Алиса и блестящий розовый мячик",
+      "passed": true,
+      "registerMatch": 9,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 9,
+        "safetyForChildren": 10,
+        "length": 8,
+        "earnedResolution": 8,
+        "registerMatch": 9
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 159,
+      "maxChars": 184,
+      "durationMs": 116042,
+      "error": null
+    },
+    {
+      "goal": "Самостоятельность",
+      "age": 6,
+      "mode": "observer",
+      "arcType": "virtue",
+      "title": "Саша и танец на велике-двоечнике",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 9,
+        "hasMoralLesson": 8,
+        "structureCompleteness": 8,
+        "safetyForChildren": 9,
+        "length": 9,
+        "earnedResolution": 7,
+        "registerMatch": 8
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 165,
+      "maxChars": 186,
+      "durationMs": 118738,
+      "error": null
+    },
+    {
+      "goal": "Дружба",
+      "age": 5,
+      "mode": "child",
+      "arcType": "virtue",
+      "title": "Алиса и загадочная тень с мишкой",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 8,
+        "structureCompleteness": 9,
+        "safetyForChildren": 8,
+        "length": 10,
+        "earnedResolution": 7,
+        "registerMatch": 8
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 157,
+      "maxChars": 165,
+      "durationMs": 123907,
+      "error": null
+    },
+    {
+      "goal": "Любопытство и любовь к знаниям",
+      "age": 6,
+      "mode": "child",
+      "arcType": "virtue",
+      "title": "Алиса и шёпот энциклопедии на верхней полке",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 8,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 8,
+        "safetyForChildren": 10,
+        "length": 9,
+        "earnedResolution": 9,
+        "registerMatch": 8
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 153,
+      "maxChars": 183,
+      "durationMs": 106671,
+      "error": null
+    },
+    {
+      "goal": "Честность",
+      "age": 6,
+      "mode": "child",
+      "arcType": "flaw",
+      "title": "Алиса и летающая шляпа над парком",
+      "passed": true,
+      "registerMatch": 7,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 9,
+        "safetyForChildren": 8,
+        "length": 10,
+        "earnedResolution": 8,
+        "registerMatch": 7
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 165,
+      "maxChars": 179,
+      "durationMs": 181390,
+      "error": null
+    },
+    {
+      "goal": "Управление гневом",
+      "age": 5,
+      "mode": "child",
+      "arcType": "flaw",
+      "title": "Алиса и треснувшее крыло самолёта",
+      "passed": true,
+      "registerMatch": 7,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 10,
+        "structureCompleteness": 10,
+        "safetyForChildren": 8,
+        "length": 10,
+        "earnedResolution": 9,
+        "registerMatch": 7
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 161,
+      "maxChars": 172,
+      "durationMs": 149628,
+      "error": null
+    },
+    {
+      "goal": "Делиться с другими",
+      "age": 6,
+      "mode": "observer",
+      "arcType": "flaw",
+      "title": "Миша и блестящий прыгучий мячик",
+      "passed": true,
+      "registerMatch": 9,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 9,
+        "safetyForChildren": 10,
+        "length": 10,
+        "earnedResolution": 8,
+        "registerMatch": 9
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 156,
+      "maxChars": 179,
+      "durationMs": 125838,
+      "error": null
+    },
+    {
+      "goal": "Терпение",
+      "age": 5,
+      "mode": "child",
+      "arcType": "flaw",
+      "title": "Алиса и булочки, привыкнувшие скучать",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 8,
+        "structureCompleteness": 9,
+        "safetyForChildren": 10,
+        "length": 9,
+        "earnedResolution": 8,
+        "registerMatch": 8
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 170,
+      "maxChars": 195,
+      "durationMs": 188125,
+      "error": null
+    },
+    {
+      "goal": "Бережное отношение к вещам",
+      "age": 6,
+      "mode": "child",
+      "arcType": "flaw",
+      "title": "Алиса и разноцветное море на мамином рисунке",
+      "passed": true,
+      "registerMatch": 9,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 9,
+        "safetyForChildren": 10,
+        "length": 9,
+        "earnedResolution": 8,
+        "registerMatch": 9
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 152,
+      "maxChars": 201,
+      "durationMs": 113483,
+      "error": null
+    }
+  ],
+  "summary": {
+    "completed": 10,
+    "failed": 0,
+    "passRate": 1,
+    "criteria": {
+      "ageAppropriateVocab": {
+        "mean": 9.7,
+        "min": 8
+      },
+      "hasMoralLesson": {
+        "mean": 8.8,
+        "min": 8
+      },
+      "structureCompleteness": {
+        "mean": 8.9,
+        "min": 8
+      },
+      "safetyForChildren": {
+        "mean": 9.3,
+        "min": 8
+      },
+      "length": {
+        "mean": 9.3,
+        "min": 8
+      },
+      "earnedResolution": {
+        "mean": 8.1,
+        "min": 7
+      },
+      "registerMatch": {
+        "mean": 8.1,
+        "min": 7
+      }
+    },
+    "totalDurationMs": 1377603
+  }
+}
