@@ -6,10 +6,12 @@ Session continuity guidance for AI coding agents working on StoryGrow.
 
 ## Session Start Workflow
 
+> **Automation (2026-07-16):** a `SessionStart` hook (`scripts/hooks/session-start.sh`) auto-injects branch/status, recent commits, the latest `progress.md` entry titles, and the `session-handoff.md` state at every session start. Steps 2, 3 and 5 below are therefore pre-answered in your context — verify against the injected block instead of re-running them; the remaining steps are still yours.
+
 Before writing any code, always do this:
 
 1. Run `pwd` — confirm you're in `/Users/mac/Projects/storygrow`.
-2. Read [progress.md](progress.md) — last verified state + next step.
+2. Read the **last 1–2 entries** of [progress.md](progress.md) (newest at the bottom) — last verified state + next step. Do NOT read the whole file or the archives in `docs/process/progress-archive-*.md`; they are history, not state.
 3. If [session-handoff.md](session-handoff.md) is **non-empty** — read it first. Previous session was interrupted mid-feature.
 4. Check **GitHub Issues** — pick the highest-priority open issue in the current week's milestone (`gh issue list --milestone "Week N"`).
 5. Run `git log --oneline -5` — see recent commits.
@@ -30,7 +32,8 @@ Before writing any code, always do this:
 - **Don't silently change verification rules** during implementation.
 - **Prefer durable repository artifacts over chat summaries.** When a decision is made, write it: `progress.md` for session-level, `docs/adr/` for architectural, `docs/superpowers/specs/` for feature-level.
 - **AI-pipeline code requires extra scrutiny.** It's the heart of the product — don't auto-generate it uncritically. Pair with TDD (`superpowers:test-driven-development`) and verify traces in LangFuse before closing the issue.
-- **Frontend issues require a visual contract.** Before implementing any UI issue (#18/#19/#20/#27/#28/#78), check for a `docs/design/<issue>-*.png` mockup (created by user via Claude Design). Read it via the multimodal `Read` tool to ground your implementation in the real visual target. Pair this with a structural ASCII wireframe in the issue body for state/interaction logic. If neither exists, ask the user before scaffolding default-Tailwind UI.
+- **AI-pipeline changes require at least one live `eval:text` run before the PR.** Unit tests on prompts are spec-mirroring — they catch regressions, not quality. The real check is a live generation read against the change's goal (this has been the de-facto practice since ADR-0005; codified 2026-07-16).
+- **Frontend issues: check for a visual contract first.** If a `docs/design/<issue>-*.png` mockup exists, read it via the multimodal `Read` tool to ground the implementation. If none exists and the issue is visually significant, ask the user before scaffolding default-Tailwind UI.
 
 ---
 

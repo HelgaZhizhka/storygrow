@@ -44,7 +44,8 @@ backend/spike-gemini*/
 .docker-data/
 
 # Claude Code local settings and worktrees
-.claude/
+.claude/*
+!.claude/settings.json
 
 # Session-handoff is committed (it's the handoff). Keep it.
 # progress.md is committed too. Keep it.
