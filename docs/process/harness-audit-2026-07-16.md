@@ -4,7 +4,7 @@
 
 Это снимок на дату аудита, а не контракт — актуальные правила живут в [`CLAUDE.md`](../../CLAUDE.md) и [`AGENTS.md`](../../AGENTS.md). Ретроспектива того, как харнесс дошёл до этого состояния — в [`process-evolution.md`](process-evolution.md).
 
-> **Статус рекомендаций (обновлено 2026-07-16, тот же день):** реализованы в PR #252 — **№1** (ротация `progress.md`, 127 KB → 25 KB), **№2** (CI — required check + auto-merge), **№3** (SessionStart-хук ориентации + merge-gate на `gh pr merge`), **№5** (правило `eval:text` закреплено в AGENTS.md) + вычищено устаревшее visual-contract правило. Детали — [`process-evolution.md` § Волна 8](process-evolution.md). **Открыты:** №4 (#162 batch-eval — главный verification-пробел) и №6 (гигиена permissions/глобальных MCP).
+> **Статус рекомендаций (обновлено 2026-07-16, тот же день): все 6 закрыты.** №1–3, №5 — PR #252 (ротация `progress.md` 127 KB → 25 KB; CI — required check + auto-merge; SessionStart-хук + merge-gate; правило `eval:text` в AGENTS.md) + вычищено устаревшее visual-contract правило. **№4** — PR #254 (#162): `eval:batch` + первый baseline (`docs/process/eval-baselines/2026-07-16-baseline.json`, 10/10 pass, registerMatch mean 8.1). **№6** — `settings.local.json` сокращён 229 → 33 permissions (локальный файл, вне git); глобальные MCP — рекомендация владельцу, см. Волну 8. Детали — [`process-evolution.md` § Волна 8](process-evolution.md).
 
 ---
 
