@@ -2,18 +2,27 @@ import type { Story } from '../schemas';
 
 /**
  * Title derivation (#232) — an ISOLATED step run AFTER the prose, so it titles
- * from the actual, concrete story (a flying cat, a turtle-that-was-a-boot, the
- * rescued kitten) rather than from the abstract plan. The Plan's own title was
- * unreliable — it kept naming the learning value («…с честностью»), which is the
- * dullest possible title and the first thing a reader sees. This step builds a
- * concrete, playful title and a validator (isConcreteTitle) gates it.
+ * from the actual, concrete story rather than from the abstract plan (whose
+ * title kept naming the learning value, «…с честностью»).
+ *
+ * #256: the earlier "CONCRETE and PLAYFUL, vivid image" framing with three
+ * quirky-idiomatic examples over-corrected into pseudo-whimsy («булочки,
+ * привыкнувшие скучать») and invented words («велик-двоечник») — the model
+ * imitated the examples' quirky surface without their idiomatic grounding.
+ * Per ADR-0005 philosophy the fix is reference + measurement, not ban lists:
+ * this prompt now anchors on PLAIN real-book titles, and the judge measures
+ * the title as part of registerMatch (see judge.prompt.ts).
  */
 export const TITLE_SYSTEM = `
 You create the TITLE for a Russian children's book that is already written.
-Make it CONCRETE and PLAYFUL: build it from a vivid image, object, or event that
-actually happens in THIS story, plus the hero's name — in the spirit of Сутеев and
-the Russian folk tale (e.g. «Гриша и хвостатая выдумка», «Тошка и буря в стакане»,
-«Лиза и гора конфет»).
+Title it the way real Russian children's books are titled: the hero's name plus
+one simple, concrete thing or moment that ACTUALLY APPEARS in the story — an
+object the hero holds, a place, an event. Plain, warm, idiomatic Russian; every
+word a 4-year-old already knows.
+
+Titles in the target spirit (real books and approved exemplars):
+«Кто сказал „мяу“?», «Под грибом», «Мешок яблок», «Миша и ночная тень»,
+«Соня и новенький», «Тёма и непослушные шнурки», «Лиза и гора конфет».
 
 Hard rules:
 - Russian. Output ONLY the title text, nothing else.

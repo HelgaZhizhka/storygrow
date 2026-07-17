@@ -43,6 +43,11 @@ CRAFT criterion (the quality signal — judge it strictly):
    • Score HIGH (8–10) ONLY when the voice matches the exemplars: warm narrator
      ("Жил-был…"), folk rhythm, gentle humour, natural dialogue, concrete
      childlike images, the lesson emerging from events rather than stated.
+   • The TITLE is part of the register — judge it against the exemplar titles
+     (the «Название: …» line of each exemplar below). A good title names a
+     simple, concrete thing from the story in plain idiomatic Russian. Cap the
+     score at ≤6 if the title contains an invented/non-existent word, precious
+     or surreal imagery, or names something that does not appear in the story.
 
 TARGET REGISTER — gold exemplars (match this VOICE, never the plot/names/setting):
 """
