@@ -291,3 +291,17 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Re-run `eval:batch` after any prompt/model change and diff against the baseline JSON.
 
 **Blockers:** none.
+
+---
+
+## 2026-07-17 — #256: surreal titles fixed via reference + measurement (not bans)
+
+**Done:**
+- The 2026-07-16 baseline surfaced systematic title pseudo-whimsy (3–4 of 10: «булочки, привыкнувшие скучать», invented word «велик-двоечник», «шёпот энциклопедии») — over-correction of #232's "CONCRETE and PLAYFUL vivid image" framing, whose 3 quirky-idiomatic examples the model imitated on the surface.
+- **Fix per ADR-0005 philosophy (user-grilled: no new ban lists):** (1) TITLE_SYSTEM re-anchored on PLAIN real-book titles («Кто сказал „мяу"?», «Под грибом», «Мешок яблок» + approved exemplar titles) with a positive goal — name a simple thing that actually appears in the story; (2) the judge's registerMatch now covers the title (measured against the exemplar «Название:» lines, cap ≤6 for invented words / surreal imagery / things not in the story) — selection, not restriction.
+- **Verified via eval:batch** (`2026-07-17-after-title-fix.json` vs baseline): all 10 titles plain and concrete, zero invented words; pass 10/10 unchanged; registerMatch 8.1→8.2, structureCompleteness 8.9→9.2, safety 9.3→9.8 — no regressions. First real use of the before/after workflow the batch harness was built for.
+
+**Next:**
+- `#196` execution (3–4 age band) in a fresh session — plan at `docs/superpowers/plans/2026-07-13-age-band-3-4.md`.
+
+**Blockers:** none.

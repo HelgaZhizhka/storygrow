@@ -1,0 +1,272 @@
+{
+  "generatedAt": "2026-07-17T15:38:00.108Z",
+  "model": "default",
+  "results": [
+    {
+      "goal": "Смелость",
+      "age": 6,
+      "mode": "child",
+      "arcType": "virtue",
+      "title": "Алиса и длинная тень",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 10,
+        "safetyForChildren": 8,
+        "length": 9,
+        "earnedResolution": 9,
+        "registerMatch": 8
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 175,
+      "maxChars": 186,
+      "durationMs": 108093,
+      "error": null
+    },
+    {
+      "goal": "Доброта",
+      "age": 5,
+      "mode": "child",
+      "arcType": "virtue",
+      "title": "Алиса и розовый самокат",
+      "passed": true,
+      "registerMatch": 9,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 9,
+        "safetyForChildren": 10,
+        "length": 10,
+        "earnedResolution": 8,
+        "registerMatch": 9
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 144,
+      "maxChars": 181,
+      "durationMs": 69475,
+      "error": null
+    },
+    {
+      "goal": "Самостоятельность",
+      "age": 6,
+      "mode": "observer",
+      "arcType": "virtue",
+      "title": "Коля и первый надувной шарик",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 9,
+        "hasMoralLesson": 8,
+        "structureCompleteness": 9,
+        "safetyForChildren": 10,
+        "length": 8,
+        "earnedResolution": 7,
+        "registerMatch": 8
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 154,
+      "maxChars": 178,
+      "durationMs": 72166,
+      "error": null
+    },
+    {
+      "goal": "Дружба",
+      "age": 5,
+      "mode": "child",
+      "arcType": "virtue",
+      "title": "Алиса и сиреневый куст",
+      "passed": true,
+      "registerMatch": 9,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 9,
+        "safetyForChildren": 10,
+        "length": 10,
+        "earnedResolution": 8,
+        "registerMatch": 9
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 164,
+      "maxChars": 186,
+      "durationMs": 275851,
+      "error": null
+    },
+    {
+      "goal": "Любопытство и любовь к знаниям",
+      "age": 6,
+      "mode": "child",
+      "arcType": "virtue",
+      "title": "Алиса и звёздная книга",
+      "passed": true,
+      "registerMatch": 9,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 8,
+        "structureCompleteness": 9,
+        "safetyForChildren": 10,
+        "length": 10,
+        "earnedResolution": 7,
+        "registerMatch": 9
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 159,
+      "maxChars": 183,
+      "durationMs": 77854,
+      "error": null
+    },
+    {
+      "goal": "Честность",
+      "age": 6,
+      "mode": "child",
+      "arcType": "flaw",
+      "title": "Алиса и котёнок под лавкой",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 10,
+        "safetyForChildren": 10,
+        "length": 9,
+        "earnedResolution": 8,
+        "registerMatch": 8
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 141,
+      "maxChars": 184,
+      "durationMs": 76040,
+      "error": null
+    },
+    {
+      "goal": "Управление гневом",
+      "age": 5,
+      "mode": "child",
+      "arcType": "flaw",
+      "title": "Алиса и сломанное крылышко",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 9,
+        "hasMoralLesson": 10,
+        "structureCompleteness": 10,
+        "safetyForChildren": 10,
+        "length": 10,
+        "earnedResolution": 9,
+        "registerMatch": 8
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 144,
+      "maxChars": 163,
+      "durationMs": 64714,
+      "error": null
+    },
+    {
+      "goal": "Делиться с другими",
+      "age": 6,
+      "mode": "observer",
+      "arcType": "flaw",
+      "title": "Тимофей и блестящее ведёрко",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 9,
+        "safetyForChildren": 10,
+        "length": 10,
+        "earnedResolution": 9,
+        "registerMatch": 8
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 157,
+      "maxChars": 183,
+      "durationMs": 80825,
+      "error": null
+    },
+    {
+      "goal": "Терпение",
+      "age": 5,
+      "mode": "child",
+      "arcType": "flaw",
+      "title": "Алиса и черепашка в саду",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 8,
+        "safetyForChildren": 10,
+        "length": 9,
+        "earnedResolution": 8,
+        "registerMatch": 8
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 156,
+      "maxChars": 181,
+      "durationMs": 80516,
+      "error": null
+    },
+    {
+      "goal": "Бережное отношение к вещам",
+      "age": 6,
+      "mode": "child",
+      "arcType": "flaw",
+      "title": "Алиса и треснувший колокольчик",
+      "passed": true,
+      "registerMatch": 7,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 8,
+        "structureCompleteness": 9,
+        "safetyForChildren": 10,
+        "length": 9,
+        "earnedResolution": 8,
+        "registerMatch": 7
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 154,
+      "maxChars": 203,
+      "durationMs": 62267,
+      "error": null
+    }
+  ],
+  "summary": {
+    "completed": 10,
+    "failed": 0,
+    "passRate": 1,
+    "criteria": {
+      "ageAppropriateVocab": {
+        "mean": 9.8,
+        "min": 9
+      },
+      "hasMoralLesson": {
+        "mean": 8.8,
+        "min": 8
+      },
+      "structureCompleteness": {
+        "mean": 9.2,
+        "min": 8
+      },
+      "safetyForChildren": {
+        "mean": 9.8,
+        "min": 8
+      },
+      "length": {
+        "mean": 9.4,
+        "min": 8
+      },
+      "earnedResolution": {
+        "mean": 8.1,
+        "min": 7
+      },
+      "registerMatch": {
+        "mean": 8.2,
+        "min": 7
+      }
+    },
+    "totalDurationMs": 967801
+  }
+}
