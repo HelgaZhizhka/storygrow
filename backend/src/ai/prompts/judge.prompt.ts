@@ -16,7 +16,12 @@ const registerMatchCriterion = (ageBand: AgeBand): string =>
    • Score HIGH (8–10) when short plain sentences, a repeated refrain line, and
      concrete toddler-scale stakes match the exemplars below. REPETITION IS THE
      TARGET register here, not a flaw — do NOT penalise a short repeated phrase
-     as "flat".`
+     as "flat".
+   • The TITLE is part of the register — judge it against the exemplar titles
+     (the «Название: …» line of each exemplar below). A good title names a
+     simple, concrete thing from the story in plain idiomatic Russian. Cap the
+     score at ≤6 if the title contains an invented/non-existent word, precious
+     or surreal imagery, or names something that does not appear in the story.`
     : `7. registerMatch — how close the prose sits to the TARGET REGISTER shown by the
    gold exemplars below: a warm, musical read-aloud voice in the Сутеев / Russian
    folk-tale tradition. This criterion is TWO-SIDED — BOTH failure modes score low:
@@ -30,7 +35,12 @@ const registerMatchCriterion = (ageBand: AgeBand): string =>
      word-painting of what the picture should show (hair colour, scenery, weather).
    • Score HIGH (8–10) ONLY when the voice matches the exemplars: warm narrator
      ("Жил-был…"), folk rhythm, gentle humour, natural dialogue, concrete
-     childlike images, the lesson emerging from events rather than stated.`;
+     childlike images, the lesson emerging from events rather than stated.
+   • The TITLE is part of the register — judge it against the exemplar titles
+     (the «Название: …» line of each exemplar below). A good title names a
+     simple, concrete thing from the story in plain idiomatic Russian. Cap the
+     score at ≤6 if the title contains an invented/non-existent word, precious
+     or surreal imagery, or names something that does not appear in the story.`;
 
 /**
  * buildJudgeSystemPrompt — a function of AgeBand (#196), not a static const,

@@ -25,4 +25,9 @@ describe('buildJudgeSystemPrompt — per band register calibration', () => {
     expect(buildJudgeSystemPrompt('3-4')).toContain('ages 3–4');
     expect(buildJudgeSystemPrompt('5-6')).toContain('ages 5–6');
   });
+
+  it('judges the title register in both bands (#257 title-register coverage)', () => {
+    expect(buildJudgeSystemPrompt('3-4')).toMatch(/TITLE is part of the register/);
+    expect(buildJudgeSystemPrompt('5-6')).toMatch(/TITLE is part of the register/);
+  });
 });
