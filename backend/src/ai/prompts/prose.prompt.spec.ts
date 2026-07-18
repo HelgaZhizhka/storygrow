@@ -13,7 +13,7 @@ const plan: StoryPlan = {
     { template: 'image-top', beat: 'Трудность', intent: 'Катя боится' },
     { template: 'image-bottom', beat: 'Попытка с повтором', intent: 'Катя пробует' },
     { template: 'image-top', beat: 'Развязка', intent: 'Катя едет' },
-    { template: 'final', beat: 'Закрепление', intent: 'Катя снова едит' },
+    { template: 'final', beat: 'Закрепление', intent: 'Катя снова едет' },
   ],
 };
 
