@@ -80,3 +80,30 @@ describe('buildPlanPrompt protagonist modes', () => {
     expect(p.toLowerCase()).toContain('invent');
   });
 });
+
+describe('buildPlanPrompt — 3-4 band', () => {
+  const base3to4 = { ...base, childAge: 3, arcType: 'virtue' as const };
+
+  it('uses the 3-4 beat sheet (repetition-driven, no Внутренняя борьба) for a virtue goal', () => {
+    const out = buildPlanPrompt(base3to4);
+    expect(out).not.toContain('Внутренняя борьба');
+    expect(out).toMatch(/повтор/i);
+  });
+
+  it('shows the 3-4 template catalogue with the smaller (110) char cap, not 220', () => {
+    const out = buildPlanPrompt(base3to4);
+    expect(out).toContain('text max 110');
+    expect(out).not.toContain('text max 220');
+  });
+
+  it('states the 3-4 page-count range (6–8), not 6–12', () => {
+    const out = buildPlanPrompt(base3to4);
+    expect(out).toMatch(/6–8 pages total/);
+    expect(out).not.toMatch(/6–12 pages total/);
+  });
+
+  it('picks a 3-4 exemplar, not a 5-6 one', () => {
+    const out = buildPlanPrompt(base3to4);
+    expect(out).toContain('Катя'); // FEAR_3_4's hero
+  });
+});
