@@ -305,3 +305,21 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - `#196` execution (3–4 age band) in a fresh session — plan at `docs/superpowers/plans/2026-07-13-age-band-3-4.md`.
 
 **Blockers:** none.
+
+---
+
+## 2026-07-17 (cont.) — global context cleanup (audit rec #6, second half) + session close
+
+**Done (user-level config, outside git — recorded here because it closes the audit's last open item):**
+- **claude.ai connectors disabled by owner:** Figma, Linear, Gmail, Calendar, Notion (5 of 6 were unauthenticated dead weight surfacing tools into every session).
+- **computer-use and Chrome integration disabled** (owner found the app toggle; agent set `claudeInChromeDefaultEnabled=false`). Net effect verified live: **−50 deferred MCP tools, minus the two largest instruction blocks** in every session's system prompt. Chrome re-attaches on demand via `/chrome`.
+- **Personal skills pruned** 18 → 12 (archived to `~/.claude/skills-archive/`: caveman, prototype, to-prd, teach, zoom-out, setup-matt-pocock-skills + broken `mentor-review` command and its orphaned `reviwer-prompt.md` agent draft). Measurement correction: skill descriptions were all compact (86–404 B) — the earlier "27 KB skill" readings were a measuring-script bug; the skills folder was never the problem.
+- **`fsd-code-reviewer` agent description** trimmed 2.4 KB → 0.3 KB (removed 5 example blocks; body/behaviour unchanged). Plugin `claude-code-setup` disabled.
+- **Scoping rule agreed:** new MCP servers go into the project that needs them (`claude mcp add`, local scope), never global — prevents this cleanup from ever being needed again. Backups: `~/.claude/backup-2026-07-17/`, `~/.claude/skills-archive/`.
+
+**Session verdict:** all 6 audit recommendations fully closed (incl. the owner-decision half of #6). Harness state: mechanical lifecycle, required CI, batch-eval with baseline, clean global context.
+
+**Next:**
+- `#196` execution (3–4 age band) in a fresh session — plan at `docs/superpowers/plans/2026-07-13-age-band-3-4.md`; then add 3–4 cases to `eval:batch` DEFAULT_SET.
+
+**Blockers:** none.
