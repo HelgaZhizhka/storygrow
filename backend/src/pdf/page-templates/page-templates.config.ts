@@ -16,25 +16,37 @@ export const TEMPLATE_NAMES = [
 
 export type TemplateName = (typeof TEMPLATE_NAMES)[number];
 
+/**
+ * AgeBand — the single dispatch key for every age-dependent decision in the
+ * generation pipeline (template caps, page count, beat sheet, exemplars,
+ * judge calibration). Derived once per request via `ageToAgeBand`; nothing
+ * downstream branches on a raw childAge number (#196).
+ */
+export type AgeBand = '3-4' | '5-6';
+
+export const ageToAgeBand = (childAge: number): AgeBand => (childAge <= 4 ? '3-4' : '5-6');
+
 export interface ImageSlot {
-  /** Slot identifier used as a CSS class and render target. */
   slot: string;
   aspect: AspectRatio;
-  /** gpt-image-1 size that best fits this slot on an A5 page at 150 DPI. */
   imageSize: ImageSize;
 }
 
 export interface MaxChars {
-  /** Max characters for the `text` field, if this template has a text block. */
   text?: number;
-  /** Max characters for the `title` field, if this template has a title block. */
   title?: number;
 }
 
 export interface PageTemplateConfig {
-  /** HTML stub filename under backend/src/pdf/page-templates/. */
   htmlFile: string;
-  maxChars: MaxChars;
+  /**
+   * Per-band character caps. 3–4's caps are much smaller (shorter,
+   * repetition-driven pages). image-left/text-focus never render for 3–4
+   * (excluded from `suitableFor`), so their '3-4' entry is a defensive
+   * placeholder equal to '5-6' — present only so the type is total, never
+   * actually read in practice.
+   */
+  maxChars: Record<AgeBand, MaxChars>;
   images: readonly ImageSlot[];
   /** Child ages (inclusive) for which this template is pedagogically appropriate. */
   suitableFor: readonly number[];
@@ -47,45 +59,45 @@ export interface PageTemplateConfig {
  *   A5 = 148 × 210 mm, target 150 DPI → ~874 × 1240 px canvas.
  *   gpt-image-1 sizes: 1024×1024 (square), 1536×1024 (landscape), 1024×1536 (portrait).
  *
- * `text-focus` is intentionally absent for ages 5–6:
+ * `text-focus` is intentionally absent for ages 3–6:
  *   younger children need image-heavy layouts for comprehension.
  */
 export const PAGE_TEMPLATES: Readonly<Record<TemplateName, PageTemplateConfig>> = {
   cover: {
     htmlFile: 'cover.html',
-    maxChars: { title: 60 },
+    maxChars: { '3-4': { title: 40 }, '5-6': { title: 60 } },
     images: [{ slot: 'main', aspect: 'portrait', imageSize: '1024x1536' }],
-    suitableFor: [5, 6, 7, 8],
+    suitableFor: [3, 4, 5, 6, 7, 8],
   },
   'image-top': {
     htmlFile: 'image-top.html',
-    maxChars: { text: 220 },
+    maxChars: { '3-4': { text: 110 }, '5-6': { text: 220 } },
     images: [{ slot: 'illustration', aspect: 'landscape', imageSize: '1536x1024' }],
-    suitableFor: [5, 6],
+    suitableFor: [3, 4, 5, 6],
   },
   'image-bottom': {
     htmlFile: 'image-bottom.html',
-    maxChars: { text: 220 },
+    maxChars: { '3-4': { text: 110 }, '5-6': { text: 220 } },
     images: [{ slot: 'illustration', aspect: 'landscape', imageSize: '1536x1024' }],
-    suitableFor: [5, 6],
+    suitableFor: [3, 4, 5, 6],
   },
   'image-left': {
     htmlFile: 'image-left.html',
-    maxChars: { text: 200 },
+    maxChars: { '3-4': { text: 200 }, '5-6': { text: 200 } },
     images: [{ slot: 'illustration', aspect: 'square', imageSize: '1024x1024' }],
     suitableFor: [6, 7, 8],
   },
   'text-focus': {
     htmlFile: 'text-focus.html',
-    maxChars: { text: 350 },
+    maxChars: { '3-4': { text: 350 }, '5-6': { text: 350 } },
     images: [{ slot: 'illustration', aspect: 'square', imageSize: '1024x1024' }],
     suitableFor: [7, 8],
   },
   final: {
     htmlFile: 'final.html',
-    maxChars: { text: 200 },
+    maxChars: { '3-4': { text: 90 }, '5-6': { text: 200 } },
     images: [{ slot: 'illustration', aspect: 'portrait', imageSize: '1024x1536' }],
-    suitableFor: [5, 6, 7, 8],
+    suitableFor: [3, 4, 5, 6, 7, 8],
   },
 } as const;
 
