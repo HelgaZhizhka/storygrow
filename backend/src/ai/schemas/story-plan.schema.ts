@@ -1,10 +1,11 @@
 import { z } from 'zod';
 import {
   TEMPLATE_NAMES,
+  ageToAgeBand,
   templatesForAge,
   type TemplateName,
 } from '../../pdf/page-templates/page-templates.config';
-import { DISCUSSION_QUESTIONS_COUNT, PAGES_MIN, PAGES_MAX } from '../ai.config';
+import { DISCUSSION_QUESTIONS_COUNT, PAGE_COUNT_BY_BAND } from '../ai.config';
 
 /**
  * StoryPlan — the first-class "bible" produced by the Plan phase (ADR-0005).
@@ -57,7 +58,10 @@ export const StoryPlanSchema = z.object({
    * between carrying the arc beats in order. Templates must be age-appropriate.
    * Structural constraints are enforced downstream by BookPlanValidator.
    */
-  pages: z.array(PlanPageSchema).min(PAGES_MIN).max(PAGES_MAX),
+  pages: z
+    .array(PlanPageSchema)
+    .min(PAGE_COUNT_BY_BAND['5-6'].min)
+    .max(PAGE_COUNT_BY_BAND['5-6'].max),
 });
 
 export type StoryPlan = z.infer<typeof StoryPlanSchema>;
@@ -75,10 +79,11 @@ export const buildStoryPlanSchema = (childAge: number): typeof StoryPlanSchema =
   const allowed = templatesForAge(childAge);
   const names = allowed.length > 0 ? allowed : [...TEMPLATE_NAMES];
   const templateEnum = z.enum(names as [TemplateName, ...TemplateName[]]);
+  const { min, max } = PAGE_COUNT_BY_BAND[ageToAgeBand(childAge)];
   return StoryPlanSchema.extend({
     pages: z
       .array(PlanPageSchema.extend({ template: templateEnum }))
-      .min(PAGES_MIN)
-      .max(PAGES_MAX),
+      .min(min)
+      .max(max),
   });
 };
