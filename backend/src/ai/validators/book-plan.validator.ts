@@ -1,5 +1,5 @@
 import { Page } from '../schemas/story.schema';
-import { PAGE_TEMPLATES } from '../../pdf/page-templates/page-templates.config';
+import { PAGE_TEMPLATES, ageToAgeBand } from '../../pdf/page-templates/page-templates.config';
 import { CheckResult } from './check-result';
 
 /**
@@ -7,7 +7,8 @@ import { CheckResult } from './check-result';
  *
  * Checks every page in the LLM's output against the template catalogue:
  * - Structure: first page must be 'cover', last must be 'final'.
- * - Text length: `text` and `title` must not exceed the template's maxChars.
+ * - Text length: `text` and `title` must not exceed the template's maxChars
+ *   for the child's age band (#196).
  * - Age suitability: template must be in the suitableFor list for this child.
  *
  * Returns all errors, not just the first — the caller uses this to build
@@ -15,6 +16,7 @@ import { CheckResult } from './check-result';
  */
 export const validateBookPlan = (pages: Page[], childAge: number): CheckResult => {
   const errors: string[] = [];
+  const ageBand = ageToAgeBand(childAge);
 
   if (pages.length === 0) {
     return { passed: false, errors: ['Page list is empty'] };
@@ -42,18 +44,20 @@ export const validateBookPlan = (pages: Page[], childAge: number): CheckResult =
       );
     }
 
-    if (page.text != null && config.maxChars.text !== undefined) {
-      if (page.text.length > config.maxChars.text) {
+    const maxChars = config.maxChars[ageBand];
+
+    if (page.text != null && maxChars.text !== undefined) {
+      if (page.text.length > maxChars.text) {
         errors.push(
-          `[page:${index}] Text is ${page.text.length} chars; template '${page.template}' allows ${config.maxChars.text}`,
+          `[page:${index}] Text is ${page.text.length} chars; template '${page.template}' allows ${maxChars.text}`,
         );
       }
     }
 
-    if (page.title != null && config.maxChars.title !== undefined) {
-      if (page.title.length > config.maxChars.title) {
+    if (page.title != null && maxChars.title !== undefined) {
+      if (page.title.length > maxChars.title) {
         errors.push(
-          `[page:${index}] Title is ${page.title.length} chars; template '${page.template}' allows ${config.maxChars.title}`,
+          `[page:${index}] Title is ${page.title.length} chars; template '${page.template}' allows ${maxChars.title}`,
         );
       }
     }
