@@ -180,4 +180,12 @@ describe('StoryEvaluatorService', () => {
       }),
     );
   });
+
+  it('uses the 3-4 judge system prompt for a 3-year-old (contains the 3-4 exemplar, not the 5-6 one)', async () => {
+    mockGenerateObject.mockResolvedValueOnce({ object: passingJudge } as never);
+    await service.evaluate({ ...baseInput, childAge: 3 });
+    const call = mockGenerateObject.mock.calls[0][0] as { system: string };
+    expect(call.system).toContain('Катя'); // FEAR_3_4
+    expect(call.system).not.toContain('Жил-был мальчик Миша'); // COURAGE (5-6)
+  });
 });

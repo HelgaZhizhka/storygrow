@@ -1,10 +1,12 @@
 import {
   PAGE_TEMPLATES,
   templatesForAge,
+  ageToAgeBand,
   type TemplateName,
 } from '../../pdf/page-templates/page-templates.config';
-import { BEAT_SHEETS, type BuildStoryPromptOptions } from './story-generator.prompt';
+import { getBeatSheet, type BuildStoryPromptOptions } from './story-generator.prompt';
 import { pickExemplar } from './exemplars';
+import { PAGE_COUNT_BY_BAND } from '../ai.config';
 
 /**
  * PLAN_SYSTEM_PROMPT — the Plan phase (ADR-0005). Produces the StoryPlan "bible":
@@ -12,7 +14,7 @@ import { pickExemplar } from './exemplars';
  * final wording. The Prose phase writes the words; this phase must not.
  */
 export const PLAN_SYSTEM_PROMPT = `
-You are a planner of Russian children's books for read-aloud (ages 5–6).
+You are a planner of Russian children's books for read-aloud (ages 3–6).
 You design the STRUCTURE of a story as a JSON plan that matches the schema — you
 do NOT write the final prose. That is a separate later step.
 
@@ -46,12 +48,13 @@ Hard rules:
 `.trim();
 
 const buildTemplateCatalogue = (childAge: number): string => {
+  const ageBand = ageToAgeBand(childAge);
   const lines: string[] = ['Available page templates (use ONLY these):'];
   templatesForAge(childAge).forEach((name: TemplateName) => {
-    const config = PAGE_TEMPLATES[name];
+    const maxChars = PAGE_TEMPLATES[name].maxChars[ageBand];
     const limits: string[] = [];
-    if (config.maxChars.title !== undefined) limits.push(`title max ${config.maxChars.title}`);
-    if (config.maxChars.text !== undefined) limits.push(`text max ${config.maxChars.text}`);
+    if (maxChars.title !== undefined) limits.push(`title max ${maxChars.title}`);
+    if (maxChars.text !== undefined) limits.push(`text max ${maxChars.text}`);
     const limitStr = limits.length > 0 ? ` — ${limits.join(', ')} chars` : '';
     lines.push(`  • ${name}${limitStr}`);
   });
@@ -101,6 +104,8 @@ ${lines.join('\n')}
 
 /** buildPlanPrompt — the user-turn for the Plan phase. */
 export const buildPlanPrompt = (opts: BuildStoryPromptOptions): string => {
+  const ageBand = ageToAgeBand(opts.childAge);
+  const pageCount = PAGE_COUNT_BY_BAND[ageBand];
   const feedbackBlock = opts.feedback
     ? `\nREGENERATION FEEDBACK (fix these issues in the new plan):\n${opts.feedback}\n`
     : '';
@@ -115,17 +120,17 @@ ${buildSeedsBlock(opts.seeds)}
 ${buildTemplateCatalogue(opts.childAge)}
 
 Narrative arc the proven story already follows (use as the beat reference):
-${BEAT_SHEETS[opts.arcType]}
+${getBeatSheet(ageBand, opts.arcType)}
 
 PROVEN STORY to adapt — keep its plot and the sequence of events; recast it for
 the hero above. Do NOT invent a different premise (no random fantasy, no
 far-fetched events):
 """
-${pickExemplar(opts.topic, opts.arcType).text}
+${pickExemplar(opts.topic, opts.arcType, ageBand).text}
 """
 
 Produce the plan:
-  • Adapt the proven story above. 6–12 pages total. Page 1 'cover', last page 'final'.
+  • Adapt the proven story above. ${pageCount.min}–${pageCount.max} pages total. Page 1 'cover', last page 'final'.
   • Each content page: one arc beat (in order) + an "intent" that retells what
     happens at that beat in the proven story, recast for this hero — short and
     concrete, NOT the final sentence.

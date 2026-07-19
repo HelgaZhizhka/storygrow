@@ -30,3 +30,36 @@ describe('buildStoryPlanSchema template age-guard', () => {
     expect(result.success).toBe(true);
   });
 });
+
+describe('buildStoryPlanSchema page-count per band', () => {
+  it('caps a 3-4 plan at 8 pages (vs 12 for 5-6)', () => {
+    const eightPages = {
+      title: 'Тест',
+      heroName: 'Катя',
+      characterProfile: 'girl',
+      lesson: 'урок',
+      discussionQuestions: ['1?', '2?', '3?', '4?', '5?'],
+      pages: Array.from({ length: 9 }, (_, i) => ({
+        template: i === 0 ? 'cover' : i === 8 ? 'final' : 'image-top',
+        beat: 'Бит',
+        intent: 'что-то',
+      })),
+    };
+    const result3to4 = buildStoryPlanSchema(3).safeParse(eightPages);
+    expect(result3to4.success).toBe(false);
+
+    const result5to6 = buildStoryPlanSchema(6).safeParse(eightPages);
+    expect(result5to6.success).toBe(true);
+  });
+
+  it('rejects a 5-6-only template (image-left) for age 3, mirroring the existing #218 age-template-guard pattern', () => {
+    const withImageLeft = planWith('image-left');
+    expect(templatesForAge(3)).not.toContain('image-left');
+    const result3to4 = buildStoryPlanSchema(3).safeParse(withImageLeft);
+    expect(result3to4.success).toBe(false);
+
+    expect(templatesForAge(6)).toContain('image-left');
+    const result5to6 = buildStoryPlanSchema(6).safeParse(withImageLeft);
+    expect(result5to6.success).toBe(true);
+  });
+});

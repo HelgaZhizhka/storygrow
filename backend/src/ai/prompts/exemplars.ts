@@ -1,25 +1,25 @@
+import type { AgeBand } from '../../pdf/page-templates/page-templates.config';
+
 /**
  * Gold Exemplars — human-approved reference stories used as few-shot examples to
  * steer generation craft. Target register (ADR-0005): a rich, warm, read-aloud
- * storybook voice in the tradition of Сутеев / Russian folk tales — a warm
- * narrator ("Жил-был…"), folk rhythm and inversion, gentle humour, natural
- * dialogue, real feeling, and a lesson that emerges from the events and is stated
- * only ONCE at the end. The enemy is two-sided: flat event-summary AND adult
- * preciousness ("свет, как чай с мёдом"). Richness of voice is the GOAL.
- *
- * These exemplars target the 5–6 age band (the flagship band). The 3–4 band uses
- * a separate, simpler, more repetition-driven profile (virtue arcs only) — see
- * docs/adr/0005-decomposed-generation-pipeline.md.
+ * storybook voice in the tradition of Сутеев / Russian folk tales for the 5-6
+ * band. The 3-4 band (#196) uses a separate, simpler, repetition-driven
+ * profile — virtue arcs only, no flaw counterpart exists.
  *
  * Arc types:
  *   - virtue: hero gains a positive trait through effort (courage, kindness, …)
  *   - flaw: hero acts on a flaw, faces a real consequence, and earns the repair
  *
- * One exemplar is injected into the generation prompt, chosen by learning goal and arc;
- * the same set calibrates the judge's Register Match. The model must match the CRAFT —
- * never copy the plot, names, or setting. Beats run longer here than a single page
- * (≤220 chars): the exemplar sets VOICE and richness; the Plan phase spreads the arc
- * across short, age-appropriate pages.
+ * One exemplar is injected into the generation prompt, chosen by learning goal,
+ * arc, and age band; the same set calibrates the judge's Register Match. The
+ * model must match the CRAFT — never copy the plot, names, or setting.
+ *
+ * IMPORTANT for `EXEMPLARS` ordering: `pickExemplar`'s fallback returns the
+ * FIRST exemplar in this array matching (arcType, ageBand) when no goalTitle
+ * matches — i.e. declaration order IS fallback priority. Keep COURAGE first
+ * among 5-6/virtue, HONESTY first among 5-6/flaw, FEAR_3_4 first among
+ * 3-4/virtue.
  */
 
 export interface Exemplar {
@@ -27,6 +27,8 @@ export interface Exemplar {
   readonly goalTitles: readonly string[];
   /** Which narrative arc this exemplar models. */
   readonly arcType: 'virtue' | 'flaw';
+  /** Which age band this exemplar's register targets (#196). */
+  readonly ageBand: AgeBand;
   /** The full gold story, formatted for few-shot injection. */
   readonly text: string;
 }
@@ -34,6 +36,7 @@ export interface Exemplar {
 const COURAGE: Exemplar = {
   goalTitles: ['Смелость', 'Преодоление страха темноты'],
   arcType: 'virtue',
+  ageBand: '5-6',
   text: `Название: «Миша и ночная тень»  (тип конфликта: внутренний страх)
 [Завязка] Жил-был мальчик Миша, и днём не было на свете храбрее героя. Он сражался с драконами из диванных подушек, прыгал с кровати прямо в открытый космос и не боялся ни-че-го. Ну… почти ничего. Потому что вечером, как только мама гасила свет, вся Мишина храбрость куда-то пряталась.
 [Конфликт] А в дальнем углу комнаты сидела Большая Тёмная Тень. И вид у неё был самый что ни на есть подозрительный. Миша натянул одеяло до самого носа и прошептал: «Я тебя не боюсь… ну, разве что чуть-чуточку». А сердечко так и стучит, так и стучит.
@@ -48,6 +51,7 @@ const COURAGE: Exemplar = {
 const KINDNESS: Exemplar = {
   goalTitles: ['Доброта', 'Сочувствие', 'Забота о младших'],
   arcType: 'virtue',
+  ageBand: '5-6',
   text: `Название: «Соня и новенький»  (тип конфликта: социальный / эмпатия)
 [Завязка] Была у Сони на свете самая любимая вещь — новенькое ведёрко с лопаткой, блестящее, красное, самое-самое. Берегла Соня его пуще всякого сокровища и никому-никому не давала. Даже подержать. Даже на минуточку.
 [Конфликт] И вот как-то на площадке заметила Соня мальчика. Сидит он один на краешке песочницы и грустно водит пальцем по песку. Никто с ним не играет. И стало Соне отчего-то грустно за него — будто это её саму сегодня никто не позвал играть.
@@ -62,6 +66,7 @@ const KINDNESS: Exemplar = {
 const INDEPENDENCE: Exemplar = {
   goalTitles: ['Самостоятельность', 'Настойчивость', 'Трудолюбие'],
   arcType: 'virtue',
+  ageBand: '5-6',
   text: `Название: «Тёма и непослушные шнурки»  (тип конфликта: навык / настойчивость)
 [Завязка] Решил Тёма, что он уже совсем большой. Сам куртку надевал, сам рюкзак носил и страх как сердился, когда ему брались помогать. «Я са-ам!» — было самое любимое его слово на свете. Да только оставалась одна вредная вещь, которая никак ему не поддавалась.
 [Конфликт] Шнурки. Эти самые вредные шнурки! Вертелись они в пальцах, путались, скользили и завязываться ни-за-что не хотели. Пыхтел Тёма, сопел, старался — даже кончик носа у него покраснел.
@@ -76,6 +81,7 @@ const INDEPENDENCE: Exemplar = {
 const HONESTY: Exemplar = {
   goalTitles: ['Честность'],
   arcType: 'flaw',
+  ageBand: '5-6',
   text: `Название: «Гриша и хвостатая выдумка»  (тип конфликта: обман / доверие)
 [Завязка] Жил-был мальчик Гриша — добрый, весёлый, да только была у него одна беда: уж очень любил приврать. Что ни день — новая выдумка. То он видел рыбу величиной с автобус, то говорящего голубя, то будто поймал в карман целую радугу. Друзья слушали, рты раскрывали да ахали, а Грише только того и надо.
 [Проступок] Вот раз выбежал Гриша во двор и как закричит: «Спасайтесь! На горке волк — большой, зубастый, страшный!» Побросали ребята игрушки, примчались со всех ног — а на горке рыжий кот Васька сидит да лапкой умывается. Гриша покатывается со смеху: «Ну и напугались же вы!» А друзьям совсем не смешно.
@@ -90,6 +96,7 @@ const HONESTY: Exemplar = {
 const IMPULSE: Exemplar = {
   goalTitles: ['Управление гневом', 'Бережное отношение к вещам', 'Ответственность'],
   arcType: 'flaw',
+  ageBand: '5-6',
   text: `Название: «Тошка и буря в стакане»  (тип конфликта: гнев / последствие)
 [Завязка] Жил-был Тошка — добрый да весёлый, только уж больно вспыльчивый. Чуть что не по нему — краснеет, пыхтит и кипит, как чайник на плите: ногами топ-топ, руками мах-мах. «Сейчас как рассержусь!» — и пошла буря.
 [Проступок] Вот раз башня из кубиков, которую он целое утро строил, возьми да и рассыпься. Вскипел Тошка в один миг — и со всей силы как пнёт! Да только не башню, а любимый папин кораблик с полки. Хрясь! — тоненькая мачта переломилась пополам.
@@ -104,6 +111,7 @@ const IMPULSE: Exemplar = {
 const WANTING: Exemplar = {
   goalTitles: ['Делиться с другими', 'Терпение'],
   arcType: 'flaw',
+  ageBand: '5-6',
   text: `Название: «Лиза и гора конфет»  (тип конфликта: жадность / последствие)
 [Завязка] Подарили Лизе целую гору конфет — блестящих, шуршащих, самых вкусных на свете. «Это всё моё-моё-моё!» — обрадовалась Лиза и спрятала их поглубже в карман, подальше от друзей. Делиться? Вот ещё!
 [Проступок] Зовут её ребята на площадке: «Лиза, идём играть в магазин!» А Лиза только фыркнула: «Мне и одной весело». Села в сторонке и давай конфеты грызть — одну, потом вторую, потом пятую… А ребята тем временем бегают да смеются без неё.
@@ -115,24 +123,79 @@ const WANTING: Exemplar = {
 Вопросы: 1. Что подарили Лизе? 2. Почему она не пошла играть с ребятами? 3. Что Лиза почувствовала, оставшись одна? 4. Что она сделала, чтобы всё исправить? 5. А чем ты любишь делиться с друзьями?`,
 };
 
-const EXEMPLARS: readonly Exemplar[] = [COURAGE, KINDNESS, INDEPENDENCE, HONESTY, IMPULSE, WANTING];
+/**
+ * FEAR_3_4 (#196) — DRAFT, pending pedagogy-expert review before this band
+ * is considered launch-ready. Mirrors COURAGE's fallback role for 5-6.
+ */
+const FEAR_3_4: Exemplar = {
+  goalTitles: ['Смелость', 'Преодоление страха темноты'],
+  arcType: 'virtue',
+  ageBand: '3-4',
+  text: `Название: «Катя и высокая горка»  (тип конфликта: страх нового)
+[Завязка] Жила-была Катя. Катя маленькая, а горка — ух какая большая!
+[Трудность] Катя смотрит наверх. Катя боится. «Ой-ой-ой, высоко!» — говорит Катя.
+[Попытка с повтором] Катя делает шажок. «Я могу! Я могу!» — говорит Катя. Ещё шажок. «Я могу! Я могу!»
+[Развязка] Вот она, горка! Ух! Катя едет вниз — быстро-быстро! «Ура-а-а!» — кричит Катя.
+[Закрепление] Катя бежит наверх снова. «Я могу! Я могу!» — поёт Катя. И едет ещё раз. И ещё.
+[Финал] Если страшно — скажи «Я могу!» и попробуй.
+Вопросы: 1. Что было большое? 2. Катя боялась? 3. Что говорила Катя, когда шла наверх? 4. Что было внизу горки? 5. А ты можешь сказать «Я могу»?`,
+};
+
+/**
+ * KINDNESS_3_4 (#196) — DRAFT, pending pedagogy-expert review before this
+ * band is considered launch-ready. Mirrors KINDNESS's role for 5-6.
+ */
+const KINDNESS_3_4: Exemplar = {
+  goalTitles: ['Доброта', 'Сочувствие', 'Забота о младших'],
+  arcType: 'virtue',
+  ageBand: '3-4',
+  text: `Название: «Мишка и грустный Ёжик»  (тип конфликта: социальный / доброта)
+[Завязка] Жил-был Мишка. У Мишки было одно красное яблоко. Мишка любит своё яблоко.
+[Трудность] Мишка видит Ёжика. Ёжик сидит один-одинёшенек. У Ёжика нет яблока. Ёжику грустно.
+[Попытка с повтором] «Дать? Не дать?» — думает Мишка. Мишка смотрит на яблоко. Мишка смотрит на Ёжика. «Дать? Не дать?»
+[Развязка] «На, Ёжик, половинку!» — говорит Мишка. Ёжик улыбается: «Спасибо, Мишка!»
+[Закрепление] Хрум-хрум! Мишка и Ёжик едят яблоко вместе. Одному скучно. Вдвоём — веселее!
+[Финал] Поделиться с другом — это радость для двоих.
+Вопросы: 1. Какое яблоко было у Мишки? 2. Почему Ёжику было грустно? 3. Что думал Мишка — дать или не дать? 4. Что сказал Ёжик? 5. А чем ты можешь поделиться с другом?`,
+};
+
+// Order is fallback priority within each (arcType, ageBand) group — see the
+// module docstring. Keep COURAGE/HONESTY/FEAR_3_4 first in their groups.
+const EXEMPLARS: readonly Exemplar[] = [
+  COURAGE,
+  KINDNESS,
+  INDEPENDENCE,
+  HONESTY,
+  IMPULSE,
+  WANTING,
+  FEAR_3_4,
+  KINDNESS_3_4,
+];
+
+/**
+ * Register-reference pair shown to the judge to anchor the target register for
+ * Register Match scoring, per age band. For 3-4 (virtue-only), both
+ * references are virtue exemplars — there is no flaw counterpart to pair with.
+ */
+export const getRegisterReferences = (ageBand: AgeBand = '5-6'): readonly Exemplar[] =>
+  ageBand === '3-4' ? [FEAR_3_4, KINDNESS_3_4] : [COURAGE, HONESTY];
 
 /**
  * Pick the exemplar whose goal list contains the given title, within the
- * requested arc. Falls back to the canonical exemplar of that arc:
- * HONESTY for flaw, COURAGE for virtue.
+ * requested arc AND age band. Falls back to the first declared exemplar for
+ * that (arcType, ageBand) — see EXEMPLARS ordering note above. Throws if no
+ * exemplar exists at all for the combination (only possible for 3-4 + flaw,
+ * which should never be requested — see getBeatSheet's equivalent guard).
  */
-/**
- * Two canonical exemplars (one per arc) shown to the judge to anchor the target
- * register for Register Match scoring. The judge scores VOICE against these, not
- * arc-fit, so a fixed pair is enough regardless of the story's arc.
- */
-export const getRegisterReferences = (): readonly Exemplar[] => [COURAGE, HONESTY];
-
-export const pickExemplar = (goalTitle: string, arcType: 'virtue' | 'flaw'): Exemplar => {
+export const pickExemplar = (
+  goalTitle: string,
+  arcType: 'virtue' | 'flaw',
+  ageBand: AgeBand = '5-6',
+): Exemplar => {
   const normalized = goalTitle.trim().toLowerCase();
-  const inArc = EXEMPLARS.filter((e) => e.arcType === arcType);
-  const match = inArc.find((e) => e.goalTitles.some((t) => t.toLowerCase() === normalized));
+  const inBand = EXEMPLARS.filter((e) => e.arcType === arcType && e.ageBand === ageBand);
+  const match = inBand.find((e) => e.goalTitles.some((t) => t.toLowerCase() === normalized));
   if (match) return match;
-  return arcType === 'flaw' ? HONESTY : COURAGE;
+  if (inBand.length > 0) return inBand[0];
+  throw new Error(`No exemplar for arcType=${arcType} ageBand=${ageBand}`);
 };

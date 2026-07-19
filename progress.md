@@ -323,3 +323,25 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - `#196` execution (3–4 age band) in a fresh session — plan at `docs/superpowers/plans/2026-07-13-age-band-3-4.md`; then add 3–4 cases to `eval:batch` DEFAULT_SET.
 
 **Blockers:** none.
+
+---
+
+## 2026-07-19 — #196 executed: 3-4 age band shipped (PR #259)
+
+**Done:**
+- Executed all 15 tasks of `docs/superpowers/plans/2026-07-13-age-band-3-4.md` via `superpowers:subagent-driven-development` — fresh implementer + task-scoped reviewer per task, all Approved. `AgeBand = '3-4' | '5-6'`, derived once via `ageToAgeBand(childAge)`, now dispatches page-template caps, page count, beat sheets, Gold Exemplars, and judge register calibration. 3-4 is virtue-arcs-only (ADR-0005). Frontend age field opened 5-6 → 3-6.
+- Per-task review caught and fixed 3 real issues mid-execution: (1) Task 10's plan brief predated commit b3339c5 (#257, merged 2026-07-17) and would have silently dropped the shipped "TITLE is part of the register" judge bullet for 5-6 — restored byte-for-byte, extended to 3-4; (2) Task 12's brief gave `deriveTitle` a 4th positional param, violating CLAUDE.md's 3-param hard constraint — converted to an object param; (3) Task 13's spec additions had 3 eslint `no-unsafe-*` errors (untyped Prisma mock) that slipped through task-level `pnpm test` and were only caught by Task 15's full `./init.sh` run.
+- **Final whole-branch review (opus)** found one more real gap only visible across the full diff: Task 13's server-side flaw-arc-goal filter was unreachable from the actual book-creation form (child created only on submit, so no `childId` exists at goal-fetch time) — a 3-4 parent could still pick a flaw goal and crash generation. Fixed as Task 16 (not in the original plan): `listLearningGoals` gained an explicit `age` param, frontend now refetches goals on `childAge` change and resets a stale selection. Also incidentally fixed a pre-#196 gap — age-range filtering was never wired into this form at all.
+- Verified via `./init.sh` (tsc/lint/tests clean, 282 backend + 36 frontend) and three live `eval:text` runs: age 3 virtue (Смелость, registerMatch 9/10), age 4 virtue (Доброта, registerMatch 9/10 — one earlier attempt hit an ordinary first-attempt 112-vs-110-char boundary miss, confirmed non-systemic on retry), age 6 flaw regression guard (Честность, registerMatch 8/10, unaffected).
+- **PR #259 opened** (`Closes #196`), queued for auto-merge after required CI.
+
+**Decisions:**
+- Manual browser QA (Task 15 Step 6 — real book generation + PDF via the UI) was **deferred by user decision**, not skipped silently: local dev Postgres has a pre-existing migration-drift issue unrelated to this branch, and resetting it would drop local dev data. Flagged in the PR description as a known gap rather than resolved unilaterally.
+- FEAR_3_4 / KINDNESS_3_4 (the two new Gold Exemplars) are first-draft Russian text, per the plan's own Global Constraints — flagged in the PR as pending a pedagogy-expert edit pass before the band is launch-ready.
+
+**Next:**
+- Pedagogy-expert review pass on FEAR_3_4 / KINDNESS_3_4 exemplar text.
+- Run the deferred manual browser QA once the local dev DB migration drift is resolved.
+- Add 3-4 cases to `eval:batch` DEFAULT_SET (carried over from the 2026-07-16 session, still pending).
+
+**Blockers:** none.

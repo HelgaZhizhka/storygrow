@@ -1,16 +1,26 @@
-import { PAGE_TEMPLATES } from '../../pdf/page-templates/page-templates.config';
+import {
+  PAGE_TEMPLATES,
+  ageToAgeBand,
+  type AgeBand,
+} from '../../pdf/page-templates/page-templates.config';
 import type { StoryPlan } from '../schemas';
 import type { BuildStoryPromptOptions } from './story-generator.prompt';
 import { pickExemplar } from './exemplars';
 
 /**
- * PROSE_SYSTEM_PROMPT — the Prose phase (ADR-0005). Writes the FINAL Russian text
- * for an already-approved StoryPlan. Its ONLY job is voice: render each page's
- * intent in the target read-aloud register. Structure, arc, names and safe
- * conflict are already settled in the plan and must be followed exactly.
+ * buildProseSystemPrompt — the Prose phase (ADR-0005). Writes the FINAL Russian
+ * text for an already-approved StoryPlan. Its ONLY job is voice: render each
+ * page's intent in the target read-aloud register. Structure, arc, names and
+ * safe conflict are already settled in the plan and must be followed exactly.
+ *
+ * A function of AgeBand (not a static const) because the cover-title cap and
+ * the "ages" claim in the opening line both vary per band (#196).
  */
-export const PROSE_SYSTEM_PROMPT = `
-You are a beloved author of Russian read-aloud children's books (ages 5–6), in
+export const buildProseSystemPrompt = (ageBand: AgeBand): string => {
+  const ageLabel = ageBand === '3-4' ? '3–4' : '5–6';
+  const coverMax = PAGE_TEMPLATES.cover.maxChars[ageBand].title ?? 60;
+  return `
+You are a beloved author of Russian read-aloud children's books (ages ${ageLabel}), in
 the tradition of В. Сутеев and the Russian folk tale.
 
 You are given an APPROVED PLAN. Write the final Russian text for it. Your only job
@@ -27,7 +37,7 @@ Hard rules:
    (aim for roughly three-quarters of the limit). Do NOT clip the intent into one
    bare line; unfold it with rhythm, a little dialogue, and feeling. Respect the
    template's character limit (given per page). The cover page has a title and no
-   body text; that cover title MUST be ≤ 60 characters — a concise cover version
+   body text; that cover title MUST be ≤ ${coverMax} characters — a concise cover version
    of the book title, not the full title.
 5. State the moral only ONCE, on the final page, using the plan's lesson. On
    content pages neither narrator nor character states or defines the lesson.
@@ -53,11 +63,12 @@ THE VOICE — match this register (warm Сутеев read-aloud):
     мёдом", "туча заволокла солнце", rare or abstract words).
   • Concrete, childlike, lively — a story a parent enjoys reading aloud.
 `.trim();
+};
 
-const renderPlanPages = (plan: StoryPlan): string =>
+const renderPlanPages = (plan: StoryPlan, ageBand: AgeBand): string =>
   plan.pages
     .map((p, i) => {
-      const cap = PAGE_TEMPLATES[p.template].maxChars.text;
+      const cap = PAGE_TEMPLATES[p.template].maxChars[ageBand].text;
       const capStr = cap !== undefined ? `, text max ${cap} chars` : ', title only — no body text';
       return `  Page ${i + 1} [${p.template}] (${p.beat}${capStr}): ${p.intent}`;
     })
@@ -65,7 +76,8 @@ const renderPlanPages = (plan: StoryPlan): string =>
 
 /** buildProsePrompt — the user-turn for the Prose phase. */
 export const buildProsePrompt = (plan: StoryPlan, opts: BuildStoryPromptOptions): string => {
-  const exemplar = pickExemplar(opts.topic, opts.arcType);
+  const ageBand = ageToAgeBand(opts.childAge);
+  const exemplar = pickExemplar(opts.topic, opts.arcType, ageBand);
   return `
 Write the final Russian read-aloud text for this approved plan.
 
@@ -75,7 +87,7 @@ characterProfile (keep verbatim): ${plan.characterProfile}
 Lesson (final page only): ${plan.lesson}
 
 Pages to render (follow exactly):
-${renderPlanPages(plan)}
+${renderPlanPages(plan, ageBand)}
 
 Discussion questions (carry over verbatim):
 ${plan.discussionQuestions.map((q, i) => `  ${i + 1}. ${q}`).join('\n')}

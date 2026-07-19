@@ -158,4 +158,35 @@ describe('validateBookPlan', () => {
       expect(result.errors.some((e) => /nonexistent/.test(e))).toBe(true);
     });
   });
+
+  describe('3-4 band maxChars', () => {
+    it('errors when text exceeds the 3-4 band cap (110 for image-top), even though it would pass for 5-6', () => {
+      const textOver3to4ButUnder5to6 = 'А'.repeat(150); // >110 (3-4) but <220 (5-6)
+      const pages: Page[] = [
+        makePage('cover', { title: 'Тест' }),
+        makePage('image-top', { text: textOver3to4ButUnder5to6 }),
+        makePage('image-bottom', { text: 'ок' }),
+        makePage('final', { text: 'мораль' }),
+      ];
+      const result3to4 = validateBookPlan(pages, 3);
+      expect(result3to4.passed).toBe(false);
+      expect(result3to4.errors.some((e) => /110/.test(e))).toBe(true);
+
+      const result5to6 = validateBookPlan(pages, 6);
+      expect(result5to6.errors.some((e) => /110/.test(e))).toBe(false);
+    });
+
+    it('accepts a cover/image-top/image-bottom/final-only page sequence for age 3', () => {
+      const pages: Page[] = [
+        makePage('cover', { title: 'Катя и горка' }),
+        makePage('image-top', { text: 'Катя видит горку.' }),
+        makePage('image-bottom', { text: 'Катя боится.' }),
+        makePage('image-top', { text: 'Я могу! Я могу!' }),
+        makePage('image-bottom', { text: 'Катя едет вниз.' }),
+        makePage('final', { text: 'Пробуй!' }),
+      ];
+      const result = validateBookPlan(pages, 3);
+      expect(result.passed).toBe(true);
+    });
+  });
 });

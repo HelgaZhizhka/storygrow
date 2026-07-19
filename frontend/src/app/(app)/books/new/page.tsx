@@ -43,8 +43,8 @@ const schema = z.object({
   childAge: z.coerce
     .number({ message: 'Введите возраст' })
     .int()
-    .min(5, { message: 'Пока доступно только 5–6 лет' })
-    .max(6, { message: 'Пока доступно только 5–6 лет' }),
+    .min(3, { message: 'Доступно 3–6 лет' })
+    .max(6, { message: 'Доступно 3–6 лет' }),
   childGender: z.enum(['male', 'female', 'other', '']).optional(),
   childAppearance: z
     .string()
@@ -102,11 +102,16 @@ export default function NewBookPage(): React.ReactElement {
   const mode = watch('mode');
   const protagonistMode = watch('protagonistMode');
   const artStyle = watch('artStyle');
+  const childAge = watch('childAge');
   const showAppearance = mode === 'custom' && protagonistMode === 'child';
 
   useEffect(() => {
-    void api.get<LearningGoal[]>('/learning-goals').then(setGoals);
-  }, []);
+    const query = childAge && Number.isFinite(Number(childAge)) ? `?age=${childAge}` : '';
+    void api.get<LearningGoal[]>(`/learning-goals${query}`).then((fetched) => {
+      setGoals(fetched);
+      setValue('learningGoalId', '');
+    });
+  }, [childAge]);
 
   async function onSubmit(values: FormValues): Promise<void> {
     setServerError(null);
@@ -170,12 +175,12 @@ export default function NewBookPage(): React.ReactElement {
               <input
                 className="sg-input"
                 type="number"
-                min={5}
+                min={3}
                 max={6}
                 placeholder="5"
                 {...register('childAge')}
               />
-              <span className="sg-field-hint">Пока доступно только 5–6 лет</span>
+              <span className="sg-field-hint">Доступно 3–6 лет</span>
               {errors.childAge && (
                 <span className="sg-field-hint text-danger">{errors.childAge.message}</span>
               )}

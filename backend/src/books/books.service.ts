@@ -2,6 +2,7 @@ import { Injectable, HttpException, HttpStatus, NotFoundException } from '@nestj
 import { SubscriptionPlan, SubscriptionStatus } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { S3Service } from '../s3/s3.service';
+import { ageToAgeBand } from '../pdf/page-templates/page-templates.config';
 
 interface CreateChildDto {
   name: string;
@@ -75,18 +76,25 @@ export class BooksService {
     }
   }
 
-  async listLearningGoals(userId: string, childId?: string) {
-    let age: number | undefined;
-    if (childId) {
+  async listLearningGoals(userId: string, childId?: string, explicitAge?: number) {
+    let age = explicitAge;
+    if (age === undefined && childId) {
       const child = await this.prisma.child.findFirst({
         where: { id: childId, userId },
         select: { age: true },
       });
       age = child?.age;
     }
+    const excludeFlaw = age !== undefined && ageToAgeBand(age) === '3-4';
     return this.prisma.learningGoal.findMany({
       where:
-        age !== undefined ? { ageRangeMin: { lte: age }, ageRangeMax: { gte: age } } : undefined,
+        age === undefined
+          ? undefined
+          : {
+              ageRangeMin: { lte: age },
+              ageRangeMax: { gte: age },
+              ...(excludeFlaw ? { NOT: { arcType: 'flaw' as const } } : {}),
+            },
       orderBy: { title: 'asc' },
     });
   }

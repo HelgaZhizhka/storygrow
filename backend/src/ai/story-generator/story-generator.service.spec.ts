@@ -160,4 +160,19 @@ describe('StoryGeneratorService', () => {
     expect(result.pages[0].title).toBe('Маша и беглый кот');
     expect(mockGenerateObject).toHaveBeenCalledTimes(4);
   });
+
+  it('derives the age band once from childAge and uses it for the Prose schema, Prose system prompt, and Title system prompt', async () => {
+    mockGenerateObject
+      .mockResolvedValueOnce({ object: { ...validPlan, characterProfile: 'toddler' } } as never)
+      .mockResolvedValueOnce({ object: validStory } as never)
+      .mockResolvedValueOnce({ object: { title: validStory.title } } as never);
+
+    await service.generateStory({ ...input, childAge: 3, arcType: 'virtue' });
+
+    const proseCall = mockGenerateObject.mock.calls[1][0] as { system: string };
+    expect(proseCall.system).toContain('40 characters'); // 3-4 cover cap, via buildProseSystemPrompt
+
+    const titleCall = mockGenerateObject.mock.calls[2][0] as { system: string };
+    expect(titleCall.system).toContain('40 characters maximum'); // 3-4 cap, via buildTitleSystem
+  });
 });

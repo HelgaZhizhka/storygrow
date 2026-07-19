@@ -1,4 +1,4 @@
-import type { ImageSize } from '../pdf/page-templates/page-templates.config';
+import type { AgeBand, ImageSize } from '../pdf/page-templates/page-templates.config';
 
 export const GENERATION_MODEL = 'gpt-4o-mini';
 // Story TEXT uses a stronger model: voice, humour and originality are the
@@ -18,8 +18,15 @@ export const DEFAULT_TOP_K = 150;
 // score ~0.45–0.54 against the ~436-word grade-≤1 corpus (proper nouns and
 // common connectives are legitimately out-of-corpus), so 0.85 was unreachable.
 export const COMPLIANCE_THRESHOLD = 0.4;
-export const PAGES_MIN = 6;
-export const PAGES_MAX = 12;
+/**
+ * Page count bounds per age band (#196). 3-4 books are shorter — repetition-
+ * driven structure doesn't need 12 pages and a toddler's attention span is
+ * shorter. 5-6 is unchanged from before this band existed.
+ */
+export const PAGE_COUNT_BY_BAND: Record<AgeBand, { min: number; max: number }> = {
+  '3-4': { min: 6, max: 8 },
+  '5-6': { min: 6, max: 12 },
+};
 export const DISCUSSION_QUESTIONS_COUNT = 5;
 export const EVAL_THRESHOLD_DEFAULT = 7.0;
 export const EVAL_MAX_RETRIES_DEFAULT = 2;
