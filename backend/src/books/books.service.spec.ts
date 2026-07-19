@@ -316,3 +316,53 @@ describe('BooksService.deleteBook', () => {
     expect(mockPrisma.book.delete).not.toHaveBeenCalled();
   });
 });
+
+describe('BooksService.listLearningGoals', () => {
+  let service: BooksService;
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    const module = await Test.createTestingModule({
+      providers: [
+        BooksService,
+        { provide: PrismaService, useValue: mockPrisma },
+        { provide: S3Service, useValue: mockS3 },
+      ],
+    }).compile();
+    service = module.get(BooksService);
+  });
+
+  it('excludes flaw-arc goals for a 3-year-old child, even if ageRangeMin would include them', async () => {
+    mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1', age: 3 });
+    mockPrisma.learningGoal.findMany.mockResolvedValueOnce([
+      { id: 'g1', title: 'Дружба', arcType: 'virtue' },
+    ]);
+
+    await service.listLearningGoals('user-1', 'c1');
+
+    expect(mockPrisma.learningGoal.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          NOT: { arcType: 'flaw' },
+        }),
+      }),
+    );
+  });
+
+  it('does NOT exclude flaw-arc goals for a 6-year-old child', async () => {
+    mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1', age: 6 });
+    mockPrisma.learningGoal.findMany.mockResolvedValueOnce([]);
+
+    await service.listLearningGoals('user-1', 'c1');
+
+    const call = mockPrisma.learningGoal.findMany.mock.calls[0][0] as { where?: unknown };
+    expect(call.where).not.toEqual(expect.objectContaining({ NOT: { arcType: 'flaw' } }));
+  });
+
+  it('does not filter by arcType when no childId is given (age unknown)', async () => {
+    mockPrisma.learningGoal.findMany.mockResolvedValueOnce([]);
+    await service.listLearningGoals('user-1');
+    const call = mockPrisma.learningGoal.findMany.mock.calls[0][0] as { where?: unknown };
+    expect(call.where).toBeUndefined();
+  });
+});
