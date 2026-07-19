@@ -159,8 +159,29 @@ const KINDNESS_3_4: Exemplar = {
 Вопросы: 1. Какое яблоко было у Мишки? 2. Почему Ёжику было грустно? 3. Что думал Мишка — дать или не дать? 4. Что сказал Ёжик? 5. А чем ты можешь поделиться с другом?`,
 };
 
-// Order is fallback priority within each (arcType, ageBand) group — see the
-// module docstring. Keep COURAGE/HONESTY/FEAR_3_4 first in their groups.
+/**
+ * SHELTER_3_4 (exemplar-variety pilot, 2026-07-20) — second Доброта/3-4
+ * exemplar. Structurally distinct from KINDNESS_3_4: a widening-circle
+ * shelter/inclusion premise ("Под грибом"-inspired), not a single give-or-not
+ * choice. `pickExemplar` pools this with KINDNESS_3_4 and picks randomly
+ * (Task 2) so repeated Доброта/3-4 generations stop reusing one skeleton.
+ */
+const SHELTER_3_4: Exemplar = {
+  goalTitles: ['Доброта', 'Сочувствие', 'Забота о младших'],
+  arcType: 'virtue',
+  ageBand: '3-4',
+  text: `Название: «Юра и лист-домик»  (тип конфликта: социальный / доброта, укрытие)
+[Завязка] Пошёл дождь. Юра нашёл большой лист — вот и домик! Сидит Юра, слушает дождик.
+[Трудность] Прибежал мокрый жучок. «Пусти под лист!» — пищит жучок. Юра смотрит: место совсем маленькое.
+[Попытка с повтором] «Тесно? Не тесно?» — думает Юра. Подвинулся. Жучок сел рядом. «Вот и не тесно!»
+[Развязка] Прискакала мокрая лягушка: «Пустите!» «Тесно? Не тесно?» — думает Юра. Все подвинулись. Место нашлось!
+[Закрепление] Дождь кончился. Вылезли все втроём — весёлые, сухие, дружные.
+[Финал] Поделиться местом — это тоже доброта.
+Вопросы: 1. Что нашёл Юра от дождя? 2. Кто первым попросился под лист? 3. Что думал Юра — тесно или нет? 4. Сколько зверей поместилось? 5. А ты можешь потесниться для друга?`,
+};
+
+// Selection is pooled-random (see pickExemplar) — declaration order here no
+// longer determines which exemplar is picked when multiple match.
 const EXEMPLARS: readonly Exemplar[] = [
   COURAGE,
   KINDNESS,
@@ -170,6 +191,7 @@ const EXEMPLARS: readonly Exemplar[] = [
   WANTING,
   FEAR_3_4,
   KINDNESS_3_4,
+  SHELTER_3_4,
 ];
 
 /**
