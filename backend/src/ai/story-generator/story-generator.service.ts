@@ -65,7 +65,7 @@ export class StoryGeneratorService {
     }
     const story = await this.generateProse(plan, input, ageBand);
     // Title from the finished, concrete story — not the abstract plan (#232).
-    const title = await this.deriveTitle(story, plan.heroName, input, ageBand);
+    const title = await this.deriveTitle({ story, heroName: plan.heroName, input, ageBand });
     return this.applyTitle(story, title);
   }
 
@@ -75,12 +75,17 @@ export class StoryGeneratorService {
    * the last attempt after TITLE_MAX_ATTEMPTS (the concrete-title prompt makes
    * even the worst attempt better than the plan's value-naming default).
    */
-  private async deriveTitle(
-    story: Story,
-    heroName: string,
-    input: GenerateStoryInput,
-    ageBand: AgeBand,
-  ): Promise<string> {
+  private async deriveTitle({
+    story,
+    heroName,
+    input,
+    ageBand,
+  }: {
+    story: Story;
+    heroName: string;
+    input: GenerateStoryInput;
+    ageBand: AgeBand;
+  }): Promise<string> {
     let candidate = story.title;
     for (let attempt = 0; attempt < TITLE_MAX_ATTEMPTS; attempt++) {
       const { object } = await generateObject({
