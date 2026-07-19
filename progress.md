@@ -337,10 +337,9 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 
 **Decisions:**
 - Manual browser QA (Task 15 Step 6 — real book generation + PDF via the UI) was **deferred by user decision**, not skipped silently: local dev Postgres has a pre-existing migration-drift issue unrelated to this branch, and resetting it would drop local dev data. Flagged in the PR description as a known gap rather than resolved unilaterally.
-- FEAR_3_4 / KINDNESS_3_4 (the two new Gold Exemplars) are first-draft Russian text, per the plan's own Global Constraints — flagged in the PR as pending a pedagogy-expert edit pass before the band is launch-ready.
+- FEAR_3_4 / KINDNESS_3_4 (the two new Gold Exemplars) are first-draft Russian text, per the plan's own Global Constraints — flagged in the PR as pending a pedagogy-expert edit pass before the band is launch-ready. **Reviewed and approved by the user 2026-07-19** — read `exemplars.ts` directly, judged the register/refrain device/concrete stakes good. Band now considered launch-ready on the content side.
 
 **Next:**
-- Pedagogy-expert review pass on FEAR_3_4 / KINDNESS_3_4 exemplar text.
 - Run the deferred manual browser QA once the local dev DB migration drift is resolved.
 - Add 3-4 cases to `eval:batch` DEFAULT_SET (carried over from the 2026-07-16 session, still pending).
 
