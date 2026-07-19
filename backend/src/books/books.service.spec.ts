@@ -24,7 +24,9 @@ const mockPrisma = {
     create: jest.fn(),
     upsert: jest.fn(),
   },
-  learningGoal: { findMany: jest.fn() },
+  learningGoal: {
+    findMany: jest.fn<Promise<unknown[]>, [{ where?: unknown; orderBy?: unknown }]>(),
+  },
   subscription: { findUnique: jest.fn() },
   book: {
     count: jest.fn(),
@@ -340,13 +342,8 @@ describe('BooksService.listLearningGoals', () => {
 
     await service.listLearningGoals('user-1', 'c1');
 
-    expect(mockPrisma.learningGoal.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({
-          NOT: { arcType: 'flaw' },
-        }),
-      }),
-    );
+    const call = mockPrisma.learningGoal.findMany.mock.calls[0][0] as { where?: unknown };
+    expect(call.where).toEqual(expect.objectContaining({ NOT: { arcType: 'flaw' } }));
   });
 
   it('does NOT exclude flaw-arc goals for a 6-year-old child', async () => {
