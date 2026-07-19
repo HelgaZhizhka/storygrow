@@ -41,21 +41,32 @@ interface EvalCase {
 /**
  * The mini eval-set: both arcs, both protagonist modes, both flagship ages,
  * including goals with NO dedicated exemplar (Дружба, Любопытство…) so the
- * fallback-exemplar path is measured too. Ages 3–4 join after #196 ships.
+ * fallback-exemplar path is measured too.
+ *
+ * 3-4 cases (#262, after #196 shipped the band): virtue-only per ADR-0005 —
+ * no flaw cases for this band. Covers both dedicated 3-4 exemplars (FEAR_3_4
+ * via Смелость, KINDNESS_3_4 via Доброта/Забота о младших) plus one goal with
+ * no 3-4 exemplar (Самостоятельность) to measure the 3-4 fallback-exemplar
+ * path the same way the 5-6 set already does.
  */
 const DEFAULT_SET: readonly EvalCase[] = [
-  // virtue
+  // virtue — 5-6
   { goal: 'Смелость', age: 6, mode: 'child' },
   { goal: 'Доброта', age: 5, mode: 'child' },
   { goal: 'Самостоятельность', age: 6, mode: 'observer' },
   { goal: 'Дружба', age: 5, mode: 'child' }, // fallback exemplar
   { goal: 'Любопытство и любовь к знаниям', age: 6, mode: 'child' }, // fallback exemplar
-  // flaw
+  // flaw — 5-6 (3-4 is virtue-only, ADR-0005)
   { goal: 'Честность', age: 6, mode: 'child' },
   { goal: 'Управление гневом', age: 5, mode: 'child' },
   { goal: 'Делиться с другими', age: 6, mode: 'observer' },
   { goal: 'Терпение', age: 5, mode: 'child' },
   { goal: 'Бережное отношение к вещам', age: 6, mode: 'child' },
+  // virtue — 3-4 (#262)
+  { goal: 'Смелость', age: 3, mode: 'child' },
+  { goal: 'Доброта', age: 4, mode: 'observer' },
+  { goal: 'Забота о младших', age: 3, mode: 'child' },
+  { goal: 'Самостоятельность', age: 4, mode: 'child' }, // fallback exemplar
 ];
 
 const flagValue = (name: string): string | undefined => {

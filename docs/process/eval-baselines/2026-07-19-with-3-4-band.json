@@ -1,0 +1,364 @@
+{
+  "generatedAt": "2026-07-19T21:20:04.651Z",
+  "model": "default",
+  "results": [
+    {
+      "goal": "Смелость",
+      "age": 6,
+      "mode": "child",
+      "arcType": "virtue",
+      "title": "Алиса и ночной сторож из тени",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 9,
+        "safetyForChildren": 10,
+        "length": 10,
+        "earnedResolution": 9,
+        "registerMatch": 8
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 183,
+      "maxChars": 197,
+      "durationMs": 82772,
+      "error": null
+    },
+    {
+      "goal": "Доброта",
+      "age": 5,
+      "mode": "child",
+      "arcType": "virtue",
+      "title": "Алиса и бутерброд-солнышко на ладошке",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 8,
+        "structureCompleteness": 8,
+        "safetyForChildren": 10,
+        "length": 9,
+        "earnedResolution": 7,
+        "registerMatch": 8
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 152,
+      "maxChars": 168,
+      "durationMs": 79091,
+      "error": null
+    },
+    {
+      "goal": "Самостоятельность",
+      "age": 6,
+      "mode": "observer",
+      "arcType": "virtue",
+      "title": "Лео и капризные завязки фартука",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 8,
+        "structureCompleteness": 9,
+        "safetyForChildren": 10,
+        "length": 10,
+        "earnedResolution": 8,
+        "registerMatch": 8
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 165,
+      "maxChars": 192,
+      "durationMs": 96955,
+      "error": null
+    },
+    {
+      "goal": "Дружба",
+      "age": 5,
+      "mode": "child",
+      "arcType": "virtue",
+      "title": "Алиса и пропавшая тенёчка под шкафом",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 9,
+        "safetyForChildren": 10,
+        "length": 8,
+        "earnedResolution": 8,
+        "registerMatch": 8
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 156,
+      "maxChars": 193,
+      "durationMs": 98047,
+      "error": null
+    },
+    {
+      "goal": "Любопытство и любовь к знаниям",
+      "age": 6,
+      "mode": "child",
+      "arcType": "virtue",
+      "title": "«Алиса и загадка солнечного усика»",
+      "passed": true,
+      "registerMatch": 9,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 8,
+        "structureCompleteness": 9,
+        "safetyForChildren": 10,
+        "length": 8,
+        "earnedResolution": 7,
+        "registerMatch": 9
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 152,
+      "maxChars": 181,
+      "durationMs": 82950,
+      "error": null
+    },
+    {
+      "goal": "Честность",
+      "age": 6,
+      "mode": "child",
+      "arcType": "flaw",
+      "title": "Алиса и волшебное пирожное под кустом",
+      "passed": false,
+      "registerMatch": 7,
+      "scores": {
+        "ageAppropriateVocab": 8,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 8,
+        "safetyForChildren": 9,
+        "length": 10,
+        "earnedResolution": 7,
+        "registerMatch": 7
+      },
+      "structuralErrorCount": 1,
+      "avgChars": 173,
+      "maxChars": 206,
+      "durationMs": 98611,
+      "error": null
+    },
+    {
+      "goal": "Управление гневом",
+      "age": 5,
+      "mode": "child",
+      "arcType": "flaw",
+      "title": "Алиса и трещинка на музыкальном шарике",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 10,
+        "structureCompleteness": 10,
+        "safetyForChildren": 10,
+        "length": 10,
+        "earnedResolution": 8,
+        "registerMatch": 8
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 159,
+      "maxChars": 176,
+      "durationMs": 82705,
+      "error": null
+    },
+    {
+      "goal": "Делиться с другими",
+      "age": 6,
+      "mode": "observer",
+      "arcType": "flaw",
+      "title": "Максим и коробка шумящих сокровищ",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 10,
+        "safetyForChildren": 10,
+        "length": 9,
+        "earnedResolution": 9,
+        "registerMatch": 8
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 153,
+      "maxChars": 171,
+      "durationMs": 86521,
+      "error": null
+    },
+    {
+      "goal": "Терпение",
+      "age": 5,
+      "mode": "child",
+      "arcType": "flaw",
+      "title": "Алиса и блестящие бусины-друзья",
+      "passed": true,
+      "registerMatch": 7,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 8,
+        "structureCompleteness": 8,
+        "safetyForChildren": 10,
+        "length": 9,
+        "earnedResolution": 7,
+        "registerMatch": 7
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 155,
+      "maxChars": 174,
+      "durationMs": 74356,
+      "error": null
+    },
+    {
+      "goal": "Бережное отношение к вещам",
+      "age": 6,
+      "mode": "child",
+      "arcType": "flaw",
+      "title": "Алиса и ручка для куклы",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 10,
+        "structureCompleteness": 10,
+        "safetyForChildren": 10,
+        "length": 10,
+        "earnedResolution": 10,
+        "registerMatch": 8
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 167,
+      "maxChars": 186,
+      "durationMs": 69294,
+      "error": null
+    },
+    {
+      "goal": "Смелость",
+      "age": 3,
+      "mode": "child",
+      "arcType": "virtue",
+      "title": "Алиса и ураган на горке",
+      "passed": false,
+      "registerMatch": 9,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 10,
+        "structureCompleteness": 10,
+        "safetyForChildren": 10,
+        "length": 8,
+        "earnedResolution": 9,
+        "registerMatch": 9
+      },
+      "structuralErrorCount": 1,
+      "avgChars": 94,
+      "maxChars": 112,
+      "durationMs": 97490,
+      "error": null
+    },
+    {
+      "goal": "Доброта",
+      "age": 4,
+      "mode": "observer",
+      "arcType": "virtue",
+      "title": "Катя и пирожок для Котёнка",
+      "passed": true,
+      "registerMatch": 9,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 10,
+        "structureCompleteness": 10,
+        "safetyForChildren": 9,
+        "length": 10,
+        "earnedResolution": 10,
+        "registerMatch": 9
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 88,
+      "maxChars": 103,
+      "durationMs": 133584,
+      "error": null
+    },
+    {
+      "goal": "Забота о младших",
+      "age": 3,
+      "mode": "child",
+      "arcType": "virtue",
+      "title": "Алиса и таинственный красный мячик",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 8,
+        "structureCompleteness": 9,
+        "safetyForChildren": 10,
+        "length": 10,
+        "earnedResolution": 7,
+        "registerMatch": 8
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 75,
+      "maxChars": 88,
+      "durationMs": 124854,
+      "error": null
+    },
+    {
+      "goal": "Самостоятельность",
+      "age": 4,
+      "mode": "child",
+      "arcType": "virtue",
+      "title": "Алиса и высокий мостик",
+      "passed": true,
+      "registerMatch": 9,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 10,
+        "safetyForChildren": 10,
+        "length": 9,
+        "earnedResolution": 9,
+        "registerMatch": 9
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 79,
+      "maxChars": 93,
+      "durationMs": 121393,
+      "error": null
+    }
+  ],
+  "summary": {
+    "completed": 14,
+    "failed": 0,
+    "passRate": 0.8571428571428571,
+    "criteria": {
+      "ageAppropriateVocab": {
+        "mean": 9.857142857142858,
+        "min": 8
+      },
+      "hasMoralLesson": {
+        "mean": 8.928571428571429,
+        "min": 8
+      },
+      "structureCompleteness": {
+        "mean": 9.214285714285714,
+        "min": 8
+      },
+      "safetyForChildren": {
+        "mean": 9.857142857142858,
+        "min": 9
+      },
+      "length": {
+        "mean": 9.285714285714286,
+        "min": 8
+      },
+      "earnedResolution": {
+        "mean": 8.214285714285714,
+        "min": 7
+      },
+      "registerMatch": {
+        "mean": 8.142857142857142,
+        "min": 7
+      }
+    },
+    "totalDurationMs": 1328623
+  }
+}

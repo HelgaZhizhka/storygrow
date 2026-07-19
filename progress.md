@@ -361,3 +361,16 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Dev servers (backend :3001, frontend :3000) and the full docker compose stack were left running for the user's own follow-up poking — stop with `docker compose down` when done.
 
 **Blockers:** none. Task 15 (all 8 steps) and the whole #196 body of work are now fully verified, not just code-reviewed.
+
+---
+
+## 2026-07-20 — #262: eval:batch now covers the 3-4 band
+
+**Done:**
+- Added 4 virtue-only 3-4 cases to `DEFAULT_SET` in `backend/src/scripts/eval-batch.ts` (Смелость/age 3 and Забота о младших/age 3 → dedicated exemplars; Доброта/age 4 → dedicated exemplar, observer mode; Самостоятельность/age 4 → 3-4's fallback-exemplar path, mirroring how the 5-6 set already measures its own fallback path via Дружба/Любопытство). No flaw cases added — 3-4 is virtue-only per ADR-0005, unaffected by this change.
+- Recorded a new baseline covering both bands: `docs/process/eval-baselines/2026-07-19-with-3-4-band.json` (14 cases, 12/14 pass on a clean full run — the batch harness is single-attempt/no-regeneration by design, so a couple of near-cap first-attempt misses is expected signal, not a regression: Честность/5-6 rm=7 struct-fail is a pre-existing case unrelated to this change; Смелость/age-3 rm=9 but tripped a per-page char cap on one page, consistent with the tight-cap variance already observed during #196's manual `eval:text` testing).
+- Hit a real OpenAI quota exhaustion mid-run (not a code bug) after a day of heavy real-LLM testing (#196's manual QA book + repeated eval runs) — user topped up billing, reran cleanly.
+
+**Next:** none pending from this thread. Remaining carried-over item: audit-rec permissions hygiene in `.claude/settings.local.json` (from the 2026-07-16 harness audit, still open).
+
+**Blockers:** none.
