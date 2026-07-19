@@ -4,14 +4,15 @@ import { generateObject } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import type { OpenAIProvider } from '@ai-sdk/openai';
 import { z } from 'zod';
-import { StorySchema, buildStoryPlanSchema, type Story, type StoryPlan } from '../schemas';
+import { buildStorySchema, buildStoryPlanSchema, type Story, type StoryPlan } from '../schemas';
+import { ageToAgeBand, type AgeBand } from '../../pdf/page-templates/page-templates.config';
 import { PLAN_SYSTEM_PROMPT, buildPlanPrompt } from '../prompts/plan.prompt';
-import { PROSE_SYSTEM_PROMPT, buildProsePrompt } from '../prompts/prose.prompt';
+import { buildProseSystemPrompt, buildProsePrompt } from '../prompts/prose.prompt';
 import {
   CHARACTER_PROFILE_SYSTEM,
   buildCharacterProfilePrompt,
 } from '../prompts/character-profile.prompt';
-import { TITLE_SYSTEM, buildTitlePrompt, isConcreteTitle } from '../prompts/title.prompt';
+import { buildTitleSystem, buildTitlePrompt, isConcreteTitle } from '../prompts/title.prompt';
 import type { StorySeeds } from '../prompts/story-generator.prompt';
 import { createTelemetry } from '../telemetry';
 import { PLAN_MODEL, PROSE_MODEL, GENERATION_MODEL } from '../ai.config';
@@ -37,12 +38,13 @@ export interface GenerateStoryInput {
 }
 
 /**
- * StoryGeneratorService — decomposed generation (ADR-0005): Plan → Prose.
+ * StoryGeneratorService — decomposed generation (ADR-0005): Plan → Prose → Title.
  *
  * The Plan phase resolves structure, arc, safe conflict and hero identity into a
  * StoryPlan; the Prose phase renders that plan into the target read-aloud
- * register. Splitting the work by concern removes the single-call overload that
- * flattened the prose. Both calls are traced separately in LangFuse.
+ * register; the Title phase names the finished story. AgeBand (#196) is derived
+ * ONCE from `input.childAge` at the top of `generateStory` and threaded through
+ * every phase that needs it — no phase re-derives it independently.
  */
 @Injectable()
 export class StoryGeneratorService {
@@ -53,6 +55,7 @@ export class StoryGeneratorService {
   }
 
   async generateStory(input: GenerateStoryInput): Promise<Story> {
+    const ageBand = ageToAgeBand(input.childAge);
     const plan = await this.generatePlan(input);
     // Appearance is image-only: the Plan never sees it (so a hair-bow can't
     // become plot). We derive the visual characterProfile separately here and
@@ -60,9 +63,9 @@ export class StoryGeneratorService {
     if (input.protagonistMode === 'child' && input.appearance) {
       plan.characterProfile = await this.deriveCharacterProfile(input);
     }
-    const story = await this.generateProse(plan, input);
+    const story = await this.generateProse(plan, input, ageBand);
     // Title from the finished, concrete story — not the abstract plan (#232).
-    const title = await this.deriveTitle(story, plan.heroName, input);
+    const title = await this.deriveTitle(story, plan.heroName, input, ageBand);
     return this.applyTitle(story, title);
   }
 
@@ -76,13 +79,14 @@ export class StoryGeneratorService {
     story: Story,
     heroName: string,
     input: GenerateStoryInput,
+    ageBand: AgeBand,
   ): Promise<string> {
     let candidate = story.title;
     for (let attempt = 0; attempt < TITLE_MAX_ATTEMPTS; attempt++) {
       const { object } = await generateObject({
         model: this.openai(input.model ?? PLAN_MODEL),
         schema: TitleSchema,
-        system: TITLE_SYSTEM,
+        system: buildTitleSystem(ageBand),
         prompt: buildTitlePrompt(heroName, story, input.topic),
         experimental_telemetry: createTelemetry('story-title', {
           childAge: input.childAge,
@@ -91,7 +95,7 @@ export class StoryGeneratorService {
         }),
       });
       candidate = object.title.trim();
-      if (isConcreteTitle(candidate, input.topic)) return candidate;
+      if (isConcreteTitle(candidate, input.topic, ageBand)) return candidate;
     }
     return candidate;
   }
@@ -134,11 +138,15 @@ export class StoryGeneratorService {
     return object;
   }
 
-  private async generateProse(plan: StoryPlan, input: GenerateStoryInput): Promise<Story> {
+  private async generateProse(
+    plan: StoryPlan,
+    input: GenerateStoryInput,
+    ageBand: AgeBand,
+  ): Promise<Story> {
     const { object } = await generateObject({
       model: this.openai(input.model ?? PROSE_MODEL),
-      schema: StorySchema,
-      system: PROSE_SYSTEM_PROMPT,
+      schema: buildStorySchema(ageBand),
+      system: buildProseSystemPrompt(ageBand),
       prompt: buildProsePrompt(plan, input),
       experimental_telemetry: createTelemetry('story-prose', {
         childAge: input.childAge,
