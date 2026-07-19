@@ -10,7 +10,8 @@ import {
   type Story,
   type JudgeResult,
 } from '../schemas';
-import { JUDGE_SYSTEM_PROMPT, buildJudgePrompt } from '../prompts/judge.prompt';
+import { buildJudgeSystemPrompt, buildJudgePrompt } from '../prompts/judge.prompt';
+import { ageToAgeBand } from '../../pdf/page-templates/page-templates.config';
 import { validateBookPlan } from '../validators/book-plan.validator';
 import { checkCompliance, checkLanguagePurity } from './vocabulary-compliance';
 import { createTelemetry } from '../telemetry';
@@ -93,7 +94,7 @@ export class StoryEvaluatorService {
     const { object } = await generateObject({
       model: this.openai(GENERATION_MODEL),
       schema: JudgeSchema,
-      system: JUDGE_SYSTEM_PROMPT,
+      system: buildJudgeSystemPrompt(ageToAgeBand(childAge)),
       prompt: buildJudgePrompt(story, childAge, learningGoal),
       experimental_telemetry: createTelemetry('story-evaluator', {
         childAge,
