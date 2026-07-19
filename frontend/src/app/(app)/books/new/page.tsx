@@ -102,11 +102,16 @@ export default function NewBookPage(): React.ReactElement {
   const mode = watch('mode');
   const protagonistMode = watch('protagonistMode');
   const artStyle = watch('artStyle');
+  const childAge = watch('childAge');
   const showAppearance = mode === 'custom' && protagonistMode === 'child';
 
   useEffect(() => {
-    void api.get<LearningGoal[]>('/learning-goals').then(setGoals);
-  }, []);
+    const query = childAge && Number.isFinite(Number(childAge)) ? `?age=${childAge}` : '';
+    void api.get<LearningGoal[]>(`/learning-goals${query}`).then((fetched) => {
+      setGoals(fetched);
+      setValue('learningGoalId', '');
+    });
+  }, [childAge]);
 
   async function onSubmit(values: FormValues): Promise<void> {
     setServerError(null);

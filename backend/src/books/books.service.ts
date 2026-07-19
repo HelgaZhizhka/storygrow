@@ -76,9 +76,9 @@ export class BooksService {
     }
   }
 
-  async listLearningGoals(userId: string, childId?: string) {
-    let age: number | undefined;
-    if (childId) {
+  async listLearningGoals(userId: string, childId?: string, explicitAge?: number) {
+    let age = explicitAge;
+    if (age === undefined && childId) {
       const child = await this.prisma.child.findFirst({
         where: { id: childId, userId },
         select: { age: true },

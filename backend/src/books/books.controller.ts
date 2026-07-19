@@ -66,8 +66,14 @@ export class BooksController {
   }
 
   @Get('learning-goals')
-  listLearningGoals(@CurrentUser() user: JwtPayload, @Query('childId') childId?: string) {
-    return this.books.listLearningGoals(user.sub, childId);
+  listLearningGoals(
+    @CurrentUser() user: JwtPayload,
+    @Query('childId') childId?: string,
+    @Query('age') age?: string,
+  ) {
+    const parsed = age !== undefined ? Number(age) : undefined;
+    const explicitAge = parsed !== undefined && Number.isFinite(parsed) ? parsed : undefined;
+    return this.books.listLearningGoals(user.sub, childId, explicitAge);
   }
 
   @Post('books')
