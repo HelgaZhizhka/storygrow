@@ -344,3 +344,20 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Add 3-4 cases to `eval:batch` DEFAULT_SET (carried over from the 2026-07-16 session, still pending).
 
 **Blockers:** none.
+
+---
+
+## 2026-07-19 (cont.) — #196 manual QA completed; migration-drift was a false alarm
+
+**Done:**
+- **Correction:** the "migration drift" that blocked manual QA earlier today was a false alarm caused by misusing the `prisma:migrate` wrapper (`pnpm prisma:migrate status` runs `migrate-dev.mjs status`, which forwards `status` as a garbage arg to `prisma migrate dev` — not the same as the real `prisma migrate status`). The real `prisma migrate status` reports the dev DB clean, no drift. No reset was ever needed.
+- Ran the deferred Task 15 Step 6 for real: started `docker compose up -d` (full stack, already had a persistent local volume with real data), `pnpm --filter backend dev` + `pnpm --filter frontend dev`, minted a throwaway JWT for a `manual-qa-3-4@test.local` user (via `@nestjs/jwt`'s `JwtService`, written straight to a scratch file — never printed the signed token to the transcript, matching CLAUDE.md's secrets rule) to drive the real API without a Google OAuth flow.
+- **`GET /learning-goals`** confirmed Task 16's fix against real Postgres: unfiltered call returns all 19 goals (6 flaw + 13 virtue); `?age=3` returns exactly the 6 age-appropriate virtue goals, zero flaw — the exact behavior the whole-branch review's Important finding was about.
+- **Full Custom Flow generation** for a real 3-year-old (`Катя QA`, goal Доброта): Plan → Prose (regenerated once, attempt 2 passed judge gate — the existing "no silent regeneration" behavior held up for the new band too) → images → PDF, all real (OpenAI/Gemini + MinIO + Puppeteer). Judge: registerMatch 9, all criteria 9-10, passed. Story: cover title «Катя и яблоко для лягушки» (well under the 40-char 3-4 cap), 7 pages total (within the 3-4 band's 6-8 range, visibly shorter than a 5-6 book), refrain device present ("Поделиться? Не поделиться?"). Downloaded and verified the actual PDF from MinIO: valid, 7 pages, 13.8 MB.
+- Cleaned up the throwaway `mint-test-token.mts` script from the backend source tree (never committed).
+
+**Next:**
+- Add 3-4 cases to `eval:batch` DEFAULT_SET (still pending, carried over).
+- Dev servers (backend :3001, frontend :3000) and the full docker compose stack were left running for the user's own follow-up poking — stop with `docker compose down` when done.
+
+**Blockers:** none. Task 15 (all 8 steps) and the whole #196 body of work are now fully verified, not just code-reviewed.
