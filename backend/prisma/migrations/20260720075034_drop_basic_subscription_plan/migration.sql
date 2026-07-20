@@ -6,6 +6,10 @@ BEGIN;
 
 CREATE TYPE "SubscriptionPlan_new" AS ENUM ('free', 'premium');
 ALTER TABLE "Subscription" ALTER COLUMN "plan" DROP DEFAULT;
+-- Defensive: no known 'basic' rows in prod (Stripe was never wired with real
+-- price IDs before #268, so the webhook path that could have written 'basic'
+-- never fired), but reassign any that exist rather than fail the deploy.
+UPDATE "Subscription" SET "plan" = 'premium' WHERE "plan" = 'basic';
 ALTER TABLE "Subscription" ALTER COLUMN "plan" TYPE "SubscriptionPlan_new" USING ("plan"::text::"SubscriptionPlan_new");
 ALTER TYPE "SubscriptionPlan" RENAME TO "SubscriptionPlan_old";
 ALTER TYPE "SubscriptionPlan_new" RENAME TO "SubscriptionPlan";

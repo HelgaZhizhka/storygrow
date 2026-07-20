@@ -21,7 +21,7 @@ interface Book {
 interface Quota {
   plan: string;
   used: number;
-  limit: number | null;
+  limit: number;
 }
 
 function formatDate(iso: string): string {
@@ -53,13 +53,9 @@ export default function BooksPage(): React.ReactElement {
     }
   }
 
-  const quotaLabel =
-    quota &&
-    (quota.limit === null
-      ? `${quota.plan} · безлимитно`
-      : `${quota.plan} · ${quota.used} / ${quota.limit} книг`);
+  const quotaLabel = quota && `${quota.plan} · ${quota.used} / ${quota.limit} книг`;
 
-  const atLimit = quota && quota.limit !== null && quota.used >= quota.limit;
+  const atLimit = quota && quota.used >= quota.limit;
 
   return (
     <main className="mx-auto w-full max-w-[940px] px-7 py-10">
