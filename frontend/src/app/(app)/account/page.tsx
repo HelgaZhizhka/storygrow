@@ -5,12 +5,7 @@ import Link from 'next/link';
 import { api } from '@/lib/api';
 import { getUserEmail } from '@/lib/auth';
 import { pluralYears } from '@/lib/ru';
-
-interface Quota {
-  plan: string;
-  used: number;
-  limit: number;
-}
+import type { Quota } from '@/lib/types';
 
 interface Child {
   id: string;

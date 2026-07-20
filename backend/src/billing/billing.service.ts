@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SubscriptionPlan, SubscriptionStatus } from '../generated/prisma/client';
+import { isActiveSubscriptionStatus } from '../prisma/subscription-status.util';
 import type {
   StripeEvent,
   WebhookSubscription,
@@ -90,6 +91,15 @@ export class BillingService {
       where: { stripeSubscriptionId },
       data: { status: SubscriptionStatus.past_due },
     });
+  }
+
+  /** Used to block creating a second Stripe checkout session for an already-subscribed user. */
+  async hasActiveSubscription(userId: string): Promise<boolean> {
+    const sub = await this.prisma.subscription.findUnique({
+      where: { userId },
+      select: { status: true },
+    });
+    return isActiveSubscriptionStatus(sub?.status);
   }
 
   private extractSubscriptionId(invoice: WebhookInvoice): string | null {

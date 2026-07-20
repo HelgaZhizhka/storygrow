@@ -24,7 +24,7 @@ const mockUser: JwtPayload = { sub: 'user-1', email: 'a@b.com', role: 'user' };
 
 describe('BillingController', () => {
   let controller: BillingController;
-  let billingService: { handleEvent: jest.Mock };
+  let billingService: { handleEvent: jest.Mock; hasActiveSubscription: jest.Mock };
   let mockConstructEvent: jest.Mock;
   let mockCreateSession: jest.Mock;
 
@@ -39,7 +39,10 @@ describe('BillingController', () => {
         }) as unknown as StripeInstance,
     );
 
-    billingService = { handleEvent: jest.fn().mockResolvedValue(undefined) };
+    billingService = {
+      handleEvent: jest.fn().mockResolvedValue(undefined),
+      hasActiveSubscription: jest.fn().mockResolvedValue(false),
+    };
 
     const module = await Test.createTestingModule({
       controllers: [BillingController],
@@ -85,6 +88,13 @@ describe('BillingController', () => {
       mockCreateSession.mockResolvedValueOnce({ url: null });
 
       await expect(controller.createSubscription(mockUser)).rejects.toThrow(BadRequestException);
+    });
+
+    it('throws BadRequestException instead of creating a session when the user already has an active subscription', async () => {
+      billingService.hasActiveSubscription.mockResolvedValueOnce(true);
+
+      await expect(controller.createSubscription(mockUser)).rejects.toThrow(BadRequestException);
+      expect(mockCreateSession).not.toHaveBeenCalled();
     });
   });
 
