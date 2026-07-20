@@ -124,16 +124,18 @@ export class BooksService {
   }
 
   /**
-   * Quota check + insert run inside one transaction, serialized per user via a
-   * Postgres advisory lock — otherwise two concurrent requests can both read
-   * `used < limit` before either commits and both create a book (#154). A
-   * generous timeout keeps a legitimate double-click/retry queued behind the
-   * same user's lock from tripping Prisma's 5s default and surfacing as a 500.
+   * Runs `createRow` inside one transaction serialized per user via a Postgres
+   * advisory lock, after re-checking quota inside that same transaction —
+   * otherwise two concurrent requests can both read `used < limit` before
+   * either commits and both create a book (#154). A generous timeout keeps a
+   * legitimate double-click/retry queued behind the same user's lock from
+   * tripping Prisma's 5s default and surfacing as a 500.
    */
-  async createBook(userId: string, dto: CreateBookDto) {
-    await this.assertChildOwned(userId, dto.childId);
-
-    const book = await this.prisma.$transaction(
+  private async withQuotaLock<T>(
+    userId: string,
+    createRow: (tx: Prisma.TransactionClient) => Promise<T>,
+  ): Promise<T> {
+    return this.prisma.$transaction(
       async (tx) => {
         await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${userId})::bigint)`;
 
@@ -145,26 +147,57 @@ export class BooksService {
           );
         }
 
-        return tx.book.create({
-          data: {
-            userId,
-            childId: dto.childId,
-            learningGoalId: dto.learningGoalId,
-            title: '',
-            status: 'pending',
-            protagonistMode: dto.protagonistMode,
-            artStyle: dto.artStyle,
-            interests: dto.interests,
-            motifs: dto.motifs,
-            favoriteWords: dto.favoriteWords,
-          },
-          select: { id: true, status: true, childId: true, learningGoalId: true, createdAt: true },
-        });
+        return createRow(tx);
       },
       { timeout: TRANSACTION_TIMEOUT_MS },
     );
+  }
+
+  async createBook(userId: string, dto: CreateBookDto) {
+    await this.assertChildOwned(userId, dto.childId);
+
+    const book = await this.withQuotaLock(userId, (tx) =>
+      tx.book.create({
+        data: {
+          userId,
+          childId: dto.childId,
+          learningGoalId: dto.learningGoalId,
+          title: '',
+          status: 'pending',
+          protagonistMode: dto.protagonistMode,
+          artStyle: dto.artStyle,
+          interests: dto.interests,
+          motifs: dto.motifs,
+          favoriteWords: dto.favoriteWords,
+        },
+        select: { id: true, status: true, childId: true, learningGoalId: true, createdAt: true },
+      }),
+    );
 
     return { ...book, mode: dto.mode };
+  }
+
+  /**
+   * Reserves a book slot for the fast-flow generation path (#280): fast flow
+   * previously created its Book row only after an LLM call completed, with no
+   * atomic quota re-check at that point — a much larger TOCTOU window than
+   * #154 closed for the custom flow. Reserving here, before generation starts,
+   * closes it the same way; FastFlowService updates this row instead of
+   * creating its own.
+   */
+  async reserveFastFlowBook(
+    userId: string,
+    childId: string,
+    learningGoalId: string,
+  ): Promise<{ id: string }> {
+    await this.assertChildOwned(userId, childId);
+
+    return this.withQuotaLock(userId, (tx) =>
+      tx.book.create({
+        data: { userId, childId, learningGoalId, title: '', status: 'generating' },
+        select: { id: true },
+      }),
+    );
   }
 
   listBooks(userId: string) {

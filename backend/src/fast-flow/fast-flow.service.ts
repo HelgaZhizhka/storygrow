@@ -11,6 +11,7 @@ import { resolveGender } from './substitute-placeholders';
 import { pickIllustration, type IllustrationRecord } from './pick-illustration';
 
 export interface FastFlowInput {
+  bookId: string;
   userId: string;
   childId: string;
   learningGoalId: string;
@@ -30,7 +31,24 @@ export class FastFlowService {
     private readonly pdfRender: PdfRenderService,
   ) {}
 
+  /**
+   * `input.bookId` is reserved by BooksService.reserveFastFlowBook before this
+   * runs (#280) — quota was already atomically checked there, so this method
+   * only ever updates that row, never creates its own. Any failure below marks
+   * it 'failed' rather than leaving it stuck at 'generating'.
+   */
   async generate(input: FastFlowInput): Promise<FastFlowResult> {
+    const { bookId } = input;
+    try {
+      return await this.runGeneration(input);
+    } catch (err) {
+      await this.prisma.book.update({ where: { id: bookId }, data: { status: 'failed' } });
+      throw err;
+    }
+  }
+
+  private async runGeneration(input: FastFlowInput): Promise<FastFlowResult> {
+    const { bookId } = input;
     const child = await this.prisma.child.findFirst({
       where: { id: input.childId, userId: input.userId },
     });
@@ -80,20 +98,9 @@ export class FastFlowService {
       rawIllustrations,
     );
 
-    const book = await this.prisma.book.create({
-      data: {
-        userId: input.userId,
-        childId: input.childId,
-        learningGoalId: input.learningGoalId,
-        title: story.title,
-        status: 'generating',
-      },
-      select: { id: true },
-    });
-
     await this.prisma.storyEval.create({
       data: {
-        bookId: book.id,
+        bookId,
         attempt: 1,
         passed: true,
         finalScore: 0,
@@ -102,17 +109,11 @@ export class FastFlowService {
       },
     });
 
-    let pdfKey: string;
-    try {
-      pdfKey = await this.pdfRender.render({ bookId: book.id, story, illustrationUrls });
-    } catch (err) {
-      await this.prisma.book.update({ where: { id: book.id }, data: { status: 'failed' } });
-      throw err;
-    }
+    const pdfKey = await this.pdfRender.render({ bookId, story, illustrationUrls });
 
     await this.prisma.bookPage.createMany({
       data: story.pages.map((p, i) => ({
-        bookId: book.id,
+        bookId,
         pageNumber: i + 1,
         text: p.text ?? '',
         imageUrl: illustrationUrls[i] ?? null,
@@ -120,12 +121,12 @@ export class FastFlowService {
     });
 
     await this.prisma.book.update({
-      where: { id: book.id },
-      data: { status: 'ready', pdfKey, storyJson: story },
+      where: { id: bookId },
+      data: { title: story.title, status: 'ready', pdfKey, storyJson: story },
     });
 
-    this.logger.log(`Fast-flow book ${book.id} generated`);
-    return { bookId: book.id, pdfKey };
+    this.logger.log(`Fast-flow book ${bookId} generated`);
+    return { bookId, pdfKey };
   }
 }
 

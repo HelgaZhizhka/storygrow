@@ -67,7 +67,7 @@ function makeMocks() {
     template: { findFirst: jest.fn() },
     learningGoal: { findUnique: jest.fn() },
     fastIllustration: { findMany: jest.fn() },
-    book: { create: jest.fn(), update: jest.fn() },
+    book: { update: jest.fn() },
     bookPage: { createMany: jest.fn() },
     storyEval: { create: jest.fn() },
   };
@@ -81,7 +81,6 @@ function setupHappyPath(prisma: ReturnType<typeof makeMocks>['prisma']) {
   prisma.template.findFirst.mockResolvedValue(mockTemplate);
   prisma.learningGoal.findUnique.mockResolvedValue(mockGoal);
   prisma.fastIllustration.findMany.mockResolvedValue(mockIllustrations);
-  prisma.book.create.mockResolvedValue({ id: 'book-1' });
   prisma.storyEval.create.mockResolvedValue({});
   prisma.bookPage.createMany.mockResolvedValue({ count: 6 });
   prisma.book.update.mockResolvedValue({});
@@ -91,16 +90,25 @@ function setupHappyPath(prisma: ReturnType<typeof makeMocks>['prisma']) {
 beforeEach(() => jest.clearAllMocks());
 
 describe('FastFlowService.generate', () => {
-  it('throws NotFoundException when child does not exist or is not owned by the user', async () => {
+  it('throws NotFoundException and marks the reserved book failed when child does not exist or is not owned by the user', async () => {
     const { prisma, service } = makeMocks();
     // findFirst with { id, userId } returns null both when the child is missing
     // and when it belongs to another user — neither is leaked to the caller.
     prisma.child.findFirst.mockResolvedValue(null);
+    prisma.book.update.mockResolvedValue({});
 
     await expect(
-      service.generate({ userId: 'u1', childId: 'other-users-child', learningGoalId: 'g1' }),
+      service.generate({
+        bookId: 'book-1',
+        userId: 'u1',
+        childId: 'other-users-child',
+        learningGoalId: 'g1',
+      }),
     ).rejects.toThrow(NotFoundException);
-    expect(prisma.book.create).not.toHaveBeenCalled();
+    expect(prisma.book.update).toHaveBeenCalledWith({
+      where: { id: 'book-1' },
+      data: { status: 'failed' },
+    });
   });
 
   it('throws NotFoundException when no template exists for the learning goal', async () => {
@@ -108,9 +116,15 @@ describe('FastFlowService.generate', () => {
     prisma.child.findFirst.mockResolvedValue(mockChild);
     prisma.template.findFirst.mockResolvedValue(null);
     prisma.learningGoal.findUnique.mockResolvedValue(mockGoal);
+    prisma.book.update.mockResolvedValue({});
 
     await expect(
-      service.generate({ userId: 'u1', childId: 'child-1', learningGoalId: 'missing-goal' }),
+      service.generate({
+        bookId: 'book-1',
+        userId: 'u1',
+        childId: 'child-1',
+        learningGoalId: 'missing-goal',
+      }),
     ).rejects.toThrow(NotFoundException);
   });
 
@@ -119,7 +133,12 @@ describe('FastFlowService.generate', () => {
     setupHappyPath(prisma);
     pdfRender.render.mockResolvedValue('books/book-1/book.pdf');
 
-    await service.generate({ userId: 'u1', childId: 'child-1', learningGoalId: 'goal-1' });
+    await service.generate({
+      bookId: 'book-1',
+      userId: 'u1',
+      childId: 'child-1',
+      learningGoalId: 'goal-1',
+    });
 
     expect(mockGenerateObject).toHaveBeenCalledTimes(1);
     const calls = mockGenerateObject.mock.calls as Array<[{ prompt: string; system: string }]>;
@@ -134,13 +153,25 @@ describe('FastFlowService.generate', () => {
     setupHappyPath(prisma);
     pdfRender.render.mockResolvedValue('books/book-1/book.pdf');
 
-    await service.generate({ userId: 'u1', childId: 'child-1', learningGoalId: 'goal-1' });
+    await service.generate({
+      bookId: 'book-1',
+      userId: 'u1',
+      childId: 'child-1',
+      learningGoalId: 'goal-1',
+    });
 
     const renderCall = pdfRender.render.mock.calls[0][0];
     expect(renderCall?.story.title).toBe('Аня учится делиться');
     expect(renderCall?.story.pages).toHaveLength(6);
     expect(renderCall?.story.pages[0]?.template).toBe('cover');
     expect(renderCall?.story.pages[5]?.template).toBe('final');
+
+    type BookUpdateArg = { where: { id: string }; data: { title: string; status: string } };
+    const updateCalls = prisma.book.update.mock.calls as Array<[BookUpdateArg]>;
+    const readyUpdate = updateCalls[0][0];
+    expect(readyUpdate.where).toEqual({ id: 'book-1' });
+    expect(readyUpdate.data.title).toBe('Аня учится делиться');
+    expect(readyUpdate.data.status).toBe('ready');
   });
 
   it('picks illustrations by cycling through template illustrationTags', async () => {
@@ -148,7 +179,12 @@ describe('FastFlowService.generate', () => {
     setupHappyPath(prisma);
     pdfRender.render.mockResolvedValue('books/book-1/book.pdf');
 
-    await service.generate({ userId: 'u1', childId: 'child-1', learningGoalId: 'goal-1' });
+    await service.generate({
+      bookId: 'book-1',
+      userId: 'u1',
+      childId: 'child-1',
+      learningGoalId: 'goal-1',
+    });
 
     const illustrationUrls = pdfRender.render.mock.calls[0][0]?.illustrationUrls ?? [];
     expect(illustrationUrls[0]).toBe('https://s3/park.png');
@@ -162,7 +198,12 @@ describe('FastFlowService.generate', () => {
     setupHappyPath(prisma);
     pdfRender.render.mockResolvedValue('books/book-1/book.pdf');
 
-    await service.generate({ userId: 'u1', childId: 'child-1', learningGoalId: 'goal-1' });
+    await service.generate({
+      bookId: 'book-1',
+      userId: 'u1',
+      childId: 'child-1',
+      learningGoalId: 'goal-1',
+    });
 
     type StoryEvalArg = { data: { bookId: string; attempt: number; passed: boolean } };
     const evalCalls = prisma.storyEval.create.mock.calls as Array<[StoryEvalArg]>;
@@ -177,7 +218,12 @@ describe('FastFlowService.generate', () => {
     pdfRender.render.mockRejectedValue(new Error('Puppeteer crash'));
 
     await expect(
-      service.generate({ userId: 'u1', childId: 'child-1', learningGoalId: 'goal-1' }),
+      service.generate({
+        bookId: 'book-1',
+        userId: 'u1',
+        childId: 'child-1',
+        learningGoalId: 'goal-1',
+      }),
     ).rejects.toThrow('Puppeteer crash');
 
     expect(prisma.book.update).toHaveBeenCalledWith({
@@ -186,13 +232,13 @@ describe('FastFlowService.generate', () => {
     });
   });
 
-  it('returns bookId and pdfKey on success', async () => {
+  it('returns the reserved bookId and pdfKey on success', async () => {
     const { prisma, pdfRender, service } = makeMocks();
     setupHappyPath(prisma);
     pdfRender.render.mockResolvedValue('books/book-42/book.pdf');
-    prisma.book.create.mockResolvedValue({ id: 'book-42' });
 
     const result = await service.generate({
+      bookId: 'book-42',
       userId: 'u1',
       childId: 'child-1',
       learningGoalId: 'goal-1',

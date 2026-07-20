@@ -319,6 +319,62 @@ describe('BooksService.createBook', () => {
   });
 });
 
+describe('BooksService.reserveFastFlowBook', () => {
+  let service: BooksService;
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    const module = await Test.createTestingModule({
+      providers: [
+        BooksService,
+        { provide: PrismaService, useValue: mockPrisma },
+        { provide: S3Service, useValue: mockS3 },
+      ],
+    }).compile();
+    service = module.get(BooksService);
+  });
+
+  it('rejects a childId the user does not own', async () => {
+    mockPrisma.child.findFirst.mockResolvedValueOnce(null);
+
+    await expect(service.reserveFastFlowBook('user-1', 'other-child', 'g1')).rejects.toThrow(
+      HttpException,
+    );
+    expect(mockPrisma.book.create).not.toHaveBeenCalled();
+  });
+
+  it('throws 402 when quota is exceeded, same as the custom flow (#280)', async () => {
+    mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1' });
+    mockPrisma.subscription.findUnique.mockResolvedValueOnce(null);
+    mockPrisma.book.count.mockResolvedValueOnce(1);
+
+    await expect(service.reserveFastFlowBook('user-1', 'c1', 'g1')).rejects.toThrow(HttpException);
+    expect(mockPrisma.book.create).not.toHaveBeenCalled();
+  });
+
+  it('reserves a placeholder book row atomically, under the same advisory lock as createBook', async () => {
+    mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1' });
+    mockPrisma.subscription.findUnique.mockResolvedValueOnce(null);
+    mockPrisma.book.count.mockResolvedValueOnce(0);
+    mockPrisma.book.create.mockResolvedValueOnce({ id: 'book-1' });
+
+    const result = await service.reserveFastFlowBook('user-1', 'c1', 'g1');
+
+    expect(result).toEqual({ id: 'book-1' });
+    expect(mockPrisma.book.create).toHaveBeenCalledWith({
+      data: {
+        userId: 'user-1',
+        childId: 'c1',
+        learningGoalId: 'g1',
+        title: '',
+        status: 'generating',
+      },
+      select: { id: true },
+    });
+    expect(mockPrisma.$executeRaw).toHaveBeenCalled();
+  });
+});
+
 describe('BooksService.deleteBook', () => {
   let service: BooksService;
 

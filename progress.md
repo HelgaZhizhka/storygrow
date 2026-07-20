@@ -491,3 +491,18 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - `./init.sh` green.
 
 **Blockers:** none.
+
+---
+
+## 2026-07-20 (cont. 9) — #280: close fast-flow's larger quota TOCTOU race
+
+**Done:**
+- Direct continuation of #154: fast-flow mode had no atomic quota guard at all — `FastFlowService.generate` created its `Book` row only after the LLM call completed, so the race window spanned an entire generation call instead of the near-instant gap #154 closed for the custom flow.
+- Fix follows the pattern the #280 issue text proposed: `BooksService.reserveFastFlowBook(userId, childId, learningGoalId)` reserves a placeholder row (`title: ''`, `status: 'generating'`) atomically — same advisory-lock + quota-check transaction as `createBook`, extracted into a shared private `withQuotaLock` helper so the two can't drift. `FastFlowService.generate` now takes a required `bookId` and only ever updates that row (title/status/pdfKey/storyJson at the end), never creates its own.
+- Resolved the one-directional module dependency (`BooksModule` imports `FastFlowModule`, not the reverse) the issue flagged as the likely blocker, without introducing a circular import: `BooksController` reserves the slot via `BooksService` first, then passes the resulting `bookId` into `FastFlowService.generate` — no cross-module injection needed.
+- `FastFlowService.generate` now wraps its whole body in try/catch that marks the book 'failed' on any error (child/template not found, LLM failure, PDF render failure), not just the PDF-render-specific catch it had before — every failure path now has a reserved row to resolve instead of some paths having none.
+- This also delivers the de-duplication #154's own issue text originally asked for but couldn't get safely at the time: `BooksController.createBook`'s manual quota pre-check is gone entirely — both flows now enforce quota atomically through `BooksService`, no duplicated check left in the controller.
+- Updated `fast-flow.service.spec.ts` for the new `bookId`-in/`bookId`-out contract; added `BooksService.reserveFastFlowBook` tests mirroring `createBook`'s coverage (ownership check, 402, atomic reservation).
+- `./init.sh` green: 291 backend tests, all frontend tests, tsc/lint clean.
+
+**Blockers:** none.
