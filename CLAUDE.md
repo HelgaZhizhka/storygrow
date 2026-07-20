@@ -60,7 +60,7 @@ See [PROJECT_PLAN.md](PROJECT_PLAN.md) for full concept, scope, roadmap, and bud
 | PDF | Puppeteer |
 | Payments | Stripe |
 | Notifications | SSE |
-| Deploy | Dokploy on Hetzner VPS |
+| Deploy | Railway (Dokploy/Hetzner kept as documented fallback, not in use — see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#deployment)) |
 | Package manager | `pnpm` (workspaces) |
 
 ---

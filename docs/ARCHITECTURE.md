@@ -48,10 +48,10 @@ storygrow/
 │   │   ├── app/
 │   │   │   ├── page.tsx        # public landing
 │   │   │   ├── login/          # public login (Google OAuth)
-│   │   │   ├── pricing/        # public pricing (Stripe)
+│   │   │   ├── pricing/        # single-tier pricing (Stripe) — reachable public or authed
 │   │   │   ├── subscription/   # post-checkout success
 │   │   │   ├── auth/           # OAuth callback
-│   │   │   ├── (app)/          # authed app (books list, new, detail)
+│   │   │   ├── (app)/          # authed app (books list, new, detail, account)
 │   │   │   ├── admin/          # admin dashboard
 │   │   │   ├── globals.css     # design tokens + sg-* component layer
 │   │   │   └── marketing.css   # landing/login/pricing component layer
@@ -303,7 +303,7 @@ model Subscription {
   userId                String              @unique
   user                  User                @relation(fields: [userId], references: [id])
   stripeSubscriptionId  String              @unique
-  plan                  SubscriptionPlan    @default(free)  // enum: free | basic | premium
+  plan                  SubscriptionPlan    @default(free)  // enum: free | premium (single paid tier, #269)
   status                SubscriptionStatus                  // enum: active | canceled | past_due | trialing
   periodEnd             DateTime
 }

@@ -97,7 +97,7 @@ User → form
 
 ## 06:00–07:00 — Q&A buffer / closing (60 s)
 
-> «Платёжная интеграция — Stripe Webhooks, подписки free/basic/premium с квотами на книги. Деплой — Dokploy на Hetzner VPS, Docker multi-stage build с Chromium для Puppeteer.»
+> «Платёжная интеграция — Stripe Webhooks, единый платный план premium (20€/мес) плюс free, с квотами на книги. Деплой — Railway, Docker multi-stage build с Chromium для Puppeteer.»
 
 > «Что дальше — фото ребёнка как референс для иллюстраций. Заблокировано GDPR-анализом, запланировано в backlog.»
 

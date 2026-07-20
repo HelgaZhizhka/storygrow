@@ -50,7 +50,7 @@ Top questions expected at the defense jury Q&A, with prepared 1-paragraph answer
 
 ## Q8: Как устроена подписочная модель?
 
-Три плана: `free` (1 книга), `basic` (10 книг/мес), `premium` (безлимит). Платёж через Stripe Checkout, webhook-обработчик обновляет `Subscription` в Postgres. `BooksController` вызывает `BooksService.getQuota` перед каждой генерацией — при превышении лимита 402 Payment Required. SSE на фронте сразу показывает пользователю текущее состояние квоты.
+Два плана: `free` (1 книга/мес) и единый платный `premium` (20€/мес, 30 книг/мес) — раньше между ними был ещё `basic`, но тарифы схлопнули в один платный уровень (#269). Платёж через Stripe Checkout, webhook-обработчик обновляет `Subscription` в Postgres. `BooksController` вызывает `BooksService.getQuota` перед каждой генерацией — при превышении лимита 402 Payment Required. Бэкенд также не даёт оформить вторую подписку поверх уже активной (#276). SSE на фронте сразу показывает пользователю текущее состояние квоты.
 
 ---
 
