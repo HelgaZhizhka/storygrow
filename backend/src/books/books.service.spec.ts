@@ -10,7 +10,7 @@ jest.mock('../generated/prisma/client', () => ({
 }));
 
 import { Test } from '@nestjs/testing';
-import { HttpException, NotFoundException } from '@nestjs/common';
+import { ConflictException, HttpException, NotFoundException } from '@nestjs/common';
 import { SubscriptionPlan } from '../generated/prisma/client';
 import { BooksService } from './books.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -108,6 +108,17 @@ describe('BooksService.getQuota', () => {
 
     expect(quota.plan).toBe(SubscriptionPlan.premium);
     expect(quota.limit).toBe(30);
+  });
+
+  it('excludes failed and images_failed books from the count, so a generation error does not cost a quota slot (#280)', async () => {
+    mockPrisma.subscription.findUnique.mockResolvedValueOnce(null);
+    mockPrisma.book.count.mockResolvedValueOnce(0);
+
+    await service.getQuota('user-1');
+
+    type CountArg = { where: { status?: { notIn: string[] } } };
+    const countCalls = mockPrisma.book.count.mock.calls as Array<[CountArg]>;
+    expect(countCalls[0][0].where.status).toEqual({ notIn: ['failed', 'images_failed'] });
   });
 });
 
@@ -393,6 +404,7 @@ describe('BooksService.deleteBook', () => {
   it('deletes S3 assets then the book row when owned', async () => {
     mockPrisma.book.findFirst.mockResolvedValueOnce({
       id: 'book-1',
+      status: 'ready',
       imageKeys: ['books/book-1/page-1.png'],
       characterPortraitKey: 'books/book-1/portrait.png',
       pdfKey: 'books/book-1/book.pdf',
@@ -415,6 +427,23 @@ describe('BooksService.deleteBook', () => {
     expect(mockS3.deleteObjects).not.toHaveBeenCalled();
     expect(mockPrisma.book.delete).not.toHaveBeenCalled();
   });
+
+  it.each(['pending', 'generating'])(
+    'throws 409 and does not delete a book that is still %s (#280)',
+    async (status) => {
+      mockPrisma.book.findFirst.mockResolvedValueOnce({
+        id: 'book-1',
+        status,
+        imageKeys: [],
+        characterPortraitKey: null,
+        pdfKey: null,
+      });
+
+      await expect(service.deleteBook('user-1', 'book-1')).rejects.toThrow(ConflictException);
+      expect(mockS3.deleteObjects).not.toHaveBeenCalled();
+      expect(mockPrisma.book.delete).not.toHaveBeenCalled();
+    },
+  );
 });
 
 describe('BooksService.listLearningGoals', () => {

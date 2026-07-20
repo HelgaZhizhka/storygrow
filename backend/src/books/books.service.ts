@@ -1,4 +1,10 @@
-import { Injectable, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  HttpException,
+  HttpStatus,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { Prisma, SubscriptionPlan } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { S3Service } from '../s3/s3.service';
@@ -114,7 +120,15 @@ export class BooksService {
     // else queued behind the same user's lock.
     const [sub, used] = await Promise.all([
       client.subscription.findUnique({ where: { userId }, select: { plan: true, status: true } }),
-      client.book.count({ where: { userId, createdAt: { gte: periodStart } } }),
+      // failed/images_failed books don't count — a transient generation error (LLM
+      // rate limit, PDF render crash) shouldn't permanently cost the user a slot (#280).
+      client.book.count({
+        where: {
+          userId,
+          createdAt: { gte: periodStart },
+          status: { notIn: ['failed', 'images_failed'] },
+        },
+      }),
     ]);
 
     const plan = sub && isActiveSubscriptionStatus(sub.status) ? sub.plan : SubscriptionPlan.free;
@@ -238,14 +252,19 @@ export class BooksService {
   /**
    * Delete a book the user owns. S3 assets are removed first (best-effort), then
    * the row — pages and evals cascade via the schema. Throws 404 if the book is
-   * not the user's.
+   * not the user's, 409 while it's still being generated — otherwise a delete
+   * racing the generation request's own book.update crashes that request with
+   * an unhandled "record not found" once the row is gone (#280).
    */
   async deleteBook(userId: string, bookId: string): Promise<void> {
     const book = await this.prisma.book.findFirst({
       where: { id: bookId, userId },
-      select: { id: true, imageKeys: true, characterPortraitKey: true, pdfKey: true },
+      select: { id: true, status: true, imageKeys: true, characterPortraitKey: true, pdfKey: true },
     });
     if (!book) throw new NotFoundException('Book not found');
+    if (book.status === 'pending' || book.status === 'generating') {
+      throw new ConflictException('Cannot delete a book while it is still being generated');
+    }
 
     const keys = [...book.imageKeys, book.characterPortraitKey, book.pdfKey].filter(
       (k): k is string => Boolean(k),

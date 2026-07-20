@@ -6,9 +6,16 @@ import { PdfRenderService } from '../pdf/pdf-render.service';
 import { GENERATION_MODEL } from '../ai/ai.config';
 import { createTelemetry } from '../ai/telemetry';
 import { StorySchema } from '../ai/schemas/story.schema';
+import type { Story } from '../ai/schemas';
 import { FAST_FLOW_SYSTEM_PROMPT, buildFastFlowPrompt } from './fast-flow.prompt';
 import { resolveGender } from './substitute-placeholders';
 import { pickIllustration, type IllustrationRecord } from './pick-illustration';
+
+interface GenerationContext {
+  child: { name: string; age: number; gender: string | null };
+  template: { illustrationTags: string[] };
+  goal: { title: string } | null;
+}
 
 export interface FastFlowInput {
   bookId: string;
@@ -42,13 +49,29 @@ export class FastFlowService {
     try {
       return await this.runGeneration(input);
     } catch (err) {
-      await this.prisma.book.update({ where: { id: bookId }, data: { status: 'failed' } });
+      // Never let a failure marking the book 'failed' hide the real error —
+      // log it and still throw `err`, not whatever this update itself threw.
+      await this.prisma.book
+        .update({ where: { id: bookId }, data: { status: 'failed' } })
+        .catch((cleanupErr: unknown) => {
+          this.logger.error(`Failed to mark book ${bookId} as failed`, cleanupErr);
+        });
       throw err;
     }
   }
 
   private async runGeneration(input: FastFlowInput): Promise<FastFlowResult> {
     const { bookId } = input;
+    const { child, template, goal } = await this.loadContext(input);
+    const story = await this.generateStory(input, child, goal);
+    const illustrationUrls = await this.pickIllustrations(story, template);
+    const pdfKey = await this.persistStory(bookId, story, illustrationUrls);
+
+    this.logger.log(`Fast-flow book ${bookId} generated`);
+    return { bookId, pdfKey };
+  }
+
+  private async loadContext(input: FastFlowInput): Promise<GenerationContext> {
     const child = await this.prisma.child.findFirst({
       where: { id: input.childId, userId: input.userId },
     });
@@ -69,8 +92,14 @@ export class FastFlowService {
       throw new NotFoundException(`No template for learning goal ${input.learningGoalId}`);
     }
 
-    const isFeminine = resolveGender(child.gender);
+    return { child, template, goal };
+  }
 
+  private async generateStory(
+    input: FastFlowInput,
+    child: GenerationContext['child'],
+    goal: GenerationContext['goal'],
+  ): Promise<Story> {
     const { object: story } = await generateObject({
       model: openai(GENERATION_MODEL),
       schema: StorySchema,
@@ -78,7 +107,7 @@ export class FastFlowService {
       prompt: buildFastFlowPrompt({
         childName: child.name,
         childAge: child.age,
-        isFeminine,
+        isFeminine: resolveGender(child.gender),
         learningGoal: goal?.title ?? '',
       }),
       experimental_telemetry: createTelemetry('fast-flow-story', {
@@ -88,16 +117,24 @@ export class FastFlowService {
       }),
       maxRetries: 1,
     });
+    return story;
+  }
 
+  private async pickIllustrations(
+    story: Story,
+    template: GenerationContext['template'],
+  ): Promise<readonly string[]> {
     const rawIllustrations = await this.prisma.fastIllustration.findMany({
       select: { id: true, url: true, tags: true },
     });
-    const illustrationUrls = buildIllustrationUrls(
-      story.pages.length,
-      template.illustrationTags,
-      rawIllustrations,
-    );
+    return buildIllustrationUrls(story.pages.length, template.illustrationTags, rawIllustrations);
+  }
 
+  private async persistStory(
+    bookId: string,
+    story: Story,
+    illustrationUrls: readonly string[],
+  ): Promise<string> {
     await this.prisma.storyEval.create({
       data: {
         bookId,
@@ -125,8 +162,7 @@ export class FastFlowService {
       data: { title: story.title, status: 'ready', pdfKey, storyJson: story },
     });
 
-    this.logger.log(`Fast-flow book ${bookId} generated`);
-    return { bookId, pdfKey };
+    return pdfKey;
   }
 }
 
