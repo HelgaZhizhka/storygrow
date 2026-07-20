@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { isAuthenticated } from '@/lib/auth';
+import { AppHeader } from '@/components/ui/AppHeader';
 import { PublicNav } from '@/components/ui/PublicNav';
 
 interface Plan {
@@ -33,6 +34,19 @@ export default function PricingPage(): React.ReactElement {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Reachable from inside the app (AppHeader's "Тарифы" link) as well as
+  // anonymously — starts false to match SSR (no localStorage there), set
+  // post-mount so the nav doesn't flip and cause a hydration mismatch.
+  const [authed, setAuthed] = useState(false);
+
+  useEffect(() => {
+    // isAuthenticated() reads localStorage, unavailable during SSR — reading
+    // it in a lazy useState initializer instead would bake the server's
+    // `false` into the HTML and mismatch on hydration once the client
+    // re-runs it with the real value.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setAuthed(isAuthenticated());
+  }, []);
 
   async function handleSubscribe(): Promise<void> {
     if (!isAuthenticated()) {
@@ -55,7 +69,7 @@ export default function PricingPage(): React.ReactElement {
 
   return (
     <>
-      <PublicNav />
+      {authed ? <AppHeader /> : <PublicNav />}
       <main className="mx-auto max-w-[940px] px-7 pb-[120px] pt-10">
         <div className="pricing-head">
           <span className="eyebrow">Тариф</span>

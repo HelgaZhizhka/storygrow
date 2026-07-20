@@ -440,6 +440,18 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Review caught and fixed two real issues: a lazy-`useState` initializer reading `getUserEmail()` caused a genuine SSR/hydration mismatch (moved into the existing effect); a "malformed token" test only covered an early-return guard, not the actual `atob`/`JSON.parse` try/catch (added a case that does).
 
 **Next:**
-- Backend follow-up if the Account page should show cancellation/payment history: needs a Stripe customer-portal or cancel endpoint, and an invoice-listing endpoint — neither exists yet.
+- Backend follow-up if the Account page should show cancellation/payment history: needs a Stripe customer-portal or cancel endpoint, and an invoice-listing endpoint — neither exists yet (tracked as #273).
+
+**Blockers:** none.
+
+---
+
+## 2026-07-20 (cont. 5) — #274: fix /pricing regression from #271 (looked like a logout)
+
+**Done:**
+- User caught this live on production within minutes of #271 shipping: clicking AppHeader's new "Тарифы" link made `/pricing` render `<PublicNav />` (Войти button, no logout, no way back into the app) even though she was still fully authenticated — tokens untouched, but it looked and felt like she'd been logged out.
+- Root cause: `/pricing` predates #271 as a purely anonymous marketing page and never checked auth state; #271 turned it into a shared destination (reachable from inside the app too) without updating its nav logic.
+- Fix: `/pricing` now checks `isAuthenticated()` post-mount (same SSR-safe pattern as #271's account-page fix — state defaults `false` to match SSR, set in a `useEffect`, justified `eslint-disable` for the same lint rule) and renders `AppHeader` when logged in, `PublicNav` otherwise.
+- Reviewed clean, no issues found. Confirmed `AppHeader` has no hidden dependency on being inside the `(app)` layout, so it's safe to render standalone here.
 
 **Blockers:** none.
