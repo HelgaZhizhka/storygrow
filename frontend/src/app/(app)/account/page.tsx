@@ -26,9 +26,15 @@ const PLAN_LABELS: Record<string, string> = {
 export default function AccountPage(): React.ReactElement {
   const [quota, setQuota] = useState<Quota | null>(null);
   const [children, setChildren] = useState<Child[]>([]);
-  const [email] = useState<string | null>(() => getUserEmail());
+  const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
+    // getUserEmail reads localStorage, unavailable during SSR — a lazy useState
+    // initializer would bake the server's `null` into the HTML and mismatch on
+    // hydration once the client re-runs it with the real token, so this reads
+    // post-mount instead, same as the quota/children fetches below.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setEmail(getUserEmail());
     void api.get<Quota>('/books/quota').then(setQuota);
     void api.get<Child[]>('/children').then(setChildren);
   }, []);

@@ -62,8 +62,13 @@ describe('getUserEmail', () => {
     expect(getUserEmail()).toBe('maria@example.com');
   });
 
-  it('returns null for a malformed token instead of throwing', () => {
+  it('returns null when the token has no payload segment', () => {
     setTokens('not-a-jwt', 'refresh');
+    expect(getUserEmail()).toBeNull();
+  });
+
+  it('returns null instead of throwing when the payload segment is not valid base64/JSON', () => {
+    setTokens('header.!!!not-base64-or-json!!!.signature', 'refresh');
     expect(getUserEmail()).toBeNull();
   });
 
