@@ -454,4 +454,18 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Fix: `/pricing` now checks `isAuthenticated()` post-mount (same SSR-safe pattern as #271's account-page fix — state defaults `false` to match SSR, set in a `useEffect`, justified `eslint-disable` for the same lint rule) and renders `AppHeader` when logged in, `PublicNav` otherwise.
 - Reviewed clean, no issues found. Confirmed `AppHeader` has no hidden dependency on being inside the `(app)` layout, so it's safe to render standalone here.
 
+---
+
+## 2026-07-20 (cont. 6) — #276: block re-subscribing when the user already has an active plan
+
+**Done:**
+- User caught this live after her real #268 production subscription: `/pricing` still showed the "Подключить" button as clickable/active even though she already had an active Premium subscription — no second charge occurred, but nothing actually prevented one.
+- Backend: `BillingService.hasActiveSubscription(userId)`, enforced as a guard at the top of `BillingController.createSubscription` — throws `BadRequestException` before creating a Stripe checkout session for a user with an `active`/`trialing` subscription. This is the real enforcement.
+- Frontend: `/pricing` fetches quota when authenticated and swaps the subscribe button for a link to `/account` when `quota.plan === 'premium'`. UX only, not the safety boundary.
+- Workflow-backed code review (high effort) caught two real issues, both fixed before merge: (1) the button was still clickable during the async quota fetch's in-flight window, reaching the backend's 400 with a misleading "try again later" message instead of routing to `/account` — fixed by disabling the button while quota is pending and by catching the specific 400 to redirect; (2) the active/trialing membership predicate was duplicated verbatim in `BillingService` and `BooksService.getQuota` — extracted to a shared `isActiveSubscriptionStatus` helper in `prisma/subscription-status.util.ts` to prevent silent drift.
+- Extracted the previously-duplicated `Quota` interface (in `books/page.tsx` and `account/page.tsx`) into `frontend/src/lib/types.ts`.
+- `./init.sh` green: 287/287 backend tests, 41/41 frontend tests, tsc/lint clean on both workspaces.
+
+**Blockers:** none. PR #277 pending merge — confirming with the user before merging given this touches billing/payment logic.
+
 **Blockers:** none.
