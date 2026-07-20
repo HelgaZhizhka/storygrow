@@ -100,9 +100,7 @@ export class BillingService {
   }
 
   private parsePlan(plan: string | undefined): SubscriptionPlan {
-    if (plan === 'free') return SubscriptionPlan.free;
-    if (plan === 'premium') return SubscriptionPlan.premium;
-    return SubscriptionPlan.basic;
+    return plan === 'free' ? SubscriptionPlan.free : SubscriptionPlan.premium;
   }
 
   private parseStatus(status: StripeSubscriptionStatus): SubscriptionStatus {

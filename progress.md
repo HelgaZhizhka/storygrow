@@ -396,3 +396,22 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Carried over, still pending: `.claude/settings.local.json` permissions hygiene (2026-07-16 harness audit).
 
 **Blockers:** none.
+
+---
+
+## 2026-07-20 (cont. 2) — #268: Stripe billing actually wired (single Premium tier)
+
+**Done:**
+- Diagnosed why the user couldn't understand "how a user uses the subscription": `STRIPE_SECRET_KEY`/`STRIPE_WEBHOOK_SECRET` in `.env` were literal placeholder text (`sk_test_...`, `whsec_...`), not real credentials — checkout would have thrown immediately. Billing code itself (`billing.module`/`.controller`/`.service`, webhook handling, `/pricing` page) was already complete, just never connected to a real Stripe account.
+- User created a real Stripe sandbox account and filled in `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID` locally, then added the same three to Railway.
+- Collapsed the product from free/basic/premium (3 tiers) to free/premium (1 paid tier) at the user's request: 20€/mo, capped at 30 books/mo — explicitly NOT unlimited, per a real unit-economics concern raised and agreed on (image generation cost per book makes true "unlimited" a margin risk). Free tier restored to its 1-book limit (an existing code comment had already flagged this as "restore once billing works" — this session is that moment).
+- `SubscriptionPlan` Prisma enum lost `basic`. Hand-wrote the migration (standard Postgres enum-swap pattern) since `prisma migrate dev` requires a real TTY unavailable in this environment; applied via `migrate deploy` (non-interactive, same mechanism prod uses) after confirming zero `basic` rows in local dev data.
+- Local dev DB needed a full reset to clear pre-existing, unrelated migration-checksum drift before the new migration could apply — went through Prisma's own AI-agent safety gate (`PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION`), which demanded fresh explicit consent in-turn rather than relying on an earlier answer. Confirmed dev-only (prod is a separate Railway Postgres, applies via `migrate deploy`, no drift-detection).
+- `billing.controller`'s subscribe endpoint no longer takes a body (only one plan exists); `.env`/`.env.example` collapsed to a single `STRIPE_PRICE_ID`; `/pricing` page shows one plan card.
+- Full suite green: 281 backend + 36 frontend tests, tsc/lint clean both workspaces, `./init.sh` PASSED.
+
+**Next:**
+- Register the production webhook endpoint in the Stripe dashboard pointing at the Railway backend URL (separate signing secret from local) — user's action, not yet confirmed done.
+- Manual end-to-end check: real (sandbox) checkout → webhook → quota unlock, not yet run live.
+
+**Blockers:** none.

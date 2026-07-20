@@ -25,15 +25,12 @@ interface CreateBookDto {
 export interface QuotaInfo {
   plan: SubscriptionPlan;
   used: number;
-  limit: number | null;
+  limit: number;
 }
 
-const PLAN_LIMITS: Record<SubscriptionPlan, number | null> = {
-  // TEMPORARY: free is unlimited while Stripe is not wired in production, so the
-  // deployed app is testable without a paid plan. Restore to 1 once billing works.
-  [SubscriptionPlan.free]: null,
-  [SubscriptionPlan.basic]: 10,
-  [SubscriptionPlan.premium]: null,
+const PLAN_LIMITS: Record<SubscriptionPlan, number> = {
+  [SubscriptionPlan.free]: 1,
+  [SubscriptionPlan.premium]: 30,
 };
 
 const PERIOD_DAYS = 30;
@@ -124,7 +121,7 @@ export class BooksService {
     await this.assertChildOwned(userId, dto.childId);
 
     const { used, limit } = await this.getQuota(userId);
-    if (limit !== null && used >= limit) {
+    if (used >= limit) {
       throw new HttpException(
         { message: 'Book quota exceeded for current plan', used, limit },
         HttpStatus.PAYMENT_REQUIRED,

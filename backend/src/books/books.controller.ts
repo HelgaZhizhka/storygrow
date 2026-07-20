@@ -82,7 +82,7 @@ export class BooksController {
     const dto = createBookSchema.parse(body);
 
     const { used, limit } = await this.books.getQuota(user.sub);
-    if (limit !== null && used >= limit) {
+    if (used >= limit) {
       throw new HttpException(
         { message: 'Book quota exceeded for current plan', used, limit },
         HttpStatus.PAYMENT_REQUIRED,

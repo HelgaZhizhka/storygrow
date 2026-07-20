@@ -1,6 +1,6 @@
 jest.mock('../generated/prisma/client', () => ({
   PrismaClient: class {},
-  SubscriptionPlan: { free: 'free', basic: 'basic', premium: 'premium' },
+  SubscriptionPlan: { free: 'free', premium: 'premium' },
   SubscriptionStatus: {
     active: 'active',
     trialing: 'trialing',
@@ -55,42 +55,30 @@ describe('BooksService.getQuota', () => {
     service = module.get(BooksService);
   });
 
-  it('returns free plan with unlimited limit (temporary, no Stripe) when no subscription', async () => {
+  it('returns free plan with limit=1 when no subscription', async () => {
     mockPrisma.subscription.findUnique.mockResolvedValueOnce(null);
     mockPrisma.book.count.mockResolvedValueOnce(0);
 
     const quota = await service.getQuota('user-1');
 
-    expect(quota).toEqual({ plan: SubscriptionPlan.free, used: 0, limit: null });
+    expect(quota).toEqual({ plan: SubscriptionPlan.free, used: 0, limit: 1 });
   });
 
-  it('returns basic plan with limit=10 for active basic subscription', async () => {
-    mockPrisma.subscription.findUnique.mockResolvedValueOnce({
-      plan: SubscriptionPlan.basic,
-      status: 'active',
-    });
-    mockPrisma.book.count.mockResolvedValueOnce(3);
-
-    const quota = await service.getQuota('user-1');
-
-    expect(quota).toEqual({ plan: SubscriptionPlan.basic, used: 3, limit: 10 });
-  });
-
-  it('returns premium plan with limit=null (unlimited)', async () => {
+  it('returns premium plan with limit=30 for an active subscription', async () => {
     mockPrisma.subscription.findUnique.mockResolvedValueOnce({
       plan: SubscriptionPlan.premium,
       status: 'active',
     });
-    mockPrisma.book.count.mockResolvedValueOnce(50);
+    mockPrisma.book.count.mockResolvedValueOnce(20);
 
     const quota = await service.getQuota('user-1');
 
-    expect(quota).toEqual({ plan: SubscriptionPlan.premium, used: 50, limit: null });
+    expect(quota).toEqual({ plan: SubscriptionPlan.premium, used: 20, limit: 30 });
   });
 
   it('falls back to free plan for canceled subscription', async () => {
     mockPrisma.subscription.findUnique.mockResolvedValueOnce({
-      plan: SubscriptionPlan.basic,
+      plan: SubscriptionPlan.premium,
       status: 'canceled',
     });
     mockPrisma.book.count.mockResolvedValueOnce(0);
@@ -98,20 +86,20 @@ describe('BooksService.getQuota', () => {
     const quota = await service.getQuota('user-1');
 
     expect(quota.plan).toBe(SubscriptionPlan.free);
-    expect(quota.limit).toBe(null);
+    expect(quota.limit).toBe(1);
   });
 
   it('accepts trialing status as active', async () => {
     mockPrisma.subscription.findUnique.mockResolvedValueOnce({
-      plan: SubscriptionPlan.basic,
+      plan: SubscriptionPlan.premium,
       status: 'trialing',
     });
     mockPrisma.book.count.mockResolvedValueOnce(2);
 
     const quota = await service.getQuota('user-1');
 
-    expect(quota.plan).toBe(SubscriptionPlan.basic);
-    expect(quota.limit).toBe(10);
+    expect(quota.plan).toBe(SubscriptionPlan.premium);
+    expect(quota.limit).toBe(30);
   });
 });
 
@@ -204,13 +192,10 @@ describe('BooksService.createBook', () => {
     });
   });
 
-  it('throws 402 when a plan quota is exceeded (basic: 10 books)', async () => {
+  it('throws 402 when a plan quota is exceeded (free: 1 book)', async () => {
     mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1' });
-    mockPrisma.subscription.findUnique.mockResolvedValueOnce({
-      plan: SubscriptionPlan.basic,
-      status: 'active',
-    });
-    mockPrisma.book.count.mockResolvedValueOnce(10);
+    mockPrisma.subscription.findUnique.mockResolvedValueOnce(null);
+    mockPrisma.book.count.mockResolvedValueOnce(1);
 
     await expect(
       service.createBook('user-1', {
@@ -249,13 +234,13 @@ describe('BooksService.createBook', () => {
     expect(result.mode).toBe('custom');
   });
 
-  it('does not enforce quota for premium plan', async () => {
+  it('creates book when under the 30-book premium quota', async () => {
     mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1' });
     mockPrisma.subscription.findUnique.mockResolvedValueOnce({
       plan: SubscriptionPlan.premium,
       status: 'active',
     });
-    mockPrisma.book.count.mockResolvedValueOnce(999);
+    mockPrisma.book.count.mockResolvedValueOnce(29);
     mockPrisma.book.create.mockResolvedValueOnce({
       id: 'book-2',
       status: 'pending',
@@ -274,6 +259,26 @@ describe('BooksService.createBook', () => {
         ...noSeeds,
       }),
     ).resolves.not.toThrow();
+  });
+
+  it('throws 402 when the premium quota (30) is exceeded', async () => {
+    mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1' });
+    mockPrisma.subscription.findUnique.mockResolvedValueOnce({
+      plan: SubscriptionPlan.premium,
+      status: 'active',
+    });
+    mockPrisma.book.count.mockResolvedValueOnce(30);
+
+    await expect(
+      service.createBook('user-1', {
+        childId: 'c1',
+        learningGoalId: 'g1',
+        mode: 'custom',
+        protagonistMode: 'child',
+        artStyle: 'watercolor',
+        ...noSeeds,
+      }),
+    ).rejects.toThrow(HttpException);
   });
 });
 
