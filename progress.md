@@ -415,3 +415,14 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Manual end-to-end check: real (sandbox) checkout → webhook → quota unlock, not yet run live.
 
 **Blockers:** none.
+
+---
+
+## 2026-07-20 (cont. 3) — #268 confirmed working end-to-end in production
+
+**Done:**
+- User registered the production Stripe webhook endpoint and ran the real checkout live: logged into `storygrow-web-production.up.railway.app` with her actual account, subscribed via `/pricing`, paid with a Stripe test card, and confirmed the subscription went through (success page shown, subscription active).
+- Caught and corrected a wrong verification path first: an attempted local test-checkout session (via a synthetic local-only JWT) would have failed at the webhook step — the webhook was registered against the *production* URL, and the local synthetic test user doesn't exist in the production database (would hit a foreign-key violation on `Subscription.userId`). Redirected to testing through the real deployed app with a real account instead, which is what actually matters.
+- **#268 is now fully done** — not just code-complete but verified working in production, closing the "Next" items from the previous two entries.
+
+**Blockers:** none.
