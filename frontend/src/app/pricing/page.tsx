@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { api } from '@/lib/api';
 import { isAuthenticated } from '@/lib/auth';
+import type { Quota } from '@/lib/types';
 import { AppHeader } from '@/components/ui/AppHeader';
 import { PublicNav } from '@/components/ui/PublicNav';
 
@@ -38,15 +40,20 @@ export default function PricingPage(): React.ReactElement {
   // anonymously — starts false to match SSR (no localStorage there), set
   // post-mount so the nav doesn't flip and cause a hydration mismatch.
   const [authed, setAuthed] = useState(false);
+  const [quota, setQuota] = useState<Quota | null>(null);
 
   useEffect(() => {
     // isAuthenticated() reads localStorage, unavailable during SSR — reading
     // it in a lazy useState initializer instead would bake the server's
     // `false` into the HTML and mismatch on hydration once the client
     // re-runs it with the real value.
+    const loggedIn = isAuthenticated();
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setAuthed(isAuthenticated());
+    setAuthed(loggedIn);
+    if (loggedIn) void api.get<Quota>('/books/quota').then(setQuota);
   }, []);
+
+  const alreadySubscribed = quota?.plan === 'premium';
 
   async function handleSubscribe(): Promise<void> {
     if (!isAuthenticated()) {
@@ -94,13 +101,19 @@ export default function PricingPage(): React.ReactElement {
                 <li key={f}>{f}</li>
               ))}
             </ul>
-            <button
-              onClick={() => void handleSubscribe()}
-              disabled={loading}
-              className="sg-btn w-full sg-btn-primary"
-            >
-              {loading ? 'Загрузка…' : PLAN.cta}
-            </button>
+            {alreadySubscribed ? (
+              <Link href="/account" className="sg-btn w-full sg-btn-ghost">
+                У вас уже есть эта подписка — перейти в аккаунт
+              </Link>
+            ) : (
+              <button
+                onClick={() => void handleSubscribe()}
+                disabled={loading}
+                className="sg-btn w-full sg-btn-primary"
+              >
+                {loading ? 'Загрузка…' : PLAN.cta}
+              </button>
+            )}
           </div>
         </div>
 

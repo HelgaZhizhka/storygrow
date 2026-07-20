@@ -92,6 +92,15 @@ export class BillingService {
     });
   }
 
+  /** Used to block creating a second Stripe checkout session for an already-subscribed user. */
+  async hasActiveSubscription(userId: string): Promise<boolean> {
+    const sub = await this.prisma.subscription.findUnique({
+      where: { userId },
+      select: { status: true },
+    });
+    return sub?.status === SubscriptionStatus.active || sub?.status === SubscriptionStatus.trialing;
+  }
+
   private extractSubscriptionId(invoice: WebhookInvoice): string | null {
     if (typeof invoice.subscription === 'string') return invoice.subscription;
     const sub = invoice.parent?.subscription_details?.subscription;

@@ -23,7 +23,7 @@ describe('BillingService', () => {
   let service: BillingService;
   let prisma: {
     stripeWebhookEvent: { findUnique: jest.Mock; create: jest.Mock };
-    subscription: { upsert: jest.Mock; updateMany: jest.Mock };
+    subscription: { upsert: jest.Mock; updateMany: jest.Mock; findUnique: jest.Mock };
   };
 
   beforeEach(async () => {
@@ -32,6 +32,7 @@ describe('BillingService', () => {
       subscription: {
         upsert: jest.fn().mockResolvedValue({}),
         updateMany: jest.fn().mockResolvedValue({}),
+        findUnique: jest.fn(),
       },
     };
 
@@ -196,6 +197,33 @@ describe('BillingService', () => {
 
       expect(prisma.subscription.upsert).not.toHaveBeenCalled();
       expect(prisma.subscription.updateMany).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('hasActiveSubscription', () => {
+    it('returns false when the user has no subscription row', async () => {
+      prisma.subscription.findUnique.mockResolvedValue(null);
+      expect(await service.hasActiveSubscription('user-1')).toBe(false);
+    });
+
+    it('returns true for an active subscription', async () => {
+      prisma.subscription.findUnique.mockResolvedValue({ status: SubscriptionStatus.active });
+      expect(await service.hasActiveSubscription('user-1')).toBe(true);
+    });
+
+    it('returns true for a trialing subscription', async () => {
+      prisma.subscription.findUnique.mockResolvedValue({ status: SubscriptionStatus.trialing });
+      expect(await service.hasActiveSubscription('user-1')).toBe(true);
+    });
+
+    it('returns false for a canceled subscription', async () => {
+      prisma.subscription.findUnique.mockResolvedValue({ status: SubscriptionStatus.canceled });
+      expect(await service.hasActiveSubscription('user-1')).toBe(false);
+    });
+
+    it('returns false for a past_due subscription', async () => {
+      prisma.subscription.findUnique.mockResolvedValue({ status: SubscriptionStatus.past_due });
+      expect(await service.hasActiveSubscription('user-1')).toBe(false);
     });
   });
 });

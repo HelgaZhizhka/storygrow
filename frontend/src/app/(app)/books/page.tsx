@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { api } from '@/lib/api';
 import { genitiveName, pluralYears } from '@/lib/ru';
-import type { BookStatus } from '@/lib/types';
+import type { BookStatus, Quota } from '@/lib/types';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 
 interface Book {
@@ -16,12 +16,6 @@ interface Book {
   coverUrl: string | null;
   child: { name: string; age: number };
   learningGoal: { title: string };
-}
-
-interface Quota {
-  plan: string;
-  used: number;
-  limit: number;
 }
 
 function formatDate(iso: string): string {

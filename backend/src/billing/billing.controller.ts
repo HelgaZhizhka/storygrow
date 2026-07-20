@@ -40,6 +40,10 @@ export class BillingController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async createSubscription(@CurrentUser() user: JwtPayload): Promise<{ url: string }> {
+    if (await this.billing.hasActiveSubscription(user.sub)) {
+      throw new BadRequestException('You already have an active subscription');
+    }
+
     const session = await this.stripe.checkout.sessions.create({
       mode: 'subscription',
       line_items: [{ price: this.priceId, quantity: 1 }],
