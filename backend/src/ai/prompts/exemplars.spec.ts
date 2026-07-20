@@ -13,10 +13,14 @@ describe('pickExemplar', () => {
     expect(ex.goalTitles).toContain('Делиться с другими');
   });
 
-  it('falls back to HONESTY for an unknown flaw goal', () => {
+  it('falls back to one of the 5-6 flaw exemplars for an unknown goal', () => {
     const ex = pickExemplar('Неизвестная цель', 'flaw');
     expect(ex.arcType).toBe('flaw');
-    expect(ex.goalTitles).toContain('Честность');
+    expect(
+      ['Честность', 'Управление гневом', 'Делиться с другими'].some((goal) =>
+        ex.goalTitles.includes(goal),
+      ),
+    ).toBe(true);
   });
 
   it('routes a virtue goal to a virtue exemplar', () => {
@@ -24,10 +28,12 @@ describe('pickExemplar', () => {
     expect(ex.arcType).toBe('virtue');
   });
 
-  it('falls back to COURAGE for an unknown virtue goal', () => {
+  it('falls back to one of the 5-6 virtue exemplars for an unknown goal', () => {
     const ex = pickExemplar('Неизвестная цель', 'virtue');
     expect(ex.arcType).toBe('virtue');
-    expect(ex.goalTitles).toContain('Смелость');
+    expect(
+      ['Смелость', 'Доброта', 'Самостоятельность'].some((goal) => ex.goalTitles.includes(goal)),
+    ).toBe(true);
   });
 });
 
@@ -37,16 +43,26 @@ describe('pickExemplar — 3-4 band', () => {
     expect(ex.ageBand).toBe('3-4');
   });
 
-  it('falls back to the fear/trying-something-new 3-4 exemplar for an unmatched goal', () => {
+  it('falls back to one of the 3-4 virtue pool for an unmatched goal', () => {
     const ex = pickExemplar('Неизвестная цель', 'virtue', '3-4');
     expect(ex.ageBand).toBe('3-4');
-    expect(ex.text).toContain('Катя');
+    expect(['Катя', 'Мишка', 'Юра'].some((hero) => ex.text.includes(hero))).toBe(true);
   });
 
-  it('routes Доброта to the 3-4 kindness exemplar', () => {
+  it('routes Доброта to one of the two 3-4 kindness-family exemplars (KINDNESS_3_4 or SHELTER_3_4)', () => {
     const ex = pickExemplar('Доброта', 'virtue', '3-4');
     expect(ex.ageBand).toBe('3-4');
-    expect(ex.text).toContain('Мишка');
+    expect(['Мишка', 'Юра'].some((hero) => ex.text.includes(hero))).toBe(true);
+  });
+
+  it('reaches both KINDNESS_3_4 and SHELTER_3_4 across repeated calls (pooled-random selection)', () => {
+    const heroesSeen = new Set<string>();
+    for (let i = 0; i < 30; i++) {
+      const ex = pickExemplar('Доброта', 'virtue', '3-4');
+      if (ex.text.includes('Мишка')) heroesSeen.add('Мишка');
+      if (ex.text.includes('Юра')) heroesSeen.add('Юра');
+    }
+    expect(heroesSeen).toEqual(new Set(['Мишка', 'Юра']));
   });
 
   it('omitting ageBand still returns a 5-6 exemplar (default unchanged)', () => {

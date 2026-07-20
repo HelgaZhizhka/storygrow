@@ -15,11 +15,11 @@ import type { AgeBand } from '../../pdf/page-templates/page-templates.config';
  * arc, and age band; the same set calibrates the judge's Register Match. The
  * model must match the CRAFT — never copy the plot, names, or setting.
  *
- * IMPORTANT for `EXEMPLARS` ordering: `pickExemplar`'s fallback returns the
- * FIRST exemplar in this array matching (arcType, ageBand) when no goalTitle
- * matches — i.e. declaration order IS fallback priority. Keep COURAGE first
- * among 5-6/virtue, HONESTY first among 5-6/flaw, FEAR_3_4 first among
- * 3-4/virtue.
+ * Selection (`pickExemplar`) pools every exemplar matching a request and
+ * picks uniformly at random — declaration order in `EXEMPLARS` below does
+ * NOT determine which one is returned. This is deliberate: it lets a goal
+ * with multiple exemplars (e.g. Доброта/3-4) vary its plot skeleton across
+ * generations instead of always reusing the same one.
  */
 
 export interface Exemplar {
@@ -203,11 +203,15 @@ export const getRegisterReferences = (ageBand: AgeBand = '5-6'): readonly Exempl
   ageBand === '3-4' ? [FEAR_3_4, KINDNESS_3_4] : [COURAGE, HONESTY];
 
 /**
- * Pick the exemplar whose goal list contains the given title, within the
- * requested arc AND age band. Falls back to the first declared exemplar for
- * that (arcType, ageBand) — see EXEMPLARS ordering note above. Throws if no
- * exemplar exists at all for the combination (only possible for 3-4 + flaw,
- * which should never be requested — see getBeatSheet's equivalent guard).
+ * Pick an exemplar for the given (goalTitle, arcType, ageBand). Pools ALL
+ * exemplars whose `goalTitles` contains the requested title within that
+ * (arcType, ageBand); if none match, pools the whole (arcType, ageBand) set
+ * instead (fallback). Picks uniformly at random from the resulting pool —
+ * this is deliberate (exemplar-variety pilot, 2026-07-20): a fixed
+ * first-match-wins pick meant every generation for a given goal reused the
+ * same plot skeleton. Throws if the pool is empty (only possible for
+ * 3-4 + flaw, which should never be requested — see getBeatSheet's
+ * equivalent guard).
  */
 export const pickExemplar = (
   goalTitle: string,
@@ -216,8 +220,10 @@ export const pickExemplar = (
 ): Exemplar => {
   const normalized = goalTitle.trim().toLowerCase();
   const inBand = EXEMPLARS.filter((e) => e.arcType === arcType && e.ageBand === ageBand);
-  const match = inBand.find((e) => e.goalTitles.some((t) => t.toLowerCase() === normalized));
-  if (match) return match;
-  if (inBand.length > 0) return inBand[0];
-  throw new Error(`No exemplar for arcType=${arcType} ageBand=${ageBand}`);
+  const matches = inBand.filter((e) => e.goalTitles.some((t) => t.toLowerCase() === normalized));
+  const candidates = matches.length > 0 ? matches : inBand;
+  if (candidates.length === 0) {
+    throw new Error(`No exemplar for arcType=${arcType} ageBand=${ageBand}`);
+  }
+  return candidates[Math.floor(Math.random() * candidates.length)];
 };
