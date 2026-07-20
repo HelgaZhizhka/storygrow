@@ -1,5 +1,5 @@
 import { Injectable, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
-import { SubscriptionPlan } from '../generated/prisma/client';
+import { Prisma, SubscriptionPlan } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { S3Service } from '../s3/s3.service';
 import { isActiveSubscriptionStatus } from '../prisma/subscription-status.util';
@@ -98,7 +98,11 @@ export class BooksService {
   }
 
   async getQuota(userId: string): Promise<QuotaInfo> {
-    const sub = await this.prisma.subscription.findUnique({
+    return this.computeQuota(this.prisma, userId);
+  }
+
+  private async computeQuota(client: Prisma.TransactionClient, userId: string): Promise<QuotaInfo> {
+    const sub = await client.subscription.findUnique({
       where: { userId },
       select: { plan: true, status: true },
     });
@@ -108,39 +112,49 @@ export class BooksService {
     const limit = PLAN_LIMITS[plan];
     const periodStart = new Date(Date.now() - PERIOD_DAYS * 24 * 60 * 60 * 1000);
 
-    const used = await this.prisma.book.count({
+    const used = await client.book.count({
       where: { userId, createdAt: { gte: periodStart } },
     });
 
     return { plan, used, limit };
   }
 
+  /**
+   * Quota check + insert run inside one transaction, serialized per user via a
+   * Postgres advisory lock — otherwise two concurrent requests can both read
+   * `used < limit` before either commits and both create a book (#154).
+   */
   async createBook(userId: string, dto: CreateBookDto) {
     await this.assertChildOwned(userId, dto.childId);
 
-    const { used, limit } = await this.getQuota(userId);
-    if (used >= limit) {
-      throw new HttpException(
-        { message: 'Book quota exceeded for current plan', used, limit },
-        HttpStatus.PAYMENT_REQUIRED,
-      );
-    }
+    const book = await this.prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${userId})::bigint)`;
 
-    const book = await this.prisma.book.create({
-      data: {
-        userId,
-        childId: dto.childId,
-        learningGoalId: dto.learningGoalId,
-        title: '',
-        status: 'pending',
-        protagonistMode: dto.protagonistMode,
-        artStyle: dto.artStyle,
-        interests: dto.interests,
-        motifs: dto.motifs,
-        favoriteWords: dto.favoriteWords,
-      },
-      select: { id: true, status: true, childId: true, learningGoalId: true, createdAt: true },
+      const { used, limit } = await this.computeQuota(tx, userId);
+      if (used >= limit) {
+        throw new HttpException(
+          { message: 'Book quota exceeded for current plan', used, limit },
+          HttpStatus.PAYMENT_REQUIRED,
+        );
+      }
+
+      return tx.book.create({
+        data: {
+          userId,
+          childId: dto.childId,
+          learningGoalId: dto.learningGoalId,
+          title: '',
+          status: 'pending',
+          protagonistMode: dto.protagonistMode,
+          artStyle: dto.artStyle,
+          interests: dto.interests,
+          motifs: dto.motifs,
+          favoriteWords: dto.favoriteWords,
+        },
+        select: { id: true, status: true, childId: true, learningGoalId: true, createdAt: true },
+      });
     });
+
     return { ...book, mode: dto.mode };
   }
 

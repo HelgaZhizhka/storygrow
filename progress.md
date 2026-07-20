@@ -478,3 +478,16 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Separately, user noticed the repo had no root `README.md` — only the generic Nest CLI (`backend/README.md`) and `create-next-app` (`frontend/README.md`) boilerplate existed, nothing project-specific at the repo root. Added a short root README: one-line description, live URL, quick-start commands, and a table linking to CLAUDE.md/CONTEXT.md/ARCHITECTURE.md/docs/local-dev.md/progress.md/PROJECT_PLAN.md. This one correctly went through issue/branch/PR (#278), not a direct push.
 
 **Blockers:** none.
+
+---
+
+## 2026-07-20 (cont. 8) — #154: quota-check TOCTOU race (custom flow)
+
+**Done:**
+- User asked what's next after #276/docs; picked #154 (external Codex review finding, `ready-for-agent`) from the open-issues list: `BooksService.getQuota` counts books with a separate `count`, then `createBook` inserts later — two concurrent requests can both observe `used < limit` and both create a book, exceeding the plan limit.
+- Fix: `BooksService.createBook`'s quota check + insert now run inside one `prisma.$transaction`, serialized per user via a Postgres advisory lock (`pg_advisory_xact_lock(hashtext(userId)::bigint)`) acquired before the count. Refactored `getQuota` to share its plan/limit/used computation (`computeQuota`) with the new transactional path, so the two can't drift.
+- **Scope decision, made and documented rather than silently narrowed:** the issue's suggested "de-duplicate the controller's pre-check" wasn't done — `BooksController.createBook`'s pre-check turned out to be the *only* quota guard for fast-flow mode (`FastFlowService.generate` creates its `Book` row only after the LLM call completes, with no re-check there), so removing it would have left fast mode completely unguarded. Left the controller check in place with a comment explaining why, and filed #280 to close fast-flow's race properly (its window is actually larger than the one this PR fixes, since it spans an LLM call).
+- New unit test asserts the advisory-lock statement (`$executeRaw`) fires before the quota count, guarding against a future refactor silently dropping the lock.
+- `./init.sh` green.
+
+**Blockers:** none.

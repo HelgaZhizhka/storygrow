@@ -16,7 +16,7 @@ import { BooksService } from './books.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { S3Service } from '../s3/s3.service';
 
-const mockPrisma = {
+const basePrisma = {
   child: {
     findMany: jest.fn(),
     findUnique: jest.fn(),
@@ -36,6 +36,14 @@ const mockPrisma = {
     findFirst: jest.fn(),
     delete: jest.fn(),
   },
+  $executeRaw: jest.fn(),
+};
+
+// createBook runs inside a transaction (#154) — the mock hands the callback
+// basePrisma, whose nested spies (book.create etc.) are the same objects mockPrisma exposes.
+const mockPrisma = {
+  ...basePrisma,
+  $transaction: jest.fn((cb: (tx: typeof basePrisma) => unknown) => cb(basePrisma)),
 };
 
 const mockS3 = { deleteObjects: jest.fn(), uploadObject: jest.fn(), getSignedUrl: jest.fn() };
@@ -230,8 +238,37 @@ describe('BooksService.createBook', () => {
       ...noSeeds,
     });
 
+    expect(mockPrisma.$transaction).toHaveBeenCalled();
+
     expect(result.id).toBe('book-1');
     expect(result.mode).toBe('custom');
+  });
+
+  it('acquires a per-user advisory lock before the quota check, so two concurrent requests cannot both pass it (#154)', async () => {
+    mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1' });
+    mockPrisma.subscription.findUnique.mockResolvedValueOnce(null);
+    mockPrisma.book.count.mockResolvedValueOnce(0);
+    mockPrisma.book.create.mockResolvedValueOnce({
+      id: 'book-1',
+      status: 'pending',
+      childId: 'c1',
+      learningGoalId: 'g1',
+      createdAt: new Date(),
+    });
+
+    await service.createBook('user-1', {
+      childId: 'c1',
+      learningGoalId: 'g1',
+      mode: 'custom',
+      protagonistMode: 'child',
+      artStyle: 'watercolor',
+      ...noSeeds,
+    });
+
+    expect(mockPrisma.$executeRaw).toHaveBeenCalled();
+    const lockCallOrder = mockPrisma.$executeRaw.mock.invocationCallOrder[0];
+    const countCallOrder = mockPrisma.book.count.mock.invocationCallOrder[0];
+    expect(lockCallOrder).toBeLessThan(countCallOrder);
   });
 
   it('creates book when under the 30-book premium quota', async () => {
