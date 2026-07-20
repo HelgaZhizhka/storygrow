@@ -72,9 +72,9 @@ describe('pickExemplar — 3-4 band', () => {
 });
 
 describe('getRegisterReferences — 3-4 band', () => {
-  it('returns two 3-4 virtue exemplars (no flaw counterpart exists for 3-4)', () => {
+  it('returns all three 3-4 virtue exemplars (no flaw counterpart exists for 3-4)', () => {
     const refs = getRegisterReferences('3-4');
-    expect(refs).toHaveLength(2);
+    expect(refs).toHaveLength(3);
     expect(refs.every((e) => e.ageBand === '3-4')).toBe(true);
   });
 

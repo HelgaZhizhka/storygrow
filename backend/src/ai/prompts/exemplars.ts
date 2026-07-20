@@ -195,12 +195,15 @@ const EXEMPLARS: readonly Exemplar[] = [
 ];
 
 /**
- * Register-reference pair shown to the judge to anchor the target register for
- * Register Match scoring, per age band. For 3-4 (virtue-only), both
- * references are virtue exemplars — there is no flaw counterpart to pair with.
+ * Register-reference exemplars shown to the judge to anchor the target
+ * register for Register Match scoring, per age band. For 5-6, a fixed
+ * virtue+flaw pair (COURAGE, HONESTY) — untouched by the exemplar-variety
+ * pilot. For 3-4 (virtue-only, ADR-0005), ALL 3-4 exemplars in the pool —
+ * derived, not hand-maintained, so the judge always sees the full current
+ * set instead of a pair that can drift out of sync with EXEMPLARS.
  */
 export const getRegisterReferences = (ageBand: AgeBand = '5-6'): readonly Exemplar[] =>
-  ageBand === '3-4' ? [FEAR_3_4, KINDNESS_3_4] : [COURAGE, HONESTY];
+  ageBand === '3-4' ? EXEMPLARS.filter((e) => e.ageBand === '3-4') : [COURAGE, HONESTY];
 
 /**
  * Pick an exemplar for the given (goalTitle, arcType, ageBand). Pools ALL
