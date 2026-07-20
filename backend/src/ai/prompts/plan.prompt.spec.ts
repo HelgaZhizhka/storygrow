@@ -104,6 +104,11 @@ describe('buildPlanPrompt — 3-4 band', () => {
 
   it('picks a 3-4 exemplar, not a 5-6 one', () => {
     const out = buildPlanPrompt(base3to4);
-    expect(out).toContain('Катя'); // FEAR_3_4's hero
+    // topic 'Честность' (from base) matches no 3-4 exemplar's goalTitles, so
+    // this exercises the fallback pool — pickExemplar (exemplar-variety
+    // pilot) picks uniformly at random among all 3-4 exemplars, not always
+    // FEAR_3_4, so assert band-correctness via any valid 3-4 hero rather
+    // than one fixed hero.
+    expect(['Катя', 'Мишка', 'Юра'].some((hero) => out.includes(hero))).toBe(true);
   });
 });

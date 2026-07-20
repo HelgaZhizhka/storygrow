@@ -15,11 +15,11 @@ import type { AgeBand } from '../../pdf/page-templates/page-templates.config';
  * arc, and age band; the same set calibrates the judge's Register Match. The
  * model must match the CRAFT — never copy the plot, names, or setting.
  *
- * IMPORTANT for `EXEMPLARS` ordering: `pickExemplar`'s fallback returns the
- * FIRST exemplar in this array matching (arcType, ageBand) when no goalTitle
- * matches — i.e. declaration order IS fallback priority. Keep COURAGE first
- * among 5-6/virtue, HONESTY first among 5-6/flaw, FEAR_3_4 first among
- * 3-4/virtue.
+ * Selection (`pickExemplar`) pools every exemplar matching a request and
+ * picks uniformly at random — declaration order in `EXEMPLARS` below does
+ * NOT determine which one is returned. This is deliberate: it lets a goal
+ * with multiple exemplars (e.g. Доброта/3-4) vary its plot skeleton across
+ * generations instead of always reusing the same one.
  */
 
 export interface Exemplar {
@@ -159,8 +159,29 @@ const KINDNESS_3_4: Exemplar = {
 Вопросы: 1. Какое яблоко было у Мишки? 2. Почему Ёжику было грустно? 3. Что думал Мишка — дать или не дать? 4. Что сказал Ёжик? 5. А чем ты можешь поделиться с другом?`,
 };
 
-// Order is fallback priority within each (arcType, ageBand) group — see the
-// module docstring. Keep COURAGE/HONESTY/FEAR_3_4 first in their groups.
+/**
+ * SHELTER_3_4 (exemplar-variety pilot, 2026-07-20) — second Доброта/3-4
+ * exemplar. Structurally distinct from KINDNESS_3_4: a widening-circle
+ * shelter/inclusion premise ("Под грибом"-inspired), not a single give-or-not
+ * choice. `pickExemplar` pools this with KINDNESS_3_4 and picks randomly
+ * (Task 2) so repeated Доброта/3-4 generations stop reusing one skeleton.
+ */
+const SHELTER_3_4: Exemplar = {
+  goalTitles: ['Доброта', 'Сочувствие', 'Забота о младших'],
+  arcType: 'virtue',
+  ageBand: '3-4',
+  text: `Название: «Юра и лист-домик»  (тип конфликта: социальный / доброта, укрытие)
+[Завязка] Пошёл дождь. Юра нашёл большой лист — вот и домик! Сидит Юра, слушает дождик.
+[Трудность] Прибежал мокрый жучок. «Пусти под лист!» — пищит жучок. Юра смотрит: место совсем маленькое.
+[Попытка с повтором] «Тесно? Не тесно?» — думает Юра. Подвинулся. Жучок сел рядом. «Вот и не тесно!»
+[Развязка] Прискакала мокрая лягушка: «Пустите!» «Тесно? Не тесно?» — думает Юра. Все подвинулись. Место нашлось!
+[Закрепление] Дождь кончился. Вылезли все втроём — весёлые, сухие, дружные.
+[Финал] Поделиться местом — это тоже доброта.
+Вопросы: 1. Что нашёл Юра от дождя? 2. Кто первым попросился под лист? 3. Что думал Юра — тесно или нет? 4. Сколько зверей поместилось? 5. А ты можешь потесниться для друга?`,
+};
+
+// Selection is pooled-random (see pickExemplar) — declaration order here no
+// longer determines which exemplar is picked when multiple match.
 const EXEMPLARS: readonly Exemplar[] = [
   COURAGE,
   KINDNESS,
@@ -170,22 +191,30 @@ const EXEMPLARS: readonly Exemplar[] = [
   WANTING,
   FEAR_3_4,
   KINDNESS_3_4,
+  SHELTER_3_4,
 ];
 
 /**
- * Register-reference pair shown to the judge to anchor the target register for
- * Register Match scoring, per age band. For 3-4 (virtue-only), both
- * references are virtue exemplars — there is no flaw counterpart to pair with.
+ * Register-reference exemplars shown to the judge to anchor the target
+ * register for Register Match scoring, per age band. For 5-6, a fixed
+ * virtue+flaw pair (COURAGE, HONESTY) — untouched by the exemplar-variety
+ * pilot. For 3-4 (virtue-only, ADR-0005), ALL 3-4 exemplars in the pool —
+ * derived, not hand-maintained, so the judge always sees the full current
+ * set instead of a pair that can drift out of sync with EXEMPLARS.
  */
 export const getRegisterReferences = (ageBand: AgeBand = '5-6'): readonly Exemplar[] =>
-  ageBand === '3-4' ? [FEAR_3_4, KINDNESS_3_4] : [COURAGE, HONESTY];
+  ageBand === '3-4' ? EXEMPLARS.filter((e) => e.ageBand === '3-4') : [COURAGE, HONESTY];
 
 /**
- * Pick the exemplar whose goal list contains the given title, within the
- * requested arc AND age band. Falls back to the first declared exemplar for
- * that (arcType, ageBand) — see EXEMPLARS ordering note above. Throws if no
- * exemplar exists at all for the combination (only possible for 3-4 + flaw,
- * which should never be requested — see getBeatSheet's equivalent guard).
+ * Pick an exemplar for the given (goalTitle, arcType, ageBand). Pools ALL
+ * exemplars whose `goalTitles` contains the requested title within that
+ * (arcType, ageBand); if none match, pools the whole (arcType, ageBand) set
+ * instead (fallback). Picks uniformly at random from the resulting pool —
+ * this is deliberate (exemplar-variety pilot, 2026-07-20): a fixed
+ * first-match-wins pick meant every generation for a given goal reused the
+ * same plot skeleton. Throws if the pool is empty (only possible for
+ * 3-4 + flaw, which should never be requested — see getBeatSheet's
+ * equivalent guard).
  */
 export const pickExemplar = (
   goalTitle: string,
@@ -194,8 +223,10 @@ export const pickExemplar = (
 ): Exemplar => {
   const normalized = goalTitle.trim().toLowerCase();
   const inBand = EXEMPLARS.filter((e) => e.arcType === arcType && e.ageBand === ageBand);
-  const match = inBand.find((e) => e.goalTitles.some((t) => t.toLowerCase() === normalized));
-  if (match) return match;
-  if (inBand.length > 0) return inBand[0];
-  throw new Error(`No exemplar for arcType=${arcType} ageBand=${ageBand}`);
+  const matches = inBand.filter((e) => e.goalTitles.some((t) => t.toLowerCase() === normalized));
+  const candidates = matches.length > 0 ? matches : inBand;
+  if (candidates.length === 0) {
+    throw new Error(`No exemplar for arcType=${arcType} ageBand=${ageBand}`);
+  }
+  return candidates[Math.floor(Math.random() * candidates.length)];
 };
