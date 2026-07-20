@@ -1,5 +1,5 @@
 import { Injectable, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
-import { SubscriptionPlan } from '../generated/prisma/client';
+import { Prisma, SubscriptionPlan } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { S3Service } from '../s3/s3.service';
 import { isActiveSubscriptionStatus } from '../prisma/subscription-status.util';
@@ -35,6 +35,11 @@ const PLAN_LIMITS: Record<SubscriptionPlan, number> = {
 };
 
 const PERIOD_DAYS = 30;
+
+// Prisma's interactive-transaction default is 5s — createBook's transaction holds a
+// per-user advisory lock, so a legitimate double-click/retry queued behind it needs
+// more headroom than that before it's treated as a failure.
+const TRANSACTION_TIMEOUT_MS = 10_000;
 
 @Injectable()
 export class BooksService {
@@ -98,49 +103,67 @@ export class BooksService {
   }
 
   async getQuota(userId: string): Promise<QuotaInfo> {
-    const sub = await this.prisma.subscription.findUnique({
-      where: { userId },
-      select: { plan: true, status: true },
-    });
+    return this.computeQuota(this.prisma, userId);
+  }
 
-    const plan = sub && isActiveSubscriptionStatus(sub.status) ? sub.plan : SubscriptionPlan.free;
-
-    const limit = PLAN_LIMITS[plan];
+  private async computeQuota(client: Prisma.TransactionClient, userId: string): Promise<QuotaInfo> {
     const periodStart = new Date(Date.now() - PERIOD_DAYS * 24 * 60 * 60 * 1000);
 
-    const used = await this.prisma.book.count({
-      where: { userId, createdAt: { gte: periodStart } },
-    });
+    // Run concurrently, not sequentially — this runs inside createBook's held advisory
+    // lock, so every extra round trip here lengthens the critical section for anyone
+    // else queued behind the same user's lock.
+    const [sub, used] = await Promise.all([
+      client.subscription.findUnique({ where: { userId }, select: { plan: true, status: true } }),
+      client.book.count({ where: { userId, createdAt: { gte: periodStart } } }),
+    ]);
+
+    const plan = sub && isActiveSubscriptionStatus(sub.status) ? sub.plan : SubscriptionPlan.free;
+    const limit = PLAN_LIMITS[plan];
 
     return { plan, used, limit };
   }
 
+  /**
+   * Quota check + insert run inside one transaction, serialized per user via a
+   * Postgres advisory lock — otherwise two concurrent requests can both read
+   * `used < limit` before either commits and both create a book (#154). A
+   * generous timeout keeps a legitimate double-click/retry queued behind the
+   * same user's lock from tripping Prisma's 5s default and surfacing as a 500.
+   */
   async createBook(userId: string, dto: CreateBookDto) {
     await this.assertChildOwned(userId, dto.childId);
 
-    const { used, limit } = await this.getQuota(userId);
-    if (used >= limit) {
-      throw new HttpException(
-        { message: 'Book quota exceeded for current plan', used, limit },
-        HttpStatus.PAYMENT_REQUIRED,
-      );
-    }
+    const book = await this.prisma.$transaction(
+      async (tx) => {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${userId})::bigint)`;
 
-    const book = await this.prisma.book.create({
-      data: {
-        userId,
-        childId: dto.childId,
-        learningGoalId: dto.learningGoalId,
-        title: '',
-        status: 'pending',
-        protagonistMode: dto.protagonistMode,
-        artStyle: dto.artStyle,
-        interests: dto.interests,
-        motifs: dto.motifs,
-        favoriteWords: dto.favoriteWords,
+        const { used, limit } = await this.computeQuota(tx, userId);
+        if (used >= limit) {
+          throw new HttpException(
+            { message: 'Book quota exceeded for current plan', used, limit },
+            HttpStatus.PAYMENT_REQUIRED,
+          );
+        }
+
+        return tx.book.create({
+          data: {
+            userId,
+            childId: dto.childId,
+            learningGoalId: dto.learningGoalId,
+            title: '',
+            status: 'pending',
+            protagonistMode: dto.protagonistMode,
+            artStyle: dto.artStyle,
+            interests: dto.interests,
+            motifs: dto.motifs,
+            favoriteWords: dto.favoriteWords,
+          },
+          select: { id: true, status: true, childId: true, learningGoalId: true, createdAt: true },
+        });
       },
-      select: { id: true, status: true, childId: true, learningGoalId: true, createdAt: true },
-    });
+      { timeout: TRANSACTION_TIMEOUT_MS },
+    );
+
     return { ...book, mode: dto.mode };
   }
 

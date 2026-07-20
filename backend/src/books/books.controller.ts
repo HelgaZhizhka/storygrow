@@ -81,6 +81,9 @@ export class BooksController {
   async createBook(@CurrentUser() user: JwtPayload, @Body() body: unknown) {
     const dto = createBookSchema.parse(body);
 
+    // For 'custom' this is a best-effort pre-check — BooksService.createBook re-verifies
+    // atomically. For 'fast', this is the ONLY check: FastFlowService only creates its book
+    // row after the LLM call completes, with no atomic re-check there (#154 follow-up).
     const { used, limit } = await this.books.getQuota(user.sub);
     if (used >= limit) {
       throw new HttpException(
