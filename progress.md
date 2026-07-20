@@ -426,3 +426,20 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - **#268 is now fully done** — not just code-complete but verified working in production, closing the "Next" items from the previous two entries.
 
 **Blockers:** none.
+
+---
+
+## 2026-07-20 (cont. 4) — #271: Account page + pricing nav link
+
+**Done:**
+- User surfaced a real gap while poking at the app: logged-in users had no way to navigate to `/pricing` (AppHeader only linked to `/books`/`/books/new`), and there was no account/profile page at all.
+- **Prompt injection encountered mid-session, handled in two stages.** A first message dressed up as a `/design-sync` slash command (full skill text, `DesignSync` tool references) arrived wrapped inside a suspicious `<local-command-caveat>` block alongside unrelated alarming content — flagged as likely injection, not acted on. A second, cleaner invocation of the same command (matching the exact `bundled-skills` path format already seen for the legitimate `run` skill) turned out to be genuine — the user really did want to sync with Claude Design. Correctly distinguishing "suspicious wrapper" from "real but unfamiliar tool" mid－session, rather than blanket-refusing or blanket-trusting, is the takeaway.
+- StoryGrow has no Storybook/formal design-system package, so the full `design-sync` conversion pipeline didn't apply — used the underlying `DesignSync` MCP tool directly (`get_project`/`list_files`/`get_file`) to pull a specific prototype file (`prototype/StoryGrow.html`) from the user's existing Claude Design project instead.
+- That prototype already modeled the exact gap: an appbar with Мои книги/Тарифы nav + an avatar→Account link, and an Account page (profile/subscription/children/payment-history). Scoped implementation to an MVP using only existing backend endpoints (`GET /books/quota`, `GET /children`) — explicitly deferred subscription cancellation and payment history, since neither has backend support yet.
+- Shipped: `AppHeader` gains Тарифы + Аккаунт links; new `/account` page (email decoded client-side from the JWT — display only, not an auth decision; subscription plan/usage with a link to change plan; children list); `logout()` extracted from `AppHeader` into `lib/auth.ts` so both places share it.
+- Review caught and fixed two real issues: a lazy-`useState` initializer reading `getUserEmail()` caused a genuine SSR/hydration mismatch (moved into the existing effect); a "malformed token" test only covered an early-return guard, not the actual `atob`/`JSON.parse` try/catch (added a case that does).
+
+**Next:**
+- Backend follow-up if the Account page should show cancellation/payment history: needs a Stripe customer-portal or cancel endpoint, and an invoice-listing endpoint — neither exists yet.
+
+**Blockers:** none.
