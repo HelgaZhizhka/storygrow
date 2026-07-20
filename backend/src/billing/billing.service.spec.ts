@@ -7,7 +7,7 @@ import type { StripeEvent } from './billing-types';
 
 jest.mock('../generated/prisma/client', () => ({
   PrismaClient: class {},
-  SubscriptionPlan: { free: 'free', basic: 'basic', premium: 'premium' },
+  SubscriptionPlan: { free: 'free', premium: 'premium' },
   SubscriptionStatus: {
     active: 'active',
     canceled: 'canceled',
@@ -58,7 +58,7 @@ describe('BillingService', () => {
         id: 'sub_1',
         status: 'active',
         current_period_end: 1700000000,
-        metadata: { userId: 'user_1', plan: 'basic' },
+        metadata: { userId: 'user_1', plan: 'premium' },
       };
 
       await service.handleEvent(makeEvent('customer.subscription.created', sub));
@@ -76,7 +76,7 @@ describe('BillingService', () => {
         id: 'sub_1',
         status: 'active',
         current_period_end: 1700000000,
-        metadata: { userId: 'user_1', plan: 'basic' },
+        metadata: { userId: 'user_1', plan: 'premium' },
       };
 
       await service.handleEvent(makeEvent('customer.subscription.created', sub));
@@ -86,12 +86,12 @@ describe('BillingService', () => {
         create: {
           userId: 'user_1',
           stripeSubscriptionId: 'sub_1',
-          plan: SubscriptionPlan.basic,
+          plan: SubscriptionPlan.premium,
           status: SubscriptionStatus.active,
           periodEnd: new Date(1700000000 * 1000),
         },
         update: {
-          plan: SubscriptionPlan.basic,
+          plan: SubscriptionPlan.premium,
           status: SubscriptionStatus.active,
           periodEnd: new Date(1700000000 * 1000),
         },

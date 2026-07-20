@@ -3,7 +3,6 @@ import {
   Post,
   Headers,
   Req,
-  Body,
   BadRequestException,
   HttpCode,
   HttpStatus,
@@ -11,7 +10,6 @@ import {
   type RawBodyRequest,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { z } from 'zod';
 import type { Request } from 'express';
 import Stripe from 'stripe';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -20,20 +18,12 @@ import type { JwtPayload } from '../auth/auth.service';
 import { BillingService } from './billing.service';
 import type { StripeInstance, StripeEvent } from './billing-types';
 
-const subscribePlanSchema = z.object({
-  plan: z.enum(['basic', 'premium']),
-});
-
-const PRICE_ID_KEYS: Record<'basic' | 'premium', string> = {
-  basic: 'STRIPE_PRICE_BASIC',
-  premium: 'STRIPE_PRICE_PREMIUM',
-};
-
 @Controller('api/stripe')
 export class BillingController {
   private readonly stripe: StripeInstance;
   private readonly webhookSecret: string;
   private readonly frontendUrl: string;
+  private readonly priceId: string;
 
   constructor(
     private readonly billing: BillingService,
@@ -42,22 +32,18 @@ export class BillingController {
     this.stripe = new Stripe(config.getOrThrow<string>('STRIPE_SECRET_KEY'));
     this.webhookSecret = config.getOrThrow<string>('STRIPE_WEBHOOK_SECRET');
     this.frontendUrl = config.getOrThrow<string>('FRONTEND_URL');
+    this.priceId = config.getOrThrow<string>('STRIPE_PRICE_ID');
   }
 
+  /** Single paid tier (#268) — no plan choice, always subscribes to Premium. */
   @Post('subscribe')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async createSubscription(
-    @CurrentUser() user: JwtPayload,
-    @Body() body: unknown,
-  ): Promise<{ url: string }> {
-    const { plan } = subscribePlanSchema.parse(body);
-    const priceId = this.config.getOrThrow<string>(PRICE_ID_KEYS[plan]);
-
+  async createSubscription(@CurrentUser() user: JwtPayload): Promise<{ url: string }> {
     const session = await this.stripe.checkout.sessions.create({
       mode: 'subscription',
-      line_items: [{ price: priceId, quantity: 1 }],
-      subscription_data: { metadata: { userId: user.sub, plan } },
+      line_items: [{ price: this.priceId, quantity: 1 }],
+      subscription_data: { metadata: { userId: user.sub, plan: 'premium' } },
       success_url: `${this.frontendUrl}/subscription/success`,
       cancel_url: `${this.frontendUrl}/pricing`,
     });

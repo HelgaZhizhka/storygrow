@@ -1,6 +1,6 @@
 jest.mock('../generated/prisma/client', () => ({
   PrismaClient: class {},
-  SubscriptionPlan: { free: 'free', basic: 'basic', premium: 'premium' },
+  SubscriptionPlan: { free: 'free', premium: 'premium' },
   SubscriptionStatus: {
     active: 'active',
     canceled: 'canceled',
@@ -53,8 +53,7 @@ describe('BillingController', () => {
                 STRIPE_SECRET_KEY: 'sk_test',
                 STRIPE_WEBHOOK_SECRET: 'whsec_test',
                 FRONTEND_URL: 'http://localhost:3000',
-                STRIPE_PRICE_BASIC: 'price_basic',
-                STRIPE_PRICE_PREMIUM: 'price_premium',
+                STRIPE_PRICE_ID: 'price_premium',
               };
               return values[key] ?? 'unknown';
             }),
@@ -67,44 +66,25 @@ describe('BillingController', () => {
   });
 
   describe('POST /api/stripe/subscribe', () => {
-    it('creates a checkout session and returns url', async () => {
+    it('creates a checkout session for the single Premium price and returns url', async () => {
       mockCreateSession.mockResolvedValueOnce({ url: 'https://checkout.stripe.com/pay/cs_test' });
 
-      const result = await controller.createSubscription(mockUser, { plan: 'basic' });
+      const result = await controller.createSubscription(mockUser);
 
       expect(mockCreateSession).toHaveBeenCalledWith(
         expect.objectContaining({
           mode: 'subscription',
-          line_items: [{ price: 'price_basic', quantity: 1 }],
-          subscription_data: { metadata: { userId: 'user-1', plan: 'basic' } },
+          line_items: [{ price: 'price_premium', quantity: 1 }],
+          subscription_data: { metadata: { userId: 'user-1', plan: 'premium' } },
         }),
       );
       expect(result).toEqual({ url: 'https://checkout.stripe.com/pay/cs_test' });
     });
 
-    it('uses correct price ID for premium plan', async () => {
-      mockCreateSession.mockResolvedValueOnce({ url: 'https://checkout.stripe.com/pay/cs_prem' });
-
-      await controller.createSubscription(mockUser, { plan: 'premium' });
-
-      expect(mockCreateSession).toHaveBeenCalledWith(
-        expect.objectContaining({
-          line_items: [{ price: 'price_premium', quantity: 1 }],
-        }),
-      );
-    });
-
     it('throws BadRequestException when Stripe returns no url', async () => {
       mockCreateSession.mockResolvedValueOnce({ url: null });
 
-      await expect(controller.createSubscription(mockUser, { plan: 'basic' })).rejects.toThrow(
-        BadRequestException,
-      );
-    });
-
-    it('throws ZodError on invalid plan', async () => {
-      const badBody: unknown = { plan: 'enterprise' };
-      await expect(controller.createSubscription(mockUser, badBody)).rejects.toThrow();
+      await expect(controller.createSubscription(mockUser)).rejects.toThrow(BadRequestException);
     });
   });
 
