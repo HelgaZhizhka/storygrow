@@ -374,3 +374,25 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Next:** none pending from this thread. Remaining carried-over item: audit-rec permissions hygiene in `.claude/settings.local.json` (from the 2026-07-16 harness audit, still open).
 
 **Blockers:** none.
+
+---
+
+## 2026-07-20 (cont.) — #264: exemplar-variety pilot (Доброта / 3-4)
+
+**Done:**
+- Root-caused why 3-4/Доброта generations felt repetitive despite strong judge scores: `pickExemplar` was deterministic first-match, so every book for a goal with a dedicated exemplar always adapted the same proven plot. High registerMatch scores measure "on-register", not "delightful" — the judge is calibrated against the very exemplar it grades.
+- Brainstormed a pilot fix with the user (scoped narrow on purpose: one goal, one band). Added `SHELTER_3_4` — a second Доброта/3-4 Gold Exemplar, "Под грибом"-inspired (widening-circle shelter/inclusion premise), structurally distinct from the existing "lonely creature, give an object" skeleton. Changed `pickExemplar`/`getRegisterReferences` from deterministic-first-match to pooled-random selection.
+- Executed via `superpowers:subagent-driven-development`, 4 tasks, all Approved. Task 2's review surfaced a real, previously-undiscussed consequence: `pickExemplar` is shared band-agnostic code, so randomizing 3-4/Доброта unavoidably also randomizes the 5-6 virtue fallback path (~6/14 5-6 goals with no dedicated exemplar — Дружба, Любопытство, Уважение к природе/старшим, Принятие различий, Преодоление разлуки — previously always COURAGE, now random COURAGE/KINDNESS/INDEPENDENCE). Paused, explained it, user explicitly accepted (same variety benefit, no code change).
+- Task 4 (integration verification) caught a real flaky test outside this plan's own file scope: `plan.prompt.spec.ts`'s `base3to4` fixture's topic ('Честность') hits the now-randomized fallback pool, and the test asserted one fixed hero — ~2/3 fail rate. Fixed as its own tested commit; verified stable over 5 reruns.
+- Final whole-branch review (opus): Ready to merge. Independently verified goalTitles parity, doc-comment cleanup, a 4th 'Катя'-asserting test not on the controller's checklist (safe), and no caching/memoization anywhere assumes deterministic exemplar selection.
+- Verified live: 4× `eval:text "Доброта" 3 child` — both skeletons (SHELTER: umbrella + "Тесно? Не тесно?"; KINDNESS: apple + "Дать? Не дать?") confirmed reachable and reading well, 0 structural errors, registerMatch 8-9.
+- Mid-session: flagged and ignored a suspicious text fragment that arrived attached to a tool-interruption event (unrelated alarming content in Russian) — did not act on it, explained the likely input-buffer mechanism to the user when asked.
+
+**Decisions:**
+- North-star correction from the user: most of this project's prior effort went into *removing badness* (register drift, unsafe titles, structural gaps) via judge/prompt tuning — that machinery is mature. The actual bottleneck on "genuinely good" text is plot variety, and the fix is *more distinct proven plots per goal*, sourced from real premises (not more LLM-drafted variations, which compounds sameness). This pilot is the first test of that lever, deliberately scoped to one goal before deciding whether to expand.
+
+**Next:**
+- If the pilot's variety-of-craft holds up in practice, expand to more goals (still one new exemplar at a time, still sourced from real premises) — no commitment made yet on scope/pace.
+- Carried over, still pending: `.claude/settings.local.json` permissions hygiene (2026-07-16 harness audit).
+
+**Blockers:** none.
