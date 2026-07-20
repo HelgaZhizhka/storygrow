@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SubscriptionPlan, SubscriptionStatus } from '../generated/prisma/client';
+import { isActiveSubscriptionStatus } from '../prisma/subscription-status.util';
 import type {
   StripeEvent,
   WebhookSubscription,
@@ -98,7 +99,7 @@ export class BillingService {
       where: { userId },
       select: { status: true },
     });
-    return sub?.status === SubscriptionStatus.active || sub?.status === SubscriptionStatus.trialing;
+    return isActiveSubscriptionStatus(sub?.status);
   }
 
   private extractSubscriptionId(invoice: WebhookInvoice): string | null {

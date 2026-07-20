@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { api } from '@/lib/api';
+import { api, ApiError } from '@/lib/api';
 import { isAuthenticated } from '@/lib/auth';
 import type { Quota } from '@/lib/types';
 import { AppHeader } from '@/components/ui/AppHeader';
@@ -54,6 +54,10 @@ export default function PricingPage(): React.ReactElement {
   }, []);
 
   const alreadySubscribed = quota?.plan === 'premium';
+  // While the quota fetch for a logged-in user is still in flight, alreadySubscribed
+  // reads as false — block the button so a fast click can't reach the backend guard
+  // instead of the "already subscribed" link below.
+  const quotaPending = authed && quota === null;
 
   async function handleSubscribe(): Promise<void> {
     if (!isAuthenticated()) {
@@ -67,7 +71,13 @@ export default function PricingPage(): React.ReactElement {
     try {
       const { url } = await api.post<{ url: string }>('/api/stripe/subscribe', {});
       window.location.assign(url);
-    } catch {
+    } catch (err) {
+      // The backend rejects a second checkout for an already-subscribed user with 400 —
+      // that's not a transient failure, so route to the account page instead of implying retry.
+      if (err instanceof ApiError && err.status === 400) {
+        router.push('/account');
+        return;
+      }
       setError('Не удалось создать сессию оплаты. Попробуйте позже.');
     } finally {
       setLoading(false);
@@ -108,10 +118,10 @@ export default function PricingPage(): React.ReactElement {
             ) : (
               <button
                 onClick={() => void handleSubscribe()}
-                disabled={loading}
+                disabled={loading || quotaPending}
                 className="sg-btn w-full sg-btn-primary"
               >
-                {loading ? 'Загрузка…' : PLAN.cta}
+                {loading || quotaPending ? 'Загрузка…' : PLAN.cta}
               </button>
             )}
           </div>

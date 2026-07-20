@@ -1,7 +1,8 @@
 import { Injectable, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
-import { SubscriptionPlan, SubscriptionStatus } from '../generated/prisma/client';
+import { SubscriptionPlan } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { S3Service } from '../s3/s3.service';
+import { isActiveSubscriptionStatus } from '../prisma/subscription-status.util';
 import { ageToAgeBand } from '../pdf/page-templates/page-templates.config';
 
 interface CreateChildDto {
@@ -102,10 +103,7 @@ export class BooksService {
       select: { plan: true, status: true },
     });
 
-    const plan =
-      sub?.status === SubscriptionStatus.active || sub?.status === SubscriptionStatus.trialing
-        ? sub.plan
-        : SubscriptionPlan.free;
+    const plan = sub && isActiveSubscriptionStatus(sub.status) ? sub.plan : SubscriptionPlan.free;
 
     const limit = PLAN_LIMITS[plan];
     const periodStart = new Date(Date.now() - PERIOD_DAYS * 24 * 60 * 60 * 1000);
