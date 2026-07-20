@@ -2,23 +2,14 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { clearTokens, getAccessToken } from '@/lib/auth';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+import { logout } from '@/lib/auth';
 
 /** Persistent app-shell header: brand home link + primary nav + logout. */
 export function AppHeader(): React.ReactElement {
   const router = useRouter();
 
   async function handleLogout(): Promise<void> {
-    const token = getAccessToken();
-    if (token) {
-      await fetch(`${API_URL}/auth/logout`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      }).catch(() => {});
-    }
-    clearTokens();
+    await logout();
     router.replace('/login');
   }
 
@@ -35,8 +26,14 @@ export function AppHeader(): React.ReactElement {
           <Link href="/books" className="sg-btn sg-btn-ghost">
             Мои книги
           </Link>
+          <Link href="/pricing" className="sg-btn sg-btn-ghost">
+            Тарифы
+          </Link>
           <Link href="/books/new" className="sg-btn sg-btn-primary">
             + Новая книга
+          </Link>
+          <Link href="/account" className="sg-btn sg-btn-ghost">
+            Аккаунт
           </Link>
           <button onClick={() => void handleLogout()} className="sg-btn sg-btn-ghost">
             Выйти
