@@ -22,6 +22,8 @@ export default function AccountPage(): React.ReactElement {
   const [quota, setQuota] = useState<Quota | null>(null);
   const [children, setChildren] = useState<Child[]>([]);
   const [email, setEmail] = useState<string | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
+  const [portalError, setPortalError] = useState<string | null>(null);
 
   useEffect(() => {
     // getUserEmail reads localStorage, unavailable during SSR — a lazy useState
@@ -33,6 +35,19 @@ export default function AccountPage(): React.ReactElement {
     void api.get<Quota>('/books/quota').then(setQuota);
     void api.get<Child[]>('/children').then(setChildren);
   }, []);
+
+  async function handleManageSubscription(): Promise<void> {
+    setPortalLoading(true);
+    setPortalError(null);
+    try {
+      const { url } = await api.post<{ url: string }>('/api/stripe/portal', {});
+      window.location.assign(url);
+    } catch {
+      setPortalError('Не удалось открыть управление подпиской. Попробуйте позже.');
+    } finally {
+      setPortalLoading(false);
+    }
+  }
 
   return (
     <main className="mx-auto w-full max-w-[680px] px-7 py-10">
@@ -50,9 +65,22 @@ export default function AccountPage(): React.ReactElement {
             <p className="mt-2 text-text">
               {PLAN_LABELS[quota.plan] ?? quota.plan} · {quota.used} / {quota.limit} книг в месяц
             </p>
-            <Link href="/pricing" className="sg-btn sg-btn-ghost mt-3 inline-block">
-              Сменить план
-            </Link>
+            {quota.plan === 'premium' ? (
+              <>
+                <button
+                  onClick={() => void handleManageSubscription()}
+                  disabled={portalLoading}
+                  className="sg-btn sg-btn-ghost mt-3"
+                >
+                  {portalLoading ? 'Загрузка…' : 'Управлять подпиской'}
+                </button>
+                {portalError && <p className="mt-2 text-sm text-danger">{portalError}</p>}
+              </>
+            ) : (
+              <Link href="/pricing" className="sg-btn sg-btn-ghost mt-3 inline-block">
+                Сменить план
+              </Link>
+            )}
           </>
         ) : (
           <p className="mt-2 text-text-3">Загрузка…</p>

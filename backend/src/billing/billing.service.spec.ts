@@ -23,7 +23,12 @@ describe('BillingService', () => {
   let service: BillingService;
   let prisma: {
     stripeWebhookEvent: { findUnique: jest.Mock; create: jest.Mock };
-    subscription: { upsert: jest.Mock; updateMany: jest.Mock; findUnique: jest.Mock };
+    subscription: {
+      upsert: jest.Mock;
+      updateMany: jest.Mock;
+      findUnique: jest.Mock;
+      update: jest.Mock;
+    };
   };
 
   beforeEach(async () => {
@@ -33,6 +38,7 @@ describe('BillingService', () => {
         upsert: jest.fn().mockResolvedValue({}),
         updateMany: jest.fn().mockResolvedValue({}),
         findUnique: jest.fn(),
+        update: jest.fn().mockResolvedValue({}),
       },
     };
 
@@ -57,6 +63,7 @@ describe('BillingService', () => {
       prisma.stripeWebhookEvent.findUnique.mockResolvedValue(null);
       const sub = {
         id: 'sub_1',
+        customer: 'cus_test1',
         status: 'active',
         current_period_end: 1700000000,
         metadata: { userId: 'user_1', plan: 'premium' },
@@ -75,6 +82,7 @@ describe('BillingService', () => {
       prisma.stripeWebhookEvent.findUnique.mockResolvedValue(null);
       const sub = {
         id: 'sub_1',
+        customer: 'cus_test1',
         status: 'active',
         current_period_end: 1700000000,
         metadata: { userId: 'user_1', plan: 'premium' },
@@ -87,16 +95,40 @@ describe('BillingService', () => {
         create: {
           userId: 'user_1',
           stripeSubscriptionId: 'sub_1',
+          stripeCustomerId: 'cus_test1',
           plan: SubscriptionPlan.premium,
           status: SubscriptionStatus.active,
           periodEnd: new Date(1700000000 * 1000),
         },
         update: {
+          stripeCustomerId: 'cus_test1',
           plan: SubscriptionPlan.premium,
           status: SubscriptionStatus.active,
           periodEnd: new Date(1700000000 * 1000),
         },
       });
+    });
+
+    it('persists the Stripe customer id from the webhook payload', async () => {
+      prisma.stripeWebhookEvent.findUnique.mockResolvedValue(null);
+      const sub = {
+        id: 'sub_1',
+        customer: 'cus_abc123',
+        status: 'active',
+        current_period_end: 1700000000,
+        metadata: { userId: 'user_1', plan: 'premium' },
+      };
+
+      await service.handleEvent(makeEvent('customer.subscription.created', sub));
+
+      expect(prisma.subscription.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          create: expect.objectContaining({ stripeCustomerId: 'cus_abc123' }),
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          update: expect.objectContaining({ stripeCustomerId: 'cus_abc123' }),
+        }),
+      );
     });
 
     it('throws BadRequestException when userId metadata is missing', async () => {
@@ -119,6 +151,7 @@ describe('BillingService', () => {
       prisma.stripeWebhookEvent.findUnique.mockResolvedValue(null);
       const sub = {
         id: 'sub_1',
+        customer: 'cus_test1',
         status: 'past_due',
         current_period_end: 1700000000,
         metadata: { userId: 'user_1', plan: 'premium' },
@@ -129,6 +162,7 @@ describe('BillingService', () => {
       expect(prisma.subscription.upsert).toHaveBeenCalledWith(
         expect.objectContaining({
           update: {
+            stripeCustomerId: 'cus_test1',
             plan: SubscriptionPlan.premium,
             status: SubscriptionStatus.past_due,
             periodEnd: new Date(1700000000 * 1000),
@@ -224,6 +258,42 @@ describe('BillingService', () => {
     it('returns false for a past_due subscription', async () => {
       prisma.subscription.findUnique.mockResolvedValue({ status: SubscriptionStatus.past_due });
       expect(await service.hasActiveSubscription('user-1')).toBe(false);
+    });
+  });
+
+  describe('getSubscriptionForPortal', () => {
+    it('returns null when the user has no subscription', async () => {
+      prisma.subscription.findUnique.mockResolvedValue(null);
+
+      const result = await service.getSubscriptionForPortal('user-1');
+
+      expect(result).toBeNull();
+    });
+
+    it('returns the subscription and customer ids', async () => {
+      prisma.subscription.findUnique.mockResolvedValue({
+        stripeSubscriptionId: 'sub_1',
+        stripeCustomerId: 'cus_abc123',
+      });
+
+      const result = await service.getSubscriptionForPortal('user-1');
+
+      expect(result).toEqual({ stripeSubscriptionId: 'sub_1', stripeCustomerId: 'cus_abc123' });
+      expect(prisma.subscription.findUnique).toHaveBeenCalledWith({
+        where: { userId: 'user-1' },
+        select: { stripeSubscriptionId: true, stripeCustomerId: true },
+      });
+    });
+  });
+
+  describe('setStripeCustomerId', () => {
+    it('updates the subscription row with the resolved customer id', async () => {
+      await service.setStripeCustomerId('user-1', 'cus_abc123');
+
+      expect(prisma.subscription.update).toHaveBeenCalledWith({
+        where: { userId: 'user-1' },
+        data: { stripeCustomerId: 'cus_abc123' },
+      });
     });
   });
 });
