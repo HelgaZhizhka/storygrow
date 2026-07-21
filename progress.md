@@ -573,4 +573,6 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Manual step still needed before this is usable end-to-end: the user must activate the Stripe Customer Portal once in the Stripe Dashboard (test mode first, then live) at `dashboard.stripe.com/test/settings/billing/portal` — same category of one-time setup as the earlier `STRIPE_PRICE_ID`/webhook registration steps.
 - `./init.sh` green: full backend + frontend suites passing, tsc/lint clean on both workspaces.
 
-**Blockers:** none. Ready for the final whole-branch review before merge — given this touches real billing/payment flows, confirming with the user before merging rather than auto-merging.
+**Blockers:** none. PR #285 merged after final review (opus, no Critical/Important findings) and user confirmation.
+
+**Confirmed working live in production (2026-07-21):** user activated the Stripe Customer Portal (test mode) in the Dashboard, Railway auto-deployed the merged `main` (migration applied via the Pre-Deploy Command), then tested the full flow against her real subscription: `/account` → "Управлять подпиской" → Portal → cancel → webhook (`customer.subscription.deleted`) flipped status to `canceled` → `/account` correctly now shows "Бесплатный · 0 / 1 книг в месяц". End-to-end verified, not just unit-tested.
