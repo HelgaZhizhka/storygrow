@@ -520,3 +520,16 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - `./init.sh` green again after all of the above; all new/changed behavior covered by unit tests (429 cap, template-404-before-reserve, book-missing-tolerant generate, unrestricted delete).
 
 **Blockers:** none. PR #282 ready for merge once CI passes.
+
+---
+
+## 2026-07-21 (cont.) — #280: third review pass — reverting the delete-guard reopened a worse hole
+
+**Done:**
+- Re-review policy triggered again (3 more connected fixes). Good thing it did: removing `deleteBook`'s status guard in the previous pass (to fix the *permanent-lockout* problem the guard itself caused) reopened something worse — since `computeQuota` only counts existing rows, a user could loop reserve→delete to bypass the monthly quota entirely and run unlimited concurrent real generations, and deleting mid-generation orphaned whatever the in-flight request later uploaded to S3 (no DB row left to reference it). A third finding: the failed-attempts cap added in the previous pass was a flat 5 shared by both plans, so a premium user (30 books/month) could get locked out of the feature for up to 30 days by a handful of failures that weren't their fault (provider outage, a server restart the stale sweeper had to clean up after) — nowhere near their real quota.
+- The lockout problem and the bypass problem turned out to share one fix instead of trading off against each other: **`deleteBook`'s 409 guard is back** (rejects deleting a `pending`/`generating` book), which closes both the quota-bypass loop and the S3-orphan race at the source — and it's now safe because **`StaleBooksSweeperService` sweeps `pending` books, not just `generating`** ones, so nothing is ever stuck longer than its existing 10-minute window; it just resolves to `failed` and becomes deletable normally.
+- The flat 5-attempt cap became `Math.max(limit, 5)` — scales to the user's actual plan (free still floors at 5, premium gets 30), fixing the proportionality bug directly.
+- Left the fourth (cleanup-severity, already-documented) finding about a duplicate Template lookup as-is, per the same reasoning recorded in the previous entry.
+- `./init.sh` green; new tests cover the 409 guard, the plan-scaled cap (a premium user with 10 failed attempts is *not* blocked), and the sweeper now catching stale `pending` rows.
+
+**Blockers:** none. PR #282 ready for merge once CI passes — three review rounds in, converging rather than churning (each pass's fixes were the direct trigger for the next pass, and this round's fixes don't introduce a fourth known gap).

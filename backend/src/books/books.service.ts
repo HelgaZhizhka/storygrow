@@ -1,4 +1,10 @@
-import { Injectable, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  HttpException,
+  HttpStatus,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { Prisma, SubscriptionPlan } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { S3Service } from '../s3/s3.service';
@@ -44,9 +50,10 @@ const TRANSACTION_TIMEOUT_MS = 10_000;
 // failed/images_failed books are excluded from the success quota (#280), which on its
 // own would let repeated failures be retried without limit — a reliably-failing input
 // (or a scripted attacker) could rack up unbounded real LLM/render cost. This caps
-// attempts, independent of the success quota, generously enough not to punish a normal
-// user who hits one or two transient errors.
-const MAX_FAILED_ATTEMPTS_PER_PERIOD = 5;
+// attempts, independent of the success quota. Scaled to the plan's own limit (not a
+// flat number) so a premium user isn't locked out for the same handful of failures a
+// free user would be — floored so a free user (limit 1) still gets a few retries.
+const MIN_FAILED_ATTEMPTS_CAP = 5;
 
 @Injectable()
 export class BooksService {
@@ -165,7 +172,7 @@ export class BooksService {
             HttpStatus.PAYMENT_REQUIRED,
           );
         }
-        if (failedAttempts >= MAX_FAILED_ATTEMPTS_PER_PERIOD) {
+        if (failedAttempts >= Math.max(limit, MIN_FAILED_ATTEMPTS_CAP)) {
           throw new HttpException(
             { message: 'Too many failed generation attempts recently — please try again later' },
             HttpStatus.TOO_MANY_REQUESTS,
@@ -291,18 +298,23 @@ export class BooksService {
   /**
    * Delete a book the user owns. S3 assets are removed first (best-effort), then
    * the row — pages and evals cascade via the schema. Throws 404 if the book is
-   * not the user's. Deleting a book that's still generating is allowed — an
-   * in-flight fast-flow request tolerates the row disappearing underneath it
-   * (FastFlowService) rather than this method blocking deletion, which would
-   * otherwise leave a crashed/never-followed-up 'pending' or 'generating' book
-   * permanently undeletable and stuck occupying a quota slot (#280).
+   * not the user's, 409 while it's still pending/generating (#280): allowing
+   * that would let a user loop reserve→delete to bypass the quota entirely
+   * (computeQuota only counts existing rows) and orphan whatever the in-flight
+   * generation later uploads to S3, since deletion only cleans up what's on the
+   * row at delete time. A book stuck non-terminal isn't a permanent lockout —
+   * StaleBooksSweeperService flips both 'pending' and 'generating' to 'failed'
+   * within its sweep window, after which it deletes normally.
    */
   async deleteBook(userId: string, bookId: string): Promise<void> {
     const book = await this.prisma.book.findFirst({
       where: { id: bookId, userId },
-      select: { id: true, imageKeys: true, characterPortraitKey: true, pdfKey: true },
+      select: { id: true, status: true, imageKeys: true, characterPortraitKey: true, pdfKey: true },
     });
     if (!book) throw new NotFoundException('Book not found');
+    if (book.status === 'pending' || book.status === 'generating') {
+      throw new ConflictException('Cannot delete a book while it is still being generated');
+    }
 
     const keys = [...book.imageKeys, book.characterPortraitKey, book.pdfKey].filter(
       (k): k is string => Boolean(k),

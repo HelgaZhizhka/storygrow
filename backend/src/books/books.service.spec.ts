@@ -10,7 +10,7 @@ jest.mock('../generated/prisma/client', () => ({
 }));
 
 import { Test } from '@nestjs/testing';
-import { HttpException, NotFoundException } from '@nestjs/common';
+import { ConflictException, HttpException, NotFoundException } from '@nestjs/common';
 import { SubscriptionPlan } from '../generated/prisma/client';
 import { BooksService } from './books.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -376,7 +376,7 @@ describe('BooksService.reserveFastFlowBook', () => {
     expect(mockPrisma.book.create).not.toHaveBeenCalled();
   });
 
-  it('throws 429 when the user has too many failed attempts this period, even under quota (#280)', async () => {
+  it('throws 429 when a free-plan user has too many failed attempts this period, even under quota (#280)', async () => {
     mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1' });
     mockPrisma.template.findFirst.mockResolvedValueOnce({ id: 'tpl-1' });
     mockPrisma.subscription.findUnique.mockResolvedValueOnce(null);
@@ -385,6 +385,22 @@ describe('BooksService.reserveFastFlowBook', () => {
 
     await expect(service.reserveFastFlowBook('user-1', 'c1', 'g1')).rejects.toThrow(HttpException);
     expect(mockPrisma.book.create).not.toHaveBeenCalled();
+  });
+
+  it('does not cap a premium user at the free-tier failed-attempts floor — the cap scales with their real limit (#280)', async () => {
+    mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1' });
+    mockPrisma.template.findFirst.mockResolvedValueOnce({ id: 'tpl-1' });
+    mockPrisma.subscription.findUnique.mockResolvedValueOnce({
+      plan: SubscriptionPlan.premium,
+      status: 'active',
+    });
+    mockPrisma.book.count.mockResolvedValueOnce(0); // used (well under the 30 limit)
+    mockPrisma.book.count.mockResolvedValueOnce(10); // failedAttempts — over the free floor of 5
+    mockPrisma.book.create.mockResolvedValueOnce({ id: 'book-1' });
+
+    await expect(service.reserveFastFlowBook('user-1', 'c1', 'g1')).resolves.toEqual({
+      id: 'book-1',
+    });
   });
 
   it('reserves a placeholder book row atomically, under the same advisory lock as createBook', async () => {
@@ -426,9 +442,10 @@ describe('BooksService.deleteBook', () => {
     service = module.get(BooksService);
   });
 
-  it('deletes S3 assets then the book row when owned, regardless of status', async () => {
+  it('deletes S3 assets then the book row for a finished (ready) book', async () => {
     mockPrisma.book.findFirst.mockResolvedValueOnce({
       id: 'book-1',
+      status: 'ready',
       imageKeys: ['books/book-1/page-1.png'],
       characterPortraitKey: 'books/book-1/portrait.png',
       pdfKey: 'books/book-1/book.pdf',
@@ -450,6 +467,37 @@ describe('BooksService.deleteBook', () => {
     await expect(service.deleteBook('user-1', 'book-x')).rejects.toThrow(NotFoundException);
     expect(mockS3.deleteObjects).not.toHaveBeenCalled();
     expect(mockPrisma.book.delete).not.toHaveBeenCalled();
+  });
+
+  it.each(['pending', 'generating'])(
+    'throws 409 and does not delete a book that is still %s — otherwise reserve→delete bypasses the quota entirely (#280)',
+    async (status) => {
+      mockPrisma.book.findFirst.mockResolvedValueOnce({
+        id: 'book-1',
+        status,
+        imageKeys: [],
+        characterPortraitKey: null,
+        pdfKey: null,
+      });
+
+      await expect(service.deleteBook('user-1', 'book-1')).rejects.toThrow(ConflictException);
+      expect(mockS3.deleteObjects).not.toHaveBeenCalled();
+      expect(mockPrisma.book.delete).not.toHaveBeenCalled();
+    },
+  );
+
+  it('allows deleting a failed book — the stale sweeper is what resolves stuck pending/generating ones', async () => {
+    mockPrisma.book.findFirst.mockResolvedValueOnce({
+      id: 'book-1',
+      status: 'failed',
+      imageKeys: [],
+      characterPortraitKey: null,
+      pdfKey: null,
+    });
+
+    await service.deleteBook('user-1', 'book-1');
+
+    expect(mockPrisma.book.delete).toHaveBeenCalledWith({ where: { id: 'book-1' } });
   });
 });
 
