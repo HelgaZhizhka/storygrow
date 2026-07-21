@@ -28,6 +28,10 @@ export class StaleBooksSweeperService implements OnModuleInit, OnModuleDestroy {
     const threshold = new Date(Date.now() - STALE_THRESHOLD_MS);
 
     const staleBooks = await this.prisma.book.findMany({
+      // 'pending' is deliberately excluded — for the custom flow it's a long-lived
+      // draft state (created before the user separately triggers generation), not a
+      // stuck job; sweeping it would force-fail a book the user just hasn't finished
+      // personalizing yet (#280).
       where: { status: BookStatus.generating, updatedAt: { lt: threshold } },
       select: { id: true, storyJson: true, updatedAt: true },
     });

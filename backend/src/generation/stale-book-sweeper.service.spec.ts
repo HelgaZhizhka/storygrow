@@ -101,7 +101,7 @@ describe('StaleBooksSweeperService', () => {
     expect(mockPrisma.book.update).toHaveBeenCalledTimes(2);
   });
 
-  it('queries only generating books older than threshold', async () => {
+  it('queries only generating books older than threshold — pending is a legitimate long-lived draft, not a stuck job (#280)', async () => {
     mockPrisma.book.findMany.mockResolvedValueOnce([]);
 
     await service.sweep();

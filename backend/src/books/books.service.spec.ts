@@ -10,7 +10,7 @@ jest.mock('../generated/prisma/client', () => ({
 }));
 
 import { Test } from '@nestjs/testing';
-import { HttpException, NotFoundException } from '@nestjs/common';
+import { ConflictException, HttpException, NotFoundException } from '@nestjs/common';
 import { SubscriptionPlan } from '../generated/prisma/client';
 import { BooksService } from './books.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -36,6 +36,7 @@ const basePrisma = {
     findFirst: jest.fn(),
     delete: jest.fn(),
   },
+  template: { findFirst: jest.fn() },
   $executeRaw: jest.fn(),
 };
 
@@ -108,6 +109,17 @@ describe('BooksService.getQuota', () => {
 
     expect(quota.plan).toBe(SubscriptionPlan.premium);
     expect(quota.limit).toBe(30);
+  });
+
+  it('excludes failed and images_failed books from the count, so a generation error does not cost a quota slot (#280)', async () => {
+    mockPrisma.subscription.findUnique.mockResolvedValueOnce(null);
+    mockPrisma.book.count.mockResolvedValueOnce(0);
+
+    await service.getQuota('user-1');
+
+    type CountArg = { where: { status?: { notIn: string[] } } };
+    const countCalls = mockPrisma.book.count.mock.calls as Array<[CountArg]>;
+    expect(countCalls[0][0].where.status).toEqual({ notIn: ['failed', 'images_failed'] });
   });
 });
 
@@ -319,6 +331,102 @@ describe('BooksService.createBook', () => {
   });
 });
 
+describe('BooksService.reserveFastFlowBook', () => {
+  let service: BooksService;
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    const module = await Test.createTestingModule({
+      providers: [
+        BooksService,
+        { provide: PrismaService, useValue: mockPrisma },
+        { provide: S3Service, useValue: mockS3 },
+      ],
+    }).compile();
+    service = module.get(BooksService);
+  });
+
+  it('rejects a childId the user does not own', async () => {
+    mockPrisma.child.findFirst.mockResolvedValueOnce(null);
+
+    await expect(service.reserveFastFlowBook('user-1', 'other-child', 'g1')).rejects.toThrow(
+      HttpException,
+    );
+    expect(mockPrisma.book.create).not.toHaveBeenCalled();
+  });
+
+  it('throws 404 when no template exists for the learning goal, before ever reserving (#280)', async () => {
+    mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1' });
+    mockPrisma.template.findFirst.mockResolvedValueOnce(null);
+
+    await expect(service.reserveFastFlowBook('user-1', 'c1', 'missing-goal')).rejects.toThrow(
+      NotFoundException,
+    );
+    expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+    expect(mockPrisma.book.create).not.toHaveBeenCalled();
+  });
+
+  it('throws 402 when quota is exceeded, same as the custom flow (#280)', async () => {
+    mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1' });
+    mockPrisma.template.findFirst.mockResolvedValueOnce({ id: 'tpl-1' });
+    mockPrisma.subscription.findUnique.mockResolvedValueOnce(null);
+    mockPrisma.book.count.mockResolvedValueOnce(1);
+
+    await expect(service.reserveFastFlowBook('user-1', 'c1', 'g1')).rejects.toThrow(HttpException);
+    expect(mockPrisma.book.create).not.toHaveBeenCalled();
+  });
+
+  it('throws 429 when a free-plan user has too many failed attempts this period, even under quota (#280)', async () => {
+    mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1' });
+    mockPrisma.template.findFirst.mockResolvedValueOnce({ id: 'tpl-1' });
+    mockPrisma.subscription.findUnique.mockResolvedValueOnce(null);
+    mockPrisma.book.count.mockResolvedValueOnce(0); // used
+    mockPrisma.book.count.mockResolvedValueOnce(5); // failedAttempts
+
+    await expect(service.reserveFastFlowBook('user-1', 'c1', 'g1')).rejects.toThrow(HttpException);
+    expect(mockPrisma.book.create).not.toHaveBeenCalled();
+  });
+
+  it('does not cap a premium user at the free-tier failed-attempts floor — the cap scales with their real limit (#280)', async () => {
+    mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1' });
+    mockPrisma.template.findFirst.mockResolvedValueOnce({ id: 'tpl-1' });
+    mockPrisma.subscription.findUnique.mockResolvedValueOnce({
+      plan: SubscriptionPlan.premium,
+      status: 'active',
+    });
+    mockPrisma.book.count.mockResolvedValueOnce(0); // used (well under the 30 limit)
+    mockPrisma.book.count.mockResolvedValueOnce(10); // failedAttempts — over the free floor of 5
+    mockPrisma.book.create.mockResolvedValueOnce({ id: 'book-1' });
+
+    await expect(service.reserveFastFlowBook('user-1', 'c1', 'g1')).resolves.toEqual({
+      id: 'book-1',
+    });
+  });
+
+  it('reserves a placeholder book row atomically, under the same advisory lock as createBook', async () => {
+    mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1' });
+    mockPrisma.template.findFirst.mockResolvedValueOnce({ id: 'tpl-1' });
+    mockPrisma.subscription.findUnique.mockResolvedValueOnce(null);
+    mockPrisma.book.count.mockResolvedValueOnce(0);
+    mockPrisma.book.create.mockResolvedValueOnce({ id: 'book-1' });
+
+    const result = await service.reserveFastFlowBook('user-1', 'c1', 'g1');
+
+    expect(result).toEqual({ id: 'book-1' });
+    expect(mockPrisma.book.create).toHaveBeenCalledWith({
+      data: {
+        userId: 'user-1',
+        childId: 'c1',
+        learningGoalId: 'g1',
+        title: '',
+        status: 'generating',
+      },
+      select: { id: true },
+    });
+    expect(mockPrisma.$executeRaw).toHaveBeenCalled();
+  });
+});
+
 describe('BooksService.deleteBook', () => {
   let service: BooksService;
 
@@ -334,9 +442,10 @@ describe('BooksService.deleteBook', () => {
     service = module.get(BooksService);
   });
 
-  it('deletes S3 assets then the book row when owned', async () => {
+  it('deletes S3 assets then the book row for a finished (ready) book', async () => {
     mockPrisma.book.findFirst.mockResolvedValueOnce({
       id: 'book-1',
+      status: 'ready',
       imageKeys: ['books/book-1/page-1.png'],
       characterPortraitKey: 'books/book-1/portrait.png',
       pdfKey: 'books/book-1/book.pdf',
@@ -358,6 +467,48 @@ describe('BooksService.deleteBook', () => {
     await expect(service.deleteBook('user-1', 'book-x')).rejects.toThrow(NotFoundException);
     expect(mockS3.deleteObjects).not.toHaveBeenCalled();
     expect(mockPrisma.book.delete).not.toHaveBeenCalled();
+  });
+
+  it('throws 409 and does not delete a book that is still generating — otherwise reserve→delete bypasses the quota entirely (#280)', async () => {
+    mockPrisma.book.findFirst.mockResolvedValueOnce({
+      id: 'book-1',
+      status: 'generating',
+      imageKeys: [],
+      characterPortraitKey: null,
+      pdfKey: null,
+    });
+
+    await expect(service.deleteBook('user-1', 'book-1')).rejects.toThrow(ConflictException);
+    expect(mockS3.deleteObjects).not.toHaveBeenCalled();
+    expect(mockPrisma.book.delete).not.toHaveBeenCalled();
+  });
+
+  it('allows deleting a failed book — the stale sweeper is what resolves stuck generating ones', async () => {
+    mockPrisma.book.findFirst.mockResolvedValueOnce({
+      id: 'book-1',
+      status: 'failed',
+      imageKeys: [],
+      characterPortraitKey: null,
+      pdfKey: null,
+    });
+
+    await service.deleteBook('user-1', 'book-1');
+
+    expect(mockPrisma.book.delete).toHaveBeenCalledWith({ where: { id: 'book-1' } });
+  });
+
+  it('allows deleting a pending (draft) book immediately — it has no background work or cost attached (#280)', async () => {
+    mockPrisma.book.findFirst.mockResolvedValueOnce({
+      id: 'book-1',
+      status: 'pending',
+      imageKeys: [],
+      characterPortraitKey: null,
+      pdfKey: null,
+    });
+
+    await service.deleteBook('user-1', 'book-1');
+
+    expect(mockPrisma.book.delete).toHaveBeenCalledWith({ where: { id: 'book-1' } });
   });
 });
 

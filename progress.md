@@ -491,3 +491,60 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - `./init.sh` green.
 
 **Blockers:** none.
+
+---
+
+## 2026-07-20 (cont. 9) — #280: close fast-flow's larger quota TOCTOU race
+
+**Done:**
+- Direct continuation of #154: fast-flow mode had no atomic quota guard at all — `FastFlowService.generate` created its `Book` row only after the LLM call completed, so the race window spanned an entire generation call instead of the near-instant gap #154 closed for the custom flow.
+- Fix follows the pattern the #280 issue text proposed: `BooksService.reserveFastFlowBook(userId, childId, learningGoalId)` reserves a placeholder row (`title: ''`, `status: 'generating'`) atomically — same advisory-lock + quota-check transaction as `createBook`, extracted into a shared private `withQuotaLock` helper so the two can't drift. `FastFlowService.generate` now takes a required `bookId` and only ever updates that row (title/status/pdfKey/storyJson at the end), never creates its own.
+- Resolved the one-directional module dependency (`BooksModule` imports `FastFlowModule`, not the reverse) the issue flagged as the likely blocker, without introducing a circular import: `BooksController` reserves the slot via `BooksService` first, then passes the resulting `bookId` into `FastFlowService.generate` — no cross-module injection needed.
+- `FastFlowService.generate` now wraps its whole body in try/catch that marks the book 'failed' on any error (child/template not found, LLM failure, PDF render failure), not just the PDF-render-specific catch it had before — every failure path now has a reserved row to resolve instead of some paths having none.
+- This also delivers the de-duplication #154's own issue text originally asked for but couldn't get safely at the time: `BooksController.createBook`'s manual quota pre-check is gone entirely — both flows now enforce quota atomically through `BooksService`, no duplicated check left in the controller.
+- Updated `fast-flow.service.spec.ts` for the new `bookId`-in/`bookId`-out contract; added `BooksService.reserveFastFlowBook` tests mirroring `createBook`'s coverage (ownership check, 402, atomic reservation).
+- `./init.sh` green: 291 backend tests, all frontend tests, tsc/lint clean.
+
+**Blockers:** none.
+
+---
+
+## 2026-07-21 — #280: second review pass found and closed a cluster of real regressions
+
+**Done:**
+- The first review-fix pass on #280 (excluding failed/images_failed books from the quota count, guarding the failure-cleanup update, adding a 409 delete-guard) itself introduced new bugs — per the project's re-review policy (≥3 connected fixes + new critical-path tests), dispatched a second independent review pass rather than merging on the strength of the first fix alone. Good thing: it found 5 more real, confirmed issues, all downstream of the same reserve-before-generate design change.
+- **Quota-abuse regression**: excluding failed/images_failed from the count (meant to stop one transient failure from costing a free-tier user their whole month) removed the *only* cap on retries entirely — a reliably-failing input could be retried indefinitely, running up unbounded real LLM/PDF-render cost. Fixed with a second, independent cap: `MAX_FAILED_ATTEMPTS_PER_PERIOD = 5` failed/images_failed attempts per period, checked in the same advisory-lock transaction, generous enough not to punish a normal user hitting one or two hiccups.
+- **Undeletable-book lockouts**: the 409 delete-guard added in the first fix pass (to stop deleting a book out from under an in-flight generation request) meant a book stuck at 'pending' (no sweeper covers that status) became *permanently* undeletable, and one stuck at 'generating' was blocked from deletion *and* still counted toward quota for up to 10 minutes until the stale-book sweeper caught it. Reverted the guard entirely — `deleteBook` no longer checks status — and instead made the actual crash risk (an in-flight `FastFlowService` request writing to a row the user just deleted) tolerant of that race: `isBookMissingError` recognizes Prisma's P2025/P2003 and `generate()` throws a clean 404 instead of a raw 500, without attempting a pointless "mark failed" on a row that's already gone.
+- **Validate-before-reserve ordering bug**: `reserveFastFlowBook` created the placeholder row keyed by `learningGoalId` before anything checked that id existed, so a bad id now surfaced as an unhandled Prisma FK-violation 500 instead of fast-flow's previous clean 404. Fixed by adding an existence-only check (`assertFastFlowTemplateExists`) before reserving.
+- Left one minor, explicitly-accepted cleanup finding un-fixed: `reserveFastFlowBook`'s child-ownership check and `FastFlowService.loadContext`'s child fetch are two separate DB round trips for related data — eliminating it would mean `BooksService` returning fast-flow-specific context (template/illustrationTags) it has no other reason to know about, which trades a cheap indexed query for a worse module boundary. Not worth it for a "cleanup" severity finding.
+- `./init.sh` green again after all of the above; all new/changed behavior covered by unit tests (429 cap, template-404-before-reserve, book-missing-tolerant generate, unrestricted delete).
+
+**Blockers:** none. PR #282 ready for merge once CI passes.
+
+---
+
+## 2026-07-21 (cont.) — #280: third review pass — reverting the delete-guard reopened a worse hole
+
+**Done:**
+- Re-review policy triggered again (3 more connected fixes). Good thing it did: removing `deleteBook`'s status guard in the previous pass (to fix the *permanent-lockout* problem the guard itself caused) reopened something worse — since `computeQuota` only counts existing rows, a user could loop reserve→delete to bypass the monthly quota entirely and run unlimited concurrent real generations, and deleting mid-generation orphaned whatever the in-flight request later uploaded to S3 (no DB row left to reference it). A third finding: the failed-attempts cap added in the previous pass was a flat 5 shared by both plans, so a premium user (30 books/month) could get locked out of the feature for up to 30 days by a handful of failures that weren't their fault (provider outage, a server restart the stale sweeper had to clean up after) — nowhere near their real quota.
+- The lockout problem and the bypass problem turned out to share one fix instead of trading off against each other: **`deleteBook`'s 409 guard is back** (rejects deleting a `pending`/`generating` book), which closes both the quota-bypass loop and the S3-orphan race at the source — and it's now safe because **`StaleBooksSweeperService` sweeps `pending` books, not just `generating`** ones, so nothing is ever stuck longer than its existing 10-minute window; it just resolves to `failed` and becomes deletable normally.
+- The flat 5-attempt cap became `Math.max(limit, 5)` — scales to the user's actual plan (free still floors at 5, premium gets 30), fixing the proportionality bug directly.
+- Left the fourth (cleanup-severity, already-documented) finding about a duplicate Template lookup as-is, per the same reasoning recorded in the previous entry.
+- `./init.sh` green; new tests cover the 409 guard, the plan-scaled cap (a premium user with 10 failed attempts is *not* blocked), and the sweeper now catching stale `pending` rows.
+
+**Blockers:** none. PR #282 ready for merge once CI passes — three review rounds in, converging rather than churning (each pass's fixes were the direct trigger for the next pass, and this round's fixes don't introduce a fourth known gap).
+
+---
+
+## 2026-07-21 (cont. 2) — #280: fourth review pass — pending ≠ generating
+
+**Done:**
+- User asked for one more review round before merging, for maximum confidence. It hit a monthly spend limit on the first attempt (not the session-limit that resets hourly — genuinely blocked until the user raised it at claude.ai/settings/usage); she raised it and the retry ran clean.
+- It found the actual root mistake behind the last two rounds' churn: the `deleteBook` guard and the stale-sweeper both treated `'pending'` the same as `'generating'`, but they're not the same thing. Custom-flow books are created `'pending'` and only become `'generating'` later, when the user separately calls `/books/:id/generate` — `'pending'` can legitimately sit for as long as the user takes to finish personalizing (protagonist mode, art style, interests), with zero background work or cost attached. Fast-flow's `'generating'` status, by contrast, is the atomic reservation itself — real LLM/PDF-render cost starts immediately.
+- Conflating them meant: a user who created a custom-flow draft and wanted to immediately discard it (wrong learning goal, wrong child) got a 409 and had to wait up to 10 minutes; a user who spent more than 10 minutes on the personalization step before clicking "Generate" had their untouched draft force-failed by the sweeper, with a scary "Ошибка генерации" SSE event for a book that was never actually generating.
+- Fix: both the `deleteBook` guard and the sweeper now key off `'generating'` only, never `'pending'`. This still closes the actual abuse vector (reserve→delete quota bypass, S3-orphaning) because that vector only exists where real cost is already in flight — `'pending'` never triggers any background work, so freely deleting it costs nothing and blocks nothing.
+- Also fixed two lower-severity items from the same pass: `reserveFastFlowBook`'s two independent validation queries (child ownership, template existence) now run via `Promise.all` instead of sequentially; and the comment on `FastFlowService`'s book-missing-tolerance logic was corrected — it used to claim the user can delete a book mid-generation, which is no longer true now that the guard is back, so the mechanism is kept only as defense against out-of-band deletion (manual DB/ops action) or a future account/child-deletion feature, not a live app-level race.
+- Left the fast-flow child/template duplicate-query finding as an explicitly accepted tradeoff for a third time (documented in the code itself now, not just here) — fixing it would mean `BooksService` returning `Template.illustrationTags`, fast-flow-specific data it otherwise has no reason to know about.
+- `./init.sh` green; deleteBook/sweeper tests updated to assert `'pending'` is exempt and `'generating'` is guarded, matching the corrected model.
+
+**Blockers:** none. PR #282 ready to merge.
