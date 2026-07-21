@@ -4,6 +4,7 @@ import {
   Headers,
   Req,
   BadRequestException,
+  NotFoundException,
   HttpCode,
   HttpStatus,
   UseGuards,
@@ -54,6 +55,36 @@ export class BillingController {
 
     if (!session.url) throw new BadRequestException('Stripe did not return a checkout URL');
     return { url: session.url };
+  }
+
+  /** Stripe-hosted Customer Portal: cancellation, invoice history, payment method — no custom UI (#273). */
+  @Post('portal')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async createPortalSession(@CurrentUser() user: JwtPayload): Promise<{ url: string }> {
+    const sub = await this.billing.getSubscriptionForPortal(user.sub);
+    if (!sub) throw new NotFoundException('No subscription found');
+
+    const customerId = sub.stripeCustomerId ?? (await this.resolveCustomerId(sub, user.sub));
+
+    const session = await this.stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: `${this.frontendUrl}/account`,
+    });
+
+    if (!session.url) throw new BadRequestException('Stripe did not return a portal URL');
+    return { url: session.url };
+  }
+
+  private async resolveCustomerId(
+    sub: { stripeSubscriptionId: string },
+    userId: string,
+  ): Promise<string> {
+    const stripeSub = await this.stripe.subscriptions.retrieve(sub.stripeSubscriptionId);
+    const customerId =
+      typeof stripeSub.customer === 'string' ? stripeSub.customer : stripeSub.customer.id;
+    await this.billing.setStripeCustomerId(userId, customerId);
+    return customerId;
   }
 
   @Post('webhooks')
