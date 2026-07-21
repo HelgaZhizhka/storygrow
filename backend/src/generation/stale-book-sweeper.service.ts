@@ -28,14 +28,11 @@ export class StaleBooksSweeperService implements OnModuleInit, OnModuleDestroy {
     const threshold = new Date(Date.now() - STALE_THRESHOLD_MS);
 
     const staleBooks = await this.prisma.book.findMany({
-      // 'pending' is included alongside 'generating' (#280) — a custom-flow book
-      // whose follow-up generate call never happened (tab closed, BullMQ down)
-      // would otherwise never resolve, staying quota-charged and undeletable
-      // forever now that deleteBook rejects non-terminal statuses.
-      where: {
-        status: { in: [BookStatus.pending, BookStatus.generating] },
-        updatedAt: { lt: threshold },
-      },
+      // 'pending' is deliberately excluded — for the custom flow it's a long-lived
+      // draft state (created before the user separately triggers generation), not a
+      // stuck job; sweeping it would force-fail a book the user just hasn't finished
+      // personalizing yet (#280).
+      where: { status: BookStatus.generating, updatedAt: { lt: threshold } },
       select: { id: true, storyJson: true, updatedAt: true },
     });
 

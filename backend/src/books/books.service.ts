@@ -233,8 +233,12 @@ export class BooksService {
     childId: string,
     learningGoalId: string,
   ): Promise<{ id: string }> {
-    await this.assertChildOwned(userId, childId);
-    await this.assertFastFlowTemplateExists(learningGoalId);
+    // Independent checks against unrelated tables — run concurrently, same reasoning
+    // as computeQuota's Promise.all below.
+    await Promise.all([
+      this.assertChildOwned(userId, childId),
+      this.assertFastFlowTemplateExists(learningGoalId),
+    ]);
 
     return this.withQuotaLock(userId, (tx) =>
       tx.book.create({
@@ -247,8 +251,11 @@ export class BooksService {
   /**
    * Book.learningGoalId is a required FK — validate it before reserving, or an
    * invalid id surfaces as a raw FK-violation 500 instead of a clean 404 (#280).
-   * FastFlowService re-fetches the template afterward for illustrationTags; this
-   * check only confirms existence, so the two don't share a query.
+   * FastFlowService.loadContext re-fetches the child and template right after this —
+   * a genuine duplicate query on every fast-flow request, considered and rejected as
+   * a fix: eliminating it means BooksService returning fast-flow-specific data
+   * (Template.illustrationTags) it otherwise has no reason to know about. Left as an
+   * accepted cost of keeping that module boundary clean, not an oversight.
    */
   private async assertFastFlowTemplateExists(learningGoalId: string): Promise<void> {
     const template = await this.prisma.template.findFirst({
@@ -298,12 +305,16 @@ export class BooksService {
   /**
    * Delete a book the user owns. S3 assets are removed first (best-effort), then
    * the row — pages and evals cascade via the schema. Throws 404 if the book is
-   * not the user's, 409 while it's still pending/generating (#280): allowing
-   * that would let a user loop reserve→delete to bypass the quota entirely
-   * (computeQuota only counts existing rows) and orphan whatever the in-flight
-   * generation later uploads to S3, since deletion only cleans up what's on the
-   * row at delete time. A book stuck non-terminal isn't a permanent lockout —
-   * StaleBooksSweeperService flips both 'pending' and 'generating' to 'failed'
+   * not the user's, 409 while it's 'generating' (#280): allowing that would let a
+   * user loop reserve→delete to bypass the quota entirely (computeQuota only
+   * counts existing rows) and orphan whatever the in-flight generation later
+   * uploads to S3, since deletion only cleans up what's on the row at delete
+   * time. 'pending' is deliberately NOT guarded: for the custom flow it's a
+   * long-lived draft state (the book is created before generation is triggered
+   * by a separate call) with no background work and no cost attached, so a user
+   * must be able to discard one immediately — unlike 'generating', it isn't
+   * stuck-in-progress just for existing. A book stuck at 'generating' isn't a
+   * permanent lockout either — StaleBooksSweeperService flips it to 'failed'
    * within its sweep window, after which it deletes normally.
    */
   async deleteBook(userId: string, bookId: string): Promise<void> {
@@ -312,7 +323,7 @@ export class BooksService {
       select: { id: true, status: true, imageKeys: true, characterPortraitKey: true, pdfKey: true },
     });
     if (!book) throw new NotFoundException('Book not found');
-    if (book.status === 'pending' || book.status === 'generating') {
+    if (book.status === 'generating') {
       throw new ConflictException('Cannot delete a book while it is still being generated');
     }
 

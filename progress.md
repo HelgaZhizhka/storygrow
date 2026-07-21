@@ -533,3 +533,18 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - `./init.sh` green; new tests cover the 409 guard, the plan-scaled cap (a premium user with 10 failed attempts is *not* blocked), and the sweeper now catching stale `pending` rows.
 
 **Blockers:** none. PR #282 ready for merge once CI passes — three review rounds in, converging rather than churning (each pass's fixes were the direct trigger for the next pass, and this round's fixes don't introduce a fourth known gap).
+
+---
+
+## 2026-07-21 (cont. 2) — #280: fourth review pass — pending ≠ generating
+
+**Done:**
+- User asked for one more review round before merging, for maximum confidence. It hit a monthly spend limit on the first attempt (not the session-limit that resets hourly — genuinely blocked until the user raised it at claude.ai/settings/usage); she raised it and the retry ran clean.
+- It found the actual root mistake behind the last two rounds' churn: the `deleteBook` guard and the stale-sweeper both treated `'pending'` the same as `'generating'`, but they're not the same thing. Custom-flow books are created `'pending'` and only become `'generating'` later, when the user separately calls `/books/:id/generate` — `'pending'` can legitimately sit for as long as the user takes to finish personalizing (protagonist mode, art style, interests), with zero background work or cost attached. Fast-flow's `'generating'` status, by contrast, is the atomic reservation itself — real LLM/PDF-render cost starts immediately.
+- Conflating them meant: a user who created a custom-flow draft and wanted to immediately discard it (wrong learning goal, wrong child) got a 409 and had to wait up to 10 minutes; a user who spent more than 10 minutes on the personalization step before clicking "Generate" had their untouched draft force-failed by the sweeper, with a scary "Ошибка генерации" SSE event for a book that was never actually generating.
+- Fix: both the `deleteBook` guard and the sweeper now key off `'generating'` only, never `'pending'`. This still closes the actual abuse vector (reserve→delete quota bypass, S3-orphaning) because that vector only exists where real cost is already in flight — `'pending'` never triggers any background work, so freely deleting it costs nothing and blocks nothing.
+- Also fixed two lower-severity items from the same pass: `reserveFastFlowBook`'s two independent validation queries (child ownership, template existence) now run via `Promise.all` instead of sequentially; and the comment on `FastFlowService`'s book-missing-tolerance logic was corrected — it used to claim the user can delete a book mid-generation, which is no longer true now that the guard is back, so the mechanism is kept only as defense against out-of-band deletion (manual DB/ops action) or a future account/child-deletion feature, not a live app-level race.
+- Left the fast-flow child/template duplicate-query finding as an explicitly accepted tradeoff for a third time (documented in the code itself now, not just here) — fixing it would mean `BooksService` returning `Template.illustrationTags`, fast-flow-specific data it otherwise has no reason to know about.
+- `./init.sh` green; deleteBook/sweeper tests updated to assert `'pending'` is exempt and `'generating'` is guarded, matching the corrected model.
+
+**Blockers:** none. PR #282 ready to merge.

@@ -18,10 +18,12 @@ interface GenerationContext {
   goal: { title: string } | null;
 }
 
-// The reserved book row can legitimately disappear mid-generation — the user is
-// allowed to delete a book while it's still generating (#280). P2025 = record not
-// found (the final book.update), P2003 = FK violation (bookPage.createMany against
-// a bookId that no longer exists). Both mean "the book was deleted", not a bug.
+// BooksService.deleteBook rejects deleting a 'generating' book, so this shouldn't
+// happen via the app today — kept as defense against out-of-band deletion (manual
+// DB/ops action) and future features (account/child deletion cascades onto Book)
+// so that case degrades to a clean 404 instead of a raw Prisma error. P2025 = record
+// not found (the final book.update), P2003 = FK violation (bookPage.createMany
+// against a bookId that no longer exists).
 const BOOK_MISSING_ERROR_CODES = new Set(['P2025', 'P2003']);
 
 function isBookMissingError(err: unknown): boolean {

@@ -469,27 +469,38 @@ describe('BooksService.deleteBook', () => {
     expect(mockPrisma.book.delete).not.toHaveBeenCalled();
   });
 
-  it.each(['pending', 'generating'])(
-    'throws 409 and does not delete a book that is still %s — otherwise reserve→delete bypasses the quota entirely (#280)',
-    async (status) => {
-      mockPrisma.book.findFirst.mockResolvedValueOnce({
-        id: 'book-1',
-        status,
-        imageKeys: [],
-        characterPortraitKey: null,
-        pdfKey: null,
-      });
+  it('throws 409 and does not delete a book that is still generating — otherwise reserve→delete bypasses the quota entirely (#280)', async () => {
+    mockPrisma.book.findFirst.mockResolvedValueOnce({
+      id: 'book-1',
+      status: 'generating',
+      imageKeys: [],
+      characterPortraitKey: null,
+      pdfKey: null,
+    });
 
-      await expect(service.deleteBook('user-1', 'book-1')).rejects.toThrow(ConflictException);
-      expect(mockS3.deleteObjects).not.toHaveBeenCalled();
-      expect(mockPrisma.book.delete).not.toHaveBeenCalled();
-    },
-  );
+    await expect(service.deleteBook('user-1', 'book-1')).rejects.toThrow(ConflictException);
+    expect(mockS3.deleteObjects).not.toHaveBeenCalled();
+    expect(mockPrisma.book.delete).not.toHaveBeenCalled();
+  });
 
-  it('allows deleting a failed book — the stale sweeper is what resolves stuck pending/generating ones', async () => {
+  it('allows deleting a failed book — the stale sweeper is what resolves stuck generating ones', async () => {
     mockPrisma.book.findFirst.mockResolvedValueOnce({
       id: 'book-1',
       status: 'failed',
+      imageKeys: [],
+      characterPortraitKey: null,
+      pdfKey: null,
+    });
+
+    await service.deleteBook('user-1', 'book-1');
+
+    expect(mockPrisma.book.delete).toHaveBeenCalledWith({ where: { id: 'book-1' } });
+  });
+
+  it('allows deleting a pending (draft) book immediately — it has no background work or cost attached (#280)', async () => {
+    mockPrisma.book.findFirst.mockResolvedValueOnce({
+      id: 'book-1',
+      status: 'pending',
       imageKeys: [],
       characterPortraitKey: null,
       pdfKey: null,

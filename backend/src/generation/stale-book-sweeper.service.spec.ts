@@ -101,32 +101,15 @@ describe('StaleBooksSweeperService', () => {
     expect(mockPrisma.book.update).toHaveBeenCalledTimes(2);
   });
 
-  it('queries pending and generating books older than threshold (#280)', async () => {
+  it('queries only generating books older than threshold — pending is a legitimate long-lived draft, not a stuck job (#280)', async () => {
     mockPrisma.book.findMany.mockResolvedValueOnce([]);
 
     await service.sweep();
 
     const [callArgs] = mockPrisma.book.findMany.mock.calls[0] as [
-      { where: { status: { in: string[] }; updatedAt: { lt: Date } } },
+      { where: { status: string; updatedAt: { lt: Date } } },
     ];
-    expect(callArgs.where.status).toEqual({ in: [BookStatus.pending, BookStatus.generating] });
+    expect(callArgs.where.status).toBe(BookStatus.generating);
     expect(callArgs.where.updatedAt.lt).toBeInstanceOf(Date);
-  });
-
-  it('sets failed for a stale pending book that never got a follow-up generate call', async () => {
-    const staleBook = {
-      id: 'book-3',
-      storyJson: null,
-      updatedAt: new Date(Date.now() - 15 * 60 * 1000),
-    };
-    mockPrisma.book.findMany.mockResolvedValueOnce([staleBook]);
-    mockPrisma.book.update.mockResolvedValue({});
-
-    await service.sweep();
-
-    expect(mockPrisma.book.update).toHaveBeenCalledWith({
-      where: { id: 'book-3' },
-      data: { status: BookStatus.failed },
-    });
   });
 });
