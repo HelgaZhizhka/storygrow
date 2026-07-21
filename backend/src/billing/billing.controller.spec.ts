@@ -168,6 +168,17 @@ describe('BillingController', () => {
 
       await expect(controller.createPortalSession(mockUser)).rejects.toThrow(BadRequestException);
     });
+
+    it('throws NotFoundException when the Stripe subscription no longer exists', async () => {
+      billingService.getSubscriptionForPortal.mockResolvedValueOnce({
+        stripeSubscriptionId: 'sub_1',
+        stripeCustomerId: null,
+      });
+      mockRetrieveSubscription.mockRejectedValueOnce(new Error('No such subscription'));
+
+      await expect(controller.createPortalSession(mockUser)).rejects.toThrow(NotFoundException);
+      expect(mockCreatePortalSession).not.toHaveBeenCalled();
+    });
   });
 
   describe('POST /api/stripe/webhooks', () => {

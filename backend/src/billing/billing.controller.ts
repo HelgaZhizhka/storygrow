@@ -80,7 +80,13 @@ export class BillingController {
     sub: { stripeSubscriptionId: string },
     userId: string,
   ): Promise<string> {
-    const stripeSub = await this.stripe.subscriptions.retrieve(sub.stripeSubscriptionId);
+    let stripeSub: Awaited<ReturnType<StripeInstance['subscriptions']['retrieve']>>;
+    try {
+      stripeSub = await this.stripe.subscriptions.retrieve(sub.stripeSubscriptionId);
+    } catch {
+      throw new NotFoundException('Stripe subscription not found');
+    }
+
     const customerId =
       typeof stripeSub.customer === 'string' ? stripeSub.customer : stripeSub.customer.id;
     await this.billing.setStripeCustomerId(userId, customerId);
