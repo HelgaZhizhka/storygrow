@@ -9,7 +9,7 @@ Do not drift to synonyms the glossary explicitly avoids.
 ## Glossary
 
 ### Book
-A single personalized children's book created for a specific child. Stored in the `Book` table with status (`pending`, `generating`, `ready`, `failed`). Has one `Child`, one `LearningGoal`, and a list of `BookPage` records.
+A single personalized children's book created for a specific child. Stored in the `Book` table with status (`pending`, `generating`, `ready`, `failed`, `images_failed`). Has one `Child`, one `LearningGoal`, and a list of `BookPage` records.
 
 **Avoid:** "story" alone (story is the *content*; book is the *artefact* the user buys); "tale".
 
