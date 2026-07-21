@@ -1,4 +1,15 @@
-jest.mock('../generated/prisma/client', () => ({ PrismaClient: class {} }));
+jest.mock('../generated/prisma/client', () => ({
+  PrismaClient: class {},
+  Prisma: {
+    PrismaClientKnownRequestError: class extends Error {
+      code: string;
+      constructor(message: string, params: { code: string }) {
+        super(message);
+        this.code = params.code;
+      }
+    },
+  },
+}));
 jest.mock('puppeteer', () => ({ __esModule: true, default: { launch: jest.fn() } }));
 
 const mockGenerateObject = jest.fn();
@@ -12,6 +23,7 @@ jest.mock('@langfuse/tracing', () => ({
 
 import { NotFoundException } from '@nestjs/common';
 import { FastFlowService } from './fast-flow.service';
+import { Prisma } from '../generated/prisma/client';
 import type { RenderInput } from '../pdf/pdf-render.service';
 import type { Story } from '../ai/schemas';
 
@@ -245,5 +257,45 @@ describe('FastFlowService.generate', () => {
     });
 
     expect(result).toEqual({ bookId: 'book-42', pdfKey: 'books/book-42/book.pdf' });
+  });
+
+  it('throws a clean NotFoundException, without a further failure-mark update, when the book was deleted mid-generation (#280)', async () => {
+    const { prisma, pdfRender, service } = makeMocks();
+    setupHappyPath(prisma);
+    pdfRender.render.mockResolvedValue('books/book-1/book.pdf');
+    prisma.book.update.mockRejectedValueOnce(
+      new Prisma.PrismaClientKnownRequestError('Record to update not found.', {
+        code: 'P2025',
+        clientVersion: '7.8.0',
+      }),
+    );
+
+    await expect(
+      service.generate({
+        bookId: 'book-1',
+        userId: 'u1',
+        childId: 'child-1',
+        learningGoalId: 'goal-1',
+      }),
+    ).rejects.toThrow(NotFoundException);
+
+    // Only the one (failed) update call — no second attempt to mark it 'failed'.
+    expect(prisma.book.update).toHaveBeenCalledTimes(1);
+  });
+
+  it('still throws the original error when the failure-mark update itself fails for an unrelated reason', async () => {
+    const { prisma, pdfRender, service } = makeMocks();
+    setupHappyPath(prisma);
+    pdfRender.render.mockRejectedValue(new Error('Puppeteer crash'));
+    prisma.book.update.mockRejectedValueOnce(new Error('DB connection lost'));
+
+    await expect(
+      service.generate({
+        bookId: 'book-1',
+        userId: 'u1',
+        childId: 'child-1',
+        learningGoalId: 'goal-1',
+      }),
+    ).rejects.toThrow('Puppeteer crash');
   });
 });

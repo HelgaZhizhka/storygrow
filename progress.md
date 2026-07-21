@@ -506,3 +506,17 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - `./init.sh` green: 291 backend tests, all frontend tests, tsc/lint clean.
 
 **Blockers:** none.
+
+---
+
+## 2026-07-21 — #280: second review pass found and closed a cluster of real regressions
+
+**Done:**
+- The first review-fix pass on #280 (excluding failed/images_failed books from the quota count, guarding the failure-cleanup update, adding a 409 delete-guard) itself introduced new bugs — per the project's re-review policy (≥3 connected fixes + new critical-path tests), dispatched a second independent review pass rather than merging on the strength of the first fix alone. Good thing: it found 5 more real, confirmed issues, all downstream of the same reserve-before-generate design change.
+- **Quota-abuse regression**: excluding failed/images_failed from the count (meant to stop one transient failure from costing a free-tier user their whole month) removed the *only* cap on retries entirely — a reliably-failing input could be retried indefinitely, running up unbounded real LLM/PDF-render cost. Fixed with a second, independent cap: `MAX_FAILED_ATTEMPTS_PER_PERIOD = 5` failed/images_failed attempts per period, checked in the same advisory-lock transaction, generous enough not to punish a normal user hitting one or two hiccups.
+- **Undeletable-book lockouts**: the 409 delete-guard added in the first fix pass (to stop deleting a book out from under an in-flight generation request) meant a book stuck at 'pending' (no sweeper covers that status) became *permanently* undeletable, and one stuck at 'generating' was blocked from deletion *and* still counted toward quota for up to 10 minutes until the stale-book sweeper caught it. Reverted the guard entirely — `deleteBook` no longer checks status — and instead made the actual crash risk (an in-flight `FastFlowService` request writing to a row the user just deleted) tolerant of that race: `isBookMissingError` recognizes Prisma's P2025/P2003 and `generate()` throws a clean 404 instead of a raw 500, without attempting a pointless "mark failed" on a row that's already gone.
+- **Validate-before-reserve ordering bug**: `reserveFastFlowBook` created the placeholder row keyed by `learningGoalId` before anything checked that id existed, so a bad id now surfaced as an unhandled Prisma FK-violation 500 instead of fast-flow's previous clean 404. Fixed by adding an existence-only check (`assertFastFlowTemplateExists`) before reserving.
+- Left one minor, explicitly-accepted cleanup finding un-fixed: `reserveFastFlowBook`'s child-ownership check and `FastFlowService.loadContext`'s child fetch are two separate DB round trips for related data — eliminating it would mean `BooksService` returning fast-flow-specific context (template/illustrationTags) it has no other reason to know about, which trades a cheap indexed query for a worse module boundary. Not worth it for a "cleanup" severity finding.
+- `./init.sh` green again after all of the above; all new/changed behavior covered by unit tests (429 cap, template-404-before-reserve, book-missing-tolerant generate, unrestricted delete).
+
+**Blockers:** none. PR #282 ready for merge once CI passes.

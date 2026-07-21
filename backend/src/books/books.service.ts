@@ -1,10 +1,4 @@
-import {
-  Injectable,
-  HttpException,
-  HttpStatus,
-  NotFoundException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
 import { Prisma, SubscriptionPlan } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { S3Service } from '../s3/s3.service';
@@ -46,6 +40,13 @@ const PERIOD_DAYS = 30;
 // per-user advisory lock, so a legitimate double-click/retry queued behind it needs
 // more headroom than that before it's treated as a failure.
 const TRANSACTION_TIMEOUT_MS = 10_000;
+
+// failed/images_failed books are excluded from the success quota (#280), which on its
+// own would let repeated failures be retried without limit — a reliably-failing input
+// (or a scripted attacker) could rack up unbounded real LLM/render cost. This caps
+// attempts, independent of the success quota, generously enough not to punish a normal
+// user who hits one or two transient errors.
+const MAX_FAILED_ATTEMPTS_PER_PERIOD = 5;
 
 @Injectable()
 export class BooksService {
@@ -153,11 +154,21 @@ export class BooksService {
       async (tx) => {
         await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${userId})::bigint)`;
 
-        const { used, limit } = await this.computeQuota(tx, userId);
+        const [{ used, limit }, failedAttempts] = await Promise.all([
+          this.computeQuota(tx, userId),
+          this.countFailedAttempts(tx, userId),
+        ]);
+
         if (used >= limit) {
           throw new HttpException(
             { message: 'Book quota exceeded for current plan', used, limit },
             HttpStatus.PAYMENT_REQUIRED,
+          );
+        }
+        if (failedAttempts >= MAX_FAILED_ATTEMPTS_PER_PERIOD) {
+          throw new HttpException(
+            { message: 'Too many failed generation attempts recently — please try again later' },
+            HttpStatus.TOO_MANY_REQUESTS,
           );
         }
 
@@ -165,6 +176,17 @@ export class BooksService {
       },
       { timeout: TRANSACTION_TIMEOUT_MS },
     );
+  }
+
+  private countFailedAttempts(client: Prisma.TransactionClient, userId: string): Promise<number> {
+    const periodStart = new Date(Date.now() - PERIOD_DAYS * 24 * 60 * 60 * 1000);
+    return client.book.count({
+      where: {
+        userId,
+        createdAt: { gte: periodStart },
+        status: { in: ['failed', 'images_failed'] },
+      },
+    });
   }
 
   async createBook(userId: string, dto: CreateBookDto) {
@@ -205,6 +227,7 @@ export class BooksService {
     learningGoalId: string,
   ): Promise<{ id: string }> {
     await this.assertChildOwned(userId, childId);
+    await this.assertFastFlowTemplateExists(learningGoalId);
 
     return this.withQuotaLock(userId, (tx) =>
       tx.book.create({
@@ -212,6 +235,22 @@ export class BooksService {
         select: { id: true },
       }),
     );
+  }
+
+  /**
+   * Book.learningGoalId is a required FK — validate it before reserving, or an
+   * invalid id surfaces as a raw FK-violation 500 instead of a clean 404 (#280).
+   * FastFlowService re-fetches the template afterward for illustrationTags; this
+   * check only confirms existence, so the two don't share a query.
+   */
+  private async assertFastFlowTemplateExists(learningGoalId: string): Promise<void> {
+    const template = await this.prisma.template.findFirst({
+      where: { learningGoalId },
+      select: { id: true },
+    });
+    if (!template) {
+      throw new NotFoundException(`No template for learning goal ${learningGoalId}`);
+    }
   }
 
   listBooks(userId: string) {
@@ -252,19 +291,18 @@ export class BooksService {
   /**
    * Delete a book the user owns. S3 assets are removed first (best-effort), then
    * the row — pages and evals cascade via the schema. Throws 404 if the book is
-   * not the user's, 409 while it's still being generated — otherwise a delete
-   * racing the generation request's own book.update crashes that request with
-   * an unhandled "record not found" once the row is gone (#280).
+   * not the user's. Deleting a book that's still generating is allowed — an
+   * in-flight fast-flow request tolerates the row disappearing underneath it
+   * (FastFlowService) rather than this method blocking deletion, which would
+   * otherwise leave a crashed/never-followed-up 'pending' or 'generating' book
+   * permanently undeletable and stuck occupying a quota slot (#280).
    */
   async deleteBook(userId: string, bookId: string): Promise<void> {
     const book = await this.prisma.book.findFirst({
       where: { id: bookId, userId },
-      select: { id: true, status: true, imageKeys: true, characterPortraitKey: true, pdfKey: true },
+      select: { id: true, imageKeys: true, characterPortraitKey: true, pdfKey: true },
     });
     if (!book) throw new NotFoundException('Book not found');
-    if (book.status === 'pending' || book.status === 'generating') {
-      throw new ConflictException('Cannot delete a book while it is still being generated');
-    }
 
     const keys = [...book.imageKeys, book.characterPortraitKey, book.pdfKey].filter(
       (k): k is string => Boolean(k),

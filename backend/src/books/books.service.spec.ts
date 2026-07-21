@@ -10,7 +10,7 @@ jest.mock('../generated/prisma/client', () => ({
 }));
 
 import { Test } from '@nestjs/testing';
-import { ConflictException, HttpException, NotFoundException } from '@nestjs/common';
+import { HttpException, NotFoundException } from '@nestjs/common';
 import { SubscriptionPlan } from '../generated/prisma/client';
 import { BooksService } from './books.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -36,6 +36,7 @@ const basePrisma = {
     findFirst: jest.fn(),
     delete: jest.fn(),
   },
+  template: { findFirst: jest.fn() },
   $executeRaw: jest.fn(),
 };
 
@@ -354,8 +355,20 @@ describe('BooksService.reserveFastFlowBook', () => {
     expect(mockPrisma.book.create).not.toHaveBeenCalled();
   });
 
+  it('throws 404 when no template exists for the learning goal, before ever reserving (#280)', async () => {
+    mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1' });
+    mockPrisma.template.findFirst.mockResolvedValueOnce(null);
+
+    await expect(service.reserveFastFlowBook('user-1', 'c1', 'missing-goal')).rejects.toThrow(
+      NotFoundException,
+    );
+    expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+    expect(mockPrisma.book.create).not.toHaveBeenCalled();
+  });
+
   it('throws 402 when quota is exceeded, same as the custom flow (#280)', async () => {
     mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1' });
+    mockPrisma.template.findFirst.mockResolvedValueOnce({ id: 'tpl-1' });
     mockPrisma.subscription.findUnique.mockResolvedValueOnce(null);
     mockPrisma.book.count.mockResolvedValueOnce(1);
 
@@ -363,8 +376,20 @@ describe('BooksService.reserveFastFlowBook', () => {
     expect(mockPrisma.book.create).not.toHaveBeenCalled();
   });
 
+  it('throws 429 when the user has too many failed attempts this period, even under quota (#280)', async () => {
+    mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1' });
+    mockPrisma.template.findFirst.mockResolvedValueOnce({ id: 'tpl-1' });
+    mockPrisma.subscription.findUnique.mockResolvedValueOnce(null);
+    mockPrisma.book.count.mockResolvedValueOnce(0); // used
+    mockPrisma.book.count.mockResolvedValueOnce(5); // failedAttempts
+
+    await expect(service.reserveFastFlowBook('user-1', 'c1', 'g1')).rejects.toThrow(HttpException);
+    expect(mockPrisma.book.create).not.toHaveBeenCalled();
+  });
+
   it('reserves a placeholder book row atomically, under the same advisory lock as createBook', async () => {
     mockPrisma.child.findFirst.mockResolvedValueOnce({ id: 'c1' });
+    mockPrisma.template.findFirst.mockResolvedValueOnce({ id: 'tpl-1' });
     mockPrisma.subscription.findUnique.mockResolvedValueOnce(null);
     mockPrisma.book.count.mockResolvedValueOnce(0);
     mockPrisma.book.create.mockResolvedValueOnce({ id: 'book-1' });
@@ -401,10 +426,9 @@ describe('BooksService.deleteBook', () => {
     service = module.get(BooksService);
   });
 
-  it('deletes S3 assets then the book row when owned', async () => {
+  it('deletes S3 assets then the book row when owned, regardless of status', async () => {
     mockPrisma.book.findFirst.mockResolvedValueOnce({
       id: 'book-1',
-      status: 'ready',
       imageKeys: ['books/book-1/page-1.png'],
       characterPortraitKey: 'books/book-1/portrait.png',
       pdfKey: 'books/book-1/book.pdf',
@@ -427,23 +451,6 @@ describe('BooksService.deleteBook', () => {
     expect(mockS3.deleteObjects).not.toHaveBeenCalled();
     expect(mockPrisma.book.delete).not.toHaveBeenCalled();
   });
-
-  it.each(['pending', 'generating'])(
-    'throws 409 and does not delete a book that is still %s (#280)',
-    async (status) => {
-      mockPrisma.book.findFirst.mockResolvedValueOnce({
-        id: 'book-1',
-        status,
-        imageKeys: [],
-        characterPortraitKey: null,
-        pdfKey: null,
-      });
-
-      await expect(service.deleteBook('user-1', 'book-1')).rejects.toThrow(ConflictException);
-      expect(mockS3.deleteObjects).not.toHaveBeenCalled();
-      expect(mockPrisma.book.delete).not.toHaveBeenCalled();
-    },
-  );
 });
 
 describe('BooksService.listLearningGoals', () => {

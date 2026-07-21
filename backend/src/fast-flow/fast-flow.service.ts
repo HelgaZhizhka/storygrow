@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { generateObject } from 'ai';
 import { openai } from '@ai-sdk/openai';
+import { Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PdfRenderService } from '../pdf/pdf-render.service';
 import { GENERATION_MODEL } from '../ai/ai.config';
@@ -15,6 +16,18 @@ interface GenerationContext {
   child: { name: string; age: number; gender: string | null };
   template: { illustrationTags: string[] };
   goal: { title: string } | null;
+}
+
+// The reserved book row can legitimately disappear mid-generation — the user is
+// allowed to delete a book while it's still generating (#280). P2025 = record not
+// found (the final book.update), P2003 = FK violation (bookPage.createMany against
+// a bookId that no longer exists). Both mean "the book was deleted", not a bug.
+const BOOK_MISSING_ERROR_CODES = new Set(['P2025', 'P2003']);
+
+function isBookMissingError(err: unknown): boolean {
+  return (
+    err instanceof Prisma.PrismaClientKnownRequestError && BOOK_MISSING_ERROR_CODES.has(err.code)
+  );
 }
 
 export interface FastFlowInput {
@@ -49,12 +62,20 @@ export class FastFlowService {
     try {
       return await this.runGeneration(input);
     } catch (err) {
-      // Never let a failure marking the book 'failed' hide the real error —
-      // log it and still throw `err`, not whatever this update itself threw.
+      if (isBookMissingError(err)) {
+        this.logger.warn(`Book ${bookId} was deleted before generation finished — abandoning`);
+        throw new NotFoundException(`Book ${bookId} no longer exists`);
+      }
+
+      // Never let a failure marking the book 'failed' hide the real error — log
+      // it (unless the book was deleted concurrently, which is expected) and
+      // still throw `err`, not whatever this update itself threw.
       await this.prisma.book
         .update({ where: { id: bookId }, data: { status: 'failed' } })
         .catch((cleanupErr: unknown) => {
-          this.logger.error(`Failed to mark book ${bookId} as failed`, cleanupErr);
+          if (!isBookMissingError(cleanupErr)) {
+            this.logger.error(`Failed to mark book ${bookId} as failed`, cleanupErr);
+          }
         });
       throw err;
     }
