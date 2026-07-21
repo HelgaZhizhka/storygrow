@@ -55,12 +55,24 @@ export class BillingService {
       throw new BadRequestException(`Missing period_end for subscription: ${sub.id}`);
     }
     const periodEnd = new Date(periodEndEpoch * 1000);
+    const stripeCustomerId = this.extractCustomerId(sub.customer);
 
     await this.prisma.subscription.upsert({
       where: { stripeSubscriptionId: sub.id },
-      create: { userId, stripeSubscriptionId: sub.id, plan, status, periodEnd },
-      update: { plan, status, periodEnd },
+      create: {
+        userId,
+        stripeSubscriptionId: sub.id,
+        stripeCustomerId,
+        plan,
+        status,
+        periodEnd,
+      },
+      update: { stripeCustomerId, plan, status, periodEnd },
     });
+  }
+
+  private extractCustomerId(customer: WebhookSubscription['customer']): string {
+    return typeof customer === 'string' ? customer : customer.id;
   }
 
   private async cancelSubscription(sub: WebhookSubscription): Promise<void> {
@@ -100,6 +112,24 @@ export class BillingService {
       select: { status: true },
     });
     return isActiveSubscriptionStatus(sub?.status);
+  }
+
+  /** Used by BillingController's portal endpoint to resolve which Stripe customer to open the Portal for. */
+  async getSubscriptionForPortal(
+    userId: string,
+  ): Promise<{ stripeSubscriptionId: string; stripeCustomerId: string | null } | null> {
+    return this.prisma.subscription.findUnique({
+      where: { userId },
+      select: { stripeSubscriptionId: true, stripeCustomerId: true },
+    });
+  }
+
+  /** Lazy-backfill for rows created before stripeCustomerId existed on the schema. */
+  async setStripeCustomerId(userId: string, stripeCustomerId: string): Promise<void> {
+    await this.prisma.subscription.update({
+      where: { userId },
+      data: { stripeCustomerId },
+    });
   }
 
   private extractSubscriptionId(invoice: WebhookInvoice): string | null {
