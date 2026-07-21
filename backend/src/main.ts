@@ -1,6 +1,7 @@
 import './instrument';
 import { NestFactory } from '@nestjs/core';
 import { Logger } from '@nestjs/common';
+import cookieParser from 'cookie-parser';
 
 import { AppModule } from './app.module';
 
@@ -8,6 +9,7 @@ const DEFAULT_PORT = 3001;
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { rawBody: true });
+  app.use(cookieParser());
   app.enableCors({
     origin: process.env.FRONTEND_URL ?? 'http://localhost:3000',
     credentials: true,
