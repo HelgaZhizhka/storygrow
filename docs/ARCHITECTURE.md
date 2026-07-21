@@ -31,7 +31,7 @@ storygrow/
 │   │   ├── fast-flow/          # synchronous fast-flow generation (templates)
 │   │   ├── pdf/                # Puppeteer renderer
 │   │   ├── s3/                 # S3/MinIO module
-│   │   ├── billing/            # Stripe checkout + webhooks
+│   │   ├── billing/            # Stripe checkout + webhooks + Customer Portal (#273)
 │   │   ├── prisma/             # PrismaService module
 │   │   ├── generated/prisma/   # generated Prisma client (output target)
 │   │   └── scripts/            # one-off: corpus indexing, eval-text harness, gen-style-previews
@@ -303,6 +303,7 @@ model Subscription {
   userId                String              @unique
   user                  User                @relation(fields: [userId], references: [id])
   stripeSubscriptionId  String              @unique
+  stripeCustomerId      String?             // for the Customer Portal (#273); nullable, lazily backfilled for pre-existing rows
   plan                  SubscriptionPlan    @default(free)  // enum: free | premium (single paid tier, #269)
   status                SubscriptionStatus                  // enum: active | canceled | past_due | trialing
   periodEnd             DateTime
