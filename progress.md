@@ -548,3 +548,12 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - `./init.sh` green; deleteBook/sweeper tests updated to assert `'pending'` is exempt and `'generating'` is guarded, matching the corrected model.
 
 **Blockers:** none. PR #282 ready to merge.
+
+---
+
+## 2026-07-21 (cont. 3) — #283: docs-currency follow-up
+
+**Done:**
+- User asked whether docs were current after #154/#280 merged. `progress.md` and `docs/ARCHITECTURE.md` checked out fine; found one small pre-existing gap in `CONTEXT.md`'s Book glossary entry — it listed statuses as pending/generating/ready/failed, missing `images_failed` (which predates this session). Fixed.
+
+**Blockers:** none.
