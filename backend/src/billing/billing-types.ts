@@ -7,7 +7,7 @@ export type StripeEvent = ReturnType<StripeInst['webhooks']['constructEvent']>;
 
 export interface WebhookSubscription {
   id: string;
-  customer: string;
+  customer: string | { id: string };
   metadata: Record<string, string | undefined>;
   status:
     | 'active'
