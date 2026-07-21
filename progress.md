@@ -576,3 +576,5 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Blockers:** none. PR #285 merged after final review (opus, no Critical/Important findings) and user confirmation.
 
 **Confirmed working live in production (2026-07-21):** user activated the Stripe Customer Portal (test mode) in the Dashboard, Railway auto-deployed the merged `main` (migration applied via the Pre-Deploy Command), then tested the full flow against her real subscription: `/account` → "Управлять подпиской" → Portal → cancel → webhook (`customer.subscription.deleted`) flipped status to `canceled` → `/account` correctly now shows "Бесплатный · 0 / 1 книг в месяц". End-to-end verified, not just unit-tested.
+
+**Docs-currency follow-up:** `docs/ARCHITECTURE.md`'s `Subscription` Prisma sketch and the `billing/` module's one-line description hadn't been updated for this feature — added `stripeCustomerId` to the sketch and noted the Customer Portal in the module comment.
