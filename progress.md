@@ -595,3 +595,16 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - `./init.sh` green: full backend + frontend suites passing, tsc/lint clean on both workspaces.
 
 **Blockers:** none for merge. A live manual browser check (log in, create a fast-flow book, confirm the SSE ticket flow actually delivers progress events over the deployed Railway proxy) is recommended as a fast-follow after merge/deploy, not a hard gate — matches this session's established pattern of confirming risky features live in production after shipping (e.g. #268, #273).
+
+---
+
+## 2026-07-22 (cont.) — #289: production hotfix — refresh cookie was silently dropped
+
+**Done:**
+- The live-check recommended above surfaced a real bug immediately: user logged in on production and found `sg_refresh_token` simply wasn't in the browser's cookie jar for the API domain at all — not a DevTools-navigation mistake, the cookie genuinely never saved.
+- Root cause: `AuthController.setRefreshCookie`'s `secure` flag was `this.config.get('NODE_ENV') === 'production'` — but Railway doesn't set `NODE_ENV=production` by default (unlike some other platforms), so in the real deployed environment it evaluated to `false`. A cookie with `sameSite: 'none'` and `secure: false` is silently rejected by every modern browser (Chrome/Firefox/Safari all require `Secure` whenever `SameSite=None` is set) — this was broken from the moment #156 deployed, not a new regression.
+- Why login still "worked" despite this: the access token (URL fragment, 15-minute lifetime) is unaffected by the cookie bug, so normal use looked fine until that token expired and the silent-refresh-on-401 flow needed the (never-saved) cookie — at which point every user would have been forced back to `/login` every 15 minutes.
+- Fix: `secure: true` set unconditionally — `sameSite: 'none'` requires it regardless of environment, so the `NODE_ENV` conditional was an unnecessary footgun rather than a real dev/prod distinction. Browsers treat `localhost` as a secure context, so local dev is unaffected.
+- 7/7 `auth.controller` tests still pass unmodified (they already asserted via `objectContaining`, never pinning the exact `secure` value) — confirms the fix didn't need or trigger any test changes, just the one-line production bug.
+
+**Blockers:** none. PR pending — will confirm the fix live in production (cookie now visible in DevTools, session survives past 15 minutes) once deployed, same verification pattern as the rest of this session's shipped features.
