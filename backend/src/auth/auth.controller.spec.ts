@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { UnauthorizedException } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService, type TokenPair } from './auth.service';
+import { SseTicketService } from './sse-ticket.service';
 
 const mockAuth = {
   generateTokens: jest.fn<Promise<TokenPair>, [string, string, string]>(),
@@ -20,6 +21,11 @@ const mockConfig = {
     if (key === 'NODE_ENV') return 'test';
     return undefined;
   }),
+};
+
+const mockTickets = {
+  issue: jest.fn(),
+  consume: jest.fn(),
 };
 
 const tokens: TokenPair = { accessToken: 'at', refreshToken: 'rt' };
@@ -38,6 +44,7 @@ describe('AuthController', () => {
       providers: [
         { provide: AuthService, useValue: mockAuth },
         { provide: ConfigService, useValue: mockConfig },
+        { provide: SseTicketService, useValue: mockTickets },
       ],
     }).compile();
     controller = module.get(AuthController);
@@ -116,6 +123,21 @@ describe('AuthController', () => {
 
       expect(mockAuth.logout).toHaveBeenCalledWith('user-1');
       expect(res.clearCookie).toHaveBeenCalledWith('sg_refresh_token', { path: '/auth' });
+    });
+  });
+
+  describe('sseTicket', () => {
+    it('issues a ticket for the current user', () => {
+      mockTickets.issue.mockReturnValueOnce('generated-ticket');
+
+      const result = controller.sseTicket({ sub: 'user-1', email: 'a@b.com', role: 'user' });
+
+      expect(mockTickets.issue).toHaveBeenCalledWith({
+        sub: 'user-1',
+        email: 'a@b.com',
+        role: 'user',
+      });
+      expect(result).toEqual({ ticket: 'generated-ticket' });
     });
   });
 });

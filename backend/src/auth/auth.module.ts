@@ -6,12 +6,13 @@ import { AuthService } from './auth.service';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { SseTicketService } from './sse-ticket.service';
+import { SseTicketAuthGuard } from './guards/sse-ticket-auth.guard';
 import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
   imports: [PrismaModule, PassportModule, JwtModule.register({})],
   controllers: [AuthController],
-  providers: [AuthService, GoogleStrategy, JwtStrategy, SseTicketService],
-  exports: [AuthService, JwtModule, SseTicketService],
+  providers: [AuthService, GoogleStrategy, JwtStrategy, SseTicketService, SseTicketAuthGuard],
+  exports: [AuthService, JwtModule, SseTicketService, SseTicketAuthGuard],
 })
 export class AuthModule {}

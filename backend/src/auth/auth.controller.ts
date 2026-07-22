@@ -15,6 +15,7 @@ import type { Request, Response } from 'express';
 import { AuthService, type JwtPayload } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
+import { SseTicketService } from './sse-ticket.service';
 
 const REFRESH_COOKIE_NAME = 'sg_refresh_token';
 const REFRESH_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
@@ -24,6 +25,7 @@ export class AuthController {
   constructor(
     private readonly auth: AuthService,
     private readonly config: ConfigService,
+    private readonly tickets: SseTicketService,
   ) {}
 
   @Get('google')
@@ -74,6 +76,13 @@ export class AuthController {
   ): Promise<void> {
     await this.auth.logout(user.sub);
     res.clearCookie(REFRESH_COOKIE_NAME, { path: '/auth' });
+  }
+
+  @Post('sse-ticket')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  sseTicket(@CurrentUser() user: JwtPayload): { ticket: string } {
+    return { ticket: this.tickets.issue(user) };
   }
 
   private setRefreshCookie(res: Response, refreshToken: string): void {
