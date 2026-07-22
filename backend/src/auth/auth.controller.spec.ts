@@ -4,7 +4,7 @@ jest.mock('../generated/prisma/client', () => ({
 
 import { Test } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import { UnauthorizedException } from '@nestjs/common';
+import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService, type TokenPair } from './auth.service';
 import { SseTicketService } from './sse-ticket.service';
@@ -13,14 +13,16 @@ const mockAuth = {
   generateTokens: jest.fn<Promise<TokenPair>, [string, string, string]>(),
   exchangeRefreshToken: jest.fn<Promise<TokenPair>, [string]>(),
   logout: jest.fn<Promise<void>, [string]>(),
+  validateOrCreateUser: jest.fn(),
+};
+
+const configValues: Record<string, string | undefined> = {
+  FRONTEND_URL: 'http://localhost:3000',
+  NODE_ENV: 'test',
 };
 
 const mockConfig = {
-  get: jest.fn((key: string) => {
-    if (key === 'FRONTEND_URL') return 'http://localhost:3000';
-    if (key === 'NODE_ENV') return 'test';
-    return undefined;
-  }),
+  get: jest.fn((key: string) => configValues[key]),
 };
 
 const mockTickets = {
@@ -39,6 +41,8 @@ describe('AuthController', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
+    configValues.NODE_ENV = 'test';
+    configValues.E2E_TEST_MODE = undefined;
     const module = await Test.createTestingModule({
       controllers: [AuthController],
       providers: [
@@ -138,6 +142,48 @@ describe('AuthController', () => {
         role: 'user',
       });
       expect(result).toEqual({ ticket: 'generated-ticket' });
+    });
+  });
+
+  describe('testLogin', () => {
+    const fixtureUser = {
+      id: 'e2e-user-1',
+      email: 'e2e-test@storygrow.test',
+      role: 'user' as const,
+    };
+
+    it('issues real tokens for the fixture user when E2E_TEST_MODE is enabled outside production', async () => {
+      configValues.E2E_TEST_MODE = 'true';
+      mockAuth.validateOrCreateUser.mockResolvedValueOnce(fixtureUser);
+      mockAuth.generateTokens.mockResolvedValueOnce(tokens);
+
+      const result = await controller.testLogin();
+
+      expect(mockAuth.validateOrCreateUser).toHaveBeenCalledWith({
+        googleId: 'e2e-test-fixture',
+        email: 'e2e-test@storygrow.test',
+      });
+      expect(mockAuth.generateTokens).toHaveBeenCalledWith(
+        fixtureUser.id,
+        fixtureUser.email,
+        fixtureUser.role,
+      );
+      expect(result).toEqual(tokens);
+    });
+
+    it('throws NotFoundException when E2E_TEST_MODE is not set', async () => {
+      configValues.E2E_TEST_MODE = undefined;
+
+      await expect(controller.testLogin()).rejects.toThrow(NotFoundException);
+      expect(mockAuth.validateOrCreateUser).not.toHaveBeenCalled();
+    });
+
+    it('throws NotFoundException when NODE_ENV is production, even if E2E_TEST_MODE is true', async () => {
+      configValues.E2E_TEST_MODE = 'true';
+      configValues.NODE_ENV = 'production';
+
+      await expect(controller.testLogin()).rejects.toThrow(NotFoundException);
+      expect(mockAuth.validateOrCreateUser).not.toHaveBeenCalled();
     });
   });
 });

@@ -8,6 +8,7 @@ import {
   HttpCode,
   HttpStatus,
   UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
@@ -19,6 +20,8 @@ import { SseTicketService } from './sse-ticket.service';
 
 const REFRESH_COOKIE_NAME = 'sg_refresh_token';
 const REFRESH_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const E2E_TEST_GOOGLE_ID = 'e2e-test-fixture';
+const E2E_TEST_EMAIL = 'e2e-test@storygrow.test';
 
 @Controller('auth')
 export class AuthController {
@@ -83,6 +86,28 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   sseTicket(@CurrentUser() user: JwtPayload): { ticket: string } {
     return { ticket: this.tickets.issue(user) };
+  }
+
+  /**
+   * Bypasses Google OAuth for release-verification e2e (#155) — double-gated so
+   * it can never activate in production even if one check is misconfigured
+   * (the exact single-flag failure mode that caused #289's cookie bug).
+   */
+  @Post('test-login')
+  @HttpCode(HttpStatus.OK)
+  async testLogin(): Promise<{ accessToken: string; refreshToken: string }> {
+    if (this.config.get<string>('NODE_ENV') === 'production') {
+      throw new NotFoundException();
+    }
+    if (this.config.get<string>('E2E_TEST_MODE') !== 'true') {
+      throw new NotFoundException();
+    }
+
+    const user = await this.auth.validateOrCreateUser({
+      googleId: E2E_TEST_GOOGLE_ID,
+      email: E2E_TEST_EMAIL,
+    });
+    return this.auth.generateTokens(user.id, user.email, user.role);
   }
 
   private setRefreshCookie(res: Response, refreshToken: string): void {
