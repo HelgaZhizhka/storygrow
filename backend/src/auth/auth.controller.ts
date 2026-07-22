@@ -88,7 +88,12 @@ export class AuthController {
   private setRefreshCookie(res: Response, refreshToken: string): void {
     res.cookie(REFRESH_COOKIE_NAME, refreshToken, {
       httpOnly: true,
-      secure: this.config.get<string>('NODE_ENV') === 'production',
+      // sameSite: 'none' requires secure: true unconditionally — browsers silently
+      // drop the cookie otherwise (this shipped broken behind a NODE_ENV check that
+      // Railway doesn't set by default, so the cookie never saved in production).
+      // `localhost` is treated as a secure context by browsers, so this works
+      // unmodified in local dev too — no environment-dependent flag to forget.
+      secure: true,
       sameSite: 'none',
       maxAge: REFRESH_COOKIE_MAX_AGE_MS,
       path: '/auth',
