@@ -5,13 +5,14 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { JwtSseStrategy } from './strategies/jwt-sse.strategy';
+import { SseTicketService } from './sse-ticket.service';
+import { SseTicketAuthGuard } from './guards/sse-ticket-auth.guard';
 import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
   imports: [PrismaModule, PassportModule, JwtModule.register({})],
   controllers: [AuthController],
-  providers: [AuthService, GoogleStrategy, JwtStrategy, JwtSseStrategy],
-  exports: [AuthService, JwtModule],
+  providers: [AuthService, GoogleStrategy, JwtStrategy, SseTicketService, SseTicketAuthGuard],
+  exports: [AuthService, JwtModule, SseTicketService, SseTicketAuthGuard],
 })
 export class AuthModule {}

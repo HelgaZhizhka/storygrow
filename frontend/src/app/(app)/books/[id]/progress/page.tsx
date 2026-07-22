@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
-import { getAccessToken } from '@/lib/auth';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
@@ -73,12 +72,22 @@ export default function BookProgressPage(): React.ReactElement {
           /* transient — a later poll or the SSE stream will resolve it */
         });
 
-    void checkStatus().then(() => {
+    void checkStatus().then(async () => {
       if (settled) return;
 
-      // EventSource cannot send Authorization headers — pass token as query param.
-      const token = getAccessToken();
-      const qs = token ? `?token=${encodeURIComponent(token)}` : '';
+      // EventSource cannot send Authorization headers — exchange the access
+      // token for a short-lived, single-use ticket instead of putting the
+      // real token in the URL (#156).
+      let qs = '';
+      try {
+        const { ticket } = await api.post<{ ticket: string }>('/auth/sse-ticket', {});
+        qs = `?ticket=${encodeURIComponent(ticket)}`;
+      } catch {
+        /* fall through without a ticket — the backend will reject the connection
+           and the existing polling fallback below still resolves the terminal state */
+      }
+      if (settled) return;
+
       const es = new EventSource(`${API_URL}/books/${id}/progress${qs}`);
       esRef.current = es;
 

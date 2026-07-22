@@ -1,5 +1,4 @@
 const ACCESS_TOKEN_KEY = 'sg_access_token';
-const REFRESH_TOKEN_KEY = 'sg_refresh_token';
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 function storage(): Storage | null {
@@ -11,22 +10,16 @@ export function getAccessToken(): string | null {
   return storage()?.getItem(ACCESS_TOKEN_KEY) ?? null;
 }
 
-export function getRefreshToken(): string | null {
-  return storage()?.getItem(REFRESH_TOKEN_KEY) ?? null;
-}
-
-export function setTokens(accessToken: string, refreshToken: string): void {
+export function setTokens(accessToken: string): void {
   const s = storage();
   if (!s) return;
   s.setItem(ACCESS_TOKEN_KEY, accessToken);
-  s.setItem(REFRESH_TOKEN_KEY, refreshToken);
 }
 
 export function clearTokens(): void {
   const s = storage();
   if (!s) return;
   s.removeItem(ACCESS_TOKEN_KEY);
-  s.removeItem(REFRESH_TOKEN_KEY);
 }
 
 export function isAuthenticated(): boolean {
@@ -48,13 +41,18 @@ export function getUserEmail(): string | null {
   }
 }
 
-/** Logs out on the backend (best-effort) and always clears local tokens. */
+/**
+ * Logs out on the backend (best-effort — clears the HttpOnly refresh cookie
+ * server-side, which requires `credentials: 'include'` since frontend and
+ * backend are cross-origin) and always clears the local access token.
+ */
 export async function logout(): Promise<void> {
   const token = getAccessToken();
   if (token) {
     await fetch(`${API_URL}/auth/logout`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
+      credentials: 'include',
     }).catch(() => {});
   }
   clearTokens();

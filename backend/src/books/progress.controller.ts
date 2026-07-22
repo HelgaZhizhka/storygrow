@@ -9,14 +9,14 @@ import {
 import { map, merge, of } from 'rxjs';
 import type { Observable } from 'rxjs';
 import type { MessageEvent } from '@nestjs/common';
-import { JwtSseAuthGuard } from '../auth/guards/jwt-sse-auth.guard';
+import { SseTicketAuthGuard } from '../auth/guards/sse-ticket-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { type JwtPayload } from '../auth/auth.service';
 import { BooksService } from './books.service';
 import { BookProgressService } from './book-progress.service';
 
 @Controller()
-@UseGuards(JwtSseAuthGuard)
+@UseGuards(SseTicketAuthGuard)
 export class ProgressController {
   constructor(
     private readonly books: BooksService,
