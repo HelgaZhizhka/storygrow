@@ -44,3 +44,69 @@ jobs:
 
       - name: Smoke check (tsc + lint + tests)
         run: ./init.sh
+
+  verify:
+    name: ./verify.sh
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: storygrow
+          POSTGRES_PASSWORD: storygrow
+          POSTGRES_DB: storygrow
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U storygrow"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@d15e628ca66d93ee5f352c71671a7bc6a97af5c9
+        with:
+          version: 10.29.3
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          DATABASE_URL: postgresql://storygrow:storygrow@localhost:5432/storygrow
+
+      - name: Install Playwright browsers
+        run: pnpm --filter frontend exec playwright install --with-deps chromium
+
+      - name: Release verification
+        run: ./verify.sh
+        env:
+          DATABASE_URL: postgresql://storygrow:storygrow@localhost:5432/storygrow
+          REDIS_URL: redis://localhost:6379
+          S3_ENDPOINT: http://localhost:9100
+          S3_ACCESS_KEY: storygrow
+          S3_SECRET_KEY: storygrow-dev-secret
+          S3_BUCKET: storygrow
+          NEXT_PUBLIC_API_URL: http://localhost:3001
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GOOGLE_CLIENT_ID: dummy-e2e-value
+          GOOGLE_CLIENT_SECRET: dummy-e2e-value
+          GOOGLE_CALLBACK_URL: http://localhost:3001/auth/google/callback
+          JWT_SECRET: e2e-verify-jwt-secret
+          JWT_REFRESH_SECRET: e2e-verify-jwt-refresh-secret
+          FRONTEND_URL: http://localhost:3000
+          STRIPE_SECRET_KEY: sk_test_dummy
+          STRIPE_WEBHOOK_SECRET: whsec_dummy
+          STRIPE_PRICE_ID: price_dummy
+          EVAL_THRESHOLD: '7.0'
+          EVAL_MAX_RETRIES: '2'
