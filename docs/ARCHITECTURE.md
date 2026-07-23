@@ -14,7 +14,7 @@ storygrow/
 │   │   ├── instrument.ts       # LangFuse OTEL NodeSDK init (before Nest boots)
 │   │   ├── app.module.ts
 │   │   ├── health.controller.ts
-│   │   ├── auth/               # Google OAuth, JWT guards
+│   │   ├── auth/               # Google OAuth, JWT guards; POST /auth/test-login (double-gated OAuth bypass for e2e, #155)
 │   │   ├── books/              # Book CRUD + status; SSE progress (progress.controller)
 │   │   ├── admin/              # admin dashboard: books + learning-goal mgmt, eval metrics
 │   │   ├── ai/
@@ -57,16 +57,21 @@ storygrow/
 │   │   │   └── marketing.css   # landing/login/pricing component layer
 │   │   ├── components/         # shared UI (PublicNav, ThemeToggle, ...)
 │   │   └── lib/                # API client, auth, utils
+│   ├── e2e/                    # Playwright specs (authenticated happy-path via /auth/test-login, #155)
+│   ├── playwright.config.ts
 │   ├── eslint.config.js
 │   ├── tsconfig.json
 │   └── package.json
 │
+├── .github/workflows/ci.yml    # `init` job (every PR: tsc+lint+test) + `verify` job (push:main only, #155)
 ├── docker-compose.yml          # postgres+pgvector, redis, minio, langfuse
 ├── package.json                # workspace root
 ├── pnpm-workspace.yaml
 ├── prettier.config.js
 ├── .env.example
-├── init.sh
+├── init.sh                     # fast per-PR gate: tsc + lint + unit tests
+├── verify.sh                   # heavier release gate (push:main only, #155): builds, Docker
+│                                # image builds, Prisma drift check, seed, authenticated e2e
 └── (harness files in repo root: CLAUDE.md, AGENTS.md, ...)
 ```
 
@@ -329,6 +334,17 @@ model Subscription {
 ## Why not LangChain
 
 Our pipeline is **deterministic** (input → retrieve → generate → judge → render). There is no multi-step tool use, no agent loop, no provider abstraction need. LangChain would add layers of abstraction over what is essentially five sequential service calls — increasing debugger surface area without adding capability.
+
+---
+
+## CI & Release Verification
+
+Two gates, of deliberately different weight:
+
+- **`init.sh`** (`init` CI job, every PR + push to `main`): tsc + lint + unit tests. Fast — this is the per-PR feedback loop.
+- **`verify.sh`** (`verify` CI job, **push to `main` only** — never runs on a PR, both for cost/speed and because it can't validate against its own unmerged diff): backend + frontend production builds, real Docker image builds for both services, Docker Compose (postgres/redis/minio) brought up the same way locally and in CI, `prisma migrate deploy` + a schema-drift check (tolerant of one documented, permanent exception — the pgvector HNSW index on `VocabularyEntry.embedding` lives outside Prisma's migration history, see `backend/prisma/migrate-dev.mjs`), reference-data seeding, then a real backend + frontend boot and one authenticated Playwright e2e happy-path (login → create a fast-flow book → confirm the PDF button).
+
+The e2e path authenticates via `POST /auth/test-login` — a Google-OAuth bypass that only exists for this purpose. It is double-gated (`NODE_ENV !== 'production'` **and** `E2E_TEST_MODE === 'true'`, both required, checked as independent guard clauses) — deliberate defense-in-depth after a prior incident (#289) where a single environment-flag assumption failed silently in Railway.
 
 ---
 
