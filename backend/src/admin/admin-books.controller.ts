@@ -57,18 +57,26 @@ export class AdminBooksController {
   async getMetrics() {
     const since = new Date(Date.now() - WINDOW_DAYS * 24 * 60 * 60 * 1000);
 
-    const [totalBooks, readyBooks, recentEvals, passedFirstAttempt] = await Promise.all([
+    const [totalBooks, readyBooks, recentEvals, firstAttemptEvals] = await Promise.all([
       this.prisma.book.count(),
       this.prisma.book.count({ where: { status: 'ready' } }),
       this.prisma.storyEval.findMany({
         where: { generatedAt: { gte: since } },
         select: { judgeScores: true, finalScore: true, passed: true, attempt: true },
       }),
-      this.prisma.storyEval.count({ where: { attempt: 1, passed: true } }),
+      this.prisma.storyEval.findMany({
+        where: { attempt: 1, passed: true },
+        select: { judgeScores: true },
+      }),
     ]);
 
-    const meanCriterionScores = computeMeanCriterionScores(recentEvals);
-    const passedEvals = recentEvals.filter((e) => e.passed);
+    // Fast Flow writes a placeholder StoryEval (finalScore: 0, judgeScores: {},
+    // "no quality evaluation") so its books still count as generations -- but
+    // these are not LLM-judged and must not dilute the AI-quality metrics below
+    // (a batch of Fast Flow books would otherwise drag meanFinalScore toward 0).
+    const realRecentEvals = recentEvals.filter(isRealJudgeEval);
+    const meanCriterionScores = computeMeanCriterionScores(realRecentEvals);
+    const passedEvals = realRecentEvals.filter((e) => e.passed);
     const meanFinalScore =
       passedEvals.length > 0
         ? passedEvals.reduce((sum, e) => sum + e.finalScore, 0) / passedEvals.length
@@ -78,13 +86,22 @@ export class AdminBooksController {
       windowDays: WINDOW_DAYS,
       totalBooks,
       readyBooks,
-      passedFirstAttempt,
+      passedFirstAttempt: firstAttemptEvals.filter(isRealJudgeEval).length,
       passRate: totalBooks > 0 ? readyBooks / totalBooks : 0,
       meanFinalScore: meanFinalScore !== null ? Math.round(meanFinalScore * 100) / 100 : null,
       meanCriterionScores,
-      recentEvalCount: recentEvals.length,
+      recentEvalCount: realRecentEvals.length,
     };
   }
+}
+
+/** True for a real LLM-judge evaluation, false for Fast Flow's placeholder row. */
+function isRealJudgeEval(evalRow: { judgeScores: unknown }): boolean {
+  return (
+    typeof evalRow.judgeScores === 'object' &&
+    evalRow.judgeScores !== null &&
+    Object.keys(evalRow.judgeScores).length > 0
+  );
 }
 
 function computeMeanCriterionScores(
