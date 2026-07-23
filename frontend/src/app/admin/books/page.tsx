@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
+import { ApiError, api } from '@/lib/api';
 
 interface AdminBook {
   id: string;
@@ -17,6 +17,7 @@ const STATUS_OPTIONS = ['', 'pending', 'generating', 'ready', 'failed', 'images_
 
 export default function AdminBooksPage(): React.ReactElement {
   const [books, setBooks] = useState<AdminBook[]>([]);
+  const [error, setError] = useState<ApiError | null>(null);
   const [status, setStatus] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
@@ -26,12 +27,31 @@ export default function AdminBooksPage(): React.ReactElement {
     if (status) params.set('status', status);
     if (dateFrom) params.set('dateFrom', dateFrom);
     if (dateTo) params.set('dateTo', dateTo);
-    return api.get<AdminBook[]>(`/admin/books?${params.toString()}`).then(setBooks);
+    return api
+      .get<AdminBook[]>(`/admin/books?${params.toString()}`)
+      .then((result) => {
+        setError(null);
+        setBooks(result);
+      })
+      .catch((err: unknown) => {
+        setError(err instanceof ApiError ? err : new ApiError(0, 'Unknown error'));
+      });
   }
 
   useEffect(() => {
     void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  if (error) {
+    return (
+      <main className="mx-auto max-w-4xl px-6 py-10">
+        <p className="text-red-600 dark:text-red-400">
+          {error.status === 403 ? 'Доступ запрещён.' : 'Не удалось загрузить книги.'}
+        </p>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto w-full max-w-7xl px-6 py-10">

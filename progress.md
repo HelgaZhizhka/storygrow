@@ -701,3 +701,19 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Discovered live during this pass: OpenAI account hit its billing hard limit today, root-caused to `verify.sh`'s illustration-seeding step not being idempotent in CI (fresh Postgres/MinIO every run) — fixed separately (see next entry) with user's direct involvement, since it directly threatens being able to rehearse a live demo before Monday.
 
 **Blockers:** none for the docs themselves. Still open for #32: slide deck, demo script *rehearsal* (needs OpenAI budget available), eval dashboard check against **production** (not local dev — local was checked and shows only 4 StoryEval rows, but local dev DB resets don't reflect production's real usage history).
+
+---
+
+## 2026-07-23 (cont. 6) — admin dashboard: silent-hang bug + Fast Flow metrics pollution
+
+**Done:**
+- User hit a real production bug live while checking `/admin/metrics` for #32: the page hung on "Loading…" forever. Root-caused via `superpowers:systematic-debugging`: `useEffect(() => { void api.get(...).then(setMetrics) }, [])` had no `.catch()` — any failure left `metrics` null forever with zero visible error. Confirmed via the browser's actual Network tab (403) and console (`Uncaught ApiError`). The 403 itself was legitimate: her production account's `role` was the `User` model's default (`user`), not `admin` — there's no self-service promotion path by design; she fixed it with a direct `UPDATE "User" SET role='admin'` against production Postgres.
+- Fixed the same silent-failure pattern in both `/admin/metrics` and `/admin/books` (the sibling page had the identical bug, just manifesting as a misleading empty table instead of infinite loading) — both now show a clear "Доступ запрещён." / "Не удалось загрузить..." message on error instead of hanging or silently looking empty. Added `earnedResolution`/`registerMatch` to the metrics page's criterion label map (previously only 5 of 7 current criteria had human labels — the other two, including the headline `registerMatch` signal, rendered as raw camelCase keys).
+- Once the dashboard actually loaded, a second, more consequential finding: production has only 1 total book and 0 evaluations in the last 7 days — nowhere near #32's "≥20 real generations" bar. Also found that `fast-flow.service.ts` writes a placeholder `StoryEval` row (`finalScore: 0`, `judgeScores: {}`, `passed: true`, "no quality evaluation") for every Fast Flow book so it still counts as a generation — but `/admin/metrics` was including these zero-score, non-judged rows in `meanFinalScore`, `meanCriterionScores`, and `passedFirstAttempt`, which would silently drag down the dashboard's AI-quality metrics with non-AI-judged content. Fixed: `getMetrics()` now filters to real judge evaluations (`judgeScores` non-empty) before computing any of the quality aggregates; `totalBooks`/`readyBooks`/`passRate` intentionally still count both flows (they're about overall product usage, not AI quality).
+- New `backend/src/admin/admin-books.controller.spec.ts` (no test coverage existed for this controller before) covering both the pollution bug and the clean-data case. New `frontend/src/app/admin/metrics/page.test.tsx` and `.../books/page.test.tsx` covering the error-display fix.
+- `./init.sh` green.
+
+**Decisions:**
+- Real Custom Flow books still need to be generated in production to actually clear #32's "≥20 generations" bar — deliberately paused mid-decision on exact count, since it's real, additional OpenAI spend on top of today's already-tight budget. Session's focus then shifted to a bigger reframe of #32 (see next entry) before this was resolved.
+
+**Blockers:** none for the code fixes. Open: production still needs real Custom Flow generation volume for a credible defense dashboard.

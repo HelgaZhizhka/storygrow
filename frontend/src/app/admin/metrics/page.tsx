@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
+import { ApiError, api } from '@/lib/api';
 
 interface Metrics {
   windowDays: number;
@@ -20,14 +20,32 @@ const CRITERION_LABELS: Record<string, string> = {
   structureCompleteness: 'Narrative structure',
   safetyForChildren: 'Safety',
   length: 'Length',
+  earnedResolution: 'Earned resolution',
+  registerMatch: 'Register match',
 };
 
 export default function AdminMetricsPage(): React.ReactElement {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const [error, setError] = useState<ApiError | null>(null);
 
   useEffect(() => {
-    void api.get<Metrics>('/admin/metrics').then(setMetrics);
+    api
+      .get<Metrics>('/admin/metrics')
+      .then(setMetrics)
+      .catch((err: unknown) => {
+        setError(err instanceof ApiError ? err : new ApiError(0, 'Unknown error'));
+      });
   }, []);
+
+  if (error) {
+    return (
+      <main className="mx-auto max-w-4xl px-6 py-10">
+        <p className="text-red-600 dark:text-red-400">
+          {error.status === 403 ? 'Доступ запрещён.' : 'Не удалось загрузить метрики.'}
+        </p>
+      </main>
+    );
+  }
 
   if (!metrics) {
     return (
