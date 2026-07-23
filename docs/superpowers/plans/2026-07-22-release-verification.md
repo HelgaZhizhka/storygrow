@@ -360,7 +360,7 @@ test('logs in, creates a fast-flow book, and the finished book page shows a PDF 
 
 This step genuinely exercises the new code — unlike most plan tasks, this one's real test IS running it end-to-end, so do not skip it even though it needs live infrastructure.
 
-Prerequisites: `docker compose up -d postgres redis minio minio-create-buckets` running, `backend/.env` with a real `OPENAI_API_KEY`, migrations applied (`pnpm --filter backend prisma:migrate` or `prisma migrate deploy`), and the seed scripts run once (`pnpm --filter backend seed:learning-goals && pnpm --filter backend seed:fast-flow-templates && pnpm --filter backend seed:illustrations`).
+Prerequisites: `docker compose up -d postgres redis minio minio-create-buckets` running, `backend/.env` with a real `OPENAI_API_KEY`, migrations applied (`pnpm --filter backend prisma:migrate` or `prisma migrate deploy`), and the seed scripts run once (`pnpm --filter backend seed:learning-goals && pnpm --filter backend seed:templates && pnpm --filter backend seed:illustrations`).
 
 In one terminal:
 
@@ -479,7 +479,7 @@ pass "no schema drift"
 
 log "Seed reference data"
 pnpm --filter backend seed:learning-goals
-pnpm --filter backend seed:fast-flow-templates
+pnpm --filter backend seed:templates
 pnpm --filter backend seed:illustrations
 pass "seeded"
 
