@@ -1,5 +1,12 @@
 jest.mock('../generated/prisma/client', () => ({
   PrismaClient: class {},
+  SubscriptionPlan: { free: 'free', premium: 'premium' },
+  SubscriptionStatus: {
+    active: 'active',
+    canceled: 'canceled',
+    past_due: 'past_due',
+    trialing: 'trialing',
+  },
 }));
 
 import { Test } from '@nestjs/testing';
@@ -17,6 +24,9 @@ const mockPrisma = {
     findUnique: jest.fn(),
     upsert: jest.fn(),
     update: jest.fn(),
+  },
+  subscription: {
+    upsert: jest.fn(),
   },
 };
 
@@ -152,6 +162,29 @@ describe('AuthService', () => {
       expect(mockPrisma.user.update).toHaveBeenCalledWith({
         where: { id: 'user-1' },
         data: { refreshToken: null },
+      });
+    });
+  });
+
+  describe('ensureTestFixtureSubscription', () => {
+    it('upserts an active premium subscription for the given user', async () => {
+      mockPrisma.subscription.upsert.mockResolvedValueOnce({});
+
+      await service.ensureTestFixtureSubscription('e2e-user-1');
+
+      expect(mockPrisma.subscription.upsert).toHaveBeenCalledWith({
+        where: { userId: 'e2e-user-1' },
+        create: {
+          userId: 'e2e-user-1',
+          stripeSubscriptionId: 'e2e-test-fixture-subscription',
+          plan: 'premium',
+          status: 'active',
+          periodEnd: new Date('2099-01-01'),
+        },
+        update: {
+          status: 'active',
+          periodEnd: new Date('2099-01-01'),
+        },
       });
     });
   });

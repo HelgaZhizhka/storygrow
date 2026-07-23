@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
+import { SubscriptionPlan, SubscriptionStatus } from '../generated/prisma/client';
 
 export interface GoogleProfile {
   googleId: string;
@@ -93,6 +94,28 @@ export class AuthService {
     await this.prisma.user.update({
       where: { id: userId },
       data: { refreshToken: null },
+    });
+  }
+
+  /**
+   * Gives the e2e-test fixture user (#155) an active premium subscription so
+   * repeated local/CI test runs never hit the free-tier quota (1 book/30 days) —
+   * without this, the second run against a persistent DB always 402s.
+   */
+  async ensureTestFixtureSubscription(userId: string): Promise<void> {
+    await this.prisma.subscription.upsert({
+      where: { userId },
+      create: {
+        userId,
+        stripeSubscriptionId: 'e2e-test-fixture-subscription',
+        plan: SubscriptionPlan.premium,
+        status: SubscriptionStatus.active,
+        periodEnd: new Date('2099-01-01'),
+      },
+      update: {
+        status: SubscriptionStatus.active,
+        periodEnd: new Date('2099-01-01'),
+      },
     });
   }
 

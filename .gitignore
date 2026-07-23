@@ -31,6 +31,10 @@ pnpm-debug.log*
 coverage/
 .nyc_output/
 
+# Playwright e2e run artifacts
+frontend/test-results/
+frontend/playwright-report/
+
 # Prisma generated client
 backend/prisma/generated/
 
