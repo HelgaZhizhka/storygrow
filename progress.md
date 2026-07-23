@@ -632,3 +632,14 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Known, unavoidable verification gap:** the new `verify` CI job triggers only on `push: main`, so it cannot run against its own PR — its first real execution will be the push that merges this branch. `verify.sh` itself was run manually, end-to-end, multiple times locally (Docker builds, Prisma drift, real e2e) and passed cleanly each time post-fixes, but the GitHub Actions job specifically (secret injection, ubuntu-latest runner quirks) is unverified until after merge — this already caught one real bug (the Postgres port collision above) before merge via review-only reasoning, so a second bug surfacing on the first real run wouldn't be shocking. Flag for confirmation once `main`'s next CI run completes.
 
 **Blockers:** none for merge. Recommend checking the `verify` job's first run on `main` after this PR merges.
+
+---
+
+## 2026-07-23 (cont.) — #155 follow-up: verify job's first real run
+
+**Done:**
+- The `verify` job's first real run on `main` failed as predicted — not on the Postgres fix, but on a new gap: `ImageGeneratorService`'s constructor unconditionally calls `config.getOrThrow('GOOGLE_GENERATIVE_AI_API_KEY')` (Gemini is the default `IMAGE_PROVIDER`), and that var wasn't in the CI job's env block. Everything before backend startup — builds, Docker builds, Prisma drift check, seeding — passed clean, confirming the Postgres port-collision fix and the Prisma CLI fixes were correct.
+- Fixed with a dummy value, same pattern as `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` — safe because `GeminiImageProvider`'s constructor only stores the key, no network call happens until an actual `generate()` call, which the fast-flow e2e path never makes (pre-seeded illustrations only).
+- Process note: this fix was mistakenly committed directly to local `main` before catching the error — caught before pushing (a repo pre-merge hook independently also caught the missing `progress.md` entry on the first merge attempt for this branch), moved to a proper branch (`issue/155-fix-ci-env-var`) via PR #294, local `main` reset back to match `origin/main`. No push of the bad commit occurred.
+
+**Blockers:** none. Confirm the `verify` job goes fully green on its next `main` run after this merges.
