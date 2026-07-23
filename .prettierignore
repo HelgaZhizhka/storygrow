@@ -10,6 +10,9 @@ coverage
 .cache
 *.log
 
+# Generated Prisma client — not hand-formatted, not ours to enforce style on.
+backend/src/generated
+
 # Markdown harness docs — keep current hand-formatted style for now.
 # Revisit if/when we want canonical prettier-formatted markdown across docs.
 *.md
