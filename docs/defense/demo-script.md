@@ -36,11 +36,11 @@ Browser redirects to `/books/:id/progress`. SSE stream starts.
 
 **While waiting (~3 min), narrate the pipeline:**
 
-> «Запускается асинхронный BullMQ-джоб. Первый шаг — RAG: pgvector ищет по embedding-пространству 80 слов из корпуса Дейла–Чалла, соответствующих возрасту ребёнка. Эти слова уходят в генератор как лексические ограничения.»
+> «Запускается асинхронный BullMQ-джоб. Первый шаг — Plan: отдельный `generateObject`-вызов, который строит арк истории, разбивку по страницам, выбирает безопасный конфликт и фиксирует "якорь консистентности" — имя героя и его описание.»
 
-> «Второй шаг — `generateObject` Vercel AI SDK с Zod-схемой: setup → conflict → lesson → resolution + 5 вопросов для обсуждения + промпты к иллюстрациям. Не просто текст — структурированный JSON, который мы можем валидировать.»
+> «Второй шаг — Prose: отдельный вызов, который пишет текст целиком по этому плану, в регистре тёплой сказки а-ля Сутеев — не по одной странице за раз, а всей историей целиком, чтобы сохранить связность.»
 
-> «Третий шаг — судья. Второй LLM-вызов оценивает историю по шести критериям от 0 до 10. Порог — 7.0. Если история не прошла — цикл повторяется, максимум два раза.»
+> «Третий шаг — судья. Прохождение книги — это четыре независимых гейта: детерминированная структурная проверка, детерминированная проверка языковой чистоты, шесть guardrail-критериев судьи (порог 6 из 10 каждый), и отдельный craft-сигнал `registerMatch` — насколько текст близок к golden-эталонам, порог 7.0 из 10. Если хоть один гейт не пройден — цикл повторяется, максимум два раза, с явным фидбеком в промпте.»
 
 When the book finishes (or open the staged book `cmpzhjeac0000m2lpzi7sj5q3`), show the book detail:
 
@@ -81,15 +81,15 @@ Open `docs/ARCHITECTURE.md` or show the ASCII pipeline in the terminal — or dr
 ```
 User → form
   → BullMQ job
-    1. VocabularyRag  (pgvector similarity, 812 слов в корпусе)
-    2. StoryGenerator (generateObject + ZodSchema → structured JSON)
-    3. StoryEvaluator (LLM-judge, 6 критериев, retry loop)
-    4. ImageGenerator (Gemini 2.5 Flash Image + портрет-референс → один герой; gpt-image-1 fallback)
-    5. PDFRenderer    (Puppeteer → S3/MinIO)
+    1. Plan            (generateObject + ZodSchema → StoryPlan: arc, page beats, safe conflict)
+    2. Prose            (generateObject → whole-story text in Сутеев read-aloud register)
+    3. StoryEvaluator   (4 gates: structural, language purity, 6 LLM guardrails, craft registerMatch; retry loop)
+    4. ImageGenerator   (Gemini 2.5 Flash Image + портрет-референс → один герой; gpt-image-1 fallback)
+    5. PDFRenderer      (Puppeteer → S3/MinIO)
   ← SSE progress → frontend
 ```
 
-> «Стек: NestJS + Next.js, Prisma + PostgreSQL с pgvector, BullMQ + Redis, Vercel AI SDK — никакого LangChain. Для детерминированного пайплайна "retrieve → generate → judge → render" LangChain добавил бы только слои абстракции.»
+> «Стек: NestJS + Next.js, Prisma + PostgreSQL с pgvector, BullMQ + Redis, Vercel AI SDK — никакого LangChain. Для детерминированного пайплайна "план → проза → судья → иллюстрации → рендер" LangChain добавил бы только слои абстракции.»
 
 > «Отдельно: все LLM-вызовы идут через `generateObject` с Zod-схемой — ни одного сырого `chat.completions`. Это гарантирует, что мы получаем контракт на выходе, а не строку.»
 

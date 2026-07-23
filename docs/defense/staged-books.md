@@ -8,12 +8,14 @@ Use these pre-generated books if the live demo fails (OpenAI outage, network iss
 
 ### Book 1 — Custom Flow with visible retry
 
-> ⚠️ **Re-stage before the defense.** This book was generated before the
-> `engagement` criterion was added (#161), so its `StoryEval` rows hold **5**
-> criteria, not the current 7 — and its `title` is empty in the DB (the value
-> below is the intended title, not what's stored). Regenerate a fresh fallback
-> book under the current 7-criteria pipeline (includes `earnedResolution`) and
-> update the ID/scores/title here.
+> ⚠️ **Re-stage before the defense.** This book predates ADR-0005's judge
+> overhaul — its `StoryEval` rows hold the old 5-criterion shape (including
+> `engagement`, since removed), not the current 7-field `JudgeScoreSchema`
+> (6 guardrails + the single craft signal `registerMatch`, which replaced
+> `engagement` as the headline score). Its `title` is also empty in the DB
+> (the value below is the intended title, not what's stored). Regenerate a
+> fresh fallback book under the current Plan→Prose pipeline and update the
+> ID/scores/title here.
 
 | Field | Value |
 |---|---|

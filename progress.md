@@ -686,3 +686,18 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - User explicitly chose manual-only over a scheduled nightly run, given the tiny remaining course budget and short timeline to the Monday defense — full cost control over a background continuous-drift check.
 
 **Blockers:** none.
+
+---
+
+## 2026-07-23 (cont. 5) — #32: defense Q&A/demo-script sync with current architecture
+
+**Done:**
+- Started #32 (defense prep) with Q&A doc review per user request — found `docs/defense/qa-prep.md` and `demo-script.md` (last touched 2026-07-20) significantly stale against the actual current pipeline, shipped since via ADR-0005 (Plan→Prose decomposition, registerMatch craft judge, Сутеев register correction). Verified against the real current code before rewriting (`judge.schema.ts`, `story-evaluator.service.ts`, `story-orchestrator.service.ts`, `stale-book-sweeper.service.ts`) rather than trusting the docs' own prior claims.
+- Corrected: Q1 (RAG no longer constrains generation — it's a soft/informational signal now, an honest architectural downgrade, not a bug); Q2 (judge is 4 independent gates — structural, language purity, 6 guardrails at floor 6, and the single craft signal `registerMatch` at threshold 7.0 — not "7 criteria averaged" or "6 criteria"); added a new Q3 on the Plan/Prose pipeline rewrite itself, including the honest register-correction pivot (Usborne-inspired register rejected by the product owner, corrected to Сутеев); fixed the stale-book sweeper's actual interval (5 min sweep / 10 min threshold, not 10/30) and status name (`failed`/`images_failed`, not `generation_failed`); updated test counts (323 backend / 45 frontend, not "180+"/"12") and added the `verify.sh` release gate to the testing answer.
+- `demo-script.md`: fixed the "6 критериев" judge narration and the RAG-injection narration (no longer accurate) to describe the actual Plan→Prose→4-gate-judge flow; updated the architecture ASCII diagram.
+- `staged-books.md`: fixed its own stale claim that the current judge has "7 criteria including `engagement`" — `engagement` was removed by ADR-0005 and replaced by `registerMatch`; the fallback book itself still needs re-staging (already flagged, unchanged action item).
+
+**Decisions:**
+- Discovered live during this pass: OpenAI account hit its billing hard limit today, root-caused to `verify.sh`'s illustration-seeding step not being idempotent in CI (fresh Postgres/MinIO every run) — fixed separately (see next entry) with user's direct involvement, since it directly threatens being able to rehearse a live demo before Monday.
+
+**Blockers:** none for the docs themselves. Still open for #32: slide deck, demo script *rehearsal* (needs OpenAI budget available), eval dashboard check against **production** (not local dev — local was checked and shows only 4 StoryEval rows, but local dev DB resets don't reflect production's real usage history).
