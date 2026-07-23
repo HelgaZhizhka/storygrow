@@ -17,11 +17,17 @@ pass() { printf '\033[1;32m✓ %s\033[0m\n' "$*"; }
 : "${OPENAI_API_KEY:?OPENAI_API_KEY must be set}"
 : "${DATABASE_URL:?DATABASE_URL must be set}"
 
-BACKEND_PID=""
-FRONTEND_PID=""
 cleanup() {
-  [ -n "$BACKEND_PID" ] && kill "$BACKEND_PID" 2>/dev/null || true
-  [ -n "$FRONTEND_PID" ] && kill "$FRONTEND_PID" 2>/dev/null || true
+  # `pnpm ... &` backgrounds a multi-process chain (sh -> pnpm-exe -> the real
+  # node/next-server process) -- `$!` only captures the outermost wrapper, so a
+  # PID-based kill never reaches the actual server. Kill by port instead.
+  # SIGKILL (not SIGTERM): the backend's OpenTelemetry instrumentation
+  # (src/instrument.ts) installs a SIGTERM handler that never calls
+  # process.exit(), so a plain kill is silently swallowed and the port stays
+  # bound -- this script tears down a disposable test run, not a graceful
+  # production shutdown.
+  lsof -ti:3001 2>/dev/null | xargs kill -9 2>/dev/null || true
+  lsof -ti:3000 2>/dev/null | xargs kill -9 2>/dev/null || true
 }
 trap cleanup EXIT
 
@@ -85,7 +91,6 @@ pass "seeded"
 
 log "Start backend (test mode)"
 E2E_TEST_MODE=true pnpm --filter backend start:prod &
-BACKEND_PID=$!
 for _ in $(seq 1 30); do
   curl -sf http://localhost:3001/health >/dev/null && break
   sleep 1
@@ -95,7 +100,6 @@ pass "backend up"
 
 log "Start frontend"
 pnpm --filter frontend start &
-FRONTEND_PID=$!
 for _ in $(seq 1 30); do
   curl -sf http://localhost:3000 >/dev/null && break
   sleep 1
