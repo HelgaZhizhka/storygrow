@@ -643,3 +643,14 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Process note: this fix was mistakenly committed directly to local `main` before catching the error — caught before pushing (a repo pre-merge hook independently also caught the missing `progress.md` entry on the first merge attempt for this branch), moved to a proper branch (`issue/155-fix-ci-env-var`) via PR #294, local `main` reset back to match `origin/main`. No push of the bad commit occurred.
 
 **Blockers:** none. Confirm the `verify` job goes fully green on its next `main` run after this merges.
+
+**Update:** the next `verify` run on `main` (after #294 merged) failed for a third, unrelated reason — the shared `OPENAI_API_KEY`'s account hit `insufficient_quota` during the e2e's real story-generation call. Not a code/config bug — `verify.sh` itself, the endpoint, and the e2e spec are all confirmed correct (proven by passing cleanly end-to-end locally multiple times, and by every earlier CI-only bug being found and fixed via the first two runs). User is checking OpenAI billing/usage limits directly and will re-trigger the job once resolved.
+
+---
+
+## 2026-07-23 (cont. 2) — #155 docs sync: ARCHITECTURE.md
+
+**Done:**
+- `docs/ARCHITECTURE.md` hadn't been updated for #155 despite the project's own docs-currency convention (update living docs in the same PR as the feature). Fixed as a small follow-up: added `verify.sh`, `.github/workflows/ci.yml`, and `frontend/e2e/`/`playwright.config.ts` to the monorepo-layout tree; noted `POST /auth/test-login` next to the `auth/` module; added a new "CI & Release Verification" section explaining the two-gate design (`init.sh` every PR, `verify.sh` push-to-main only) and the double-gated test-login bypass.
+
+**Blockers:** none.
