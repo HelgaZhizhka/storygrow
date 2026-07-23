@@ -654,3 +654,18 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - `docs/ARCHITECTURE.md` hadn't been updated for #155 despite the project's own docs-currency convention (update living docs in the same PR as the feature). Fixed as a small follow-up: added `verify.sh`, `.github/workflows/ci.yml`, and `frontend/e2e/`/`playwright.config.ts` to the monorepo-layout tree; noted `POST /auth/test-login` next to the `auth/` module; added a new "CI & Release Verification" section explaining the two-gate design (`init.sh` every PR, `verify.sh` push-to-main only) and the double-gated test-login bypass.
 
 **Blockers:** none.
+
+---
+
+## 2026-07-23 (cont. 3) — #292: backend never exits on SIGTERM
+
+**Done:**
+- Root cause was broader than the issue's own title suggested: `main.ts` never called `app.enableShutdownHooks()` at all, so Nest's own lifecycle shutdown never ran — meaning `SseTicketService.onModuleDestroy` and `StaleBooksSweeperService.onModuleDestroy` (both already written, both assuming they'd fire) were dead code, and the sweeper's `setInterval` alone would have kept the process alive forever regardless of `instrument.ts`'s bug.
+- Fix, two parts: (1) `main.ts` now calls `app.enableShutdownHooks()`, so Nest's own SIGTERM/SIGINT listener closes the HTTP server and runs `onModuleDestroy` across every provider — the real graceful-shutdown path. (2) `instrument.ts`'s SIGTERM/SIGINT handler now awaits `_sdk.shutdown()` and then arms a 10s **unref'd** safety-net timer that force-exits only if something is still hung after that grace period — it does not race Nest's own graceful close, since an unref'd timer can't itself block the event loop from draining naturally first.
+- New `backend/src/instrument.spec.ts`: asserts exactly one SIGTERM/SIGINT handler is registered (only when Langfuse keys are present), that it awaits the SDK shutdown before arming the safety-net timer, that the timer is unref'd, and that `process.exit` isn't called until the timer actually fires.
+- `./init.sh` green.
+
+**Decisions:**
+- Chose to fix the actual bug (enable Nest's shutdown hooks so the existing-but-dead `onModuleDestroy` hooks finally run) rather than just the minimal patch the issue suggested (`process.exit(0)` straight after telemetry shutdown) — the minimal patch would have caused instrument.ts to force-exit before Nest's own HTTP-drain/cleanup had a chance to run, defeating the point of graceful shutdown.
+
+**Blockers:** none.
