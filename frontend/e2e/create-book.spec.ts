@@ -66,7 +66,7 @@ test('logs in, creates a fast-flow book, and the finished book page shows a PDF 
   const goal = goals.find((g) => g.title.includes('Делиться'));
   expect(
     goal,
-    'seeded "Делиться" learning goal (has a fast-flow Template) not found',
+    'seeded "Делиться с другими" learning goal (has a fast-flow Template) not found',
   ).toBeDefined();
 
   const book = await apiPost<FastFlowBook>(request, '/books', accessToken, {
