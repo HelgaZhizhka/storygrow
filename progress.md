@@ -669,3 +669,20 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Chose to fix the actual bug (enable Nest's shutdown hooks so the existing-but-dead `onModuleDestroy` hooks finally run) rather than just the minimal patch the issue suggested (`process.exit(0)` straight after telemetry shutdown) — the minimal patch would have caused instrument.ts to force-exit before Nest's own HTTP-drain/cleanup had a chance to run, defeating the point of graceful shutdown.
 
 **Blockers:** none.
+
+---
+
+## 2026-07-23 (cont. 4) — #155: CI cost control (manual-only trigger + no-cost seeding)
+
+**Done:**
+- Two real cost problems surfaced from today's testing, both fixed:
+  1. `verify` CI job triggered on every push to `main` — but its illustration-seeding step (`seed-fast-illustrations.ts`) is only idempotent against a *persistent* database. CI's Postgres/MinIO are always empty (a fresh GitHub-hosted runner every time), so the idempotency check never found an existing row there — every single CI run re-generated all 44 illustrations for real, against a real, tiny (~$15-25 total) course OpenAI budget, regardless of how many merges happened. This actually happened: today's balance hit OpenAI's hard billing limit mid-testing.
+  2. Even after fixing (1), automatic per-merge triggering still means cost scales with merge frequency, not with actual release risk — undesirable during active development with frequent merges.
+- Fix (1): `seed-fast-illustrations.ts` now checks the ambient `CI` env var (set automatically by GitHub Actions on every job, already used elsewhere in this repo e.g. Playwright's `reuseExistingServer`) — in CI, uploads a tiny 1x1 placeholder PNG instead of calling real image-gen. The e2e only asserts the PDF renders and shows a download button; it never inspects image content. Local dev is unaffected (`CI` unset there, and the idempotency check already skips already-seeded tags on repeat local runs).
+- Fix (2): `verify` job's trigger changed from `push: main` to `workflow_dispatch` only (manual, via the Actions tab's "Run workflow" button) — run it explicitly before a real deploy or before the defense, not automatically on every merge.
+- `./init.sh` green.
+
+**Decisions:**
+- User explicitly chose manual-only over a scheduled nightly run, given the tiny remaining course budget and short timeline to the Monday defense — full cost control over a background continuous-drift check.
+
+**Blockers:** none.

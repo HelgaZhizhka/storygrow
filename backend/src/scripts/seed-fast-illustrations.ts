@@ -25,6 +25,17 @@ const BUCKET = process.env.S3_BUCKET ?? 'storygrow';
 
 const FAST_ILLUSTRATION_PROMPT_PREFIX = "Children's book illustration: ";
 
+// GitHub Actions sets CI=true for every job. verify.sh's Postgres/MinIO are
+// always empty in CI (a fresh runner each time), so the idempotency check
+// below never finds an existing row there -- without this, every CI run
+// re-generates all 44 illustrations for real, on a real (tiny, course) OpenAI
+// budget, regardless of merge frequency. A 1x1 placeholder is enough for the
+// e2e's own assertions (the PDF renders, the button appears) -- it never
+// inspects image content. Local dev is unaffected: CI is unset there, and the
+// idempotency check already skips already-seeded tags.
+const PLACEHOLDER_PNG_BASE64 =
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+
 const TAG_PROMPT_MAP: Record<IllustrationTag, string> = {
   boy: 'a cheerful young boy with a backpack, smiling',
   girl: 'a happy young girl with braids, laughing',
@@ -50,7 +61,7 @@ const TAG_PROMPT_MAP: Record<IllustrationTag, string> = {
   sleeping: 'a child sleeping peacefully with a stuffed animal',
 };
 
-async function generateOne(tag: IllustrationTag, variation: number): Promise<string> {
+async function generateReal(tag: IllustrationTag): Promise<Buffer> {
   const prompt = FAST_ILLUSTRATION_PROMPT_PREFIX + TAG_PROMPT_MAP[tag] + STYLE_SUFFIXES.watercolor;
 
   const result = await generateImage({
@@ -61,7 +72,13 @@ async function generateOne(tag: IllustrationTag, variation: number): Promise<str
     providerOptions: { openai: { quality: IMAGE_QUALITY } },
   });
 
-  const buffer = Buffer.from(result.image.base64, 'base64');
+  return Buffer.from(result.image.base64, 'base64');
+}
+
+async function generateOne(tag: IllustrationTag, variation: number): Promise<string> {
+  const buffer = process.env['CI']
+    ? Buffer.from(PLACEHOLDER_PNG_BASE64, 'base64')
+    : await generateReal(tag);
   const key = `fast-flow-illustrations/${tag}-v${variation}.png`;
 
   await s3.send(
