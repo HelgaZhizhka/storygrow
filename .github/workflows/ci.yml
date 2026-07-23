@@ -5,6 +5,7 @@ on:
     branches: [main]
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -47,7 +48,11 @@ jobs:
 
   verify:
     name: ./verify.sh
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Manual-only (Actions tab -> Run workflow): each run makes one real
+    # generation call against a real, tiny course budget. Automatic per-merge
+    # triggering was tried and reverted (#155) -- cost scales with merge
+    # frequency, not with actual release risk.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
