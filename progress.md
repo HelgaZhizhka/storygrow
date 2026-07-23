@@ -717,3 +717,23 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Real Custom Flow books still need to be generated in production to actually clear #32's "≥20 generations" bar — deliberately paused mid-decision on exact count, since it's real, additional OpenAI spend on top of today's already-tight budget. Session's focus then shifted to a bigger reframe of #32 (see next entry) before this was resolved.
 
 **Blockers:** none for the code fixes. Open: production still needs real Custom Flow generation volume for a credible defense dashboard.
+
+---
+
+## 2026-07-23 (cont. 7) — harness: external Codex review triaged, "Волна 9" applied
+
+**Done:**
+- User ran an independent harness review through Codex (a different agent runtime than Claude Code), using a template from a separate project (`vibe-engineer 0.3.1`). Overall maturity scored 3.7/5 (Instructions 4, State 4, Scope 4.5, Verification 2.5 — the bottleneck, Lifecycle 3.5, tool-safety 2). Full report saved verbatim to `docs/process/codex-harness-review-2026-07-23.md`; triage and what was applied/corrected/deferred recorded as "Волна 9" in `docs/process/process-evolution.md`.
+- **Real, applied fixes:**
+  - `init.sh` now preflights Node against `engines.node`'s range (not `.nvmrc`'s exact patch — see below) and WARNs (doesn't hard-fail) on a pnpm/`packageManager` mismatch; removed pnpm's own `--silent` flag, which was hiding exactly the diagnostic output needed when a version mismatch occurs; added a `format:check` step (a `prettier --check .` script already existed but was never wired into the gate).
+  - `format:check`'s first-ever run immediately caught a real, previously invisible issue: `.prettierignore` never excluded the generated Prisma client. Also found (and deleted) a stale, unused `backend/generated/prisma/` directory left over from before `schema.prisma`'s `output` path was changed to `backend/src/generated` — gitignored, untracked, not referenced by any code, safe to delete.
+  - `AGENTS.md`/`CLAUDE.md`: fixed a genuine internal contradiction the review caught — "Done is not a mood" required both a LangFuse trace and a `StoryEval` row for AI-pipeline features, while the one concretely-named check (`eval:text`) never writes a `StoryEval` row at all (`bookId: "dry-run"`, no DB writes). Now explicitly split into two evidence types: prose-quality (`eval:text`/`eval:batch` + trace) vs product-integration (a real generation through the real API, genuine `StoryEval` row).
+  - `AGENTS.md`'s session-start step 4: replaced "pick from the current week's milestone" with "prefer `ready-for-agent` + priority + explicit blockers" — the project outran its 5-week roadmap and real open issues (#155, #157) carry no milestone, exactly as this session independently discovered today during triage.
+- **Caught and corrected mid-implementation, not just applied blindly:** the review's loudest finding ("`init.sh` failed all 6 checks in Codex") is a Codex-runtime Node/pnpm version mismatch, not a harness bug — confirmed by the report's own admission that direct binary invocation passed cleanly (309+41 tests, clean tsc/lint). Implementing the report's literal suggestion (hard-fail on any `.nvmrc` mismatch) would have been a regression: **this same machine, under Claude Code, also runs Node 26.5.0**, not the `.nvmrc`-pinned 22.15.0 — and the entire day's session had run correctly on it. The actual version contract is `engines.node: ">=22.0.0"` (a range) in package.json, not `.nvmrc`'s exact patch pin (a dev-convenience for nvm/fnm). Fixed to check the real contract; verified the corrected check passes cleanly on this machine's actual Node 26.5.0 before committing.
+- **Deliberately deferred, recorded with reasoning in the Волна 9 entry:** full Evidence Packet JSON schema, portable Claude/Codex adapter split, AI-baseline metadata overhaul (exact model IDs, git SHA, trace IDs), further `settings.local.json` permission narrowing, renaming `init.sh`/`verify.sh` to `verify:quick`/`verify:release` (same substance, different names — not worth the doc churn).
+- `./init.sh` green (including its own new preflight/format:check steps).
+
+**Decisions:**
+- User's stated framing for the defense: the core narrative is the *harness/process evolution itself* ("how I developed with an agent"), not just the resulting product — this Codex review and its triage is itself the newest, most defense-relevant material, continuing the existing "Волна 1-8" chronology in `process-evolution.md`.
+
+**Blockers:** none. Still open: apply this same triage discipline before any future external-review-driven harness change (verify against actual behavior, don't apply literally).

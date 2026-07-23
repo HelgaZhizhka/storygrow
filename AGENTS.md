@@ -13,7 +13,7 @@ Before writing any code, always do this:
 1. Run `pwd` — confirm you're in `/Users/mac/Projects/storygrow`.
 2. Read the **last 1–2 entries** of [progress.md](progress.md) (newest at the bottom) — last verified state + next step. Do NOT read the whole file or the archives in `docs/process/progress-archive-*.md`; they are history, not state.
 3. If [session-handoff.md](session-handoff.md) is **non-empty** — read it first. Previous session was interrupted mid-feature.
-4. Check **GitHub Issues** — pick the highest-priority open issue in the current week's milestone (`gh issue list --milestone "Week N"`).
+4. Check **GitHub Issues** — pick the highest-priority open issue: prefer `ready-for-agent` label, explicit blockers/dependencies, then an active milestone if one applies. The project has outgrown its original 5-week roadmap; several real issues (e.g. #155, #157) carry no milestone at all, so milestone-first selection silently skips them.
 5. Run `git log --oneline -5` — see recent commits.
 6. Run `./init.sh` — smoke-check (TypeScript + lint + unit tests).
 
@@ -32,7 +32,7 @@ Before writing any code, always do this:
 - **Don't silently change verification rules** during implementation.
 - **Prefer durable repository artifacts over chat summaries.** When a decision is made, write it: `progress.md` for session-level, `docs/adr/` for architectural, `docs/superpowers/specs/` for feature-level.
 - **AI-pipeline code requires extra scrutiny.** It's the heart of the product — don't auto-generate it uncritically. Pair with TDD (`superpowers:test-driven-development`) and verify traces in LangFuse before closing the issue.
-- **AI-pipeline changes require at least one live `eval:text` run before the PR.** Unit tests on prompts are spec-mirroring — they catch regressions, not quality. The real check is a live generation read against the change's goal (this has been the de-facto practice since ADR-0005; codified 2026-07-16).
+- **AI-pipeline changes require at least one live `eval:text` run before the PR.** Unit tests on prompts are spec-mirroring — they catch regressions, not quality. The real check is a live generation read against the change's goal (this has been the de-facto practice since ADR-0005; codified 2026-07-16). Note: `eval:text`/`eval:batch` prove **prose quality** only — they run text-only, no DB writes (`bookId: "dry-run"`), and produce no `StoryEval` row. They are not a substitute for the product-integration evidence in "Done is not a mood" below.
 - **Frontend issues: check for a visual contract first.** If a `docs/design/<issue>-*.png` mockup exists, read it via the multimodal `Read` tool to ground the implementation. If none exists and the issue is visually significant, ask the user before scaffolding default-Tailwind UI.
 
 ---
@@ -42,7 +42,11 @@ Before writing any code, always do this:
 These rules govern *how* you work, regardless of which issue you're on. They override default LLM tendencies (vibe-completion, sycophancy, premature stopping).
 
 ### Done is not a mood
-Don't claim completion without evidence. For code: `./init.sh` exits 0. For AI-pipeline features: a LangFuse trace is visible **and** a `StoryEval` row is written. If you can't produce the proof, name what is missing — do not pretend completion.
+Don't claim completion without evidence. For code: `./init.sh` exits 0. For AI-pipeline features, two distinct claims need two distinct kinds of proof — don't conflate them:
+- **Prose/prompt quality** — a live `eval:text`/`eval:batch` run + its LangFuse trace. This does not touch the database.
+- **Product integration** (the feature actually works end-to-end) — a real generation through the real API (`POST /books` or the app UI), producing a genuine `StoryEval` row and its own LangFuse trace.
+
+If you can't produce the proof, name what is missing — do not pretend completion.
 
 ### Right to disagree
 When quality, truth, or safety is at risk, you are expected to push back. Format:

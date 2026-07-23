@@ -208,7 +208,7 @@ A feature is `done` only when **all** are true:
 
 - ✅ Target behavior implemented
 - ✅ `./init.sh` exits 0 (tsc + lint + tests pass)
-- ✅ For AI-pipeline features: traces visible in LangFuse, `StoryEval` rows written
+- ✅ For AI-pipeline features: a real generation through the actual API produced a genuine `StoryEval` row + LangFuse trace (`eval:text`/`eval:batch` prove prose quality only — text-only, no DB write — and don't satisfy this on their own; see [AGENTS.md](AGENTS.md)'s "Done is not a mood")
 - ✅ GitHub Issue closed with reference to commit/PR
 - ✅ `progress.md` updated with verified state
 - ✅ Repo clean (`git status` empty) or WIP commit with explicit note
