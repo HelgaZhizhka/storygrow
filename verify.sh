@@ -59,11 +59,23 @@ pnpm --filter backend exec prisma migrate deploy
 pass "migrations applied"
 
 log "Prisma drift check"
-pnpm --filter backend exec prisma migrate diff \
-  --from-url "$DATABASE_URL" \
-  --to-schema-datamodel backend/prisma/schema.prisma \
-  --exit-code
-pass "no schema drift"
+DRIFT_SQL=$(pnpm --filter backend exec prisma migrate diff \
+  --from-config-datasource \
+  --to-schema=prisma/schema.prisma \
+  --script)
+# The pgvector HNSW index lives outside migration history by design (schema.prisma
+# can't express `USING hnsw (...)` — see backend/prisma/migrate-dev.mjs) — any DB
+# that has it (every dev DB that's run `pnpm --filter backend db:hnsw-index`, and
+# production) always "diffs" on exactly this one DROP INDEX statement. Treat that
+# specific line as expected; anything else is genuine, unintended drift.
+UNEXPECTED=$(echo "$DRIFT_SQL" | grep -v '^--' | grep -v '^$' \
+  | grep -v '^DROP INDEX "VocabularyEntry_embedding_hnsw_idx";$' || true)
+if [ -n "$UNEXPECTED" ]; then
+  echo "$DRIFT_SQL"
+  echo "Unexpected schema drift detected (beyond the known HNSW-index exception)."
+  exit 1
+fi
+pass "no unexpected schema drift"
 
 log "Seed reference data"
 pnpm --filter backend seed:learning-goals
