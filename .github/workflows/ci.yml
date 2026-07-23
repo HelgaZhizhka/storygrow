@@ -88,6 +88,7 @@ jobs:
           GOOGLE_CLIENT_ID: dummy-e2e-value
           GOOGLE_CLIENT_SECRET: dummy-e2e-value
           GOOGLE_CALLBACK_URL: http://localhost:3001/auth/google/callback
+          GOOGLE_GENERATIVE_AI_API_KEY: dummy-e2e-value
           JWT_SECRET: e2e-verify-jwt-secret
           JWT_REFRESH_SECRET: e2e-verify-jwt-refresh-secret
           FRONTEND_URL: http://localhost:3000
