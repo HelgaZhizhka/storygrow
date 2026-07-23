@@ -107,6 +107,7 @@ export class AuthController {
       googleId: E2E_TEST_GOOGLE_ID,
       email: E2E_TEST_EMAIL,
     });
+    await this.auth.ensureTestFixtureSubscription(user.id);
     return this.auth.generateTokens(user.id, user.email, user.role);
   }
 

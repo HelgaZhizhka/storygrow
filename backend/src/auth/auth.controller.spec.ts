@@ -14,6 +14,7 @@ const mockAuth = {
   exchangeRefreshToken: jest.fn<Promise<TokenPair>, [string]>(),
   logout: jest.fn<Promise<void>, [string]>(),
   validateOrCreateUser: jest.fn(),
+  ensureTestFixtureSubscription: jest.fn(),
 };
 
 const configValues: Record<string, string | undefined> = {
@@ -155,6 +156,7 @@ describe('AuthController', () => {
     it('issues real tokens for the fixture user when E2E_TEST_MODE is enabled outside production', async () => {
       configValues.E2E_TEST_MODE = 'true';
       mockAuth.validateOrCreateUser.mockResolvedValueOnce(fixtureUser);
+      mockAuth.ensureTestFixtureSubscription.mockResolvedValueOnce(undefined);
       mockAuth.generateTokens.mockResolvedValueOnce(tokens);
 
       const result = await controller.testLogin();
@@ -163,12 +165,19 @@ describe('AuthController', () => {
         googleId: 'e2e-test-fixture',
         email: 'e2e-test@storygrow.test',
       });
+      expect(mockAuth.ensureTestFixtureSubscription).toHaveBeenCalledWith(fixtureUser.id);
       expect(mockAuth.generateTokens).toHaveBeenCalledWith(
         fixtureUser.id,
         fixtureUser.email,
         fixtureUser.role,
       );
       expect(result).toEqual(tokens);
+
+      const validateOrder = mockAuth.validateOrCreateUser.mock.invocationCallOrder[0];
+      const ensureOrder = mockAuth.ensureTestFixtureSubscription.mock.invocationCallOrder[0];
+      const generateOrder = mockAuth.generateTokens.mock.invocationCallOrder[0];
+      expect(validateOrder).toBeLessThan(ensureOrder);
+      expect(ensureOrder).toBeLessThan(generateOrder);
     });
 
     it('throws NotFoundException when E2E_TEST_MODE is not set', async () => {
