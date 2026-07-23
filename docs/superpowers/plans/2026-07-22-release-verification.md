@@ -463,8 +463,15 @@ docker build -f frontend/Dockerfile \
 pass "frontend Docker build"
 
 log "Docker Compose services (postgres, redis, minio)"
-docker compose up -d --wait postgres redis minio minio-create-buckets
+docker compose up -d --wait postgres redis minio
 pass "services healthy"
+
+log "MinIO bucket init"
+# minio-create-buckets is a one-shot job (exits 0 on success) -- `--wait` treats
+# an exited container as unhealthy, so it can't be in the --wait list above.
+# Running it without -d blocks until it actually exits, same effect.
+docker compose up minio-create-buckets
+pass "buckets ready"
 
 log "Prisma migrate deploy"
 pnpm --filter backend exec prisma migrate deploy
@@ -612,7 +619,7 @@ git commit -m "feat(ci): add verify.sh — builds, Docker builds, Prisma drift, 
 
 Notes on this job, for the implementer's own understanding (not to be added as YAML comments — keep the file matching the terse style of the existing `init` job):
 
-- This job uses GitHub Actions' built-in `services:` for Postgres only, rather than `docker compose up` for everything, because `docker compose` inside a `services:`-having job would try to bind the SAME `5432` port the `services:` block already owns — simpler to let Actions manage Postgres natively and have `verify.sh`'s own `docker compose up -d --wait postgres redis minio minio-create-buckets` bring up ONLY redis/minio (Postgres is already running and already satisfies `pg_isready`, so Compose's own Postgres health check for that service will pass instantly against the Actions-managed instance — as long as the container names/ports don't collide, which they don't since Actions' `services:` Postgres doesn't run inside `docker compose`'s own project namespace). If this collision reasoning turns out wrong when actually run (Step 2 will reveal it), the simpler fix is dropping the `services:` block entirely and letting `verify.sh`'s own `docker compose up -d --wait postgres redis minio minio-create-buckets` bring up Postgres too — prefer that fallback over debugging a genuine port conflict.
+- This job uses GitHub Actions' built-in `services:` for Postgres only, rather than `docker compose up` for everything, because `docker compose` inside a `services:`-having job would try to bind the SAME `5432` port the `services:` block already owns — simpler to let Actions manage Postgres natively and have `verify.sh`'s own `docker compose up -d --wait postgres redis minio` + `docker compose up minio-create-buckets` bring up ONLY redis/minio (Postgres is already running and already satisfies `pg_isready`, so Compose's own Postgres health check for that service will pass instantly against the Actions-managed instance — as long as the container names/ports don't collide, which they don't since Actions' `services:` Postgres doesn't run inside `docker compose`'s own project namespace). If this collision reasoning turns out wrong when actually run (Step 2 will reveal it), the simpler fix is dropping the `services:` block entirely and letting `verify.sh`'s own `docker compose up -d --wait postgres redis minio` + `docker compose up minio-create-buckets` bring up Postgres too — prefer that fallback over debugging a genuine port conflict.
 - The dummy `GOOGLE_CLIENT_ID`/`STRIPE_SECRET_KEY`/etc. values exist only so `ConfigService.getOrThrow` doesn't crash the app at boot — none of these providers are actually called by the fast-flow e2e path, so their values never need to be real.
 - `OPENAI_API_KEY` is the one REAL secret this job needs — it must be added to the repository's GitHub Actions secrets (Settings → Secrets and variables → Actions) before this job can pass. **This is a manual step outside this plan's code changes** — flag it to the user rather than assuming it's already configured, the same way Stripe/webhook secrets needed manual setup earlier in this project.
 
