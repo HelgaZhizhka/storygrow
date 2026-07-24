@@ -786,3 +786,20 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Replaced all references to the old stale book ID throughout the file (checklist, fallback-trigger table).
 
 **Blockers:** none. Recommend running through the "Before the defense" checklist once more closer to the actual date.
+
+---
+
+## 2026-07-24 (cont.) — fix: production billing crash on re-subscribe
+
+**Done:**
+- Found live in production, checked via `railway logs`: a real webhook crashed with `PrismaClientKnownRequestError: Unique constraint failed on the fields: ("userId")` inside `BillingService.upsertSubscription`. Root cause: the upsert was keyed on `where: { stripeSubscriptionId: sub.id }`, but the table's actual business-rule unique constraint is on `userId` (one subscription per user). A user who cancels and later re-subscribes gets a brand-new Stripe subscription object (a different `stripeSubscriptionId`) for the same `userId` — the upsert's `where` clause never matches that new id, falls through to `create`, and `create` then collides with the user's existing row on the `userId` constraint. The webhook handler threw, Stripe would see a 500 and retry, but the account kept showing the free plan in the meantime.
+- User's own account hit this exactly: she had a `canceled` subscription row from earlier Stripe Customer Portal testing (2026-07-21), so #276's `hasActiveSubscription` guard correctly let her check out again, but the resulting webhook then crashed on this bug.
+- Fixed: `upsertSubscription`'s upsert now keys on `where: { userId }` — matches the real constraint, correctly finds-and-updates the existing row (including replacing its `stripeSubscriptionId`) instead of trying to create a duplicate.
+- Investigated via `railway logs`/`railway variables` (Claude Code auto-mode correctly blocked printing raw secret values and blocked direct production DB queries without explicit authorization — investigated through logs and non-printing variable-presence checks instead).
+- Updated the two existing test assertions that exact-matched the old `where: { stripeSubscriptionId }` shape; added a new regression test reproducing the exact production scenario (re-subscribe after cancellation, different `stripeSubscriptionId`, same `userId`).
+- `./init.sh` green.
+
+**Decisions:**
+- Once deployed, Stripe's own webhook retry mechanism (it retries non-2xx responses for up to ~3 days) should automatically redeliver the failed webhook and it will succeed against the fixed code — no manual DB repair needed, though a manual resend from the Stripe Dashboard can force it immediately instead of waiting.
+
+**Blockers:** none for the fix. User's production account should self-heal once this deploys and Stripe redelivers (or she manually resends from the Stripe Dashboard).
