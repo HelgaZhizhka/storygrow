@@ -737,3 +737,15 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - User's stated framing for the defense: the core narrative is the *harness/process evolution itself* ("how I developed with an agent"), not just the resulting product — this Codex review and its triage is itself the newest, most defense-relevant material, continuing the existing "Волна 1-8" chronology in `process-evolution.md`.
 
 **Blockers:** none. Still open: apply this same triage discipline before any future external-review-driven harness change (verify against actual behavior, don't apply literally).
+
+---
+
+## 2026-07-24 — #302: select an existing child instead of always creating a new one
+
+**Done:**
+- Found live while rehearsing the defense demo script locally: the book-creation form always `POST /children` (create-new), with no way to reuse an existing child — `demo-script.md`'s own "select existing child" instruction doesn't match the real UI. Backend already had `GET /children` (list), just never called from this form.
+- Added an existing-child selector to `frontend/src/app/(app)/books/new/page.tsx`: fetches `GET /children` on mount, shows a dropdown (name + age) with a "+ Новый ребёнок" default option when the user has any children. Selecting an existing child skips the create-child fields and API call entirely, using the selected id directly. Schema validation for `childName`/`childAge` made conditional via `superRefine` (only required when creating a new child).
+- Verified live locally: selecting the existing child worked correctly for the actual demo rehearsal.
+- `./init.sh` green (both pre-existing lint warnings on this file unchanged, no new ones).
+
+**Blockers:** none.

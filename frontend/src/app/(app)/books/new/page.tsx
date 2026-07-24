@@ -15,6 +15,8 @@ interface Child {
   age: number;
 }
 
+const NEW_CHILD_VALUE = '';
+
 interface LearningGoal {
   id: string;
   title: string;
@@ -38,26 +40,36 @@ const ART_STYLES = [
   { id: 'realistic', label: 'Реалистичный' },
 ] as const;
 
-const schema = z.object({
-  childName: z.string().min(1, 'Введите имя'),
-  childAge: z.coerce
-    .number({ message: 'Введите возраст' })
-    .int()
-    .min(3, { message: 'Доступно 3–6 лет' })
-    .max(6, { message: 'Доступно 3–6 лет' }),
-  childGender: z.enum(['male', 'female', 'other', '']).optional(),
-  childAppearance: z
-    .string()
-    .max(1500, 'Слишком длинное описание — максимум 1500 символов')
-    .optional(),
-  learningGoalId: z.string().min(1, 'Выберите цель обучения'),
-  mode: z.enum(['fast', 'custom']),
-  protagonistMode: z.enum(['child', 'observer']),
-  artStyle: z.enum(['watercolor', 'cartoon', 'storybook', 'pixel', 'realistic']),
-  interests: z.string().optional(),
-  motifs: z.string().optional(),
-  favoriteWords: z.string().optional(),
-});
+const schema = z
+  .object({
+    selectedChildId: z.string().optional(),
+    childName: z.string().optional(),
+    childAge: z.coerce.number().optional(),
+    childGender: z.enum(['male', 'female', 'other', '']).optional(),
+    childAppearance: z
+      .string()
+      .max(1500, 'Слишком длинное описание — максимум 1500 символов')
+      .optional(),
+    learningGoalId: z.string().min(1, 'Выберите цель обучения'),
+    mode: z.enum(['fast', 'custom']),
+    protagonistMode: z.enum(['child', 'observer']),
+    artStyle: z.enum(['watercolor', 'cartoon', 'storybook', 'pixel', 'realistic']),
+    interests: z.string().optional(),
+    motifs: z.string().optional(),
+    favoriteWords: z.string().optional(),
+  })
+  // childName/childAge are only required when creating a new child (no existing
+  // child selected) — an existing child already has both, so re-asking is noise.
+  .superRefine((values, ctx) => {
+    if (values.selectedChildId) return;
+    if (!values.childName?.trim()) {
+      ctx.addIssue({ code: 'custom', path: ['childName'], message: 'Введите имя' });
+    }
+    const age = Number(values.childAge);
+    if (!Number.isInteger(age) || age < 3 || age > 6) {
+      ctx.addIssue({ code: 'custom', path: ['childAge'], message: 'Доступно 3–6 лет' });
+    }
+  });
 
 type FormValues = z.infer<typeof schema>;
 
@@ -80,6 +92,7 @@ const SEED_FIELDS = [
 export default function NewBookPage(): React.ReactElement {
   const router = useRouter();
   const [goals, setGoals] = useState<LearningGoal[]>([]);
+  const [existingChildren, setExistingChildren] = useState<Child[]>([]);
   const [serverError, setServerError] = useState<string | null>(null);
   const [fastResult, setFastResult] = useState<{ bookId: string; pdfUrl: string } | null>(null);
 
@@ -92,6 +105,7 @@ export default function NewBookPage(): React.ReactElement {
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
+      selectedChildId: NEW_CHILD_VALUE,
       mode: 'custom',
       protagonistMode: 'child',
       artStyle: 'watercolor',
@@ -102,8 +116,15 @@ export default function NewBookPage(): React.ReactElement {
   const mode = watch('mode');
   const protagonistMode = watch('protagonistMode');
   const artStyle = watch('artStyle');
-  const childAge = watch('childAge');
-  const showAppearance = mode === 'custom' && protagonistMode === 'child';
+  const selectedChildId = watch('selectedChildId');
+  const isNewChild = !selectedChildId;
+  const selectedChild = existingChildren.find((c) => c.id === selectedChildId);
+  const childAge = isNewChild ? watch('childAge') : selectedChild?.age;
+  const showAppearance = mode === 'custom' && protagonistMode === 'child' && isNewChild;
+
+  useEffect(() => {
+    void api.get<Child[]>('/children').then(setExistingChildren);
+  }, []);
 
   useEffect(() => {
     const query = childAge && Number.isFinite(Number(childAge)) ? `?age=${childAge}` : '';
@@ -117,16 +138,20 @@ export default function NewBookPage(): React.ReactElement {
     setServerError(null);
     setFastResult(null);
     try {
-      const child = await api.post<Child>('/children', {
-        name: values.childName,
-        age: values.childAge,
-        gender: values.childGender || undefined,
-        appearance: values.childAppearance || undefined,
-      });
+      const childId = values.selectedChildId
+        ? values.selectedChildId
+        : (
+            await api.post<Child>('/children', {
+              name: values.childName,
+              age: values.childAge,
+              gender: values.childGender || undefined,
+              appearance: values.childAppearance || undefined,
+            })
+          ).id;
 
       if (values.mode === 'fast') {
         const result = await api.post<FastBookResult>('/books', {
-          childId: child.id,
+          childId,
           learningGoalId: values.learningGoalId,
           mode: 'fast',
         });
@@ -134,7 +159,7 @@ export default function NewBookPage(): React.ReactElement {
         setFastResult({ bookId: result.bookId, pdfUrl: url });
       } else {
         const book = await api.post<CustomBookResult>('/books', {
-          childId: child.id,
+          childId,
           learningGoalId: values.learningGoalId,
           mode: 'custom',
           protagonistMode: values.protagonistMode,
@@ -162,41 +187,58 @@ export default function NewBookPage(): React.ReactElement {
         {/* ── Ребёнок ── */}
         <div className="sg-card">
           <span className="sg-section-label">Ребёнок</span>
-          <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-[1.4fr_0.8fr_1fr]">
-            <div>
-              <label className="sg-label">Имя</label>
-              <input className="sg-input" placeholder="Маша" {...register('childName')} />
-              {errors.childName && (
-                <span className="sg-field-hint text-danger">{errors.childName.message}</span>
-              )}
-            </div>
-            <div>
-              <label className="sg-label">Возраст</label>
-              <input
-                className="sg-input"
-                type="number"
-                min={3}
-                max={6}
-                placeholder="5"
-                {...register('childAge')}
-              />
-              <span className="sg-field-hint">Доступно 3–6 лет</span>
-              {errors.childAge && (
-                <span className="sg-field-hint text-danger">{errors.childAge.message}</span>
-              )}
-            </div>
-            <div>
-              <label className="sg-label">
-                Пол <span className="sg-opt">необязательно</span>
-              </label>
-              <select className="sg-select" {...register('childGender')}>
-                <option value="">Не указано</option>
-                <option value="female">Девочка</option>
-                <option value="male">Мальчик</option>
-                <option value="other">Другой</option>
+
+          {existingChildren.length > 0 && (
+            <div className="mb-[14px]">
+              <label className="sg-label">Кто получит книгу</label>
+              <select className="sg-select" {...register('selectedChildId')}>
+                <option value={NEW_CHILD_VALUE}>+ Новый ребёнок</option>
+                {existingChildren.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name} ({c.age} лет)
+                  </option>
+                ))}
               </select>
             </div>
-          </div>
+          )}
+
+          {isNewChild && (
+            <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-[1.4fr_0.8fr_1fr]">
+              <div>
+                <label className="sg-label">Имя</label>
+                <input className="sg-input" placeholder="Маша" {...register('childName')} />
+                {errors.childName && (
+                  <span className="sg-field-hint text-danger">{errors.childName.message}</span>
+                )}
+              </div>
+              <div>
+                <label className="sg-label">Возраст</label>
+                <input
+                  className="sg-input"
+                  type="number"
+                  min={3}
+                  max={6}
+                  placeholder="5"
+                  {...register('childAge')}
+                />
+                <span className="sg-field-hint">Доступно 3–6 лет</span>
+                {errors.childAge && (
+                  <span className="sg-field-hint text-danger">{errors.childAge.message}</span>
+                )}
+              </div>
+              <div>
+                <label className="sg-label">
+                  Пол <span className="sg-opt">необязательно</span>
+                </label>
+                <select className="sg-select" {...register('childGender')}>
+                  <option value="">Не указано</option>
+                  <option value="female">Девочка</option>
+                  <option value="male">Мальчик</option>
+                  <option value="other">Другой</option>
+                </select>
+              </div>
+            </div>
+          )}
 
           {showAppearance && (
             <div className="mt-4">
