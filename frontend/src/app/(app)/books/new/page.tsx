@@ -13,6 +13,7 @@ interface Child {
   id: string;
   name: string;
   age: number;
+  appearance?: string | null;
 }
 
 const NEW_CHILD_VALUE = '';
@@ -93,6 +94,7 @@ export default function NewBookPage(): React.ReactElement {
   const router = useRouter();
   const [goals, setGoals] = useState<LearningGoal[]>([]);
   const [existingChildren, setExistingChildren] = useState<Child[]>([]);
+  const [childrenLoaded, setChildrenLoaded] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [fastResult, setFastResult] = useState<{ bookId: string; pdfUrl: string } | null>(null);
 
@@ -120,10 +122,17 @@ export default function NewBookPage(): React.ReactElement {
   const isNewChild = !selectedChildId;
   const selectedChild = existingChildren.find((c) => c.id === selectedChildId);
   const childAge = isNewChild ? watch('childAge') : selectedChild?.age;
-  const showAppearance = mode === 'custom' && protagonistMode === 'child' && isNewChild;
+  // Appearance belongs to the Child record, not to any one book's protagonist
+  // mode — it's set once and reused across every future custom-flow book for
+  // this child, so it must stay available regardless of whether *this* book
+  // uses "Ребёнок-герой" or "Наблюдатель".
+  const showAppearance = mode === 'custom' && isNewChild;
 
   useEffect(() => {
-    void api.get<Child[]>('/children').then(setExistingChildren);
+    void api
+      .get<Child[]>('/children')
+      .then(setExistingChildren)
+      .finally(() => setChildrenLoaded(true));
   }, []);
 
   useEffect(() => {
@@ -188,7 +197,9 @@ export default function NewBookPage(): React.ReactElement {
         <div className="sg-card">
           <span className="sg-section-label">Ребёнок</span>
 
-          {existingChildren.length > 0 && (
+          {!childrenLoaded && <p className="sg-field-hint">Загрузка…</p>}
+
+          {childrenLoaded && existingChildren.length > 0 && (
             <div className="mb-[14px]">
               <label className="sg-label">Кто получит книгу</label>
               <select className="sg-select" {...register('selectedChildId')}>
@@ -199,10 +210,13 @@ export default function NewBookPage(): React.ReactElement {
                   </option>
                 ))}
               </select>
+              {selectedChild?.appearance && (
+                <p className="sg-field-hint mt-1">Внешность: {selectedChild.appearance}</p>
+              )}
             </div>
           )}
 
-          {isNewChild && (
+          {childrenLoaded && isNewChild && (
             <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-[1.4fr_0.8fr_1fr]">
               <div>
                 <label className="sg-label">Имя</label>
