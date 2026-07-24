@@ -765,3 +765,13 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - This needs to merge and deploy to production **before** any batch of real Custom Flow books gets generated there for the defense dashboard — otherwise every one of those books would need the same title backfill, or worse, ship with visibly blank titles during the actual demo.
 
 **Blockers:** none for the fix itself. Recommend merging + confirming Railway auto-deploy before starting production book generation for #32's dashboard.
+
+---
+
+## 2026-07-24 (cont.) — docs: demo-script LangFuse narration + retry-branch fix
+
+**Done:**
+- Found live during the actual demo rehearsal: the Custom Flow book passed on the first attempt, but `demo-script.md`'s narration assumed a retry always happens ("Попыток генерации: 2... 9.8 но не прошла"). Rewrote to branch on the actual outcome (1 attempt vs. N attempts) rather than forcing a retry story that may not occur live.
+- Fixed the LangFuse-tab narration to name the actual current trace/span structure (verified against the code): top-level trace `story-generation`, nested spans `story-planner`, `character-profile`, `story-prose`, `story-title`, `story-evaluator` — replacing a stale, generic "два вызова генератора, два вызова судьи" line.
+
+**Blockers:** none.
