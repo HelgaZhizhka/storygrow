@@ -749,3 +749,19 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - `./init.sh` green (both pre-existing lint warnings on this file unchanged, no new ones).
 
 **Blockers:** none.
+
+---
+
+## 2026-07-24 (cont.) — fix: generated books never got their real title persisted
+
+**Done:**
+- Found live while rehearsing the Custom Flow demo: the just-generated book showed a `ready` status and passed evaluation (registerMatch 8), but `Book.title` was empty in the DB. Root cause: `books.service.ts` creates the book with `title: ''` as a placeholder, and per the architecture (`CONTEXT.md`'s Story Plan entry — "the book's final title is decided after the Prose phase from the finished story"), something should overwrite it once the real title is known — but `generation.processor.ts`'s `prisma.book.update({ data: { storyJson: story } })` call never included `title: story.title`. The placeholder was never replaced, for any custom-flow book, ever (this explains `docs/defense/staged-books.md`'s own long-standing "title is empty in the DB" note, which had been mis-attributed to a pre-ADR-0005 staleness rather than a live, still-present bug).
+- Fixed: that same `prisma.book.update` call now also writes `title: story.title`.
+- Updated the three existing test assertions in `generation.processor.spec.ts` that exact-matched the old `data: { storyJson: mockStory }` payload (they'd have failed on the fix otherwise, since they assert the literal object passed to Prisma).
+- Backfilled the local rehearsal book's title directly from its already-generated `storyJson` (no need to re-spend on a real regeneration just to test the fix): "Маша и волшебное пианино в парке".
+- `./init.sh` green.
+
+**Decisions:**
+- This needs to merge and deploy to production **before** any batch of real Custom Flow books gets generated there for the defense dashboard — otherwise every one of those books would need the same title backfill, or worse, ship with visibly blank titles during the actual demo.
+
+**Blockers:** none for the fix itself. Recommend merging + confirming Railway auto-deploy before starting production book generation for #32's dashboard.
