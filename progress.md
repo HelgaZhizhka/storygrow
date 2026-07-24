@@ -775,3 +775,14 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Fixed the LangFuse-tab narration to name the actual current trace/span structure (verified against the code): top-level trace `story-generation`, nested spans `story-planner`, `character-profile`, `story-prose`, `story-title`, `story-evaluator` — replacing a stale, generic "два вызова генератора, два вызова судьи" line.
 
 **Blockers:** none.
+
+---
+
+## 2026-07-24 (cont.) — docs: re-staged the defense fallback book
+
+**Done:**
+- Regenerated `staged-books.md`'s fallback Custom Flow book — the old one predated ADR-0005 (stale 5-criterion `StoryEval` shape, empty title from the generation.processor.ts bug just fixed in #305). Generated via the double-gated `/auth/test-login` fixture (backend restarted locally with `E2E_TEST_MODE=true` only for this one-off, then restarted again without it — confirmed `/auth/test-login` returns 404 again afterward).
+- New book: «Алиса и волшебный цветок на площадке» (`cmrz2l4mp0003u7kxhsr5uxq5`), 8 pages, passed on the first attempt (registerMatch 9/10) — confirms #305's title fix works. Since it passed clean rather than needing a retry, staged-books.md's talking point now matches `demo-script.md`'s "Если попыток 1" branch rather than forcing the old "needed a retry" narrative.
+- Replaced all references to the old stale book ID throughout the file (checklist, fallback-trigger table).
+
+**Blockers:** none. Recommend running through the "Before the defense" checklist once more closer to the actual date.
