@@ -737,3 +737,14 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - User's stated framing for the defense: the core narrative is the *harness/process evolution itself* ("how I developed with an agent"), not just the resulting product — this Codex review and its triage is itself the newest, most defense-relevant material, continuing the existing "Волна 1-8" chronology in `process-evolution.md`.
 
 **Blockers:** none. Still open: apply this same triage discipline before any future external-review-driven harness change (verify against actual behavior, don't apply literally).
+
+---
+
+## 2026-07-24 (cont.) — docs: local Stripe webhook forwarding
+
+**Done:**
+- Found live: user completed a real Stripe test-mode checkout locally, but `/account` kept showing the free plan. Root cause: subscription state only updates via `POST /api/stripe/webhooks`, which Stripe's real servers can't deliver to `localhost` without `stripe listen --forward-to ...` running — completely undocumented in `docs/local-dev.md`.
+- Installed the Stripe CLI (`brew install stripe/stripe-cli/stripe`), ran `stripe listen --api-key <existing local STRIPE_SECRET_KEY> --forward-to localhost:3001/api/stripe/webhooks` (using `--api-key` to skip the interactive `stripe login` device flow), updated `backend/.env`'s `STRIPE_WEBHOOK_SECRET` to the value it printed, restarted the backend dev server. Confirmed live: re-running the checkout correctly updated the local subscription.
+- Documented the whole flow in `docs/local-dev.md`'s new "Stripe webhooks" section.
+
+**Blockers:** none.

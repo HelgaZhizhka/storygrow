@@ -40,6 +40,16 @@ docker compose logs -f langfuse       # tail one service
 docker compose exec postgres psql -U storygrow storygrow   # interactive psql
 ```
 
+## Stripe webhooks
+
+Subscription state (`Subscription` rows, `/account`'s plan) updates only via `POST /api/stripe/webhooks` — Stripe's real servers send this, and they cannot reach `localhost` directly. A real checkout completing in Stripe test mode does **not** update the local DB on its own; without the step below, `/account` silently keeps showing the free plan even though the payment succeeded.
+
+```bash
+stripe listen --forward-to localhost:3001/api/stripe/webhooks
+```
+
+Copy the `whsec_...` this command prints into `backend/.env`'s `STRIPE_WEBHOOK_SECRET` (it's a different value each time you run `stripe listen`, and different from the production webhook secret) — keep `stripe listen` running in its own terminal for the webhook to actually arrive. Requires the [Stripe CLI](https://stripe.com/docs/stripe-cli) installed and logged in (`stripe login`).
+
 ## Resetting just one service
 
 ```bash
