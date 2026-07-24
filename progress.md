@@ -803,3 +803,15 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Once deployed, Stripe's own webhook retry mechanism (it retries non-2xx responses for up to ~3 days) should automatically redeliver the failed webhook and it will succeed against the fixed code — no manual DB repair needed, though a manual resend from the Stripe Dashboard can force it immediately instead of waiting.
 
 **Blockers:** none for the fix. User's production account should self-heal once this deploys and Stripe redelivers (or she manually resends from the Stripe Dashboard).
+
+---
+
+## 2026-07-24 (cont.) — fix: book-creation form appearance field + loading flash
+
+**Done:**
+- Found live while starting the production book-generation batch (#32): the "Как выглядит" (appearance) field was gated on `protagonistMode === 'child'`, but `appearance` belongs to the `Child` record (`@@unique([userId, name])`, reused across every future book for that child), not to any single book's protagonist-mode choice — a child set up while making an "Наблюдатель" book couldn't have their appearance saved at all. Removed that condition; the field now shows whenever creating a new child in Custom mode, regardless of this book's protagonist mode.
+- User also asked to see existing children's stored appearance in the selector, to disambiguate — clarified that `Child.name` is actually unique per user (`@@unique([userId, name])`, and `createChild` upserts on it), so the specific "same name, different appearance" scenario can't occur, but showing the stored appearance is still useful reference. Added it as a read-only hint under the selector once an existing child is chosen.
+- Found and fixed a related loading-flash issue: `GET /children` is fetched async on mount, so the child selector popped in a beat after the rest of the form had already rendered, visibly shifting the layout. Added a `childrenLoaded` state; the whole "Ребёнок" card now shows a simple "Загрузка…" placeholder until the fetch resolves, then renders everything in its final position at once — no more flash.
+- `./init.sh` green.
+
+**Blockers:** none.
