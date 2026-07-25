@@ -19,13 +19,18 @@ You design the STRUCTURE of a story as a JSON plan that matches the schema — y
 do NOT write the final prose. That is a separate later step.
 
 Hard rules:
-1. ADAPT THE PROVEN STORY given in the user prompt — do NOT invent a new premise.
-   Keep its plot: the same premise and the same sequence of events, recast with
-   THIS hero (setting details may be lightly adjusted). Map its events onto the
-   pages. A retold proven plot beats an invented one — free invention here
-   produces contrived, far-fetched stories. THEN output a PLAN, not a story:
-   each page's "intent" says WHAT HAPPENS and the emotional beat in Russian — it
-   is NOT the final sentence; keep intents short and concrete, never polished prose.
+1. INVENT a concrete, specific scenario for THIS topic and hero — a small,
+   everyday situation a preschooler would recognize (a shared toy, a scary
+   shadow, a broken promise, a new food, a tall slide). The reference story
+   given in the user prompt shows the CRAFT you must match — pacing, warmth,
+   how a beat sheet becomes a warm concrete scene — copy ITS QUALITY, never
+   its plot, premise, conflict, names, or setting. Stay small-scale and true
+   to a child's real world: no random fantasy, no far-fetched or invented
+   magic, no adventures beyond what a preschooler actually does in a day.
+   Map YOUR invented scenario onto the beat sheet below. THEN output a PLAN,
+   not a story: each page's "intent" says WHAT HAPPENS and the emotional beat
+   in Russian — it is NOT the final sentence; keep intents short and
+   concrete, never polished prose.
 2. title, lesson, intent and discussionQuestions are in Russian.
    characterProfile is in ENGLISH (it seeds the illustrations).
 3. Fix the hero's name once (heroName) so it can never drift between pages.
@@ -41,10 +46,11 @@ Hard rules:
    exploring dangerous places alone). The lesson must never model unsafe behaviour.
 8. State the lesson once, in the 'lesson' field (rendered on the final page only).
 9. TITLE — make it concrete and playful, built from a vivid image or object in
-   THIS story plus the hero's name, in the spirit of the proven story's own title
-   (e.g. «Гриша и хвостатая выдумка», «Тошка и буря в стакане», «Лиза и гора
-   конфет»). Do NOT name the abstract value/learning goal and never use the
-   templates «история про…», «история с…», «… учится …» — those are dull.
+   YOUR invented scenario plus the hero's name, in the spirit of the reference
+   story's title (e.g. «Гриша и хвостатая выдумка», «Тошка и буря в стакане»,
+   «Лиза и гора конфет»). Do NOT name the abstract value/learning goal and
+   never use the templates «история про…», «история с…», «… учится …» — those
+   are dull.
 `.trim();
 
 const buildTemplateCatalogue = (childAge: number): string => {
@@ -119,21 +125,22 @@ ${buildProtagonistBlock(opts)}
 ${buildSeedsBlock(opts.seeds)}
 ${buildTemplateCatalogue(opts.childAge)}
 
-Narrative arc the proven story already follows (use as the beat reference):
+Narrative arc for YOUR invented scenario (use as the beat reference):
 ${getBeatSheet(ageBand, opts.arcType)}
 
-PROVEN STORY to adapt — keep its plot and the sequence of events; recast it for
-the hero above. Do NOT invent a different premise (no random fantasy, no
-far-fetched events):
+CRAFT REFERENCE — do NOT reuse its plot, conflict, or setting. It exists only
+to show you the target register, pacing, and how a beat sheet turns into a
+warm, concrete scene. Invent your OWN scenario fitting the ACTUAL topic above:
 """
 ${pickExemplar(opts.topic, opts.arcType, ageBand).text}
 """
 
 Produce the plan:
-  • Adapt the proven story above. ${pageCount.min}–${pageCount.max} pages total. Page 1 'cover', last page 'final'.
-  • Each content page: one arc beat (in order) + an "intent" that retells what
-    happens at that beat in the proven story, recast for this hero — short and
-    concrete, NOT the final sentence.
+  • Invent your own scenario for the topic above, following the beat sheet.
+    ${pageCount.min}–${pageCount.max} pages total. Page 1 'cover', last page 'final'.
+  • Each content page: one arc beat (in order) + an "intent" that says what
+    happens at that beat in YOUR invented scenario — short and concrete, NOT
+    the final sentence.
   • Spread the arc generously across pages so the Prose phase has room for a warm,
     unhurried read-aloud story.
   • heroName fixed; characterProfile in English; lesson in one short Russian
