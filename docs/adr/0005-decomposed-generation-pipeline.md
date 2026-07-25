@@ -1,7 +1,24 @@
 # ADR-0005: Decomposed generation pipeline + drop vocabulary-RAG
 
 **Status:** Accepted
-**Date:** 2026-06-26 (amended 2026-06-27)
+**Date:** 2026-06-26 (amended 2026-06-27, 2026-07-25)
+
+> **Amendment (2026-07-25) — Plan phase was copying the exemplar's plot, not
+> its craft.** `plan.prompt.ts`'s implementation had drifted from this ADR's
+> own intent: its system prompt told the model to "ADAPT THE PROVEN STORY...
+> Keep its plot... A retold proven plot beats an invented one" — the exact
+> plot-copying this ADR's Prose phase already correctly avoided ("match its
+> CRAFT only, never copy its plot, names, or setting" — line ~95 of
+> `prose.prompt.ts`). With most learning goals holding only 0–1 exemplars,
+> nearly every generation for a goal reproduced an almost-identical plot
+> skeleton — found live by the product owner reading a batch of production
+> books and noticing the same «Х? Не Х?» refrain recur across unrelated
+> topics (#311, #312, fixed together in #313). The Plan phase now invents its
+> own concrete scenario for the actual topic and uses the reference story for
+> register/craft only, matching what this ADR and `exemplars.ts` always said
+> should happen. Live-verified via `eval:batch` (14/14 pass, quality held
+> steady) before merging — see
+> `docs/process/eval-baselines/2026-07-25-plan-invent-scenario.json`.
 
 > **Amendment (2026-06-27) — register correction + age bands.** The original
 > decision below described the target register as **"spare + dialogue-forward +

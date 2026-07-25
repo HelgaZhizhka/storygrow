@@ -831,3 +831,16 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Recommend merging + deploying before generating the remaining books for #32's production dashboard batch, so the rest of the batch benefits from the fix rather than repeating the old behavior.
 
 **Blockers:** none. Pending: user's final review/approval before merge (this is core AI-pipeline prompt logic).
+
+---
+
+## 2026-07-25 (cont.) — docs: sync CONTEXT/ARCHITECTURE/ADR-0005 after #313
+
+**Done:**
+- User asked directly whether docs were current after all recent changes — checked, found real gaps:
+  - `CONTEXT.md`'s Personalization Seeds entry claimed premise/conflict/lesson "come from the `Gold Exemplar` and `Learning Goal`" — stale after #313 (they're now invented by the Plan phase itself, exemplar provides craft/register only). Note: the Gold Exemplar glossary entry itself (lines 100-105) was already correctly worded ("not a fill-in-the-blank skeleton") — the code had drifted from the already-correct docs, not the other way around.
+  - `docs/ARCHITECTURE.md`'s pipeline diagram said vocabulary-RAG was "removed" — imprecise; retrieval still runs, it's demoted to a soft `vocabularyCompliance` signal (same "vestigial, not removed" nuance already fixed in `qa-prep.md` earlier this session, just missed here).
+  - `docs/adr/0005-decomposed-generation-pipeline.md` — added a dated amendment note (matching its existing amendment convention) documenting the Plan-phase code/intent drift #313 fixed, with a link to the eval baseline that verified it.
+- `./init.sh` green (docs-only change).
+
+**Blockers:** none.
