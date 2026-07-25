@@ -815,3 +815,19 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - `./init.sh` green.
 
 **Blockers:** none.
+
+---
+
+## 2026-07-25 — fix(ai): Plan phase invents its own scenario instead of copying the exemplar's plot
+
+**Done:**
+- Found live during #32's production book-generation batch: user directly flagged that generated texts felt dry and repetitive — the same «Х? Не Х?» rhetorical refrain ("Дать? Не дать?", "Тесно? Не тесно?", "Поделиться? Не поделиться?") kept appearing verbatim across completely different learning goals, including goals with no matching Gold Exemplar at all. Traced to the true root cause: `plan.prompt.ts`'s Plan-phase system prompt explicitly instructed the model to "ADAPT THE PROVEN STORY... Keep its plot: the same premise and the same sequence of events... A retold proven plot beats an invented one" — directly contradicting `exemplars.ts`'s own stated intent ("match the CRAFT — never copy the plot") and the Prose phase's already-correct framing ("match its CRAFT only, never copy its plot, names, or setting"). With most learning goals having only 0-1 exemplars in their pool, this meant nearly every generation for a given goal reused an almost-identical plot skeleton — the deeper, systemic cause behind both #311 (topic mismatch for uncovered goals) and #312 (refrain convergence for the 3-4 age band).
+- Rewrote `PLAN_SYSTEM_PROMPT` rule #1 and the exemplar block in `buildPlanPrompt`: the reference story is now framed purely as a CRAFT/register example (pacing, warmth, how a beat sheet becomes a scene) — the model is explicitly told to invent its own concrete, age-appropriate, small-scale scenario for the actual requested topic, never reuse the reference's plot/premise/conflict/setting. Kept the existing safety guardrail (no random fantasy, no far-fetched events) to preserve the coherence guarantee the original "keep its plot" rule was protecting.
+- **Live-verified before committing** (AGENTS.md's live-eval requirement): ran `eval:batch` (14 cases spanning both age bands, both arc types, both protagonist modes, all model-default) — **14/14 passed**, quality scores held steady vs. prior baselines (registerMatch mean 7.93, all guardrails well above floor), and titles are now genuinely varied and topic-correct across every case (e.g. "Дружба" → «Алиса и замок для Саши», "Любопытство и любовь к знаниям" → «Алиса и волшебный мир под микроскопом» — both previously-uncovered goals, both now on-topic). Additionally created one real local book for "Уважение к старшим" (previously uncovered, age 3) via the test-login fixture: title «Проверка и тесто добрых пирожков» (on-topic: helping bake for an elder), refrain now "Я помогаю! Я помогаю!" — a genuinely different (action/declaration) refrain type, not the same "X? Не X?" pattern. Baseline saved to `docs/process/eval-baselines/2026-07-25-plan-invent-scenario.json`.
+- `./init.sh` green (tsc/lint/tests unaffected — this is a prompt-only change, no schema/type changes).
+
+**Decisions:**
+- This directly resolves the mechanism behind #311 and #312 (not closing those issues outright — worth a final confirmation pass once more books are generated in production, but the direct evidence above is strong).
+- Recommend merging + deploying before generating the remaining books for #32's production dashboard batch, so the rest of the batch benefits from the fix rather than repeating the old behavior.
+
+**Blockers:** none. Pending: user's final review/approval before merge (this is core AI-pipeline prompt logic).
