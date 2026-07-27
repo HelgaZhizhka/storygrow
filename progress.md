@@ -844,3 +844,22 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - `./init.sh` green (docs-only change).
 
 **Blockers:** none.
+
+---
+
+## 2026-07-27 — docs(defense): slides deck, speaker script, and Q&A/staged-book currency sweep (#32)
+
+**Done:**
+- Built a 10-slide HTML defense deck (Claude Artifact — product, architecture, AI-engineering depth, eval metrics, ★ harness evolution, ★ live #313 bug-fix story, demo transition, roadmap, Q&A). Iterated live with the user: removed RAG from the pipeline diagram (it doesn't shape output, misrepresenting its role next to the honest RAG-demotion story on slide 4), named the `agent1st`/`superpowers`/`mattpocock/skills` sourcing explicitly instead of presenting the harness rules as invented from scratch, cut framing lines that read as filler.
+- New `docs/defense/slides-script.md`: full per-slide speaker narration plus a separated operational run-book (pre-flight terminal commands, browser-tab order, exact click-by-click steps for both demo flows, contingency branches) — the user flagged that a slide deck alone isn't rehearsable without a literal "what do I say / what do I click" script.
+- Investigated a user question about `vocabularyCompliance` in depth: traced `checkCompliance()`'s exact formula (`inCorpusCount / meaningful.length`, threshold 0.4) and found the code comment claiming it's "fed into regeneration feedback" is itself stale — `buildRegenerationFeedback()` never receives it. Corrected this on slide 4 and in `qa-prep.md` Q1 (previously repeated the same stale claim).
+- `qa-prep.md`: fixed Q1's inaccurate RAG claim, added Q12 (the #313 bug story — previously had zero prepared answer despite being the presentation's centerpiece), refreshed Q11's test counts against a real run (328 tests/46 suites backend, was stale at 323/44; 50 tests/7 files frontend, was stale at 45).
+- `demo-script.md`: fixed a stale fallback-book ID left over from #307's re-stage.
+- `staged-books.md`: found the existing fallback book was generated 2026-07-24, one day *before* #313's fix, and had never been re-verified against it — a real risk if it got used live right after telling the #313 story. Generated a fresh one (user triggered it through the UI at my request, to avoid me touching her already-running local backend), verified by reading the full story text directly from Postgres (no `mongo`/Prisma Studio needed — used `docker compose exec postgres psql`): no repeated-refrain pattern, confirms the fix holds. Replaced Book 1's entry and all ID references.
+- `./init.sh` green (docs-only).
+
+**Decisions:**
+- Branched fresh (`issue/32-defense-prep-polish`) off `main` rather than continuing on the already-merged `docs/sync-exemplar-fix-and-rag-status` branch.
+- This PR is intended to close #32 — all four of its acceptance criteria are met by this point (slide deck, demo script, Q&A prep, and the eval dashboard's ≥20-generations criterion, which the user is confirming directly against the production `/admin/metrics` page rather than local dev — local dev only has 8 generations, which is expected and not the relevant count).
+
+**Blockers:** none.
