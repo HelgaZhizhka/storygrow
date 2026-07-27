@@ -57,8 +57,15 @@ export class BillingService {
     const periodEnd = new Date(periodEndEpoch * 1000);
     const stripeCustomerId = this.extractCustomerId(sub.customer);
 
+    // Keyed on userId, not stripeSubscriptionId: `Subscription.userId` is the
+    // unique constraint that reflects the real business rule (one subscription
+    // per user). A user who re-subscribes after cancelling gets a brand-new
+    // Stripe subscription object (new stripeSubscriptionId) for the same
+    // userId -- keying on stripeSubscriptionId made that case fall through to
+    // `create`, which then hit the userId unique constraint against their old
+    // row and threw, silently dropping the webhook.
     await this.prisma.subscription.upsert({
-      where: { stripeSubscriptionId: sub.id },
+      where: { userId },
       create: {
         userId,
         stripeSubscriptionId: sub.id,
@@ -67,7 +74,7 @@ export class BillingService {
         status,
         periodEnd,
       },
-      update: { stripeCustomerId, plan, status, periodEnd },
+      update: { stripeSubscriptionId: sub.id, stripeCustomerId, plan, status, periodEnd },
     });
   }
 

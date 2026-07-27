@@ -131,10 +131,12 @@ storygrow/
          │        kept naming the learning value);     │
          │        isConcreteTitle gate, ≤3 retries      │
          │      trace: story-title                     │
-         │  (No vocabulary-RAG step — removed in      │
-         │   ADR-0005; age-fit lives in the judge. A   │
-         │   Companions step, anchoring a parent-named  │
-         │   pet seed, was tried and removed — #245.)  │
+         │  (Vocabulary-RAG retrieval still runs but    │
+         │   no longer constrains generation — ADR-0005 │
+         │   demoted it to a soft `vocabularyCompliance` │
+         │   signal; age-fit is enforced by the judge.  │
+         │   A Companions step, anchoring a parent-named │
+         │   pet seed, was tried and removed — #245.)   │
          └───────────────────────────────────────────┘
                               │
                               ▼

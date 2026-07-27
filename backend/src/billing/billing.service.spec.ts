@@ -91,7 +91,7 @@ describe('BillingService', () => {
       await service.handleEvent(makeEvent('customer.subscription.created', sub));
 
       expect(prisma.subscription.upsert).toHaveBeenCalledWith({
-        where: { stripeSubscriptionId: 'sub_1' },
+        where: { userId: 'user_1' },
         create: {
           userId: 'user_1',
           stripeSubscriptionId: 'sub_1',
@@ -101,12 +101,40 @@ describe('BillingService', () => {
           periodEnd: new Date(1700000000 * 1000),
         },
         update: {
+          stripeSubscriptionId: 'sub_1',
           stripeCustomerId: 'cus_test1',
           plan: SubscriptionPlan.premium,
           status: SubscriptionStatus.active,
           periodEnd: new Date(1700000000 * 1000),
         },
       });
+    });
+
+    it('re-subscribing after cancellation upserts by userId, not the new stripeSubscriptionId', async () => {
+      // Regression test (production incident, 2026-07-24): a user cancels, then
+      // re-subscribes -- Stripe issues a brand-new subscription object (a
+      // different id) for the same userId. Keying the upsert on
+      // stripeSubscriptionId made this fall through to `create`, which then
+      // hit the userId unique constraint against the user's old row and threw,
+      // silently dropping the webhook (the account kept showing the free plan).
+      prisma.stripeWebhookEvent.findUnique.mockResolvedValue(null);
+      const sub = {
+        id: 'sub_new_after_resubscribe',
+        customer: 'cus_test1',
+        status: 'active',
+        current_period_end: 1700000000,
+        metadata: { userId: 'user_1', plan: 'premium' },
+      };
+
+      await service.handleEvent(makeEvent('customer.subscription.created', sub));
+
+      expect(prisma.subscription.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { userId: 'user_1' },
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          update: expect.objectContaining({ stripeSubscriptionId: 'sub_new_after_resubscribe' }),
+        }),
+      );
     });
 
     it('persists the Stripe customer id from the webhook payload', async () => {
@@ -161,7 +189,9 @@ describe('BillingService', () => {
 
       expect(prisma.subscription.upsert).toHaveBeenCalledWith(
         expect.objectContaining({
+          where: { userId: 'user_1' },
           update: {
+            stripeSubscriptionId: 'sub_1',
             stripeCustomerId: 'cus_test1',
             plan: SubscriptionPlan.premium,
             status: SubscriptionStatus.past_due,

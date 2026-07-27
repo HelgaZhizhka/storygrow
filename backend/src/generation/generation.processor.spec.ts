@@ -132,7 +132,7 @@ describe('GenerationProcessor', () => {
     });
     expect(mockPrisma.book.update).toHaveBeenNthCalledWith(2, {
       where: { id: 'book-1' },
-      data: { storyJson: mockStory },
+      data: { storyJson: mockStory, title: mockStory.title },
     });
     expect(mockOrchestrator.generate).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -191,7 +191,7 @@ describe('GenerationProcessor', () => {
     });
     expect(mockPrisma.book.update).toHaveBeenNthCalledWith(2, {
       where: { id: 'book-1' },
-      data: { storyJson: mockStory },
+      data: { storyJson: mockStory, title: mockStory.title },
     });
     expect(mockPrisma.book.update).toHaveBeenNthCalledWith(3, {
       where: { id: 'book-1' },
@@ -220,7 +220,7 @@ describe('GenerationProcessor', () => {
 
     expect(mockPrisma.book.update).toHaveBeenCalledWith({
       where: { id: 'book-1' },
-      data: { storyJson: mockStory },
+      data: { storyJson: mockStory, title: mockStory.title },
     });
     expect(mockPrisma.book.update).toHaveBeenCalledWith({
       where: { id: 'book-1' },

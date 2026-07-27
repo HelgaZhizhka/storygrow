@@ -748,3 +748,129 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Documented the whole flow in `docs/local-dev.md`'s new "Stripe webhooks" section.
 
 **Blockers:** none.
+
+---
+
+## 2026-07-24 — #302: select an existing child instead of always creating a new one
+
+**Done:**
+- Found live while rehearsing the defense demo script locally: the book-creation form always `POST /children` (create-new), with no way to reuse an existing child — `demo-script.md`'s own "select existing child" instruction doesn't match the real UI. Backend already had `GET /children` (list), just never called from this form.
+- Added an existing-child selector to `frontend/src/app/(app)/books/new/page.tsx`: fetches `GET /children` on mount, shows a dropdown (name + age) with a "+ Новый ребёнок" default option when the user has any children. Selecting an existing child skips the create-child fields and API call entirely, using the selected id directly. Schema validation for `childName`/`childAge` made conditional via `superRefine` (only required when creating a new child).
+- Verified live locally: selecting the existing child worked correctly for the actual demo rehearsal.
+- `./init.sh` green (both pre-existing lint warnings on this file unchanged, no new ones).
+
+**Blockers:** none.
+
+---
+
+## 2026-07-24 (cont.) — fix: generated books never got their real title persisted
+
+**Done:**
+- Found live while rehearsing the Custom Flow demo: the just-generated book showed a `ready` status and passed evaluation (registerMatch 8), but `Book.title` was empty in the DB. Root cause: `books.service.ts` creates the book with `title: ''` as a placeholder, and per the architecture (`CONTEXT.md`'s Story Plan entry — "the book's final title is decided after the Prose phase from the finished story"), something should overwrite it once the real title is known — but `generation.processor.ts`'s `prisma.book.update({ data: { storyJson: story } })` call never included `title: story.title`. The placeholder was never replaced, for any custom-flow book, ever (this explains `docs/defense/staged-books.md`'s own long-standing "title is empty in the DB" note, which had been mis-attributed to a pre-ADR-0005 staleness rather than a live, still-present bug).
+- Fixed: that same `prisma.book.update` call now also writes `title: story.title`.
+- Updated the three existing test assertions in `generation.processor.spec.ts` that exact-matched the old `data: { storyJson: mockStory }` payload (they'd have failed on the fix otherwise, since they assert the literal object passed to Prisma).
+- Backfilled the local rehearsal book's title directly from its already-generated `storyJson` (no need to re-spend on a real regeneration just to test the fix): "Маша и волшебное пианино в парке".
+- `./init.sh` green.
+
+**Decisions:**
+- This needs to merge and deploy to production **before** any batch of real Custom Flow books gets generated there for the defense dashboard — otherwise every one of those books would need the same title backfill, or worse, ship with visibly blank titles during the actual demo.
+
+**Blockers:** none for the fix itself. Recommend merging + confirming Railway auto-deploy before starting production book generation for #32's dashboard.
+
+---
+
+## 2026-07-24 (cont.) — docs: demo-script LangFuse narration + retry-branch fix
+
+**Done:**
+- Found live during the actual demo rehearsal: the Custom Flow book passed on the first attempt, but `demo-script.md`'s narration assumed a retry always happens ("Попыток генерации: 2... 9.8 но не прошла"). Rewrote to branch on the actual outcome (1 attempt vs. N attempts) rather than forcing a retry story that may not occur live.
+- Fixed the LangFuse-tab narration to name the actual current trace/span structure (verified against the code): top-level trace `story-generation`, nested spans `story-planner`, `character-profile`, `story-prose`, `story-title`, `story-evaluator` — replacing a stale, generic "два вызова генератора, два вызова судьи" line.
+
+**Blockers:** none.
+
+---
+
+## 2026-07-24 (cont.) — docs: re-staged the defense fallback book
+
+**Done:**
+- Regenerated `staged-books.md`'s fallback Custom Flow book — the old one predated ADR-0005 (stale 5-criterion `StoryEval` shape, empty title from the generation.processor.ts bug just fixed in #305). Generated via the double-gated `/auth/test-login` fixture (backend restarted locally with `E2E_TEST_MODE=true` only for this one-off, then restarted again without it — confirmed `/auth/test-login` returns 404 again afterward).
+- New book: «Алиса и волшебный цветок на площадке» (`cmrz2l4mp0003u7kxhsr5uxq5`), 8 pages, passed on the first attempt (registerMatch 9/10) — confirms #305's title fix works. Since it passed clean rather than needing a retry, staged-books.md's talking point now matches `demo-script.md`'s "Если попыток 1" branch rather than forcing the old "needed a retry" narrative.
+- Replaced all references to the old stale book ID throughout the file (checklist, fallback-trigger table).
+
+**Blockers:** none. Recommend running through the "Before the defense" checklist once more closer to the actual date.
+
+---
+
+## 2026-07-24 (cont.) — fix: production billing crash on re-subscribe
+
+**Done:**
+- Found live in production, checked via `railway logs`: a real webhook crashed with `PrismaClientKnownRequestError: Unique constraint failed on the fields: ("userId")` inside `BillingService.upsertSubscription`. Root cause: the upsert was keyed on `where: { stripeSubscriptionId: sub.id }`, but the table's actual business-rule unique constraint is on `userId` (one subscription per user). A user who cancels and later re-subscribes gets a brand-new Stripe subscription object (a different `stripeSubscriptionId`) for the same `userId` — the upsert's `where` clause never matches that new id, falls through to `create`, and `create` then collides with the user's existing row on the `userId` constraint. The webhook handler threw, Stripe would see a 500 and retry, but the account kept showing the free plan in the meantime.
+- User's own account hit this exactly: she had a `canceled` subscription row from earlier Stripe Customer Portal testing (2026-07-21), so #276's `hasActiveSubscription` guard correctly let her check out again, but the resulting webhook then crashed on this bug.
+- Fixed: `upsertSubscription`'s upsert now keys on `where: { userId }` — matches the real constraint, correctly finds-and-updates the existing row (including replacing its `stripeSubscriptionId`) instead of trying to create a duplicate.
+- Investigated via `railway logs`/`railway variables` (Claude Code auto-mode correctly blocked printing raw secret values and blocked direct production DB queries without explicit authorization — investigated through logs and non-printing variable-presence checks instead).
+- Updated the two existing test assertions that exact-matched the old `where: { stripeSubscriptionId }` shape; added a new regression test reproducing the exact production scenario (re-subscribe after cancellation, different `stripeSubscriptionId`, same `userId`).
+- `./init.sh` green.
+
+**Decisions:**
+- Once deployed, Stripe's own webhook retry mechanism (it retries non-2xx responses for up to ~3 days) should automatically redeliver the failed webhook and it will succeed against the fixed code — no manual DB repair needed, though a manual resend from the Stripe Dashboard can force it immediately instead of waiting.
+
+**Blockers:** none for the fix. User's production account should self-heal once this deploys and Stripe redelivers (or she manually resends from the Stripe Dashboard).
+
+---
+
+## 2026-07-24 (cont.) — fix: book-creation form appearance field + loading flash
+
+**Done:**
+- Found live while starting the production book-generation batch (#32): the "Как выглядит" (appearance) field was gated on `protagonistMode === 'child'`, but `appearance` belongs to the `Child` record (`@@unique([userId, name])`, reused across every future book for that child), not to any single book's protagonist-mode choice — a child set up while making an "Наблюдатель" book couldn't have their appearance saved at all. Removed that condition; the field now shows whenever creating a new child in Custom mode, regardless of this book's protagonist mode.
+- User also asked to see existing children's stored appearance in the selector, to disambiguate — clarified that `Child.name` is actually unique per user (`@@unique([userId, name])`, and `createChild` upserts on it), so the specific "same name, different appearance" scenario can't occur, but showing the stored appearance is still useful reference. Added it as a read-only hint under the selector once an existing child is chosen.
+- Found and fixed a related loading-flash issue: `GET /children` is fetched async on mount, so the child selector popped in a beat after the rest of the form had already rendered, visibly shifting the layout. Added a `childrenLoaded` state; the whole "Ребёнок" card now shows a simple "Загрузка…" placeholder until the fetch resolves, then renders everything in its final position at once — no more flash.
+- `./init.sh` green.
+
+**Blockers:** none.
+
+---
+
+## 2026-07-25 — fix(ai): Plan phase invents its own scenario instead of copying the exemplar's plot
+
+**Done:**
+- Found live during #32's production book-generation batch: user directly flagged that generated texts felt dry and repetitive — the same «Х? Не Х?» rhetorical refrain ("Дать? Не дать?", "Тесно? Не тесно?", "Поделиться? Не поделиться?") kept appearing verbatim across completely different learning goals, including goals with no matching Gold Exemplar at all. Traced to the true root cause: `plan.prompt.ts`'s Plan-phase system prompt explicitly instructed the model to "ADAPT THE PROVEN STORY... Keep its plot: the same premise and the same sequence of events... A retold proven plot beats an invented one" — directly contradicting `exemplars.ts`'s own stated intent ("match the CRAFT — never copy the plot") and the Prose phase's already-correct framing ("match its CRAFT only, never copy its plot, names, or setting"). With most learning goals having only 0-1 exemplars in their pool, this meant nearly every generation for a given goal reused an almost-identical plot skeleton — the deeper, systemic cause behind both #311 (topic mismatch for uncovered goals) and #312 (refrain convergence for the 3-4 age band).
+- Rewrote `PLAN_SYSTEM_PROMPT` rule #1 and the exemplar block in `buildPlanPrompt`: the reference story is now framed purely as a CRAFT/register example (pacing, warmth, how a beat sheet becomes a scene) — the model is explicitly told to invent its own concrete, age-appropriate, small-scale scenario for the actual requested topic, never reuse the reference's plot/premise/conflict/setting. Kept the existing safety guardrail (no random fantasy, no far-fetched events) to preserve the coherence guarantee the original "keep its plot" rule was protecting.
+- **Live-verified before committing** (AGENTS.md's live-eval requirement): ran `eval:batch` (14 cases spanning both age bands, both arc types, both protagonist modes, all model-default) — **14/14 passed**, quality scores held steady vs. prior baselines (registerMatch mean 7.93, all guardrails well above floor), and titles are now genuinely varied and topic-correct across every case (e.g. "Дружба" → «Алиса и замок для Саши», "Любопытство и любовь к знаниям" → «Алиса и волшебный мир под микроскопом» — both previously-uncovered goals, both now on-topic). Additionally created one real local book for "Уважение к старшим" (previously uncovered, age 3) via the test-login fixture: title «Проверка и тесто добрых пирожков» (on-topic: helping bake for an elder), refrain now "Я помогаю! Я помогаю!" — a genuinely different (action/declaration) refrain type, not the same "X? Не X?" pattern. Baseline saved to `docs/process/eval-baselines/2026-07-25-plan-invent-scenario.json`.
+- `./init.sh` green (tsc/lint/tests unaffected — this is a prompt-only change, no schema/type changes).
+
+**Decisions:**
+- This directly resolves the mechanism behind #311 and #312 (not closing those issues outright — worth a final confirmation pass once more books are generated in production, but the direct evidence above is strong).
+- Recommend merging + deploying before generating the remaining books for #32's production dashboard batch, so the rest of the batch benefits from the fix rather than repeating the old behavior.
+
+**Blockers:** none. Pending: user's final review/approval before merge (this is core AI-pipeline prompt logic).
+
+---
+
+## 2026-07-25 (cont.) — docs: sync CONTEXT/ARCHITECTURE/ADR-0005 after #313
+
+**Done:**
+- User asked directly whether docs were current after all recent changes — checked, found real gaps:
+  - `CONTEXT.md`'s Personalization Seeds entry claimed premise/conflict/lesson "come from the `Gold Exemplar` and `Learning Goal`" — stale after #313 (they're now invented by the Plan phase itself, exemplar provides craft/register only). Note: the Gold Exemplar glossary entry itself (lines 100-105) was already correctly worded ("not a fill-in-the-blank skeleton") — the code had drifted from the already-correct docs, not the other way around.
+  - `docs/ARCHITECTURE.md`'s pipeline diagram said vocabulary-RAG was "removed" — imprecise; retrieval still runs, it's demoted to a soft `vocabularyCompliance` signal (same "vestigial, not removed" nuance already fixed in `qa-prep.md` earlier this session, just missed here).
+  - `docs/adr/0005-decomposed-generation-pipeline.md` — added a dated amendment note (matching its existing amendment convention) documenting the Plan-phase code/intent drift #313 fixed, with a link to the eval baseline that verified it.
+- `./init.sh` green (docs-only change).
+
+**Blockers:** none.
+
+---
+
+## 2026-07-27 — docs(defense): slides deck, speaker script, and Q&A/staged-book currency sweep (#32)
+
+**Done:**
+- Built a 10-slide HTML defense deck (Claude Artifact — product, architecture, AI-engineering depth, eval metrics, ★ harness evolution, ★ live #313 bug-fix story, demo transition, roadmap, Q&A). Iterated live with the user: removed RAG from the pipeline diagram (it doesn't shape output, misrepresenting its role next to the honest RAG-demotion story on slide 4), named the `agent1st`/`superpowers`/`mattpocock/skills` sourcing explicitly instead of presenting the harness rules as invented from scratch, cut framing lines that read as filler.
+- New `docs/defense/slides-script.md`: full per-slide speaker narration plus a separated operational run-book (pre-flight terminal commands, browser-tab order, exact click-by-click steps for both demo flows, contingency branches) — the user flagged that a slide deck alone isn't rehearsable without a literal "what do I say / what do I click" script.
+- Investigated a user question about `vocabularyCompliance` in depth: traced `checkCompliance()`'s exact formula (`inCorpusCount / meaningful.length`, threshold 0.4) and found the code comment claiming it's "fed into regeneration feedback" is itself stale — `buildRegenerationFeedback()` never receives it. Corrected this on slide 4 and in `qa-prep.md` Q1 (previously repeated the same stale claim).
+- `qa-prep.md`: fixed Q1's inaccurate RAG claim, added Q12 (the #313 bug story — previously had zero prepared answer despite being the presentation's centerpiece), refreshed Q11's test counts against a real run (328 tests/46 suites backend, was stale at 323/44; 50 tests/7 files frontend, was stale at 45).
+- `demo-script.md`: fixed a stale fallback-book ID left over from #307's re-stage.
+- `staged-books.md`: found the existing fallback book was generated 2026-07-24, one day *before* #313's fix, and had never been re-verified against it — a real risk if it got used live right after telling the #313 story. Generated a fresh one (user triggered it through the UI at my request, to avoid me touching her already-running local backend), verified by reading the full story text directly from Postgres (no `mongo`/Prisma Studio needed — used `docker compose exec postgres psql`): no repeated-refrain pattern, confirms the fix holds. Replaced Book 1's entry and all ID references.
+- `./init.sh` green (docs-only).
+
+**Decisions:**
+- Branched fresh (`issue/32-defense-prep-polish`) off `main` rather than continuing on the already-merged `docs/sync-exemplar-fix-and-rag-status` branch.
+- This PR is intended to close #32 — all four of its acceptance criteria are met by this point (slide deck, demo script, Q&A prep, and the eval dashboard's ≥20-generations criterion, which the user is confirming directly against the production `/admin/metrics` page rather than local dev — local dev only has 8 generations, which is expected and not the relevant count).
+
+**Blockers:** none.
