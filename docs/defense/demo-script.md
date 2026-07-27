@@ -42,7 +42,7 @@ Browser redirects to `/books/:id/progress`. SSE stream starts.
 
 > «Третий шаг — судья. Прохождение книги — это четыре независимых гейта: детерминированная структурная проверка, детерминированная проверка языковой чистоты, шесть guardrail-критериев судьи (порог 6 из 10 каждый), и отдельный craft-сигнал `registerMatch` — насколько текст близок к golden-эталонам, порог 7.0 из 10. Если хоть один гейт не пройден — цикл повторяется, максимум два раза, с явным фидбеком в промпте.»
 
-When the book finishes (or open the staged book `cmpzhjeac0000m2lpzi7sj5q3` — see `staged-books.md`), show the book detail. Live generation may pass on the first attempt or need a retry — narrate whichever actually happened, don't force the retry story if it didn't occur:
+When the book finishes (or open the staged book `cms1uhlju000381kxjq1plg8d` — see `staged-books.md`), show the book detail. Live generation may pass on the first attempt or need a retry — narrate whichever actually happened, don't force the retry story if it didn't occur:
 
 > **Если попыток 1:** «Смотрите: прошла с первой попытки, оценка N/10. Это не значит "повезло" — это значит, что все четыре гейта (структура, языковая чистота, шесть guardrail-критериев, и craft-сигнал регистра) сошлись сразу.»
 
