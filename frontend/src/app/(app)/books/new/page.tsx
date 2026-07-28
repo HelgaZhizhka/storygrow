@@ -16,6 +16,7 @@ import {
   type Child,
   type LearningGoal,
 } from './schema';
+import { LearningGoalPicker } from './LearningGoalPicker';
 
 interface FastBookResult {
   bookId: string;
@@ -62,10 +63,12 @@ export default function NewBookPage(): React.ReactElement {
       protagonistMode: 'child',
       artStyle: 'watercolor',
       childGender: '',
+      customGoalArcType: 'virtue',
     },
   });
 
   const mode = watch('mode');
+  const learningGoalId = watch('learningGoalId');
   const protagonistMode = watch('protagonistMode');
   const artStyle = watch('artStyle');
   const selectedChildId = watch('selectedChildId');
@@ -93,6 +96,12 @@ export default function NewBookPage(): React.ReactElement {
     });
   }, [childAge]);
 
+  useEffect(() => {
+    if (learningGoalId === CUSTOM_GOAL_VALUE && mode !== 'custom') {
+      setValue('mode', 'custom');
+    }
+  }, [learningGoalId, mode, setValue]);
+
   async function onSubmit(values: FormValues): Promise<void> {
     setServerError(null);
     setFastResult(null);
@@ -108,10 +117,21 @@ export default function NewBookPage(): React.ReactElement {
             })
           ).id;
 
+      const learningGoalId =
+        values.learningGoalId === CUSTOM_GOAL_VALUE
+          ? (
+              await api.post<LearningGoal>('/learning-goals/custom', {
+                text: values.customGoalText?.trim(),
+                childAge,
+                arcType: values.customGoalArcType,
+              })
+            ).id
+          : values.learningGoalId;
+
       if (values.mode === 'fast') {
         const result = await api.post<FastBookResult>('/books', {
           childId,
-          learningGoalId: values.learningGoalId,
+          learningGoalId,
           mode: 'fast',
         });
         const { url } = await api.get<{ url: string }>(`/books/${result.bookId}/pdf-url`);
@@ -119,7 +139,7 @@ export default function NewBookPage(): React.ReactElement {
       } else {
         const book = await api.post<CustomBookResult>('/books', {
           childId,
-          learningGoalId: values.learningGoalId,
+          learningGoalId,
           mode: 'custom',
           protagonistMode: values.protagonistMode,
           artStyle: values.artStyle,
@@ -226,21 +246,14 @@ export default function NewBookPage(): React.ReactElement {
         </div>
 
         {/* ── Цель обучения ── */}
-        <div className="sg-card">
-          <span className="sg-section-label">Цель обучения</span>
-          <label className="sg-label">Чему научит история</label>
-          <select className="sg-select" {...register('learningGoalId')}>
-            <option value="">— выберите цель —</option>
-            {goals.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.title}
-              </option>
-            ))}
-          </select>
-          {errors.learningGoalId && (
-            <span className="sg-field-hint text-danger">{errors.learningGoalId.message}</span>
-          )}
-        </div>
+        <LearningGoalPicker
+          goals={goals}
+          childAge={childAge}
+          register={register}
+          watch={watch}
+          setValue={setValue}
+          errors={errors}
+        />
 
         {/* ── Режим создания ── */}
         <div className="sg-card">
@@ -255,14 +268,16 @@ export default function NewBookPage(): React.ReactElement {
               </span>
               <span className="sg-badge sg-badge-primary ml-auto">Рекомендуем</span>
             </label>
-            <label className="sg-radio-card" data-checked={mode === 'fast'}>
-              <input type="radio" value="fast" className="sr-only" {...register('mode')} />
-              <span className="sg-radio-dot" />
-              <span>
-                <b>Быстрый</b>
-                <span className="sg-radio-desc">Готовая история из шаблона — за секунды</span>
-              </span>
-            </label>
+            {learningGoalId !== CUSTOM_GOAL_VALUE && (
+              <label className="sg-radio-card" data-checked={mode === 'fast'}>
+                <input type="radio" value="fast" className="sr-only" {...register('mode')} />
+                <span className="sg-radio-dot" />
+                <span>
+                  <b>Быстрый</b>
+                  <span className="sg-radio-desc">Готовая история из шаблона — за секунды</span>
+                </span>
+              </label>
+            )}
           </div>
         </div>
 
