@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   HttpException,
   HttpStatus,
   NotFoundException,
@@ -66,6 +67,8 @@ const MIN_FAILED_ATTEMPTS_CAP = 5;
 
 @Injectable()
 export class BooksService {
+  private readonly logger = new Logger(BooksService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly s3: S3Service,
@@ -132,7 +135,8 @@ export class BooksService {
     let result: LearningGoalSafetyResult;
     try {
       result = await this.learningGoalSafety.check(dto.text, userId);
-    } catch {
+    } catch (err) {
+      this.logger.error(`Custom learning goal safety check failed: ${String(err)}`);
       throw new BadRequestException('Не удалось проверить цель, попробуйте ещё раз');
     }
     if (!result.safe) {
