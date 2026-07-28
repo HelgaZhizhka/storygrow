@@ -230,13 +230,15 @@ model Child {
 }
 
 model LearningGoal {
-  id           String     @id @default(cuid())
-  title        String
-  description  String
-  ageRangeMin  Int        @default(1)
-  ageRangeMax  Int        @default(18)
-  books        Book[]
-  templates    Template[]
+  id              String              @id @default(cuid())
+  title           String
+  description     String
+  arcType         LearningGoalArcType @default(virtue)
+  ageRangeMin     Int                 @default(1)
+  ageRangeMax     Int                 @default(18)
+  createdByUserId String?             // NULL = curated catalogue; set = parent-authored custom goal (#323)
+  books           Book[]
+  templates       Template[]
 }
 
 model Book {

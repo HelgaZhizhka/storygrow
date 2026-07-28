@@ -24,7 +24,7 @@ The pedagogical arc (setup → conflict → lesson → resolution) that the **Pl
 **Avoid:** "plot", "outline".
 
 ### Learning Goal
-A pedagogical objective the parent picks for the book (e.g., *«научиться делиться»*, *«перестать бояться темноты»*). Admin-managed catalogue, ~20 entries to start. Stored in `LearningGoal` table. Drives the `lesson` stage of the story.
+A pedagogical objective the parent picks for the book (e.g., *«научиться делиться»*, *«перестать бояться темноты»*). Stored in `LearningGoal` table, `createdByUserId` `NULL` for the admin-managed curated catalogue (~20 entries), set to the owning user's id for a parent-authored custom goal (#323, Custom Flow only) — visible only to its creator, gated by an LLM safety check on the raw text before it's stored. Drives the `lesson` stage of the story either way; a custom goal has no Gold Exemplar of its own and always exercises `pickExemplar`'s random-pool fallback (the same fallback path #313 fixed).
 
 **Avoid:** "topic", "theme" (these are descriptive, not pedagogical).
 
@@ -93,7 +93,7 @@ The narrative arc assigned to a `LearningGoal`, stored as `LearningGoal.arcType`
 - **`virtue`** — the protagonist *acquires* a good trait through effort and challenge (courage, generosity, honesty). Beat sheet: setup → temptation/challenge → attempt → partial failure → resolution-with-lesson.
 - **`flaw`** — the protagonist *has* a flaw that backfires. Beat sheet: setup → flaw-in-action → consequence ("Расплата": a friend's trust is lost, a treasured thing breaks, being left out) → reflection → earned repair. The repair must be shown, not declared; instant forgiveness scores zero on `earnedResolution`.
 
-`arcType` is assigned by the admin when creating or editing a `LearningGoal`, with a backfill default of `virtue` for existing goals. The orchestrator passes it to the prompt builder, which selects the matching beat sheet and a matching Gold Exemplar.
+`arcType` is assigned by the admin when creating or editing a curated `LearningGoal`, with a backfill default of `virtue` for existing goals. For a parent-authored custom goal (#323), the parent picks in plain language only when the child is 5–6 — the choice is hard-forced to `virtue` for a 3–4 child regardless of what was requested, since `flaw` has no beat sheet for that band. The orchestrator passes `arcType` to the prompt builder, which selects the matching beat sheet and a matching Gold Exemplar.
 
 **Avoid:** "story type", "goal type" — the term is "arc type" with values `virtue` / `flaw`.
 
