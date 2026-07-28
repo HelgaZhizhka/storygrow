@@ -549,11 +549,13 @@ describe('BooksService.listLearningGoals', () => {
     expect(call.where).not.toEqual(expect.objectContaining({ NOT: { arcType: 'flaw' } }));
   });
 
-  it('does not filter by arcType when no childId is given (age unknown)', async () => {
+  it('filters to built-in or own goals when no childId is given (age unknown)', async () => {
     mockPrisma.learningGoal.findMany.mockResolvedValueOnce([]);
     await service.listLearningGoals('user-1');
     const call = mockPrisma.learningGoal.findMany.mock.calls[0][0] as { where?: unknown };
-    expect(call.where).toBeUndefined();
+    expect(call.where).toEqual({
+      OR: [{ createdByUserId: null }, { createdByUserId: 'user-1' }],
+    });
   });
 
   it('excludes flaw-arc goals for an explicit age of 3, with no childId given', async () => {
@@ -583,5 +585,16 @@ describe('BooksService.listLearningGoals', () => {
       expect.objectContaining({ ageRangeMin: { lte: 5 }, ageRangeMax: { gte: 5 } }),
     );
     expect(call.where).not.toEqual(expect.objectContaining({ NOT: { arcType: 'flaw' } }));
+  });
+
+  it('includes the ownership filter alongside the age filter', async () => {
+    mockPrisma.learningGoal.findMany.mockResolvedValueOnce([]);
+    await service.listLearningGoals('user-1', undefined, 5);
+    const call = mockPrisma.learningGoal.findMany.mock.calls[0][0] as { where?: unknown };
+    expect(call.where).toEqual(
+      expect.objectContaining({
+        OR: [{ createdByUserId: null }, { createdByUserId: 'user-1' }],
+      }),
+    );
   });
 });

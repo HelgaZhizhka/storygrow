@@ -103,11 +103,13 @@ export class BooksService {
       age = child?.age;
     }
     const excludeFlaw = age !== undefined && ageToAgeBand(age) === '3-4';
+    const ownership = { OR: [{ createdByUserId: null }, { createdByUserId: userId }] };
     return this.prisma.learningGoal.findMany({
       where:
         age === undefined
-          ? undefined
+          ? ownership
           : {
+              ...ownership,
               ageRangeMin: { lte: age },
               ageRangeMax: { gte: age },
               ...(excludeFlaw ? { NOT: { arcType: 'flaw' as const } } : {}),
