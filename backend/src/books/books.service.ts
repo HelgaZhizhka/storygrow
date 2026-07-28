@@ -4,10 +4,13 @@ import {
   HttpStatus,
   NotFoundException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { Prisma, SubscriptionPlan } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { S3Service } from '../s3/s3.service';
+import { LearningGoalSafetyService } from '../ai/learning-goal-safety/learning-goal-safety.service';
+import type { LearningGoalSafetyResult } from '../ai/schemas/learning-goal-safety.schema';
 import { isActiveSubscriptionStatus } from '../prisma/subscription-status.util';
 import { ageToAgeBand } from '../pdf/page-templates/page-templates.config';
 
@@ -16,6 +19,12 @@ interface CreateChildDto {
   age: number;
   gender?: 'male' | 'female' | 'other';
   appearance?: string;
+}
+
+interface CreateCustomLearningGoalDto {
+  text: string;
+  childAge?: number;
+  arcType?: 'virtue' | 'flaw';
 }
 
 interface CreateBookDto {
@@ -60,6 +69,7 @@ export class BooksService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly s3: S3Service,
+    private readonly learningGoalSafety: LearningGoalSafetyService,
   ) {}
 
   listChildren(userId: string) {
@@ -115,6 +125,32 @@ export class BooksService {
               ...(excludeFlaw ? { NOT: { arcType: 'flaw' as const } } : {}),
             },
       orderBy: { title: 'asc' },
+    });
+  }
+
+  async createCustomLearningGoal(userId: string, dto: CreateCustomLearningGoalDto) {
+    let result: LearningGoalSafetyResult;
+    try {
+      result = await this.learningGoalSafety.check(dto.text, userId);
+    } catch {
+      throw new BadRequestException('Не удалось проверить цель, попробуйте ещё раз');
+    }
+    if (!result.safe) {
+      throw new BadRequestException(result.reason ?? 'Эта цель не подходит для детской книги');
+    }
+
+    const ageBand = dto.childAge !== undefined ? ageToAgeBand(dto.childAge) : undefined;
+    const arcType = ageBand === '3-4' ? 'virtue' : (dto.arcType ?? 'virtue');
+    const ageRange = arcType === 'flaw' ? { ageRangeMin: 5, ageRangeMax: 6 } : {};
+
+    return this.prisma.learningGoal.create({
+      data: {
+        title: dto.text,
+        description: dto.text,
+        arcType,
+        createdByUserId: userId,
+        ...ageRange,
+      },
     });
   }
 

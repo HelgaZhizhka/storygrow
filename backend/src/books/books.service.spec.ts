@@ -15,6 +15,9 @@ import { SubscriptionPlan } from '../generated/prisma/client';
 import { BooksService } from './books.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { S3Service } from '../s3/s3.service';
+import { LearningGoalSafetyService } from '../ai/learning-goal-safety/learning-goal-safety.service';
+
+const mockLearningGoalSafety = { check: jest.fn() };
 
 const basePrisma = {
   child: {
@@ -26,6 +29,7 @@ const basePrisma = {
   },
   learningGoal: {
     findMany: jest.fn<Promise<unknown[]>, [{ where?: unknown; orderBy?: unknown }]>(),
+    create: jest.fn(),
   },
   subscription: { findUnique: jest.fn() },
   book: {
@@ -59,6 +63,7 @@ describe('BooksService.getQuota', () => {
         BooksService,
         { provide: PrismaService, useValue: mockPrisma },
         { provide: S3Service, useValue: mockS3 },
+        { provide: LearningGoalSafetyService, useValue: mockLearningGoalSafety },
       ],
     }).compile();
     service = module.get(BooksService);
@@ -137,6 +142,7 @@ describe('BooksService.createBook', () => {
         BooksService,
         { provide: PrismaService, useValue: mockPrisma },
         { provide: S3Service, useValue: mockS3 },
+        { provide: LearningGoalSafetyService, useValue: mockLearningGoalSafety },
       ],
     }).compile();
     service = module.get(BooksService);
@@ -341,6 +347,7 @@ describe('BooksService.reserveFastFlowBook', () => {
         BooksService,
         { provide: PrismaService, useValue: mockPrisma },
         { provide: S3Service, useValue: mockS3 },
+        { provide: LearningGoalSafetyService, useValue: mockLearningGoalSafety },
       ],
     }).compile();
     service = module.get(BooksService);
@@ -437,6 +444,7 @@ describe('BooksService.deleteBook', () => {
         BooksService,
         { provide: PrismaService, useValue: mockPrisma },
         { provide: S3Service, useValue: mockS3 },
+        { provide: LearningGoalSafetyService, useValue: mockLearningGoalSafety },
       ],
     }).compile();
     service = module.get(BooksService);
@@ -522,6 +530,7 @@ describe('BooksService.listLearningGoals', () => {
         BooksService,
         { provide: PrismaService, useValue: mockPrisma },
         { provide: S3Service, useValue: mockS3 },
+        { provide: LearningGoalSafetyService, useValue: mockLearningGoalSafety },
       ],
     }).compile();
     service = module.get(BooksService);
@@ -596,5 +605,101 @@ describe('BooksService.listLearningGoals', () => {
         OR: [{ createdByUserId: null }, { createdByUserId: 'user-1' }],
       }),
     );
+  });
+});
+
+describe('BooksService.createCustomLearningGoal', () => {
+  let service: BooksService;
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    const module = await Test.createTestingModule({
+      providers: [
+        BooksService,
+        { provide: PrismaService, useValue: mockPrisma },
+        { provide: S3Service, useValue: mockS3 },
+        { provide: LearningGoalSafetyService, useValue: mockLearningGoalSafety },
+      ],
+    }).compile();
+    service = module.get(BooksService);
+  });
+
+  it('rejects with the safety reason when the check fails', async () => {
+    mockLearningGoalSafety.check.mockResolvedValueOnce({
+      safe: false,
+      reason: 'Тема не подходит для детской книги',
+    });
+
+    await expect(
+      service.createCustomLearningGoal('user-1', { text: 'something unsafe' }),
+    ).rejects.toThrow('Тема не подходит для детской книги');
+    expect(mockPrisma.learningGoal.create).not.toHaveBeenCalled();
+  });
+
+  it('fails closed when the safety check itself throws', async () => {
+    mockLearningGoalSafety.check.mockRejectedValueOnce(new Error('timeout'));
+
+    await expect(
+      service.createCustomLearningGoal('user-1', { text: 'любовь к чтению' }),
+    ).rejects.toThrow('Не удалось проверить цель');
+    expect(mockPrisma.learningGoal.create).not.toHaveBeenCalled();
+  });
+
+  it('creates a virtue goal owned by the user when safe', async () => {
+    mockLearningGoalSafety.check.mockResolvedValueOnce({ safe: true });
+    mockPrisma.learningGoal.create.mockResolvedValueOnce({ id: 'g-new' });
+
+    await service.createCustomLearningGoal('user-1', { text: 'любовь к чтению' });
+
+    expect(mockPrisma.learningGoal.create).toHaveBeenCalledWith({
+      data: {
+        title: 'любовь к чтению',
+        description: 'любовь к чтению',
+        arcType: 'virtue',
+        createdByUserId: 'user-1',
+      },
+    });
+  });
+
+  it('forces virtue for a 3-4 child even if flaw was requested', async () => {
+    mockLearningGoalSafety.check.mockResolvedValueOnce({ safe: true });
+    mockPrisma.learningGoal.create.mockResolvedValueOnce({ id: 'g-new' });
+
+    await service.createCustomLearningGoal('user-1', {
+      text: 'терпение',
+      childAge: 3,
+      arcType: 'flaw',
+    });
+
+    expect(mockPrisma.learningGoal.create).toHaveBeenCalledWith({
+      data: {
+        title: 'терпение',
+        description: 'терпение',
+        arcType: 'virtue',
+        createdByUserId: 'user-1',
+      },
+    });
+  });
+
+  it('sets a 5-6 age range for a flaw goal requested by a 5-6 child', async () => {
+    mockLearningGoalSafety.check.mockResolvedValueOnce({ safe: true });
+    mockPrisma.learningGoal.create.mockResolvedValueOnce({ id: 'g-new' });
+
+    await service.createCustomLearningGoal('user-1', {
+      text: 'терпение',
+      childAge: 6,
+      arcType: 'flaw',
+    });
+
+    expect(mockPrisma.learningGoal.create).toHaveBeenCalledWith({
+      data: {
+        title: 'терпение',
+        description: 'терпение',
+        arcType: 'flaw',
+        createdByUserId: 'user-1',
+        ageRangeMin: 5,
+        ageRangeMax: 6,
+      },
+    });
   });
 });
