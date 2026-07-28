@@ -12,6 +12,7 @@ function Harness({ childAge }: { childAge?: number }): React.ReactElement {
     register,
     watch,
     setValue,
+    clearErrors,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -19,7 +20,6 @@ function Harness({ childAge }: { childAge?: number }): React.ReactElement {
       mode: 'custom',
       protagonistMode: 'child',
       artStyle: 'watercolor',
-      customGoalArcType: 'virtue',
       learningGoalId: '',
     },
   });
@@ -30,6 +30,7 @@ function Harness({ childAge }: { childAge?: number }): React.ReactElement {
       register={register}
       watch={watch}
       setValue={setValue}
+      clearErrors={clearErrors}
       errors={errors}
     />
   );
@@ -57,5 +58,20 @@ describe('LearningGoalPicker', () => {
   it('does not show the custom-goal field for a built-in goal', () => {
     render(<Harness childAge={5} />);
     expect(screen.queryByLabelText(/опишите цель/i)).not.toBeInTheDocument();
+  });
+
+  it('has no arc-type pre-selected — the parent must actively choose', async () => {
+    render(<Harness childAge={5} />);
+    await userEvent.selectOptions(screen.getByRole('combobox'), CUSTOM_GOAL_VALUE);
+    const radios = screen.getAllByRole('radio');
+    expect(radios).toHaveLength(2);
+    expect(radios.every((r) => !(r as HTMLInputElement).checked)).toBe(true);
+  });
+
+  it('checks the clicked arc-type option', async () => {
+    render(<Harness childAge={5} />);
+    await userEvent.selectOptions(screen.getByRole('combobox'), CUSTOM_GOAL_VALUE);
+    await userEvent.click(screen.getByText(/герой ошибается и исправляет/i));
+    expect(screen.getByRole('radio', { name: /герой ошибается и исправляет/i })).toBeChecked();
   });
 });

@@ -1,4 +1,10 @@
-import type { UseFormRegister, UseFormSetValue, UseFormWatch, FieldErrors } from 'react-hook-form';
+import type {
+  UseFormRegister,
+  UseFormSetValue,
+  UseFormWatch,
+  UseFormClearErrors,
+  FieldErrors,
+} from 'react-hook-form';
 import { CUSTOM_GOAL_VALUE, type FormValues, type LearningGoal } from './schema';
 
 interface LearningGoalPickerProps {
@@ -7,8 +13,22 @@ interface LearningGoalPickerProps {
   register: UseFormRegister<FormValues>;
   watch: UseFormWatch<FormValues>;
   setValue: UseFormSetValue<FormValues>;
+  clearErrors: UseFormClearErrors<FormValues>;
   errors: FieldErrors<FormValues>;
 }
+
+const ARC_TYPE_OPTIONS = [
+  {
+    value: 'virtue',
+    title: 'Герой учится хорошему',
+    description: 'История про то, как герой находит в себе силы поступить правильно',
+  },
+  {
+    value: 'flaw',
+    title: 'Герой ошибается и исправляет',
+    description: 'История про ошибку и её последствия — и как герой всё исправляет',
+  },
+] as const;
 
 export function LearningGoalPicker({
   goals,
@@ -16,6 +36,7 @@ export function LearningGoalPicker({
   register,
   watch,
   setValue,
+  clearErrors,
   errors,
 }: LearningGoalPickerProps): React.ReactElement {
   const learningGoalId = watch('learningGoalId');
@@ -61,24 +82,36 @@ export function LearningGoalPicker({
           {canPickArcType && (
             <div className="mt-3">
               <label className="sg-label">Какая это история</label>
-              <div className="sg-seg">
-                <button
-                  type="button"
-                  className="sg-seg-opt"
-                  data-active={customGoalArcType === 'virtue'}
-                  onClick={() => setValue('customGoalArcType', 'virtue')}
-                >
-                  Герой учится хорошему
-                </button>
-                <button
-                  type="button"
-                  className="sg-seg-opt"
-                  data-active={customGoalArcType === 'flaw'}
-                  onClick={() => setValue('customGoalArcType', 'flaw')}
-                >
-                  Герой ошибается и исправляет
-                </button>
+              <div className="flex flex-col gap-3">
+                {ARC_TYPE_OPTIONS.map((option) => (
+                  <label
+                    key={option.value}
+                    className="sg-radio-card"
+                    data-checked={customGoalArcType === option.value}
+                  >
+                    <input
+                      type="radio"
+                      value={option.value}
+                      className="sr-only"
+                      checked={customGoalArcType === option.value}
+                      onChange={() => {
+                        setValue('customGoalArcType', option.value);
+                        clearErrors('customGoalArcType');
+                      }}
+                    />
+                    <span className="sg-radio-dot" />
+                    <span>
+                      <b>{option.title}</b>
+                      <span className="sg-radio-desc">{option.description}</span>
+                    </span>
+                  </label>
+                ))}
               </div>
+              {errors.customGoalArcType && (
+                <span className="sg-field-hint text-danger">
+                  {errors.customGoalArcType.message}
+                </span>
+              )}
             </div>
           )}
         </div>
