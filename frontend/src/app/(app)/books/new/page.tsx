@@ -117,12 +117,14 @@ export default function NewBookPage(): React.ReactElement {
             })
           ).id;
 
+      const resolvedChildAge = values.selectedChildId ? selectedChild?.age : values.childAge;
+
       const learningGoalId =
         values.learningGoalId === CUSTOM_GOAL_VALUE
           ? (
               await api.post<LearningGoal>('/learning-goals/custom', {
                 text: values.customGoalText?.trim(),
-                childAge,
+                childAge: resolvedChildAge,
                 arcType: values.customGoalArcType,
               })
             ).id
