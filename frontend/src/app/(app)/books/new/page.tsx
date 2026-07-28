@@ -6,23 +6,17 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { api } from '@/lib/api';
-
-interface Child {
-  id: string;
-  name: string;
-  age: number;
-  appearance?: string | null;
-}
-
-const NEW_CHILD_VALUE = '';
-
-interface LearningGoal {
-  id: string;
-  title: string;
-  description: string;
-}
+import {
+  schema,
+  toSeedList,
+  NEW_CHILD_VALUE,
+  CUSTOM_GOAL_VALUE,
+  type FormValues,
+  type Child,
+  type LearningGoal,
+} from './schema';
+import { LearningGoalPicker } from './LearningGoalPicker';
 
 interface FastBookResult {
   bookId: string;
@@ -40,49 +34,6 @@ const ART_STYLES = [
   { id: 'pixel', label: 'Пиксель' },
   { id: 'realistic', label: 'Реалистичный' },
 ] as const;
-
-const schema = z
-  .object({
-    selectedChildId: z.string().optional(),
-    childName: z.string().optional(),
-    childAge: z.coerce.number().optional(),
-    childGender: z.enum(['male', 'female', 'other', '']).optional(),
-    childAppearance: z
-      .string()
-      .max(1500, 'Слишком длинное описание — максимум 1500 символов')
-      .optional(),
-    learningGoalId: z.string().min(1, 'Выберите цель обучения'),
-    mode: z.enum(['fast', 'custom']),
-    protagonistMode: z.enum(['child', 'observer']),
-    artStyle: z.enum(['watercolor', 'cartoon', 'storybook', 'pixel', 'realistic']),
-    interests: z.string().optional(),
-    motifs: z.string().optional(),
-    favoriteWords: z.string().optional(),
-  })
-  // childName/childAge are only required when creating a new child (no existing
-  // child selected) — an existing child already has both, so re-asking is noise.
-  .superRefine((values, ctx) => {
-    if (values.selectedChildId) return;
-    if (!values.childName?.trim()) {
-      ctx.addIssue({ code: 'custom', path: ['childName'], message: 'Введите имя' });
-    }
-    const age = Number(values.childAge);
-    if (!Number.isInteger(age) || age < 3 || age > 6) {
-      ctx.addIssue({ code: 'custom', path: ['childAge'], message: 'Доступно 3–6 лет' });
-    }
-  });
-
-type FormValues = z.infer<typeof schema>;
-
-// Personalization seeds (#197): comma-separated free text → capped string list.
-// Matches the backend cap (≤6 items, ≤60 chars each); empty entries dropped.
-const toSeedList = (raw?: string): string[] =>
-  (raw ?? '')
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .slice(0, 6)
-    .map((s) => s.slice(0, 60));
 
 const SEED_FIELDS = [
   { name: 'interests', label: 'Интересы', placeholder: 'динозавры, космос, рисование' },
@@ -112,10 +63,12 @@ export default function NewBookPage(): React.ReactElement {
       protagonistMode: 'child',
       artStyle: 'watercolor',
       childGender: '',
+      customGoalArcType: 'virtue',
     },
   });
 
   const mode = watch('mode');
+  const learningGoalId = watch('learningGoalId');
   const protagonistMode = watch('protagonistMode');
   const artStyle = watch('artStyle');
   const selectedChildId = watch('selectedChildId');
@@ -143,6 +96,12 @@ export default function NewBookPage(): React.ReactElement {
     });
   }, [childAge]);
 
+  useEffect(() => {
+    if (learningGoalId === CUSTOM_GOAL_VALUE && mode !== 'custom') {
+      setValue('mode', 'custom');
+    }
+  }, [learningGoalId, mode, setValue]);
+
   async function onSubmit(values: FormValues): Promise<void> {
     setServerError(null);
     setFastResult(null);
@@ -158,10 +117,23 @@ export default function NewBookPage(): React.ReactElement {
             })
           ).id;
 
+      const resolvedChildAge = values.selectedChildId ? selectedChild?.age : values.childAge;
+
+      const learningGoalId =
+        values.learningGoalId === CUSTOM_GOAL_VALUE
+          ? (
+              await api.post<LearningGoal>('/learning-goals/custom', {
+                text: values.customGoalText?.trim(),
+                childAge: resolvedChildAge,
+                arcType: values.customGoalArcType,
+              })
+            ).id
+          : values.learningGoalId;
+
       if (values.mode === 'fast') {
         const result = await api.post<FastBookResult>('/books', {
           childId,
-          learningGoalId: values.learningGoalId,
+          learningGoalId,
           mode: 'fast',
         });
         const { url } = await api.get<{ url: string }>(`/books/${result.bookId}/pdf-url`);
@@ -169,7 +141,7 @@ export default function NewBookPage(): React.ReactElement {
       } else {
         const book = await api.post<CustomBookResult>('/books', {
           childId,
-          learningGoalId: values.learningGoalId,
+          learningGoalId,
           mode: 'custom',
           protagonistMode: values.protagonistMode,
           artStyle: values.artStyle,
@@ -276,21 +248,14 @@ export default function NewBookPage(): React.ReactElement {
         </div>
 
         {/* ── Цель обучения ── */}
-        <div className="sg-card">
-          <span className="sg-section-label">Цель обучения</span>
-          <label className="sg-label">Чему научит история</label>
-          <select className="sg-select" {...register('learningGoalId')}>
-            <option value="">— выберите цель —</option>
-            {goals.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.title}
-              </option>
-            ))}
-          </select>
-          {errors.learningGoalId && (
-            <span className="sg-field-hint text-danger">{errors.learningGoalId.message}</span>
-          )}
-        </div>
+        <LearningGoalPicker
+          goals={goals}
+          childAge={childAge}
+          register={register}
+          watch={watch}
+          setValue={setValue}
+          errors={errors}
+        />
 
         {/* ── Режим создания ── */}
         <div className="sg-card">
@@ -305,14 +270,16 @@ export default function NewBookPage(): React.ReactElement {
               </span>
               <span className="sg-badge sg-badge-primary ml-auto">Рекомендуем</span>
             </label>
-            <label className="sg-radio-card" data-checked={mode === 'fast'}>
-              <input type="radio" value="fast" className="sr-only" {...register('mode')} />
-              <span className="sg-radio-dot" />
-              <span>
-                <b>Быстрый</b>
-                <span className="sg-radio-desc">Готовая история из шаблона — за секунды</span>
-              </span>
-            </label>
+            {learningGoalId !== CUSTOM_GOAL_VALUE && (
+              <label className="sg-radio-card" data-checked={mode === 'fast'}>
+                <input type="radio" value="fast" className="sr-only" {...register('mode')} />
+                <span className="sg-radio-dot" />
+                <span>
+                  <b>Быстрый</b>
+                  <span className="sg-radio-desc">Готовая история из шаблона — за секунды</span>
+                </span>
+              </label>
+            )}
           </div>
         </div>
 

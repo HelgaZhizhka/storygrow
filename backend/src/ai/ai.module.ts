@@ -4,6 +4,7 @@ import { StoryGeneratorService } from './story-generator/story-generator.service
 import { StoryEvaluatorService } from './story-generator/story-evaluator.service';
 import { StoryOrchestratorService } from './story-generator/story-orchestrator.service';
 import { ImageGeneratorService } from './image-generator/image-generator.service';
+import { LearningGoalSafetyService } from './learning-goal-safety/learning-goal-safety.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { S3Module } from '../s3/s3.module';
 
@@ -15,7 +16,13 @@ import { S3Module } from '../s3/s3.module';
     StoryEvaluatorService,
     StoryOrchestratorService,
     ImageGeneratorService,
+    LearningGoalSafetyService,
   ],
-  exports: [VocabularyRagService, StoryOrchestratorService, ImageGeneratorService],
+  exports: [
+    VocabularyRagService,
+    StoryOrchestratorService,
+    ImageGeneratorService,
+    LearningGoalSafetyService,
+  ],
 })
 export class AiModule {}

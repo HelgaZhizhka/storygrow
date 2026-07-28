@@ -25,16 +25,17 @@ enum UserRole {
 }
 
 model User {
-  id           String        @id @default(cuid())
-  email        String        @unique
-  googleId     String?       @unique
-  refreshToken String?
-  role         UserRole      @default(user)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  children     Child[]
-  books        Book[]
-  subscription Subscription?
+  id                  String        @id @default(cuid())
+  email               String        @unique
+  googleId            String?       @unique
+  refreshToken        String?
+  role                UserRole      @default(user)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  children            Child[]
+  books               Book[]
+  subscription        Subscription?
+  customLearningGoals LearningGoal[]
 }
 
 // ─── Child ─────────────────────────────────────────────────────────────────
@@ -172,15 +173,17 @@ enum LearningGoalArcType {
 }
 
 model LearningGoal {
-  id            String              @id @default(cuid())
-  title         String
-  description   String
-  arcType       LearningGoalArcType @default(virtue)
-  ageRangeMin   Int                 @default(1)
-  ageRangeMax   Int                 @default(18)
-  createdAt     DateTime            @default(now())
-  books         Book[]
-  templates     Template[]
+  id              String              @id @default(cuid())
+  title           String
+  description     String
+  arcType         LearningGoalArcType @default(virtue)
+  ageRangeMin     Int                 @default(1)
+  ageRangeMax     Int                 @default(18)
+  createdAt       DateTime            @default(now())
+  createdByUserId String?
+  createdByUser   User?               @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
+  books           Book[]
+  templates       Template[]
 }
 
 // ─── RAG ───────────────────────────────────────────────────────────────────

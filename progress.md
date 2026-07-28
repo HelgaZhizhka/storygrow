@@ -874,3 +874,20 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - This PR is intended to close #32 — all four of its acceptance criteria are met by this point (slide deck, demo script, Q&A prep, and the eval dashboard's ≥20-generations criterion, which the user is confirming directly against the production `/admin/metrics` page rather than local dev — local dev only has 8 generations, which is expected and not the relevant count).
 
 **Blockers:** none.
+
+---
+
+## 2026-07-28 — feat(books): custom learning goal (#323)
+
+**Done:**
+- Feedback from a small preview showing of the product (defense date since postponed, giving real time to do this properly): parents want to type their own learning goal instead of only picking from the curated list. Brainstormed a design (`docs/superpowers/specs/2026-07-28-custom-learning-goal-design.md`), wrote an 8-task implementation plan (`docs/superpowers/plans/2026-07-28-custom-learning-goal.md`), and executed it via `superpowers:subagent-driven-development` on `issue/323-custom-learning-goal`.
+- Shipped: `LearningGoal.createdByUserId` (nullable, null = curated), a `LearningGoalSafetyService` (LLM safety gate on the goal text before it's stored, fail-closed on error), `listLearningGoals` scoped to built-in-or-own, `POST /learning-goals/custom` (age-gates the arc-type choice — 3-4 always resolves to `virtue`, since `flaw` has no beat sheet for that band), and a frontend `LearningGoalPicker` component (extracted `books/new/page.tsx`'s form schema into a sibling file along the way to stay under the 400-line hard constraint).
+- Deliberately kept OUT of scope: a "no-exemplar, let the model find its own register" experiment the user raised during design — that would revisit ADR-0005's core decision (exemplars as the sole operational definition of "good"), not a small addition. Gets its own isolated `eval:text` experiment later, per ADR-0005's own validation-gate precedent; this feature ships on the existing, already-verified exemplar-fallback path regardless of that experiment's outcome.
+- **Mandatory live verification (Task 8, not optional):** every custom-goal generation now goes through `pickExemplar`'s random-pool fallback by default — previously the rare case for a curated goal with no exemplar, now the default for every custom goal. Ran `eval:text` on 4 topics with no backing `LearningGoal` row: «Любовь к чтению» (5, PASS 8/10), «Уважение к чужому мнению» (6, PASS 8/10), «Терпение в очереди» (4, PASS 8/10 — confirmed the 3-4 band's repeated-refrain-by-design is invented fresh per topic, not the #313 bug), «Бережное отношение к книгам» (6, observer, PASS 7/10). 4/4 pass, all genuinely on-topic, no cross-topic bleed. Two runs hit a transient OpenAI network timeout on first attempt (3 concurrent gpt-5 calls), passed clean on retry — not a pipeline defect. Full results: `docs/process/eval-baselines/2026-07-28-custom-goal-novel-topics.md`.
+- Per-task subagent review caught one real, tracked issue: `books.service.spec.ts` grew to 705 lines across Tasks 4-5 (was already 587 before this plan touched it) — violates the 400-line hard constraint. Not fixed in this plan (pre-existing debt, out of scope for a feature plan to also restructure), flagged for the final whole-branch review / a tracked follow-up.
+- Also parked (user-confirmed, not fixed): a latent FK cascade-vs-restrict conflict — `LearningGoal.createdByUserId` cascades from `User`, but `Book`/`Template` reference `LearningGoal` with no cascade, so deleting a user with used custom goals could hit a constraint violation. Not exploitable today (no account-deletion feature exists); defer to whenever that feature is built.
+
+**Decisions:**
+- All 7 code tasks reviewed clean or Approved-with-tracked-minors by a fresh subagent reviewer per task; no Critical findings, no fix-loop rounds needed.
+
+**Blockers:** none. Open: `books.service.spec.ts`'s file-size debt needs an explicit call before/at merge (split now vs. tracked follow-up issue).

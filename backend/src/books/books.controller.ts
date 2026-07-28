@@ -26,6 +26,12 @@ const createChildSchema = z.object({
   appearance: z.string().max(1500).optional(),
 });
 
+const createCustomLearningGoalSchema = z.object({
+  text: z.string().trim().min(1).max(60),
+  childAge: z.number().int().min(1).max(18).optional(),
+  arcType: z.enum(['virtue', 'flaw']).optional(),
+});
+
 // Personalization seeds (#197): soft, concrete per-book material. Capped to keep
 // the Plan prompt lean and to bound abuse; empty by default.
 const seedList = z.array(z.string().trim().min(1).max(60)).max(6).default([]);
@@ -73,6 +79,13 @@ export class BooksController {
     const parsed = age !== undefined ? Number(age) : undefined;
     const explicitAge = parsed !== undefined && Number.isFinite(parsed) ? parsed : undefined;
     return this.books.listLearningGoals(user.sub, childId, explicitAge);
+  }
+
+  @Post('learning-goals/custom')
+  @HttpCode(HttpStatus.CREATED)
+  createCustomLearningGoal(@CurrentUser() user: JwtPayload, @Body() body: unknown) {
+    const dto = createCustomLearningGoalSchema.parse(body);
+    return this.books.createCustomLearningGoal(user.sub, dto);
   }
 
   @Post('books')
