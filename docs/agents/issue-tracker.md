@@ -20,3 +20,30 @@ Create a GitHub issue.
 ## When a skill says "fetch the relevant ticket"
 
 Run `gh issue view <number> --comments`.
+
+## Wayfinding operations
+
+This repo's GitHub instance supports native **sub-issues** and native
+**issue dependencies** (verified: `gh api repos/HelgaZhizhka/storygrow/issues/<n>/sub_issues`
+and `.../dependencies/blocked_by` both resolve). Wayfinder uses these
+directly — no body-convention fallback needed.
+
+- **Map**: a GitHub issue labelled `wayfinder:map`.
+- **Ticket**: a GitHub issue labelled `wayfinder:<type>` (`research` |
+  `prototype` | `grilling` | `task`), added as a **sub-issue** of the map:
+  `gh api repos/{owner}/{repo}/issues/{map_number}/sub_issues -f sub_issue_id={ticket_node_or_number}`
+  (use `gh issue view <n> --json id` for the numeric `sub_issue_id` the
+  REST endpoint expects — it wants the issue's database id, not its
+  display number; fetch via `gh api repos/{owner}/{repo}/issues/<display-number>Sql --jq .id`
+  in practice: `gh api repos/{owner}/{repo}/issues/<n> --jq .id`).
+- **List a map's children**: `gh api repos/{owner}/{repo}/issues/{map_number}/sub_issues`.
+- **Blocking**: `gh api repos/{owner}/{repo}/issues/{ticket_number}/dependencies/blocked_by -f issue_id={blocker_id}`
+  (again, the numeric id from `gh api .../issues/<n> --jq .id`, not the
+  display number). Query what blocks a ticket:
+  `gh api repos/{owner}/{repo}/issues/{ticket_number}/dependencies/blocked_by`.
+- **Claim a ticket**: `gh issue edit <number> --add-assignee @me`. An open,
+  unassigned ticket is unclaimed.
+- **Frontier query**: open children of the map, unassigned, with an empty
+  `blocked_by` list.
+- **Resolve a ticket**: `gh issue comment <number> --body "..."` (the
+  resolution), then `gh issue close <number>`.
