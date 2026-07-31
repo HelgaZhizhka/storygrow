@@ -41,6 +41,11 @@ backend/prisma/generated/
 # Spike output (Gemini consistency experiment — throwaway images)
 backend/spike-gemini*/
 
+# Photo-likeness spike (issue #128) — NEVER commit real child photos or outputs
+backend/spike-photos/
+backend/spike-photo-out/
+backend/spike-photo-out-qwen/
+
 # Generated artifacts (if any heavy output)
 /generated/
 
