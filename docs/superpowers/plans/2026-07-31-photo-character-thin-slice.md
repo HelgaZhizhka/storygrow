@@ -157,8 +157,8 @@
 
 **Files:** `CONTEXT.md`; new `docs/adr/000X-photo-character-likeness.md`.
 
-- [ ] `CONTEXT.md`: update the `characterProfile` entry and **remove** the "there is no image of the child; text description only" line (spec decision 6); add `Child Photo` / `Character Descriptor` terms.
-- [ ] ADR: record the shipped slice **and the deferred privacy gaps as explicit "known gaps"** (encryption at rest, TTL, erasure-on-request, moderation/age-of-consent, legal copy, portrait reuse) — the honest list the defense will probe. Note the Gemini/Qwen privacy rationale (cross-border minor biometrics).
+- [x] `CONTEXT.md`: replaced the "there is no image of the child" line; added a **Photo Character** term + **Character Descriptor**; updated `characterProfile` to note the photo path folds the descriptor and anchors on the approved photo portrait.
+- [x] `docs/adr/0006-photo-character-privacy.md`: records the shipped slice, the Gemini/Qwen cross-border-biometric rationale, and the deferred privacy gaps as explicit "known gaps".
 
 ---
 
