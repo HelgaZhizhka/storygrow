@@ -6,14 +6,21 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { Prisma, SubscriptionPlan } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { S3Service } from '../s3/s3.service';
+import sharp from 'sharp';
 import { LearningGoalSafetyService } from '../ai/learning-goal-safety/learning-goal-safety.service';
 import type { LearningGoalSafetyResult } from '../ai/schemas/learning-goal-safety.schema';
+import { PhotoDescriptorService } from '../ai/photo/photo-descriptor.service';
+import { PhotoPortraitService } from '../ai/photo/photo-portrait.service';
 import { isActiveSubscriptionStatus } from '../prisma/subscription-status.util';
 import { ageToAgeBand } from '../pdf/page-templates/page-templates.config';
+
+const PHOTO_MIME = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const PHOTO_MAX_DIM = 1024;
 
 interface CreateChildDto {
   name: string;
@@ -73,6 +80,8 @@ export class BooksService {
     private readonly prisma: PrismaService,
     private readonly s3: S3Service,
     private readonly learningGoalSafety: LearningGoalSafetyService,
+    private readonly photoDescriptor: PhotoDescriptorService,
+    private readonly photoPortrait: PhotoPortraitService,
   ) {}
 
   listChildren(userId: string) {
@@ -260,6 +269,93 @@ export class BooksService {
     );
 
     return { ...book, mode: dto.mode };
+  }
+
+  // --- Photo character (#128, child mode) ---
+
+  async uploadChildPhoto(
+    userId: string,
+    bookId: string,
+    file: { buffer: Buffer; mimetype: string },
+    consent: boolean,
+  ): Promise<{ descriptor: string }> {
+    await this.assertPhotoBook(userId, bookId);
+    if (!consent) throw new BadRequestException('Parental consent is required to use a photo');
+    if (!PHOTO_MIME.has(file.mimetype)) {
+      throw new BadRequestException('Photo must be a JPEG, PNG or WebP image');
+    }
+    // Downscale on the way in: bounds the payload for the vision/image calls and
+    // keeps the least amount of the child's raw photo on disk (deleted at generation).
+    const jpeg = await sharp(file.buffer)
+      .rotate()
+      .resize(PHOTO_MAX_DIM, PHOTO_MAX_DIM, { fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality: 85 })
+      .toBuffer();
+
+    const { hasChildFace, descriptor } = await this.imageServiceCall(() =>
+      this.photoDescriptor.describePhoto({
+        photo: new Uint8Array(jpeg),
+        mimeType: 'image/jpeg',
+        bookId,
+      }),
+    );
+    if (!hasChildFace) {
+      throw new BadRequestException(
+        'No child face detected — please upload a clear, front-facing photo of the child',
+      );
+    }
+
+    const key = `books/${bookId}/upload`;
+    await this.s3.uploadObject({ key, body: jpeg, contentType: 'image/jpeg' });
+    await this.prisma.book.update({
+      where: { id: bookId },
+      data: { childPhotoKey: key, characterDescriptor: descriptor, photoConsent: true },
+    });
+    return { descriptor };
+  }
+
+  async buildPortraitPreview(
+    userId: string,
+    bookId: string,
+    descriptor?: string,
+  ): Promise<{ portraitKey: string; descriptor: string }> {
+    await this.assertPhotoBook(userId, bookId);
+    const edited = descriptor?.trim();
+    if (edited) {
+      await this.prisma.book.update({
+        where: { id: bookId },
+        data: { characterDescriptor: edited },
+      });
+    }
+    return this.imageServiceCall(() => this.photoPortrait.buildPortrait(bookId));
+  }
+
+  // Map AI/image-provider failures (e.g. Gemini 429 spend-cap, timeouts) to a
+  // clear 503 instead of a raw 500 — but let deliberate HttpExceptions through.
+  private async imageServiceCall<T>(fn: () => Promise<T>): Promise<T> {
+    try {
+      return await fn();
+    } catch (err) {
+      if (err instanceof HttpException) throw err;
+      this.logger.error(`Image service call failed: ${err instanceof Error ? err.message : err}`);
+      throw new ServiceUnavailableException(
+        'Сервис изображений сейчас недоступен. Попробуйте позже.',
+      );
+    }
+  }
+
+  private async assertPhotoBook(userId: string, bookId: string): Promise<void> {
+    const book = await this.prisma.book.findUnique({
+      where: { id: bookId },
+      select: { userId: true, protagonistMode: true, status: true },
+    });
+    if (!book || book.userId !== userId) throw new NotFoundException('Book not found');
+    if (book.protagonistMode !== 'child') {
+      throw new BadRequestException('A photo character is only available for child-mode books');
+    }
+    if (book.status !== 'pending') {
+      throw new BadRequestException('A photo can only be set before generation starts');
+    }
   }
 
   /**

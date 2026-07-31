@@ -75,7 +75,12 @@ Per-book choice in the Custom Flow (`Book.protagonistMode`): `child` — the her
 ### Character Appearance
 Free-text visual description of the child stored on `Child.appearance` (reusable across books). **Image-only:** in `child` mode it is converted, by an isolated derivation step, into the English `characterProfile` that drives the illustrations. It is deliberately **never** shown to the Plan or Prose phase, so a visual detail (a hair-bow, a dress) cannot leak into the plot or title (#216). If blank, the LLM invents an age-appropriate `characterProfile`.
 
-**Avoid:** "avatar", "portrait" — there is no image of the child; this is a text description only.
+**Avoid:** conflating this with [Photo Character] — `Character Appearance` is still a **text** field on `Child`, reused across books. The optional photo is a separate, per-book feature (#128) that does not touch `Child.appearance`.
+
+### Photo Character
+Optional, per-book (child mode) path (#128) that makes the hero **look like a real child**. The parent uploads one photo; a single vision call checks a child's face is present and extracts an editable **Character Descriptor** (stable facial features only); the photo is stylised once into a reference portrait (`Book.characterPortraitKey`) that anchors every page, exactly like the synthetic portrait it replaces. The raw upload (`Book.childPhotoKey`) is **transient** — stored privately, deleted the moment book generation starts (see [docs/adr/0006-photo-character-privacy.md]). Provider is Gemini only (default `gemini-2.5-flash-image`, `gemini-3-pro-image` opt-in via `GEMINI_IMAGE_MODEL`).
+
+**Avoid:** treating the descriptor as identity-of-record — it is a short drawing aid a parent can edit; the photo is the anchor, and neither is kept after generation.
 
 ### Personalization Seeds
 Soft, concrete per-book material stored on `Book` (`interests`, `motifs`, `favoriteWords`) and supplied in the Custom Flow. Fed into the **Plan** phase to attack banality with specifics: they flavour the hero's **world** (props, setting, small touches) but never change the premise, conflict, or lesson — those are invented by the Plan phase itself for the actual `Learning Goal`, guided by the beat sheet and the `Gold Exemplar`'s craft/register only (the exemplar's own plot is never reused — #313). `favoriteWords` are woven only where natural, never forced (forcing flattens prose, per ADR-0005). Empty by default; when empty the Plan prompt is unchanged (#197). (A fourth seed, `belongings` — a named pet/toy — was tried and removed: #245. It needed its own derivation call and a firm-presence rule just to avoid disappearing, because a fixed reference story's own beat could conflict with a named pet's role in exemplar-specific ways; deemed disproportionate complexity for one of four seed fields, with a real risk of becoming per-exemplar whack-a-mole.)
@@ -135,7 +140,7 @@ Per-book illustration style (`Book.artStyle`): `watercolor` (default) / `cartoon
 **Avoid:** "theme", "skin" — the term is "art style".
 
 ### Character Profile
-The English visual description of the protagonist that the LLM emits in `StorySchema.characterProfile`, prepended to **every** page's illustration prompt so the character looks consistent across pages. In `child` mode it derives from `Character Appearance`; in `observer` mode it describes the invented character.
+The English visual description of the protagonist that the LLM emits in `StorySchema.characterProfile`, prepended to **every** page's illustration prompt so the character looks consistent across pages. In `child` mode it derives from `Character Appearance`; in `observer` mode it describes the invented character. When [Photo Character] is used, the photo-derived **Character Descriptor** is folded into the page prompts instead, and the approved photo portrait (not a synthetic one) anchors the pages.
 
 **Avoid:** "character sheet", "bio" — it is a short visual descriptor, not a backstory.
 

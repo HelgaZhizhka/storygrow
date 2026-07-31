@@ -8,6 +8,7 @@ import { PAGE_TEMPLATES } from '../../pdf/page-templates/page-templates.config';
 import { S3Service } from '../../s3/s3.service';
 import {
   DEFAULT_IMAGE_PROVIDER,
+  GEMINI_IMAGE_MODEL,
   GENERATION_MODEL,
   type ArtStyle,
   type ImageProviderName,
@@ -23,6 +24,10 @@ export interface ImageGenInput {
   story: Story;
   bookId: string;
   artStyle: ArtStyle;
+  // Photo flow (#128): a parent-approved portrait to anchor on (skip synthetic
+  // portrait), plus the named-feature descriptor folded into every page prompt.
+  approvedPortraitKey?: string | null;
+  characterDescriptor?: string | null;
 }
 
 export interface ImageGenResult {
@@ -48,7 +53,10 @@ export class ImageGeneratorService {
     this.provider =
       name === 'openai'
         ? new OpenAiImageProvider()
-        : new GeminiImageProvider(config.getOrThrow<string>('GOOGLE_GENERATIVE_AI_API_KEY'));
+        : new GeminiImageProvider(
+            config.getOrThrow<string>('GOOGLE_GENERATIVE_AI_API_KEY'),
+            config.get<string>('GEMINI_IMAGE_MODEL') ?? GEMINI_IMAGE_MODEL,
+          );
     this.logger.log(`Image provider: ${name} (${this.provider.modelLabel})`);
   }
 
@@ -65,7 +73,7 @@ export class ImageGeneratorService {
           this.generatePage({
             bookId: input.bookId,
             pageNumber: i + 1,
-            prompt: this.pagePrompt(input.story, page),
+            prompt: this.pagePrompt(input.story, page, input.characterDescriptor),
             template: page.template,
             artStyle: input.artStyle,
             reference: portrait?.bytes,
@@ -78,8 +86,27 @@ export class ImageGeneratorService {
     });
   }
 
-  private pagePrompt(story: Story, page: Story['pages'][number]): string {
-    if (this.provider.usesReference) return page.illustrationPrompt;
+  // Photo → stylised portrait (#128, phase 1). Gemini-only (the photo path never
+  // selects OpenAI); a refusal surfaces as ImageGenerationError for the caller.
+  async generatePhotoPortrait(input: {
+    photo: Uint8Array;
+    descriptor: string;
+    artStyle: ArtStyle;
+  }): Promise<Uint8Array> {
+    if (!this.provider.usesReference) {
+      throw new Error('Photo portraits require the Gemini image provider');
+    }
+    return this.provider.generatePortraitFromPhoto(input);
+  }
+
+  private pagePrompt(
+    story: Story,
+    page: Story['pages'][number],
+    descriptor?: string | null,
+  ): string {
+    if (this.provider.usesReference) {
+      return descriptor ? `${descriptor}. ${page.illustrationPrompt}` : page.illustrationPrompt;
+    }
     const prefix = story.characterProfile ? `${story.characterProfile}. ` : '';
     return `${prefix}${page.illustrationPrompt}`;
   }
@@ -87,6 +114,11 @@ export class ImageGeneratorService {
   private async maybePortrait(
     input: ImageGenInput,
   ): Promise<{ key: string; bytes: Uint8Array } | null> {
+    // Photo flow: reuse the parent-approved portrait; do not generate one.
+    if (input.approvedPortraitKey) {
+      const bytes = await this.s3.getObjectBytes(input.approvedPortraitKey);
+      return { key: input.approvedPortraitKey, bytes };
+    }
     const { characterProfile } = input.story;
     if (!this.provider.usesReference || !characterProfile) return null;
     return startActiveObservation('image-generation.portrait', async (span) => {

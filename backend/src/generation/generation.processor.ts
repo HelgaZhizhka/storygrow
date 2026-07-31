@@ -17,6 +17,8 @@ interface BookWithRelations {
   imageKeys: string[];
   protagonistMode: 'child' | 'observer';
   artStyle: 'watercolor' | 'cartoon' | 'storybook' | 'pixel' | 'realistic';
+  characterPortraitKey: string | null;
+  characterDescriptor: string | null;
   interests: string[];
   motifs: string[];
   favoriteWords: string[];
@@ -108,10 +110,16 @@ export class GenerationProcessor extends WorkerHost {
         );
         imageKeys = book.imageKeys;
       } else {
+        // Photo flow (#128) is discriminated by a stored descriptor (set only when
+        // a photo was uploaded); characterPortraitKey alone can also be a retry
+        // artefact of the synthetic path, so it is not a safe discriminator.
+        const isPhotoFlow = Boolean(book.characterDescriptor);
         const generated = await this.imageGenerator.generate({
           story,
           bookId,
           artStyle: book.artStyle,
+          approvedPortraitKey: isPhotoFlow ? book.characterPortraitKey : null,
+          characterDescriptor: book.characterDescriptor,
         });
         imageKeys = generated.imageKeys;
         await this.prisma.book.update({
@@ -166,6 +174,8 @@ export class GenerationProcessor extends WorkerHost {
         imageKeys: true,
         protagonistMode: true,
         artStyle: true,
+        characterPortraitKey: true,
+        characterDescriptor: true,
         interests: true,
         motifs: true,
         favoriteWords: true,

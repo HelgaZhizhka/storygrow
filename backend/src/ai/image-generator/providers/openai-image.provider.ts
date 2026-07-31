@@ -14,6 +14,11 @@ export class OpenAiImageProvider implements ImageProvider {
     return Promise.reject(new Error('OpenAiImageProvider does not generate portraits'));
   }
 
+  generatePortraitFromPhoto(): Promise<Uint8Array> {
+    // Photo-likeness (#128) is Gemini-only; the photo path never selects OpenAI.
+    return Promise.reject(new Error('OpenAiImageProvider does not support photo portraits'));
+  }
+
   async generatePage(input: PageInput): Promise<Uint8Array> {
     const prompt = `${input.prompt}${STYLE_SUFFIXES[input.artStyle]}`;
     try {

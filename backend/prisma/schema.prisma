@@ -64,6 +64,14 @@ model Book {
   imageKeys             String[]     @default([])
   characterPortraitKey  String?
   pdfKey                String?
+  // Photo-character likeness (#128, child mode). childPhotoKey is the TRANSIENT
+  // private S3 key of the raw upload — nulled the moment the stylised portrait is
+  // persisted (raw child photo lives exactly once; see spec decision 5).
+  // characterDescriptor is the editable feature line extracted from the photo;
+  // photoConsent gates generation on explicit parental consent.
+  childPhotoKey         String?
+  characterDescriptor   String?
+  photoConsent          Boolean      @default(false)
   protagonistMode ProtagonistMode @default(child)
   artStyle        ArtStyle        @default(watercolor)
   // Personalization seeds (#197) — soft, per-book material fed into the Plan

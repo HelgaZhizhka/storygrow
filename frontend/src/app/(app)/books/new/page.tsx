@@ -49,6 +49,8 @@ export default function NewBookPage(): React.ReactElement {
   const [childrenLoaded, setChildrenLoaded] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [fastResult, setFastResult] = useState<{ bookId: string; pdfUrl: string } | null>(null);
+  // #128: opt into the photo-character step (child hero looks like a real photo).
+  const [usePhoto, setUsePhoto] = useState(false);
 
   const {
     register,
@@ -160,6 +162,12 @@ export default function NewBookPage(): React.ReactElement {
           motifs: toSeedList(values.motifs),
           favoriteWords: toSeedList(values.favoriteWords),
         });
+        // Photo character (#128): defer generation to the portrait step, where the
+        // parent uploads a photo, approves the stylised portrait, then generates.
+        if (usePhoto && values.protagonistMode === 'child') {
+          router.replace(`/books/${book.id}/portrait`);
+          return;
+        }
         await api.post(`/books/${book.id}/generate`, {});
         router.replace(`/books/${book.id}/progress`);
       }
@@ -248,6 +256,22 @@ export default function NewBookPage(): React.ReactElement {
                   Наблюдатель
                 </button>
               </div>
+              {protagonistMode === 'child' && (
+                <label className="mt-3 flex items-start gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={usePhoto}
+                    onChange={(e) => setUsePhoto(e.target.checked)}
+                  />
+                  <span>
+                    <b>Сделать героя похожим на моего ребёнка</b>
+                    <span className="sg-radio-desc">
+                      На следующем шаге загрузите фото — мы нарисуем героя по нему. Фото удаляется
+                      после создания портрета.
+                    </span>
+                  </span>
+                </label>
+              )}
             </div>
             <div>
               <label className="sg-label">Стиль иллюстраций</label>

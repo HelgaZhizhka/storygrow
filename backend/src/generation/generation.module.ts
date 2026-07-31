@@ -4,6 +4,7 @@ import { AiModule } from '../ai/ai.module';
 import { PdfModule } from '../pdf/pdf.module';
 import { BooksModule } from '../books/books.module';
 import { PrismaModule } from '../prisma/prisma.module';
+import { S3Module } from '../s3/s3.module';
 import { AuthModule } from '../auth/auth.module';
 import { GenerationService } from './generation.service';
 import { GenerationProcessor } from './generation.processor';
@@ -27,6 +28,7 @@ import { GENERATION_QUEUE } from './generation.types';
     AuthModule,
     BooksModule,
     PdfModule,
+    S3Module,
   ],
   controllers: [GenerationController],
   providers: [GenerationService, GenerationProcessor, StaleBooksSweeperService],

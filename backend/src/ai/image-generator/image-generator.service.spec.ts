@@ -49,6 +49,7 @@ import type { Story } from '../schemas';
 const mockS3 = {
   uploadObject: jest.fn(),
   getSignedUrl: jest.fn(),
+  getObjectBytes: jest.fn(),
 };
 
 const makeMockConfig = (imageProvider: string) => ({
@@ -221,6 +222,33 @@ describe('ImageGeneratorService', () => {
 
       expect(result.characterPortraitKey).toBeNull();
       expect(mockS3.uploadObject).toHaveBeenCalledTimes(1);
+    });
+
+    it('photo flow: loads the approved portrait, generates no portrait, folds descriptor into pages', async () => {
+      const service = await makeService('gemini');
+      mockGenerateImage.mockResolvedValue({ image: { uint8Array: new Uint8Array([1]) } });
+      mockS3.uploadObject.mockResolvedValue(undefined);
+      mockS3.getObjectBytes.mockResolvedValue(new Uint8Array([5, 5]));
+
+      const story = makeStory({ characterProfile: 'a girl', pageCount: 2 });
+      const result = await service.generate({
+        story,
+        bookId: 'book-9',
+        artStyle: 'watercolor',
+        approvedPortraitKey: 'books/book-9/portrait.png',
+        characterDescriptor: 'round face, blue eyes',
+      });
+
+      // Approved portrait is loaded, not generated, and reused as the key.
+      expect(mockS3.getObjectBytes).toHaveBeenCalledWith('books/book-9/portrait.png');
+      expect(result.characterPortraitKey).toBe('books/book-9/portrait.png');
+      // Only the 2 page images are uploaded (no portrait upload).
+      expect(mockS3.uploadObject).toHaveBeenCalledTimes(2);
+      // Descriptor is folded into each page prompt (the provider wraps it further).
+      const pageCalls = mockGenerateImage.mock.calls as Array<[{ prompt: { text?: string } }]>;
+      expect(pageCalls.every(([arg]) => arg.prompt.text?.includes('round face, blue eyes.'))).toBe(
+        true,
+      );
     });
   });
 });

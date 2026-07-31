@@ -60,6 +60,12 @@ export class S3Service implements OnModuleInit {
     );
   }
 
+  async getObjectBytes(key: string): Promise<Uint8Array> {
+    const res = await this.client.send(new GetObjectCommand({ Bucket: this.bucket, Key: key }));
+    if (!res.Body) throw new Error(`S3 object not found: ${key}`);
+    return res.Body.transformToByteArray();
+  }
+
   async getSignedUrl(key: string): Promise<string> {
     return getSignedUrl(this.client, new GetObjectCommand({ Bucket: this.bucket, Key: key }), {
       expiresIn: SIGNED_URL_TTL_SECONDS,

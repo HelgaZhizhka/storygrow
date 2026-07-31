@@ -8,6 +8,7 @@ import { getQueueToken } from '@nestjs/bullmq';
 import { NotFoundException, ConflictException } from '@nestjs/common';
 import { GenerationService } from './generation.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { S3Service } from '../s3/s3.service';
 import { GENERATION_QUEUE, GENERATE_BOOK_JOB } from './generation.types';
 
 const mockQueue = {
@@ -18,7 +19,12 @@ const mockQueue = {
 const mockPrisma = {
   book: {
     findUnique: jest.fn(),
+    update: jest.fn(),
   },
+};
+
+const mockS3 = {
+  deleteObjects: jest.fn(),
 };
 
 const userId = 'user-1';
@@ -34,6 +40,7 @@ describe('GenerationService', () => {
         GenerationService,
         { provide: getQueueToken(GENERATION_QUEUE), useValue: mockQueue },
         { provide: PrismaService, useValue: mockPrisma },
+        { provide: S3Service, useValue: mockS3 },
       ],
     }).compile();
     service = module.get(GenerationService);
@@ -76,6 +83,42 @@ describe('GenerationService', () => {
 
       expect(mockQueue.add).toHaveBeenCalledWith(GENERATE_BOOK_JOB, { bookId, userId });
       expect(result.jobId).toBe('job-42');
+    });
+
+    it('blocks a photo book whose portrait is not yet approved', async () => {
+      mockPrisma.book.findUnique.mockResolvedValueOnce({
+        id: bookId,
+        userId,
+        status: 'pending',
+        characterDescriptor: 'round face, blue eyes',
+        characterPortraitKey: null,
+        childPhotoKey: 'books/book-1/upload',
+      });
+      await expect(service.enqueueBook(bookId, userId)).rejects.toThrow(ConflictException);
+      expect(mockQueue.add).not.toHaveBeenCalled();
+      expect(mockS3.deleteObjects).not.toHaveBeenCalled();
+    });
+
+    it('deletes the raw photo before enqueuing an approved photo book', async () => {
+      mockPrisma.book.findUnique.mockResolvedValueOnce({
+        id: bookId,
+        userId,
+        status: 'pending',
+        characterDescriptor: 'round face, blue eyes',
+        characterPortraitKey: 'books/book-1/portrait.png',
+        childPhotoKey: 'books/book-1/upload',
+      });
+      mockQueue.add.mockResolvedValueOnce({ id: 'job-77' });
+
+      const result = await service.enqueueBook(bookId, userId);
+
+      expect(mockS3.deleteObjects).toHaveBeenCalledWith(['books/book-1/upload']);
+      expect(mockPrisma.book.update).toHaveBeenCalledWith({
+        where: { id: bookId },
+        data: { childPhotoKey: null },
+      });
+      expect(mockQueue.add).toHaveBeenCalledWith(GENERATE_BOOK_JOB, { bookId, userId });
+      expect(result.jobId).toBe('job-77');
     });
   });
 
