@@ -891,3 +891,20 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - All 7 code tasks reviewed clean or Approved-with-tracked-minors by a fresh subagent reviewer per task; no Critical findings, no fix-loop rounds needed.
 
 **Blockers:** none. Open: `books.service.spec.ts`'s file-size debt needs an explicit call before/at merge (split now vs. tracked follow-up issue).
+
+---
+
+## 2026-07-31 — feat: photo-based character likeness thin slice (#128)
+
+**Done:**
+- Reversed #128's "post-defense / GDPR blocker" status into a shipped **thin vertical slice**: a parent uploads one photo (child mode) → the hero is drawn to resemble that child on every page. Grilled the design (`docs/superpowers/specs/2026-07-29-photo-character-thin-slice-design.md`), then a 10-task plan (`docs/superpowers/plans/2026-07-31-photo-character-thin-slice.md`).
+- **Model bake-off (resolved):** provider stays Gemini — prod default `gemini-2.5-flash-image`, `gemini-3-pro-image` opt-in via `GEMINI_IMAGE_MODEL`. Qwen-Image-Edit (Alibaba) rejected on **privacy** (cross-border minor biometrics), not quality. Two fixes moved likeness more than the model: explicit 2:3 portrait aspect + a vision **descriptor** pre-step. Spikes committed (`spike-photo-portrait*.ts`); spike photos/outputs gitignored.
+- Shipped (backend): `Book.childPhotoKey`/`characterDescriptor`/`photoConsent` + migration; `PhotoDescriptorService` (one `generateObject` vision call: face-present gate + editable descriptor, no photo in traces); `generatePortraitFromPhoto` on the Gemini provider; `PhotoPortraitService`; `maybePortrait` loads the approved portrait + folds descriptor into page prompts; `enqueueBook` blocks un-approved portraits and **deletes the raw photo at generation-start** (Variant B); upload/portrait/regenerate endpoints (multipart + `sharp` downscale, consent-gated). Frontend: opt-in checkbox on the new-book form + a `books/[id]/portrait` step (upload → preview → editable descriptor → regenerate → create). ADR-0006 records the deferred privacy "known gaps".
+- **Live verification (Task 9):** drove the real API end-to-end (test-login → child → goal → book → multipart photo upload → portrait). Upload returned a correct descriptor for the test photo; the portrait built via Gemini and rendered a recognisable, watercolour 2:3 hero (eyeballed). `./init.sh` green (355 backend + 58 frontend tests).
+- Caught live: a raw `500` on the upload path was **Gemini 429 (monthly spend-cap exceeded)**, not a code bug — user raised the cap; re-ran and it worked. Added graceful `503` mapping for image-service failures (`1c8dd8a`) so a provider hiccup shows a clear message, not a crash.
+
+**Decisions:**
+- Deletion timing = Variant B (delete raw photo at generation-start, not right after the portrait) so the parent can regenerate freely; invariant "raw photo gone before async generation starts".
+- Descriptor is auto-extracted but **editable** — proven necessary live (a tooth gap was mis-read as "missing teeth" and rendered badly until corrected).
+
+**Blockers:** none. Not yet run: a full in-browser book generation (deferred to save API budget; the image path is verified and the book pipeline is otherwise unchanged + unit-tested). Frontend component tests deferred (noted in plan). Ready to open the PR (`Closes #128`).
