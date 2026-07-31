@@ -35,8 +35,8 @@
 - `Book.photoConsent: Boolean @default(false)` — parental consent gate.
 - (`Book.characterPortraitKey` already exists — reuse for the approved portrait.)
 
-- [ ] Add the three fields to `model Book`.
-- [ ] `pnpm --filter backend prisma:migrate` (name: `book-photo-character`). Confirm no HNSW drift in the diff.
+- [x] Add the three fields to `model Book`.
+- [x] `pnpm --filter backend prisma:migrate` (name: `book-photo-character`). Confirm no HNSW drift in the diff. → `20260731065221_book_photo_character` (3 `ADD COLUMN`s only).
 
 ---
 
