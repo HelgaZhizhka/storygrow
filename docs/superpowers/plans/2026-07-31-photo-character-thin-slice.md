@@ -101,9 +101,10 @@
   6. **`s3.deleteObjects([photoKey])` and null `Book.childPhotoKey`**;
   7. wrap in `startActiveObservation('photo.portrait', …)` — no photo in the span.
 
-- [ ] Implement; regeneration = call again (raw photo still present until first success — see Task 5 ordering note).
+- [x] Implemented as `PhotoPortraitService.buildPortrait(bookId)`: loads the stored photo + `characterDescriptor`, generates via `ImageGeneratorService.generatePhotoPortrait`, uploads `books/{id}/portrait.png`, sets `characterPortraitKey`. **Raw-photo deletion moved out** — per the chosen Variant B it happens at generation-start (Task 5/6), so regeneration keeps working. Face-check + descriptor extraction moved to upload (Task 5), so this service needs no mime and never mis-fires the vision call.
+- [x] Added `S3Service.getObjectBytes` (needed here and in Task 6).
 
-**Test:** unit test the happy path (portrait persisted, raw photo deleted, key set) and the `NoChildFaceError` path (no portrait, no deletion, raw photo retained for a retry with a different photo).
+**Test:** ✅ `photo-portrait.service.spec.ts` — happy path (loads photo, generates with descriptor+artStyle, uploads, sets key) and the "no photo/descriptor" guard.
 
 ---
 

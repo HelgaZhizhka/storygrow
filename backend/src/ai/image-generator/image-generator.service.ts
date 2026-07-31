@@ -82,6 +82,19 @@ export class ImageGeneratorService {
     });
   }
 
+  // Photo → stylised portrait (#128, phase 1). Gemini-only (the photo path never
+  // selects OpenAI); a refusal surfaces as ImageGenerationError for the caller.
+  async generatePhotoPortrait(input: {
+    photo: Uint8Array;
+    descriptor: string;
+    artStyle: ArtStyle;
+  }): Promise<Uint8Array> {
+    if (!this.provider.usesReference) {
+      throw new Error('Photo portraits require the Gemini image provider');
+    }
+    return this.provider.generatePortraitFromPhoto(input);
+  }
+
   private pagePrompt(story: Story, page: Story['pages'][number]): string {
     if (this.provider.usesReference) return page.illustrationPrompt;
     const prefix = story.characterProfile ? `${story.characterProfile}. ` : '';
