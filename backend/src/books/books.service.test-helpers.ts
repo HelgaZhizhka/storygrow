@@ -14,8 +14,12 @@ import { BooksService } from './books.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { S3Service } from '../s3/s3.service';
 import { LearningGoalSafetyService } from '../ai/learning-goal-safety/learning-goal-safety.service';
+import { PhotoDescriptorService } from '../ai/photo/photo-descriptor.service';
+import { PhotoPortraitService } from '../ai/photo/photo-portrait.service';
 
 export const mockLearningGoalSafety = { check: jest.fn() };
+export const mockPhotoDescriptor = { describePhoto: jest.fn() };
+export const mockPhotoPortrait = { buildPortrait: jest.fn() };
 
 export const basePrisma = {
   child: {
@@ -36,6 +40,7 @@ export const basePrisma = {
     findMany: jest.fn(),
     findUnique: jest.fn(),
     findFirst: jest.fn(),
+    update: jest.fn(),
     delete: jest.fn(),
   },
   template: { findFirst: jest.fn() },
@@ -53,6 +58,7 @@ export const mockS3 = {
   deleteObjects: jest.fn(),
   uploadObject: jest.fn(),
   getSignedUrl: jest.fn(),
+  getObjectBytes: jest.fn(),
 };
 
 // Shared by every books.service.*.spec.ts file: resets the mocks and builds a
@@ -66,6 +72,8 @@ export async function createBooksServiceForTest(): Promise<BooksService> {
       { provide: PrismaService, useValue: mockPrisma },
       { provide: S3Service, useValue: mockS3 },
       { provide: LearningGoalSafetyService, useValue: mockLearningGoalSafety },
+      { provide: PhotoDescriptorService, useValue: mockPhotoDescriptor },
+      { provide: PhotoPortraitService, useValue: mockPhotoPortrait },
     ],
   }).compile();
   return module.get(BooksService);

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -9,8 +10,11 @@ import {
   Param,
   Post,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -35,6 +39,17 @@ const createCustomLearningGoalSchema = z.object({
 // Personalization seeds (#197): soft, concrete per-book material. Capped to keep
 // the Plan prompt lean and to bound abuse; empty by default.
 const seedList = z.array(z.string().trim().min(1).max(60)).max(6).default([]);
+
+const MAX_PHOTO_BYTES = 25 * 1024 * 1024;
+
+interface UploadedPhoto {
+  buffer: Buffer;
+  mimetype: string;
+}
+
+const regeneratePortraitSchema = z.object({
+  descriptor: z.string().trim().max(600).optional(),
+});
 
 const createBookSchema = z.object({
   childId: z.string().min(1),
@@ -110,6 +125,44 @@ export class BooksController {
     }
 
     return this.books.createBook(user.sub, dto);
+  }
+
+  // --- Photo character (#128): upload → portrait preview → regenerate ---
+
+  @Post('books/:id/photo')
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(FileInterceptor('photo', { limits: { fileSize: MAX_PHOTO_BYTES } }))
+  async uploadPhoto(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') id: string,
+    @UploadedFile() file: UploadedPhoto | undefined,
+    @Body('consent') consent?: string,
+  ) {
+    if (!file) throw new BadRequestException('No photo uploaded');
+    const consented = consent === 'true' || consent === '1';
+    return this.books.uploadChildPhoto(user.sub, id, file, consented);
+  }
+
+  @Post('books/:id/portrait')
+  @HttpCode(HttpStatus.OK)
+  async buildPortrait(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    const { portraitKey, descriptor } = await this.books.buildPortraitPreview(user.sub, id);
+    return { portraitUrl: await this.bookImage.signKey(portraitKey), descriptor };
+  }
+
+  @Post('books/:id/portrait/regenerate')
+  @HttpCode(HttpStatus.OK)
+  async regeneratePortrait(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    const { descriptor } = regeneratePortraitSchema.parse(body);
+    const result = await this.books.buildPortraitPreview(user.sub, id, descriptor);
+    return {
+      portraitUrl: await this.bookImage.signKey(result.portraitKey),
+      descriptor: result.descriptor,
+    };
   }
 
   @Get('books/quota')

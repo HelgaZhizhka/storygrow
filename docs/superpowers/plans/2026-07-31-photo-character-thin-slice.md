@@ -118,10 +118,13 @@
 - `POST /books/:id/portrait/regenerate` — same, accepts `{ descriptor?: string }` (edited descriptor); re-runs while a raw photo is still present.
 - Approval is implicit: the book advances to generation only after a portrait exists (Task 6 guard).
 
-- [ ] Ordering note: keep the raw photo until the parent **approves**; delete on approval (move the Task-4 deletion to a small `approvePortrait` step, or delete on "start generation"). Pick one and document it in the service — the invariant is "raw photo gone by the time async generation starts".
-- [ ] Guards: reject on non-child mode, missing consent, missing photo.
+- [x] Endpoints live on `BooksController`; logic in `BooksService` (`uploadChildPhoto`, `buildPortraitPreview`). Upload uses `FileInterceptor` (multipart, 25 MB cap) and **downscales with `sharp`** to ≤1024px JPEG before the vision call / storage (bounds Gemini payload; keeps less of the raw photo). Face-check runs at upload; no face → `BadRequestException`.
+- [x] Regenerate reuses `buildPortraitPreview` with an optional edited descriptor.
+- [x] Deletion timing = **Variant B** (chosen): raw photo deleted at generation-start (`GenerationService.enqueueBook`, Task 6), so the parent can regenerate freely.
+- [x] Guards (`assertPhotoBook`): owner-only, `child` mode only, `pending` status only; consent + mime enforced in `uploadChildPhoto`.
+- [x] Added `sharp` dependency (server-side downscale).
 
-**Test:** e2e/controller tests for consent-gate rejection, mime/size rejection, and the happy upload→portrait→regenerate flow with S3 mocked.
+**Test:** ✅ `books.service.photo.spec.ts` — consent gate, no-face rejection, mime rejection, ownership + status guards, happy upload (downscaled store + descriptor persisted), and portrait preview with/without an edited descriptor.
 
 ---
 
