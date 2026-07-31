@@ -6,6 +6,7 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { Prisma, SubscriptionPlan } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -291,11 +292,13 @@ export class BooksService {
       .jpeg({ quality: 85 })
       .toBuffer();
 
-    const { hasChildFace, descriptor } = await this.photoDescriptor.describePhoto({
-      photo: new Uint8Array(jpeg),
-      mimeType: 'image/jpeg',
-      bookId,
-    });
+    const { hasChildFace, descriptor } = await this.imageServiceCall(() =>
+      this.photoDescriptor.describePhoto({
+        photo: new Uint8Array(jpeg),
+        mimeType: 'image/jpeg',
+        bookId,
+      }),
+    );
     if (!hasChildFace) {
       throw new BadRequestException(
         'No child face detected — please upload a clear, front-facing photo of the child',
@@ -324,7 +327,21 @@ export class BooksService {
         data: { characterDescriptor: edited },
       });
     }
-    return this.photoPortrait.buildPortrait(bookId);
+    return this.imageServiceCall(() => this.photoPortrait.buildPortrait(bookId));
+  }
+
+  // Map AI/image-provider failures (e.g. Gemini 429 spend-cap, timeouts) to a
+  // clear 503 instead of a raw 500 — but let deliberate HttpExceptions through.
+  private async imageServiceCall<T>(fn: () => Promise<T>): Promise<T> {
+    try {
+      return await fn();
+    } catch (err) {
+      if (err instanceof HttpException) throw err;
+      this.logger.error(`Image service call failed: ${err instanceof Error ? err.message : err}`);
+      throw new ServiceUnavailableException(
+        'Сервис изображений сейчас недоступен. Попробуйте позже.',
+      );
+    }
   }
 
   private async assertPhotoBook(userId: string, bookId: string): Promise<void> {
