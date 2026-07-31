@@ -8,6 +8,7 @@ import { PAGE_TEMPLATES } from '../../pdf/page-templates/page-templates.config';
 import { S3Service } from '../../s3/s3.service';
 import {
   DEFAULT_IMAGE_PROVIDER,
+  GEMINI_IMAGE_MODEL,
   GENERATION_MODEL,
   type ArtStyle,
   type ImageProviderName,
@@ -48,7 +49,10 @@ export class ImageGeneratorService {
     this.provider =
       name === 'openai'
         ? new OpenAiImageProvider()
-        : new GeminiImageProvider(config.getOrThrow<string>('GOOGLE_GENERATIVE_AI_API_KEY'));
+        : new GeminiImageProvider(
+            config.getOrThrow<string>('GOOGLE_GENERATIVE_AI_API_KEY'),
+            config.get<string>('GEMINI_IMAGE_MODEL') ?? GEMINI_IMAGE_MODEL,
+          );
     this.logger.log(`Image provider: ${name} (${this.provider.modelLabel})`);
   }
 

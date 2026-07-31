@@ -52,6 +52,31 @@ describe('GeminiImageProvider', () => {
     expect(typeof arg.prompt.text).toBe('string');
   });
 
+  it('stylises a photo into a portrait: photo as reference, 2:3 aspect', async () => {
+    mockGenerateImage.mockResolvedValue({ image: { uint8Array: bytes } });
+    const photo = new Uint8Array([4, 2]);
+    const out = await new GeminiImageProvider('key').generatePortraitFromPhoto({
+      photo,
+      descriptor: 'round face, blue eyes',
+      artStyle: 'watercolor',
+    });
+    expect(out).toBe(bytes);
+    const [arg] = mockGenerateImage.mock.calls[0] as [
+      { aspectRatio?: string; prompt: { text?: string; images?: Uint8Array[] } },
+    ];
+    expect(arg.aspectRatio).toBe('2:3');
+    expect(arg.prompt.images).toEqual([photo]);
+    expect(arg.prompt.text).toContain('round face, blue eyes');
+  });
+
+  it('uses an overridden model id for label and the SDK call', async () => {
+    mockGenerateImage.mockResolvedValue({ image: { uint8Array: bytes } });
+    const provider = new GeminiImageProvider('key', 'gemini-3-pro-image');
+    expect(provider.modelLabel).toBe('gemini-3-pro-image');
+    await provider.generatePortrait({ characterProfile: 'a girl', artStyle: 'watercolor' });
+    expect(mockImage).toHaveBeenCalledWith('gemini-3-pro-image');
+  });
+
   it('maps a NoImageGeneratedError to a refusal', async () => {
     mockGenerateImage.mockRejectedValue(new FakeNoImage('blocked'));
     await expect(

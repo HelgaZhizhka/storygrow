@@ -63,10 +63,10 @@
 - Extend `ImageProvider` with `generatePortraitFromPhoto(input: { photo: Uint8Array; descriptor: string; artStyle: ArtStyle }): Promise<Uint8Array>`.
 - `buildPhotoPortraitPrompt(descriptor, artStyle)` in the prompt file — "Full-body character portrait of this child: {descriptor}. Redraw as {style}, preserving those exact features. Centered, plain neutral background." (validated wording from the spike).
 
-- [ ] Gemini impl: `generateImage({ model: google.image(model), prompt: { text, images: [photo] }, aspectRatio: '2:3' })` — **explicit 2:3** (the spike proved a missing aspect silently defaulted to 1:1 and shrank the face).
-- [ ] OpenAI provider: throw `not-supported` (photo path is Gemini-only for the slice); keep the interface honest.
+- [x] Gemini impl: `generateImage({ model: google.image(model), prompt: { text, images: [photo] }, aspectRatio: '2:3' })` — **explicit 2:3** (the spike proved a missing aspect silently defaulted to 1:1 and shrank the face).
+- [x] OpenAI provider: throw `not-supported` (photo path is Gemini-only for the slice); keep the interface honest.
 
-**Test:** provider unit test with a stubbed SDK asserting aspect `2:3` and that the photo is passed as the reference image.
+**Test:** ✅ provider spec asserts aspect `2:3`, photo passed as reference, descriptor in prompt.
 
 ---
 
@@ -79,11 +79,11 @@
 **Interfaces:**
 - `GEMINI_IMAGE_MODEL` stays the default constant; add an env read `config.get<string>('GEMINI_IMAGE_MODEL') ?? GEMINI_IMAGE_MODEL` in `ImageGeneratorService`, passed into `GeminiImageProvider` (constructor takes the model id instead of reading the constant directly).
 
-- [ ] Thread the resolved model id from `ConfigService` → provider; keep `modelLabel` reporting the actual id (it already flows into the LangFuse span).
-- [ ] `.env.example`: document `GEMINI_IMAGE_MODEL` (default `gemini-2.5-flash-image`; `gemini-3-pro-image` = Nano Banana Pro, ~3.4× cost).
-- [ ] Guard: the photo path (Task 3) is Gemini-only, so this switch only ever selects between Gemini image models.
+- [x] Thread the resolved model id from `ConfigService` → provider; keep `modelLabel` reporting the actual id (it already flows into the LangFuse span).
+- [x] `.env.example`: created (was missing from the repo) documenting `GEMINI_IMAGE_MODEL` (default `gemini-2.5-flash-image`; `gemini-3-pro-image` = Nano Banana Pro, ~3.4× cost) plus the full env set.
+- [x] Guard: the photo path (Task 3) is Gemini-only, so this switch only ever selects between Gemini image models.
 
-**Test:** unit test that a set env value overrides the default and reaches the provider's `modelLabel`.
+**Test:** ✅ provider spec asserts an overridden id reaches `modelLabel` and the SDK `image()` call.
 
 ---
 
