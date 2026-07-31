@@ -129,11 +129,12 @@
 
 **Files:** Modify `backend/src/ai/image-generator/image-generator.service.ts` (`maybePortrait`), and the generation entry that builds `characterProfile` (`story-generator.service.ts` / orchestrator).
 
-- [ ] `maybePortrait`: if `Book.characterPortraitKey` already exists **and** it came from a photo (e.g. `Book.characterDescriptor` set), **load** those bytes from S3 and use them as the reference — skip the synthetic text-portrait generation entirely.
-- [ ] Prepend `Book.characterDescriptor` into the effective `characterProfile` used for page prompts (keeps named features on every page; the portrait remains the visual anchor).
-- [ ] Leave the existing text-only path untouched when no photo/descriptor is present.
+- [x] `maybePortrait`: `ImageGenInput` gains `approvedPortraitKey`/`characterDescriptor`; when an approved portrait key is present, **load** its bytes from S3 and skip synthetic portrait generation.
+- [x] `pagePrompt` folds `characterDescriptor` into every page prompt (portrait stays the visual anchor).
+- [x] `generation.processor.fetchBook` selects the new fields; discriminator = `Boolean(book.characterDescriptor)` (not `characterPortraitKey`, which can be a synthetic-path retry artefact).
+- [x] **Generation-start (Task 5 backend part):** `GenerationService.enqueueBook` blocks a photo book with no approved portrait (`ConflictException`) and **deletes the raw photo** (`childPhotoKey`) before enqueuing (Variant B invariant). `S3Module` added to `GenerationModule`.
 
-**Test:** unit test that with a photo-derived portrait present, no portrait generation call is made and the stored bytes are used as the page reference.
+**Test:** ✅ image-generator spec (photo flow loads approved portrait, no portrait upload, descriptor folded into pages) + generation.service spec (approval guard + raw-photo deletion) + processor spec updated. Full backend suite green (347).
 
 ---
 

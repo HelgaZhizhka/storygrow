@@ -145,6 +145,8 @@ describe('GenerationProcessor', () => {
       story: mockStory,
       bookId: 'book-1',
       artStyle: 'watercolor',
+      approvedPortraitKey: null,
+      characterDescriptor: undefined,
     });
     expect(mockPrisma.book.update).toHaveBeenNthCalledWith(3, {
       where: { id: 'book-1' },
@@ -284,6 +286,8 @@ describe('GenerationProcessor', () => {
       story: mockStory,
       bookId: 'book-1',
       artStyle: 'watercolor',
+      approvedPortraitKey: null,
+      characterDescriptor: undefined,
     });
   });
 

@@ -24,6 +24,10 @@ export interface ImageGenInput {
   story: Story;
   bookId: string;
   artStyle: ArtStyle;
+  // Photo flow (#128): a parent-approved portrait to anchor on (skip synthetic
+  // portrait), plus the named-feature descriptor folded into every page prompt.
+  approvedPortraitKey?: string | null;
+  characterDescriptor?: string | null;
 }
 
 export interface ImageGenResult {
@@ -69,7 +73,7 @@ export class ImageGeneratorService {
           this.generatePage({
             bookId: input.bookId,
             pageNumber: i + 1,
-            prompt: this.pagePrompt(input.story, page),
+            prompt: this.pagePrompt(input.story, page, input.characterDescriptor),
             template: page.template,
             artStyle: input.artStyle,
             reference: portrait?.bytes,
@@ -95,8 +99,14 @@ export class ImageGeneratorService {
     return this.provider.generatePortraitFromPhoto(input);
   }
 
-  private pagePrompt(story: Story, page: Story['pages'][number]): string {
-    if (this.provider.usesReference) return page.illustrationPrompt;
+  private pagePrompt(
+    story: Story,
+    page: Story['pages'][number],
+    descriptor?: string | null,
+  ): string {
+    if (this.provider.usesReference) {
+      return descriptor ? `${descriptor}. ${page.illustrationPrompt}` : page.illustrationPrompt;
+    }
     const prefix = story.characterProfile ? `${story.characterProfile}. ` : '';
     return `${prefix}${page.illustrationPrompt}`;
   }
@@ -104,6 +114,11 @@ export class ImageGeneratorService {
   private async maybePortrait(
     input: ImageGenInput,
   ): Promise<{ key: string; bytes: Uint8Array } | null> {
+    // Photo flow: reuse the parent-approved portrait; do not generate one.
+    if (input.approvedPortraitKey) {
+      const bytes = await this.s3.getObjectBytes(input.approvedPortraitKey);
+      return { key: input.approvedPortraitKey, bytes };
+    }
     const { characterProfile } = input.story;
     if (!this.provider.usesReference || !characterProfile) return null;
     return startActiveObservation('image-generation.portrait', async (span) => {
