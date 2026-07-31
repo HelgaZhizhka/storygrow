@@ -58,6 +58,11 @@ export const DEFAULT_IMAGE_PROVIDER: ImageProviderName = 'gemini';
 // explicit id here. Gemini takes no `size`, only an aspect ratio.
 export const GEMINI_IMAGE_MODEL = 'gemini-2.5-flash-image';
 
+// Text/vision model for reading a child photo into a feature descriptor (#128).
+// An image-OUT model (GEMINI_IMAGE_MODEL) can't return structured text, so the
+// descriptor step uses a normal multimodal text model.
+export const GEMINI_VISION_MODEL = 'gemini-2.5-flash';
+
 export const IMAGE_SIZE_TO_ASPECT_RATIO: Record<ImageSize, '1:1' | '2:3' | '3:2'> = {
   '1024x1024': '1:1',
   '1024x1536': '2:3',

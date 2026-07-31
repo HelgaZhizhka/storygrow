@@ -48,10 +48,10 @@
 - `PhotoDescriptorSchema` (Zod): `{ hasChildFace: boolean; ageYears: number | null; descriptor: string }`.
 - `describePhoto(photo: Uint8Array, mime: string): Promise<PhotoDescriptor>` — one `generateObject` call on the vision model (`gemini-2.5-flash`), traced via `createTelemetry('photo.descriptor', …)` **without** the image bytes in metadata.
 
-- [ ] Prompt: extract *stable* facial-identity features (face shape, eye shape+colour, hair colour+style, skin tone, freckles), name apparent age + gender, and **downweight transient/awkward features** (missing/gappy teeth → describe as "small gap" or omit — see spec 6a mis-read). Also return `hasChildFace`.
-- [ ] Schema + prompt-constant tests (shape, no clothing/background leakage in a fixture).
+- [x] Prompt: extract *stable* facial-identity features (face shape, eye shape+colour, hair colour+style, skin tone, freckles), name apparent age, and **downweight transient/awkward features** (missing/gappy teeth → describe as "small gap" or omit — see spec 6a mis-read). Also return `hasChildFace`.
+- [x] Schema + service; registered/exported in `AiModule`.
 
-**Test:** unit test the service with a mocked model returning a fixture object; assert trace name and that the photo is not in trace metadata.
+**Test:** ✅ `photo-descriptor.service.spec.ts` — parsed descriptor, `hasChildFace: false` path, and that the photo is passed as an image part but never appears in trace metadata (`{ bookId }` only).
 
 ---
 
