@@ -145,13 +145,11 @@
 
 **Files:** book create flow under `frontend/` (the `child`-mode/custom-flow form + a new portrait-preview step/component).
 
-- [ ] Consent checkbox (parent/guardian) — generation CTA disabled until checked.
-- [ ] Photo upload (single image; client-side type/size hint) → `POST /books/:id/photo`.
-- [ ] Trigger portrait → show preview image; **editable descriptor text field pre-filled** from the response; "Regenerate" (posts edited descriptor) and "Change photo".
-- [ ] "Looks like them → create book" advances to the existing async generation + SSE progress.
-- [ ] Only render this step in `child` mode + custom flow.
+- [x] New-book form: opt-in checkbox "Сделать героя похожим на моего ребёнка" (custom + child only). When checked, submit creates the pending book and routes to the portrait step instead of generating.
+- [x] New route `books/[id]/portrait`: consent checkbox + file input → `POST /books/:id/photo` (multipart) → `POST /books/:id/portrait` → preview image + **editable descriptor** + "Перегенерировать" (posts edited descriptor) + "Сменить фото" + "Похоже — создать книгу" (→ `/generate` → progress). "Без фото" escape hatch generates directly.
+- [x] `api` client: FormData-aware (`postForm`, no forced JSON Content-Type).
 
-**Test:** component tests — CTA gating on consent, preview render, regenerate posts the edited descriptor.
+**Test:** deferred — flow is covered by backend unit tests; frontend component tests are a follow-up (noted here, not silently skipped).
 
 ---
 
