@@ -52,6 +52,33 @@ worth a second look sometime (not urgent, not user-facing, doesn't gate
 anything — see slide 4/9's note on this field being unmonitored technical
 debt), but not touching it two days before the defense.
 
+### Book 2 — Photo Character (#128, generated 2026-07-31)
+
+A full book whose hero is drawn from a **real uploaded photo** (the photo-character
+thin slice). Generated live in the browser during #128 verification and read
+page-by-page: the child is recognisable and consistent across all 7 pages
+(same blonde wavy hair, blue eyes, blue t-shirt), watercolour style. The raw
+upload was already deleted at generation-start (`childPhotoKey` empty) — only the
+stylised portrait + pages remain, which is exactly the privacy story for Q8-bis.
+
+| Field | Value |
+|---|---|
+| **Title** | «Дарья и пропавшая живая игрушка» |
+| **ID** | `cms96kjmh0001h8jkqvv4v7zh` |
+| **Status** | `ready` |
+| **Pages** | 7 (hero drawn from a photo-derived portrait) |
+| **Raw photo** | already deleted (`childPhotoKey` null) |
+
+**Local URL:** `http://localhost:3000/books/cms96kjmh0001h8jkqvv4v7zh`
+
+**Demo talking point:**
+> «Герой нарисован по загруженному фото ребёнка — узнаётся на всех страницах. Родитель подтверждает превью портрета до генерации, а сырое фото удаляется сразу при старте — остаётся только рисунок.»
+
+> **Note:** this is on the local dev DB. If the DB was wiped (`docker compose down -v`)
+> the ID is gone — regenerate one photo book before the defense (needs the Gemini
+> key to have budget; a 429 spend-cap will otherwise block it — the exact bug from
+> slide 9). This is the **safe** way to show the feature without a live upload.
+
 ---
 
 ## Before the defense
@@ -61,6 +88,7 @@ Run through this checklist on the morning of defense day:
 - [ ] `docker compose up -d` — postgres, redis, minio, langfuse all green
 - [ ] `pnpm --filter backend dev` and `pnpm --filter frontend dev` both running
 - [ ] Open `http://localhost:3000/books/cms1uhlju000381kxjq1plg8d` — confirm book detail renders with images
+- [ ] Open `http://localhost:3000/books/cms96kjmh0001h8jkqvv4v7zh` — the photo-character book (#128); confirm it renders (regenerate one if the DB was wiped)
 - [ ] Open `http://localhost:3000/admin/metrics` — confirm metrics load
 - [ ] Open `http://localhost:3030` (LangFuse) — confirm the `story-generation` trace is visible for the fallback book
 - [ ] Open `http://localhost:3000/books` — confirm books list renders with StatusBadge
