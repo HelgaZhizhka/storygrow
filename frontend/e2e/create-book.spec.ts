@@ -26,10 +26,14 @@ async function apiPost<T>(
   path: string,
   accessToken: string | null,
   data: unknown,
+  extraHeaders?: Record<string, string>,
 ): Promise<T> {
   const res = await request.post(`${API_URL}${path}`, {
     data,
-    headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+    headers: {
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      ...extraHeaders,
+    },
   });
   expect(res.ok(), `POST ${path} failed: ${res.status()} ${await res.text()}`).toBe(true);
   return res.json() as Promise<T>;
@@ -51,7 +55,15 @@ test('logs in, creates a fast-flow book, and the finished book page shows a PDF 
   page,
   request,
 }) => {
-  const { accessToken } = await apiPost<TestLoginResponse>(request, '/auth/test-login', null, {});
+  const { accessToken } = await apiPost<TestLoginResponse>(
+    request,
+    '/auth/test-login',
+    null,
+    {},
+    {
+      'x-e2e-secret': process.env.E2E_TEST_SECRET ?? '',
+    },
+  );
 
   const child = await apiPost<Child>(request, '/children', accessToken, {
     name: 'E2E Тест',

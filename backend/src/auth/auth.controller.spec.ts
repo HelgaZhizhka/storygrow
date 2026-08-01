@@ -44,6 +44,7 @@ describe('AuthController', () => {
     jest.clearAllMocks();
     configValues.NODE_ENV = 'test';
     configValues.E2E_TEST_MODE = undefined;
+    configValues.E2E_TEST_SECRET = undefined;
     const module = await Test.createTestingModule({
       controllers: [AuthController],
       providers: [
@@ -153,13 +154,14 @@ describe('AuthController', () => {
       role: 'user' as const,
     };
 
-    it('issues real tokens for the fixture user when E2E_TEST_MODE is enabled outside production', async () => {
+    it('issues real tokens when E2E_TEST_MODE is on and the request secret matches', async () => {
       configValues.E2E_TEST_MODE = 'true';
+      configValues.E2E_TEST_SECRET = 'e2e-secret';
       mockAuth.validateOrCreateUser.mockResolvedValueOnce(fixtureUser);
       mockAuth.ensureTestFixtureSubscription.mockResolvedValueOnce(undefined);
       mockAuth.generateTokens.mockResolvedValueOnce(tokens);
 
-      const result = await controller.testLogin();
+      const result = await controller.testLogin('e2e-secret');
 
       expect(mockAuth.validateOrCreateUser).toHaveBeenCalledWith({
         googleId: 'e2e-test-fixture',
@@ -182,16 +184,33 @@ describe('AuthController', () => {
 
     it('throws NotFoundException when E2E_TEST_MODE is not set', async () => {
       configValues.E2E_TEST_MODE = undefined;
+      configValues.E2E_TEST_SECRET = 'e2e-secret';
 
-      await expect(controller.testLogin()).rejects.toThrow(NotFoundException);
+      await expect(controller.testLogin('e2e-secret')).rejects.toThrow(NotFoundException);
       expect(mockAuth.validateOrCreateUser).not.toHaveBeenCalled();
     });
 
-    it('throws NotFoundException when NODE_ENV is production, even if E2E_TEST_MODE is true', async () => {
+    it('throws NotFoundException when E2E_TEST_SECRET is not configured, even with mode on', async () => {
       configValues.E2E_TEST_MODE = 'true';
-      configValues.NODE_ENV = 'production';
+      configValues.E2E_TEST_SECRET = undefined;
 
-      await expect(controller.testLogin()).rejects.toThrow(NotFoundException);
+      await expect(controller.testLogin('anything')).rejects.toThrow(NotFoundException);
+      expect(mockAuth.validateOrCreateUser).not.toHaveBeenCalled();
+    });
+
+    it('throws NotFoundException when the request secret does not match', async () => {
+      configValues.E2E_TEST_MODE = 'true';
+      configValues.E2E_TEST_SECRET = 'e2e-secret';
+
+      await expect(controller.testLogin('wrong-secret')).rejects.toThrow(NotFoundException);
+      expect(mockAuth.validateOrCreateUser).not.toHaveBeenCalled();
+    });
+
+    it('does not open with mode on and a matching-looking but empty secret', async () => {
+      configValues.E2E_TEST_MODE = 'true';
+      configValues.E2E_TEST_SECRET = '';
+
+      await expect(controller.testLogin('')).rejects.toThrow(NotFoundException);
       expect(mockAuth.validateOrCreateUser).not.toHaveBeenCalled();
     });
   });

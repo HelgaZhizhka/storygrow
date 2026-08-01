@@ -908,3 +908,18 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Descriptor is auto-extracted but **editable** — proven necessary live (a tooth gap was mis-read as "missing teeth" and rendered badly until corrected).
 
 **Blockers:** none. Not yet run: a full in-browser book generation (deferred to save API budget; the image path is verified and the book pipeline is otherwise unchanged + unit-tested). Frontend component tests deferred (noted in plan). Ready to open the PR (`Closes #128`).
+
+---
+
+## 2026-08-01 — fix(auth): gate test-login on an independent secret (#301)
+
+**Done:**
+- Closed the structural weakness in `/auth/test-login`'s gate (found during #128 defense-prep issue triage). The first gate `config.get('NODE_ENV') === 'production'` was dead weight — #289 already proved that value is not `'production'` in this Railway deployment, so it never fired, leaving `E2E_TEST_MODE` as the only real gate; a leaked flag would mint valid tokens for anyone on the premium fixture account.
+- Now requires two independent, non-inferred factors: `E2E_TEST_MODE === 'true'` **and** a request `x-e2e-secret` header equal to a non-empty `E2E_TEST_SECRET`. In prod both stay unset → 404 (behaviour unchanged in the happy path; strictly safer under config drift). `verify.sh` exports the secret (backend + Playwright inherit it), the e2e helper sends the header, `.env.example` documents it. `auth.controller.spec.ts` rewritten (mode+secret matrix, 12 tests). `./init.sh` green.
+- Left out of scope (issue's minor nit): test-login still returns the refresh token in the body, not an httpOnly cookie.
+
+**Decisions:**
+- Chose the secret-based gate (issue's recommended option) over env-inference — the whole point is that env inference (`NODE_ENV`) is unreliable here.
+- Merged autonomously (lead-engineer call): zero prod behaviour change, strictly-improving, fully tested, trivially revertible.
+
+**Blockers:** none. PR #334.
