@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Headers,
   Post,
   Req,
   Res,
@@ -95,11 +96,17 @@ export class AuthController {
    */
   @Post('test-login')
   @HttpCode(HttpStatus.OK)
-  async testLogin(): Promise<{ accessToken: string; refreshToken: string }> {
-    if (this.config.get<string>('NODE_ENV') === 'production') {
-      throw new NotFoundException();
-    }
-    if (this.config.get<string>('E2E_TEST_MODE') !== 'true') {
+  async testLogin(
+    @Headers('x-e2e-secret') secret?: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    // Two independent, non-inferred factors (#301). The old NODE_ENV gate was
+    // dead weight — #289 proved config.get('NODE_ENV') is not 'production' in this
+    // Railway deployment, so it never fired. Instead require E2E_TEST_MODE AND a
+    // matching request secret: a leaked E2E_TEST_MODE alone opens nothing, and
+    // E2E_TEST_SECRET must be both set server-side and known by the caller.
+    const expected = this.config.get<string>('E2E_TEST_SECRET');
+    const enabled = this.config.get<string>('E2E_TEST_MODE') === 'true';
+    if (!enabled || !expected || secret !== expected) {
       throw new NotFoundException();
     }
 

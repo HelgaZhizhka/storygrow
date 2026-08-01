@@ -90,6 +90,9 @@ pnpm --filter backend seed:illustrations
 pass "seeded"
 
 log "Start backend (test mode)"
+# test-login (#301) needs E2E_TEST_MODE AND a matching x-e2e-secret. Export the
+# secret so both the backend process and the Playwright run below inherit it.
+export E2E_TEST_SECRET="${E2E_TEST_SECRET:-e2e-verify-local-secret}"
 E2E_TEST_MODE=true pnpm --filter backend start:prod &
 for _ in $(seq 1 30); do
   curl -sf http://localhost:3001/health >/dev/null && break
