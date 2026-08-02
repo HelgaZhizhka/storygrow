@@ -76,8 +76,8 @@ stylised portrait + pages remain, which is exactly the privacy story for Q8-bis.
 
 > **Note:** this is on the local dev DB. If the DB was wiped (`docker compose down -v`)
 > the ID is gone — regenerate one photo book before the defense (needs the Gemini
-> key to have budget; a 429 spend-cap will otherwise block it — the exact bug from
-> slide 9). This is the **safe** way to show the feature without a live upload.
+> key to have available quota). This is the **safe** way to show the feature
+> without a live upload.
 
 ---
 
