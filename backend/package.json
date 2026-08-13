@@ -6,8 +6,8 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
-    "dev": "nest start --watch",
-    "start": "nest start",
+    "dev": "dotenv -e .env -- nest start --watch",
+    "start": "dotenv -e .env -- nest start",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,test}/**/*.ts\"",
     "lint:fix": "eslint \"{src,test}/**/*.ts\" --fix",
@@ -23,7 +23,6 @@
     "seed:learning-goals": "dotenv -e .env -- tsx src/scripts/seed-learning-goals.ts",
     "seed:templates": "dotenv -e .env -- tsx src/scripts/seed-fast-flow-templates.ts",
     "seed:illustrations": "dotenv -e .env -- tsx src/scripts/seed-fast-illustrations.ts",
-    "langfuse:test": "tsx src/scripts/test-langfuse.ts",
     "eval:text": "dotenv -e .env -- tsx src/scripts/eval-text.ts",
     "eval:batch": "dotenv -e .env -- tsx src/scripts/eval-batch.ts",
     "postinstall": "prisma generate"

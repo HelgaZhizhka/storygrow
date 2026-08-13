@@ -20,10 +20,15 @@ Application processes (not in compose):
 ## First-run
 
 ```bash
-cp .env.example .env.local            # fill in real OPENAI/GOOGLE/STRIPE keys
+cp .env.example .env.local            # docker compose — fill in real OPENAI/GOOGLE/STRIPE keys
+cp backend/.env.example backend/.env  # the backend's own env (see note below)
 docker compose up -d                  # ~30s on a warm cache
 docker compose ps                     # confirm all services healthy
 ```
+
+`.env.local` configures the compose stack; `backend/.env` configures the NestJS
+process. They are separate files — `pnpm --filter backend dev`, `prisma:migrate`,
+`seed:*` and `eval:*` all read `backend/.env` via `dotenv -e .env --`.
 
 Visit:
 
@@ -59,6 +64,7 @@ docker compose up -d langfuse         # recreate clean
 
 ## Notes
 
+- **No traces showing up?** `backend/src/instrument.ts` initialises OpenTelemetry at import time, before Nest's `ConfigModule` exists, so it reads `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` straight off `process.env`. The `dev` / `start` scripts preload `backend/.env` with `dotenv -e .env --` to make that work — anything that boots the server *without* that preload (a bare `nest start`, a debugger launch config, a one-off `node dist/main`) must inject the keys itself. On boot the backend logs either `LangFuse tracing enabled → <host>` or a `LangFuse tracing DISABLED` warning; check that line first (#339).
 - `LANGFUSE_NEXTAUTH_SECRET` and `LANGFUSE_SALT` default to placeholders — rotate before any real deployment.
 - The first-run `LANGFUSE_INIT_*` vars only take effect on the very first start of an empty `langfuse` database. Reset the LangFuse volume to change them.
 - The `langfuse` DB is created by `infra/postgres/init/01-create-langfuse-db.sql` on first start of the `postgres` volume. To re-run the init script, `docker compose down -v` (wipes everything).
