@@ -923,3 +923,17 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Merged autonomously (lead-engineer call): zero prod behaviour change, strictly-improving, fully tested, trivially revertible.
 
 **Blockers:** none. PR #334.
+
+---
+
+## 2026-08-13 — fix(infra): dev/start scripts never loaded .env, so LangFuse got zero traces (#339)
+
+**Done:**
+- Root-caused a month-long silence in LangFuse: the newest server-side `story-generation` trace was from 2026-07-26, while `eval:text`/`eval:batch` traced fine. `main.ts` imports `./instrument` before `NestFactory`, and `instrument.ts` reads `LANGFUSE_PUBLIC_KEY`/`LANGFUSE_SECRET_KEY` straight off `process.env` at import time — before `ConfigModule.forRoot()` ever loads `.env`. `dev`/`start` ran bare `nest start`, unlike `eval:*`'s `dotenv -e .env --`, so the server process genuinely never had the keys and `instrument.ts` silently no-opped (`_sdk = null`, no log).
+- Fix: `dev`/`start` now preload `.env` via `dotenv -e .env --` (dotenv-cli already a devDependency), matching the `eval:*`/`seed:*` pattern. `start:prod` untouched — Railway injects env vars directly. `instrument.ts` now logs `LangFuse tracing enabled → <host>` or a `LangFuse tracing DISABLED` warning on boot via the static `Logger` (Nest's DI logger doesn't exist yet at this import point) — this silence is exactly what let the bug go unnoticed for a month, so it can't happen silently again. Dropped the dead `langfuse:test` script (referenced `src/scripts/test-langfuse.ts` didn't exist). `instrument.spec.ts` covers both the enabled-logs and disabled-warns branches. `docs/local-dev.md` gets a troubleshooting note plus a `backend/.env` vs root `.env.local` clarification (two separate files, easy to conflate).
+- `./init.sh` green (tsc, lint, format, 357 backend + 58 frontend tests).
+
+**Decisions:**
+- Kept the fix mechanical (dotenv preload + a log line) rather than restructuring telemetry init to run after `ConfigModule` — the module-load-order constraint (`instrument.ts` must run before `NestFactory`/Nest's DI exists at all) is real and pre-dates this bug; the actual defect was purely "no dotenv preload on the two scripts a human runs."
+
+**Blockers:** none. PR #340.
