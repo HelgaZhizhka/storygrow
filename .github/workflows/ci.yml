@@ -42,6 +42,11 @@ jobs:
         run: pnpm install --frozen-lockfile
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/storygrow
+          # The smoke check never launches a real browser (pdf-render.service.spec
+          # mocks puppeteer), so skip the ~150 MB Chromium download that
+          # onlyBuiltDependencies now enables. The verify job below does NOT skip
+          # it — that one renders a real PDF.
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
 
       - name: Smoke check (tsc + lint + tests)
         run: ./init.sh

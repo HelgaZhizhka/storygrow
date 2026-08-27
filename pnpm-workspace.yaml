@@ -3,6 +3,18 @@ packages:
   - 'frontend'
   - 'packages/*'
 
+# pnpm 10 blocks dependency lifecycle scripts by default. Puppeteer's postinstall
+# is the only one we need: it downloads the Chromium build that `puppeteer.launch()`
+# expects, so PDF rendering works after a plain `pnpm install` on a dev machine.
+# Without it the download silently never happens and the failure surfaces far away
+# from its cause — a book generates all its images, then dies at the PDF step with
+# "Could not find Chrome", and the book lands in `images_failed` (which is really
+# "story exists but a later step failed"), pointing the blame at image generation.
+# Docker is unaffected: backend/Dockerfile sets PUPPETEER_SKIP_DOWNLOAD=true and
+# points PUPPETEER_EXECUTABLE_PATH at an apt-installed system Chromium instead.
+onlyBuiltDependencies:
+  - puppeteer
+
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
