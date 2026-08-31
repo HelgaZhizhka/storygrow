@@ -58,3 +58,6 @@ backend/spike-photo-out-qwen/
 
 # Session-handoff is committed (it's the handoff). Keep it.
 # progress.md is committed too. Keep it.
+
+# Defense materials are local-only working artefacts.
+/docs/defense/

@@ -937,3 +937,173 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Kept the fix mechanical (dotenv preload + a log line) rather than restructuring telemetry init to run after `ConfigModule` — the module-load-order constraint (`instrument.ts` must run before `NestFactory`/Nest's DI exists at all) is real and pre-dates this bug; the actual defect was purely "no dotenv preload on the two scripts a human runs."
 
 **Blockers:** none. PR #340.
+
+---
+
+## 2026-08-27 — docs(defense): replace deck images with real generated books
+
+**Done:**
+- Updated `docs/defense/storygrow-defense-codex-real-books.pptx`, preserving the 11-slide structure, typography, speaker notes, and master/layout hierarchy.
+- Replaced the three generic style samples with verified pages from the staged books «Алиссы и секрет ожившего цветка» and «Дарья и пропавшая живая игрушка»; refreshed the corresponding `[Sources]` note lines.
+- Verified all 11 exported slide renders individually, plus the deck montage; `slides_test.py` reports no overflow, template fidelity passes with zero issues, the PPTX archive is valid, and the source theme hash is unchanged.
+
+**Decisions:**
+- Kept the original deck intact and exported a separate real-books variant so the two visual versions remain available.
+- Used square crops prepared from the real page images only where the inherited frames require them; no generated replacement visuals were introduced.
+
+**Next:**
+- Use the real-books variant for rehearsal/stream if the concrete book examples are preferred.
+
+**Blockers:** none.
+
+**Friction:**
+- Problem: the template starter helper's optional contact-sheet step invokes system `python3`, which lacks Pillow in this environment.
+- Impact: the first starter-deck command failed after creating the starter file, and `./init.sh` also saw temporary JSON artifacts before cleanup.
+- Smallest fix: make the helper use the bundled Python runtime (or skip contact-sheet generation when Pillow is unavailable); keep presentation temp directories outside the repository when running repo-wide format checks.
+
+---
+
+## 2026-08-27 — docs(defense): full read-aloud script and Q&A
+
+**Done:**
+- Reviewed the supplied 10-page defense notes PDF against the current 11-slide deck, repository documentation, eval evidence, and implementation.
+- Replaced stale claims: Fast Flow is a structured `gpt-4o-mini` call rather than a no-AI path; two retries mean at most three versions including the first; image providers use `generateImage`; `gpt-image-1` is a configuration-selected reserve, not an automatic runtime fallback; Fast Flow writes a technical placeholder `StoryEval` excluded from AI-quality metrics.
+- Created `docs/defense/storygrow-defense-full-script.docx`: complete slide-by-slide speech, presenter actions, a seven-minute live-demo runbook, fallback phrases, an 18-question Q&A section, and a final exact-numbers reference page.
+- Added the requested personal framing: course context and first agentic-development experience in the introduction; thanks to organizers and live-meeting participants, possible future StoryGrow work, and transfer of the learned workflow into another project in the closing.
+- Added the concrete development environment and model-role split to the main speech, Q&A, and fact sheet: primarily Claude Code; planning/review with Opus 4.5 and later Fable; implementation with Sonnet; several final independent review sessions in Codex.
+- Rendered and visually checked all 18 pages. Heading audit has no hierarchy findings; accessibility audit has no high-severity findings (medium findings are the intentional one-cell callout tables); `./init.sh` passes with 357 backend and 58 frontend tests.
+
+**Decisions:**
+- Kept the source PDF's useful operational format, but did not carry over its outdated slide order, test counts, photo-feature status, or technical wording.
+- Used conservative privacy language: a child's facial photo is sensitive and may qualify as biometric depending on processing; the current thin slice is demo-ready but still has explicit gaps before scale.
+- Delivered DOCX as the reading artifact so the user can edit or annotate it before the stream; the rendered PDF remains QA-only.
+
+**Next:**
+- Rehearse once end-to-end with a timer and use the Q&A section for a mock jury round.
+
+**Blockers:** none.
+
+**Friction:**
+- Problem: placing automated DOCX audit JSON under the repository's `tmp/` directory caused the first `./init.sh` format check to fail.
+- Impact: required a formatting pass and a complete second smoke check.
+- Smallest fix: render and audit document artefacts under an external temporary directory, or format generated JSON before running the repository-wide check.
+
+---
+
+## 2026-08-27 — docs(defense): refine presentation title and technical callouts
+
+**Done:**
+- Simplified the title slide to `StoryGrow` with the subtitle `Генератор персонализированных детских книг.`
+- Added the text/image model map to the architecture slide and the process scale line `9 волн · 22 сессии · 415 тестов в CI` to the agentic-development slide.
+- Rendered all 11 slides after the edit, inspected each slide, and ran `slides_test.py` successfully with no overflow.
+
+**Decisions:**
+- Kept the 11-slide structure and moved only the two highest-value details from the older deck into the new version.
+
+**Next:**
+- Use the updated real-books variant for rehearsal and the live stream.
+
+**Blockers:** none.
+
+---
+
+## 2026-08-28 — docs(defense): expand SDK, quality gates, and verification script
+
+**Done:**
+- Expanded the read-aloud script's architecture section with a plain-language explanation of Vercel AI SDK, `generateObject`, Zod runtime validation, TypeScript input/output typing, provider abstraction, telemetry, and the boundary between structural validity and content quality.
+- Expanded the four-gate quality section with the exact AND semantics, deterministic structure and language checks, all six guardrail criteria and their per-criterion floor, the separate two-sided `registerMatch` craft gate, retry feedback, `StoryEval`, and LangFuse evidence.
+- Expanded verification into three distinct proof levels: `init.sh`/unit tests for code contracts, live evals for prose quality on real models, and real API/UI generation for product integration; clarified that LangFuse is diagnostic evidence rather than a quality guarantee by itself.
+- Updated the related live-demo wording and Q&A answers, aligned the first-slide script title with the final deck, regenerated both DOCX and PDF, and visually inspected the complete 18-page render with no clipping or overlap.
+
+**Decisions:**
+- Kept the explanation readable aloud and added a short fallback formulation for the four gates instead of turning the main script into code-level documentation.
+- Avoided overstating retry feedback: the next attempt receives deterministic errors plus the judge's explanation, not necessarily a separately enumerated message for every failed guardrail.
+
+**Next:**
+- Rehearse slides 4–6 with a timer; use the short gate formulation if the spoken section exceeds the available slot.
+
+**Blockers:** none.
+
+---
+
+## 2026-08-28 — feasibility audit: no-exemplar generation experiment
+
+**Done:**
+- Audited the current custom and Fast Flow generation paths, prompt composition, Zod schemas, PDF renderer, evaluator, persistence, and text-only eval harness.
+- Confirmed that custom flow is the correct experimental surface: Plan → Prose → Title uses Gold Exemplars, while Fast Flow is a separate synchronous `gpt-4o-mini` + database `Template` path with no quality judge.
+- Confirmed that Gold Exemplars are injected independently into Plan and Prose, and their pool is also used by the judge's `registerMatch` calibration. A no-exemplar author arm therefore needs a corresponding judge calibration decision for a fair comparison.
+- Confirmed two meanings of “без шаблонов”: removing few-shot Suteev exemplars is a small, feasible experiment; removing PDF/page templates is a larger renderer/schema contract change and is not needed to test the stated hypothesis.
+- Smoke verification passed: 357 backend tests, 58 frontend tests, TypeScript and lint checks green.
+
+**Decisions:**
+- Recommended first step: text-only paired A/B on custom flow, preserving age band, safe-conflict, page-count, Zod, vocabulary metric, and guardrails while disabling only few-shot exemplars and Suteev-specific register wording.
+- Do not expose a product toggle until the experiment proves useful; if shipped, persist the generation profile on `Book` because generation runs asynchronously in BullMQ.
+
+**Next:**
+- Write a focused experiment spec/issue, then run matched baseline/free `eval:text` cases and inspect both prose manually and judge traces.
+
+**Blockers:** none for the experiment; a true no-layout-template mode would require a separate design.
+
+**Friction:**
+- Problem: the installed GitHub CLI does not support `gh issue list --sort`.
+- Impact: the first issue-triage command failed without returning issue data.
+- Smallest fix: use the supported JSON fields and sort/filter locally when issue ordering is required.
+
+---
+
+## 2026-08-29 — docs(defense): transcript-verified post-stream recommendations
+
+**Done:**
+- Processed the full post-defense meeting transcript and separated direct participant recommendations from the presenter's own follow-up ideas.
+- Created `docs/defense/post-stream-recommendations.md` with transcript timecodes, current implementation status, concrete experiments, and a staged action plan covering image consistency, visual quality gates, unit economics, demand validation, the bedtime-story flow, Amazon print-on-demand discovery, activity books, and translation.
+- Verified in the current image pipeline that the approved/synthetic protagonist portrait is already passed to every Gemini page generation; identified the actual gaps as missing global visual context, no image reference for secondary characters or environments, parallel page generation, and no visual quality gate.
+- Reframed greenfield harness restart as a later evidence-based architecture decision rather than a recommendation made by meeting experts.
+- Linked the original memory-based debrief to the transcript-verified analysis.
+
+**Decisions:**
+- Recommend validating one narrow bedtime-story offer before major new engineering.
+- Test current baseline vs structured `VisualBible` vs `VisualBible + cascade` before changing the image-generation architecture.
+- Treat a public Amazon catalog and one-off personalized physical books as separate business models; start with official-rules research and one manual proof copy, not upload automation.
+- Keep activity books, native mobile, multiple family-photo characters, voice narration, and greenfield restart out of the first validated scope.
+
+**Next:**
+- Run a product grilling session to define the first offer and success metrics, then specify the five-story image-consistency experiment.
+
+**Blockers:** none.
+
+---
+
+## 2026-08-31 — docs(defense): unify stream and grilling launch plan
+
+**Done:**
+- Replaced the previous transcript-only recommendations document with the single canonical `docs/defense/storygrow-launch-plan.md`.
+- Merged the post-stream recommendations and grilling-session decisions: EU Russian-speaking audience, 4–6 launch band, truthful landing, legal/auth prerequisites, €200 test cap, PostHog Cloud EU, fake-door pricing, Custom Flow wait measurement, image-consistency experiment, Amazon discovery, and rewrite deferral.
+- Added current-code constraints and separated settled decisions, hypotheses, deferred scope, and the staged update order.
+- Kept `docs/defense/post-stream-debrief.md` as the archival memory note pointing to the canonical plan.
+
+**Decisions:**
+- The new launch plan is the working source of truth for subsequent StoryGrow updates; the memory note is not a competing roadmap.
+
+**Next:**
+- Use the first five actions in the plan to prepare the market test before implementing broad feature work.
+
+**Blockers:** none.
+
+---
+
+## 2026-08-31 — repository hygiene and release alignment
+
+**Done:**
+- Confirmed that PR #342 (`f1572dd`) is already merged into GitHub `main` as `8e36f07`; no duplicate merge is needed.
+- Added `/docs/defense/` to `.gitignore` and prepared the existing tracked defense notes to become local-only files while preserving local copies.
+- Removed the temporary `tmp/` and `output/` artefacts locally; they are not part of the application runtime or release build.
+- Fresh verification passed: `./init.sh`, backend production build, and frontend production build.
+
+**Decisions:**
+- Keep defense materials outside the repository; keep `progress.md` as the committed session state.
+- Release from `main` after the repository-hygiene PR is merged; no application-code changes are included in this maintenance step.
+
+**Next:**
+- Trigger the deployment/rebuild from `main`, then continue with the scoped market-test and no-exemplar generation experiment when prioritized.
+
+**Blockers:** none.
