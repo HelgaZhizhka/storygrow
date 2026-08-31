@@ -1107,3 +1107,21 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Trigger the deployment/rebuild from `main`, then continue with the scoped market-test and no-exemplar generation experiment when prioritized.
 
 **Blockers:** none.
+
+---
+
+## 2026-08-31 — fix(deploy): restore Railway backend Docker builds (#346)
+
+**Done:**
+- Traced two consecutive `storygrow-api` Railway deploy failures (`8e36f07`, `2bd1038`) to the backend Docker `pruner` stage, not to application startup or database migrations.
+- Reproduced the exact failure locally: `pnpm deploy` re-ran Puppeteer's postinstall without `PUPPETEER_SKIP_DOWNLOAD`, attempted a redundant Chromium download, and failed with `ELIFECYCLE` because the pruner image has no archive extractor.
+- Added `PUPPETEER_SKIP_DOWNLOAD=true` to the independent pruner stage; the same full backend Docker build then completed and logged `Skipping downloading browsers as instructed`.
+
+**Decisions:**
+- Keep the system Chromium installed in the runtime image; do not add `unzip` or download a second browser during dependency pruning.
+- Treat environment variables as stage-local in multi-stage Dockerfiles; the builder's `ENV` never applied to the pruner created by a separate `FROM`.
+
+**Next:**
+- Merge the fix through CI, confirm the new `storygrow-api` Railway deployment succeeds, and verify `/health` on the deployed revision.
+
+**Blockers:** none.
