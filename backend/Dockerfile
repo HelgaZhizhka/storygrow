@@ -32,6 +32,9 @@ RUN pnpm --filter backend build
 
 # ---- Stage 2: prune to production deps ----
 FROM node:22-slim AS pruner
+# Docker stages do not inherit ENV values from one another. `pnpm deploy`
+# re-runs Puppeteer's postinstall, so skip its redundant browser download here.
+ENV PUPPETEER_SKIP_DOWNLOAD=true
 RUN corepack enable && corepack prepare pnpm@10.29.3 --activate
 WORKDIR /app
 COPY --from=builder /app ./
