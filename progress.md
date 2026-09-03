@@ -1166,3 +1166,18 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Next:** open PR for #350; on merge, start #351 (reference sheets).
 
 **Blockers:** none.
+
+---
+
+## 2026-09-03 — docs(ai): cast → family-member photo extension path (#348)
+
+**Done:**
+- Added an "Extension path: cast → family-member photo (future)" section to the Visual Bible spec, at the product owner's request, so the route from the shipped `cast[]` + per-cast references to uploading real photos of family members is recorded and not lost between PR 2 (#351) and that future feature.
+- Documented that the illustration assembler, `pickReferences`, and the bible schema do not change for family photos — only the source of a cast portrait changes (generated sheet → parent-approved photo) — and what the future feature must add (a reusable `Character` entity, per-person photo intake, non-child biometric consent / ADR-0006 gaps #332, a per-page reference-budget policy).
+
+**Decisions:**
+- Family members remain out of scope for the Visual Bible PRs; the bible is deliberately their foundation.
+
+**Next:** merge; continue the rollout with #351 (reference sheets).
+
+**Blockers:** none.
