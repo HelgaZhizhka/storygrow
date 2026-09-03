@@ -38,6 +38,9 @@ ENV PUPPETEER_SKIP_DOWNLOAD=true
 RUN corepack enable && corepack prepare pnpm@10.29.3 --activate
 WORKDIR /app
 COPY --from=builder /app ./
+# ENV vars don't carry over between stages — re-declare so `pnpm deploy`
+# below doesn't try to download Chromium during its postinstall scripts.
+ENV PUPPETEER_SKIP_DOWNLOAD=true
 # Bundle backend + its production node_modules into a self-contained dir.
 # pnpm 10 requires --legacy to deploy without injected workspace packages.
 # deploy re-runs `prisma generate`, and prisma.config.ts requires DATABASE_URL to
