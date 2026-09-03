@@ -40,8 +40,11 @@ const refMention = (labels: readonly string[], label: string): string => {
 const heroLock = (input: IllustrationPromptInput): string => {
   const name = input.bible.hero.name;
   const once = `${name} appears EXACTLY ONCE in the picture; never draw the hero twice.`;
+  // Reinforce the descriptor in TEXT even when the portrait is the reference —
+  // the photo flow (#128) relies on named features (e.g. "red glasses") the
+  // reference image may under-emphasize; legacy folded them into every page.
   const anchor = input.labels.includes('hero')
-    ? `Keep this exact child — same face, hair, and outfit — as in reference image 1.`
+    ? `Keep this exact child — same face, hair, and outfit — as in reference image 1 (${input.heroDescriptor}).`
     : `The hero is ${input.heroDescriptor}.`;
   return `${anchor} ${once}`;
 };

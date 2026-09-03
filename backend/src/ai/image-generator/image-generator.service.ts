@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { startActiveObservation } from '@langfuse/tracing';
 import { createOpenAI } from '@ai-sdk/openai';
 import type { LanguageModel } from 'ai';
-import { type Story, type Scene } from '../schemas';
+import { type Story } from '../schemas';
 import { PAGE_TEMPLATES } from '../../pdf/page-templates/page-templates.config';
 import { S3Service } from '../../s3/s3.service';
 import {
@@ -119,18 +119,18 @@ export class ImageGeneratorService {
   ): { prompt: string; references: Uint8Array[]; labels: string[] } {
     const { visualBible } = input.story;
     if (visualBible && page.scene) {
-      return this.biblePageRequest(input, page.scene, page.illustrationPrompt, portraitBytes);
+      return this.biblePageRequest(input, page, portraitBytes);
     }
     return this.legacyPageRequest(input, page, portraitBytes);
   }
 
   private biblePageRequest(
     input: ImageGenInput,
-    scene: Scene,
-    action: string,
+    page: Story['pages'][number],
     portraitBytes?: Uint8Array,
   ): { prompt: string; references: Uint8Array[]; labels: string[] } {
     const bible = input.story.visualBible!;
+    const scene = page.scene!;
     const heroPortrait = this.provider.usesReference ? portraitBytes : undefined;
     const { images, labels } = pickReferences({
       scene,
@@ -141,7 +141,7 @@ export class ImageGeneratorService {
     const prompt = buildIllustrationPrompt({
       bible,
       scene,
-      action,
+      action: page.illustrationPrompt,
       heroDescriptor,
       artStyle: input.artStyle,
       labels,

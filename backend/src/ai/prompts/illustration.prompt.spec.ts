@@ -38,10 +38,12 @@ describe('buildIllustrationPrompt', () => {
     expect(out).not.toContain('reference image 1');
   });
 
-  it('cites reference image 1 for the hero when the portrait is passed', () => {
+  it('cites reference image 1 and still reinforces the descriptor in text when the portrait is passed', () => {
     const out = buildIllustrationPrompt({ ...baseInput, labels: ['hero'] });
     expect(out).toContain('as in reference image 1');
     expect(out).not.toContain('The hero is 5-year-old');
+    // descriptor reinforced in text (photo-flow named features must survive) — #348 review
+    expect(out).toContain('5-year-old girl, red hair');
   });
 
   it('includes cast, location and props from the bible, not appearance from the action', () => {
