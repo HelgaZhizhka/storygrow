@@ -161,7 +161,9 @@ storygrow/
          │        then Gemini 2.5 Flash Image per page │
          │        WITH the portrait as a reference,    │
          │        each prompt assembled from the       │
-         │        Visual Bible + page Scene (#348)      │
+         │        Visual Bible + page Scene (#348);      │
+         │        optional per-location/cast reference   │
+         │        sheets when IMAGE_REFERENCE_SHEETS=on   │
          │        (gpt-image-1 fallback via config)    │
          │      → upload to S3 → Book.imageKeys[]      │
          │      → portrait key → Book.characterPortraitKey│

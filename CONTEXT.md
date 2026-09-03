@@ -102,6 +102,11 @@ One page's selection from the [Visual Bible] (`Story.pages[].scene`, #348): `loc
 
 **Avoid:** "shot list" — a Scene is one page's bible selection, not a camera plan.
 
+### Reference Sheet
+A reference image generated once per book to anchor a [Visual Bible] entry across pages (#348, PR 2): one establishing shot per location and one stylised portrait per `cast` member. Passed to the image model as input references (within its reference budget) alongside the hero portrait, so environment and secondary characters stay consistent by picture, not only by text. Gated by `IMAGE_REFERENCE_SHEETS`; S3 keys stored on `Book.referenceImageKeys` and cleaned on book deletion. Cast sheets are the slot a future family-member **photo** portrait drops into unchanged (see the spec's cast → family-photo path).
+
+**Avoid:** "storyboard" — a sheet is a single anchor image, not a page layout.
+
 ### Arc Type
 The narrative arc assigned to a `LearningGoal`, stored as `LearningGoal.arcType` (`virtue` | `flaw`).
 

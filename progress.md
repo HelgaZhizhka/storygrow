@@ -1181,3 +1181,24 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Next:** merge; continue the rollout with #351 (reference sheets).
 
 **Blockers:** none.
+
+---
+
+## 2026-09-03 — feat(ai): Visual Bible reference sheets + flag + referenceImageKeys (#351)
+
+**Done:**
+- Added reference sheets (#348, PR 2 of 3): `ReferenceSheetsService` generates one establishing shot per location and one stylised portrait per bible `cast` member, once per book, in parallel before the pages, uploading to `books/{id}/ref-location-{id}.png` and `ref-cast-{id}.png`. Best-effort: a content-policy-refused sheet is skipped, never failing the book.
+- Provider interface gained `generateLocationSheet` (Gemini `3:2`, peopleless prompt; OpenAI throws, Gemini-only). Cast portraits reuse `generatePortrait` with the cast descriptor.
+- `ImageGeneratorService` gained `maybeSheets` gated by `IMAGE_REFERENCE_SHEETS` (default off) + the bible path on a reference-capable provider; sheet maps flow into `pickReferences` (hero → cast → location within the model budget), and page spans record `variant` (`baseline`/`bible`/`bible+sheets`). `ImageGenResult.referenceImageKeys` is persisted on `Book.referenceImageKeys` and cleaned on book deletion.
+- Prisma migration `20260903190000_add_book_reference_image_keys` (authored + applied via `migrate deploy`, since the local pgvector extension drift makes `migrate dev` want a reset — unrelated to this change). `.env.example`, CONTEXT.md (Reference Sheet), ARCHITECTURE.md updated.
+
+**Verified:**
+- `./init.sh` green; full backend suite passes including new `reference-sheets.service.spec` and sheets-on/off image-generator tests.
+
+**Decisions:**
+- Flag stays **off** until PR 3's `eval:images` comparison picks a production variant (ADR-0007). The live flagged generation showing sheets in LangFuse is exercised by PR 3's `--variant=bible+sheets` run — not duplicated here.
+- Cast sheets are the exact slot a future family-member photo portrait drops into (spec's cast → family-photo path).
+
+**Next:** #352 — `eval:images` harness, Baseline vs Bible vs Bible+sheets comparison, ADR-0007.
+
+**Blockers:** none.

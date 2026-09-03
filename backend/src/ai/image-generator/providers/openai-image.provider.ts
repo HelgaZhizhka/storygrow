@@ -19,6 +19,11 @@ export class OpenAiImageProvider implements ImageProvider {
     return Promise.reject(new Error('OpenAiImageProvider does not support photo portraits'));
   }
 
+  generateLocationSheet(): Promise<Uint8Array> {
+    // Reference sheets (#348) are Gemini-only, like photo portraits.
+    return Promise.reject(new Error('OpenAiImageProvider does not support location sheets'));
+  }
+
   async generatePage(input: PageInput): Promise<Uint8Array> {
     // references are ignored (usesReference=false); the service already baked the
     // style suffix into input.prompt.

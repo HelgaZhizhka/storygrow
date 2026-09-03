@@ -2,9 +2,11 @@ import { generateImage, NoImageGeneratedError } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { GEMINI_IMAGE_MODEL, IMAGE_SIZE_TO_ASPECT_RATIO } from '../../ai.config';
 import { buildPhotoPortraitPrompt, buildPortraitPrompt } from '../../prompts/image-portrait.prompt';
+import { buildLocationSheetPrompt } from '../../prompts/illustration.prompt';
 import { ImageGenerationError } from '../errors';
 import type {
   ImageProvider,
+  LocationSheetInput,
   PageInput,
   PhotoPortraitInput,
   PortraitInput,
@@ -32,6 +34,13 @@ export class GeminiImageProvider implements ImageProvider {
   generatePortraitFromPhoto(input: PhotoPortraitInput): Promise<Uint8Array> {
     const text = buildPhotoPortraitPrompt(input.descriptor, input.artStyle);
     return this.run({ text, images: [input.photo] }, '2:3');
+  }
+
+  generateLocationSheet(input: LocationSheetInput): Promise<Uint8Array> {
+    return this.run(
+      buildLocationSheetPrompt(input.descriptor, input.atmosphere, input.artStyle),
+      '3:2',
+    );
   }
 
   generatePage(input: PageInput): Promise<Uint8Array> {

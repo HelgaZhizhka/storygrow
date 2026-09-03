@@ -458,16 +458,26 @@ export class BooksService {
   async deleteBook(userId: string, bookId: string): Promise<void> {
     const book = await this.prisma.book.findFirst({
       where: { id: bookId, userId },
-      select: { id: true, status: true, imageKeys: true, characterPortraitKey: true, pdfKey: true },
+      select: {
+        id: true,
+        status: true,
+        imageKeys: true,
+        characterPortraitKey: true,
+        referenceImageKeys: true,
+        pdfKey: true,
+      },
     });
     if (!book) throw new NotFoundException('Book not found');
     if (book.status === 'generating') {
       throw new ConflictException('Cannot delete a book while it is still being generated');
     }
 
-    const keys = [...book.imageKeys, book.characterPortraitKey, book.pdfKey].filter(
-      (k): k is string => Boolean(k),
-    );
+    const keys = [
+      ...book.imageKeys,
+      ...(book.referenceImageKeys ?? []),
+      book.characterPortraitKey,
+      book.pdfKey,
+    ].filter((k): k is string => Boolean(k));
     await this.s3.deleteObjects(keys);
     await this.prisma.book.delete({ where: { id: bookId } });
   }
