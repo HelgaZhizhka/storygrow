@@ -1125,3 +1125,22 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Merge the fix through CI, confirm the new `storygrow-api` Railway deployment succeeds, and verify `/health` on the deployed revision.
 
 **Blockers:** none.
+
+---
+
+## 2026-09-03 — docs(ai): Visual Bible design spec (#348)
+
+**Done:**
+- Processed the 2026-08-28 stream feedback on illustrations against the actual image pipeline: the hero portrait is already passed to every page (#174); the real gaps are no shared visual context (locations, cast, per-page scene), independent parallel page generation, a ≤180-char free-form page prompt, no "hero exactly once" clause, and a single-reference provider interface.
+- Wrote `docs/superpowers/specs/2026-09-03-visual-bible-design.md`: Visual Bible decided in the Plan phase (hero, cast ≤3, locations ≤3, props ≤4, atmosphere) plus a per-page `scene`; deterministic illustration-prompt assembly replacing prose rule 7; reference sheets (location establishing shot, cast portraits) behind `IMAGE_REFERENCE_SHEETS` within the Gemini reference budget (3 for Flash, 14 for Pro); `eval:images` harness with a manual rubric to compare Baseline vs Bible vs Bible+sheets before an ADR-0007 decision.
+- Opened issue #348 as the feature tracker; this session adds the spec only (no pipeline code).
+
+**Decisions:**
+- The bible is merged into `Story` in code after Prose (same pattern as `applyTitle`), never re-emitted by an LLM, so `storyJson` and the `images_failed` retry path carry it.
+- Legacy stories without a bible keep the current prompt path; no data migration.
+- Cascade (page N−1 as reference), the automated image judge, and family-member photo characters stay out of this spec; `cast[].id` is their extension point.
+
+**Next:**
+- Product-owner review of the spec, then break it into the three implementation PRs listed in its Rollout section.
+
+**Blockers:** none.
