@@ -426,16 +426,72 @@ as one PR each. Total ≈ 3 PRs.
 - `docs/adr/0007-visual-continuity.md`: after the comparison (decision 10).
 - `progress.md`: per session.
 
+## Extension path: cast → family-member photo (future)
+
+A first-class product goal is letting a parent upload photos of **family members**
+(a younger brother, a grandmother) and have each one drawn **recognisably and
+consistently** across the book. This spec does not build that, but it is designed
+to be its foundation, so the path is recorded here explicitly.
+
+### Why the current design is the foundation
+
+A family member is, structurally, **a cast member with a photo-derived reference
+portrait** — the same shape as the hero's photo flow (#128), one level down:
+
+| Mechanism (shipped in this spec) | What it already provides for family photos |
+|---|---|
+| `VisualBible.cast[]` — id, name, role, fixed descriptor | The slot for each family member; the descriptor keeps them consistent even with no photo. |
+| `Scene.castIds` per page | Which family members appear on which page — drives who needs a reference. |
+| `pickReferences({ sources: { castSheets } })` | Already accepts one reference image **per cast id**; a photo-derived portrait drops straight into `castSheets[id]`. |
+| Assembler cast block — "Also in the scene: {name} — {descriptor} (as in reference image k)" | Already anchors a cast member by **image**, not only text, when their reference is passed. |
+| `MAX_REFERENCE_IMAGES` budget | Already bounds hero + family references per page (Flash 3, Pro 14). |
+
+So the illustration assembler and `pickReferences` do **not change** when family
+photos arrive — a family member's stylised portrait is just another entry in
+`castSheets`, exactly where PR 2's *generated* cast sheets already go.
+
+### What the future feature must add (not in this spec)
+
+1. **A `Character` entity** (its own spec/ADR). Today identity lives per-book on
+   `Book` (`childPhotoKey`, `characterDescriptor`, `characterPortraitKey`). "Mum
+   in three books" needs a reusable, per-user `Character` (name, role, an approved
+   stylised `portraitKey` reused across books, and a `consentAt` per person). The
+   bible `cast[].id` is what a `BookCharacter` link resolves to.
+2. **Per-person photo intake**, reusing the #128 pipeline once per family member:
+   upload → face-present vision gate → editable descriptor → stylised portrait →
+   raw photo deleted at generation start. The portrait becomes `castSheets[id]`.
+3. **Privacy for non-child subjects** (ADR-0006 gaps, #332): a photo of an adult
+   is still biometric data; consent must come from that person, not only the
+   uploader. This is the gating blocker and must be closed **before** the feature
+   ships, not with it.
+4. **A per-page reference-budget policy** for many subjects: with hero + several
+   family members the Flash budget of 3 is quickly exceeded. `pickReferences`
+   already truncates by priority (hero → cast in scene order → location); the
+   feature decides whether to raise the budget by defaulting such books to
+   `gemini-3-pro-image` (14 references, ~3.4× cost) — resolved on the same cost
+   measurement as PR 3.
+
+### Sequencing
+
+- **Now (this spec / PR 1):** cast exists in the bible; per-page `castIds`; the
+  assembler and `pickReferences` accept per-cast reference images.
+- **PR 2 (#351):** generate cast reference **sheets from the descriptor** and pass
+  them — this exercises the multi-reference, per-cast mechanics end-to-end, which
+  is the exact machinery family photos reuse.
+- **Later (own feature):** items 1–4 above. No change to the assembler,
+  `pickReferences`, or the bible schema is expected — only the **source** of a
+  cast portrait changes (generated sheet → parent-approved photo portrait).
+
 ## Out of scope (deferred, tracked)
 
 - **Image judge / `ImageEval` gate** — own spec; this spec's rubric is its
   calibration set.
 - **Cascade (page N−1 as reference)** — experiment on the same harness after B/C
   are measured; sequential generation and error propagation are its known costs.
-- **Family members with photos** — needs a `Character` entity (portrait reuse,
-  per-person consent), ADR-0006 gaps (#332) closed first. The bible's `cast[].id`
-  plus `pickReferences` already accept a cast portrait, so a photo-derived family
-  portrait plugs in without changing this design.
+- **Family members with photos** — a separate future feature. This Visual Bible
+  is deliberately its foundation: the full extension path is written out in
+  "Extension path: cast → family-member photo" below, so it is not lost between
+  PR 2 and that feature.
 - **Cover composition and 300 DPI print** — untouched (ADR-0002).
 
 ## References
