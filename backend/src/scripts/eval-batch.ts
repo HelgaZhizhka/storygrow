@@ -23,8 +23,10 @@
  */
 import '../instrument';
 import { shutdownTelemetry } from '../instrument';
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { createEvalServices, runTextEval, type EvalServices } from './lib/eval-run';
+import { sanitizeId } from './lib/eval-images-lib';
 import {
   summarize,
   formatResultsTable,
@@ -78,6 +80,7 @@ const runOne = async (
   services: EvalServices,
   evalCase: EvalCase,
   model: string | undefined,
+  storiesOut?: string,
 ): Promise<EvalRunResult> => {
   const started = Date.now();
   try {
@@ -87,6 +90,10 @@ const runOne = async (
       mode: evalCase.mode,
       model,
     });
+    if (storiesOut) {
+      const name = sanitizeId(`${evalCase.goal}-${evalCase.age}-${evalCase.mode}`);
+      writeFileSync(join(storiesOut, `${name}.json`), JSON.stringify(story, null, 2));
+    }
     return {
       goal: evalCase.goal,
       age: evalCase.age,
@@ -135,6 +142,7 @@ const runPool = async (
   cases: readonly EvalCase[],
   model: string | undefined,
   concurrency: number,
+  storiesOut?: string,
 ): Promise<EvalRunResult[]> => {
   const results: EvalRunResult[] = new Array<EvalRunResult>(cases.length);
   let next = 0;
@@ -143,7 +151,7 @@ const runPool = async (
       const index = next++;
       const c = cases[index];
       console.log(`▸ [${index + 1}/${cases.length}] ${c.goal} (age ${c.age}, ${c.mode})…`);
-      results[index] = await runOne(services, c, model);
+      results[index] = await runOne(services, c, model, storiesOut);
       const r = results[index];
       console.log(
         r.error !== null
@@ -161,6 +169,8 @@ const main = async (): Promise<void> => {
   const model = flagValue('model');
   const concurrency = Number(flagValue('concurrency') ?? '3');
   const out = flagValue('out');
+  const storiesOut = flagValue('stories-out');
+  if (storiesOut) mkdirSync(storiesOut, { recursive: true });
 
   const cases = only ? DEFAULT_SET.filter((c) => c.goal.toLowerCase().includes(only)) : DEFAULT_SET;
   if (cases.length === 0) {
@@ -175,13 +185,14 @@ const main = async (): Promise<void> => {
 
   const services = await createEvalServices();
   const started = Date.now();
-  const results = await runPool(services, cases, model, concurrency);
+  const results = await runPool(services, cases, model, concurrency, storiesOut);
   const summary = summarize(results);
 
   console.log('\n' + formatResultsTable(results));
   console.log('\n' + formatSummary(summary));
   console.log(`wall clock: ${Math.round((Date.now() - started) / 1000)}s`);
 
+  if (storiesOut) console.log(`Stories frozen to: ${storiesOut}`);
   if (out) {
     writeFileSync(
       out,

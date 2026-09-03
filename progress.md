@@ -1202,3 +1202,24 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Next:** #352 — `eval:images` harness, Baseline vs Bible vs Bible+sheets comparison, ADR-0007.
 
 **Blockers:** none.
+
+---
+
+## 2026-09-03 — feat(ai): eval:images harness for the Visual Bible comparison (#352)
+
+**Done:**
+- Added the `eval:images` harness (#348, PR 3 of 3): renders a frozen set of Story fixtures through the real image pipeline for one variant (`baseline`/`bible`/`bible+sheets`), downloads pages under `output/eval-images/<variant>/<fixture>/`, and writes a JSON summary (page count, reference-sheet keys, timing). Variant logic (`storyForVariant`, `sheetsFlagFor`, `sanitizeId`, `evalBookId`) lives in a unit-tested `lib/eval-images-lib.ts`.
+- Extended `eval:batch` with `--stories-out=<dir>` to freeze fixtures once (text is never regenerated between variants).
+- Added `eval:images-report` — builds a single self-contained HTML laying the variants side by side per fixture page, with the manual scoring rubric, so the comparison can be scored by eye.
+- Ignored `output/` (the render artefacts + comparison HTML were not actually gitignored before).
+
+**Verified:**
+- `./init.sh` green including the new `eval-images-lib` unit tests.
+- End-to-end smoke: one hand-built fixture rendered via real Gemini on `bible+sheets` (max 1 page) produced a portrait + location sheet + cast sheet + page. The page shows the hero and the toddler brother matching their fixed cast descriptors, the slide matching the location descriptor, and exactly one hero — the stream's drift, fixed.
+
+**Decisions / gated:**
+- The full three-variant comparison (5 frozen fixtures × baseline/bible/bible+sheets ≈ €6 of Gemini generation), the filled rubric, the baseline JSON, ADR-0007's variant decision, flipping `IMAGE_REFERENCE_SHEETS` on, and the one real UI book with `StoryEval` + image spans are the paid/decision deliverables — held for explicit product-owner go-ahead.
+
+**Next:** on go-ahead, freeze 5 fixtures, run the three variants, generate the comparison, score the rubric, write ADR-0007.
+
+**Blockers:** none.
