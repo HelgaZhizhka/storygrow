@@ -15,8 +15,8 @@ describe('OpenAiImageProvider', () => {
     const provider = new OpenAiImageProvider();
     const out = await provider.generatePage({
       prompt: 'a fox',
-      artStyle: 'watercolor',
       imageSize: '1024x1024',
+      references: [],
     });
     expect(out).toBe(bytes);
     expect(provider.usesReference).toBe(false);
@@ -30,7 +30,7 @@ describe('OpenAiImageProvider', () => {
     );
     const provider = new OpenAiImageProvider();
     await expect(
-      provider.generatePage({ prompt: 'x', artStyle: 'watercolor', imageSize: '1024x1024' }),
+      provider.generatePage({ prompt: 'x', imageSize: '1024x1024', references: [] }),
     ).rejects.toBeInstanceOf(ImageGenerationError);
   });
 

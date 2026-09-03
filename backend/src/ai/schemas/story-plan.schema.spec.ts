@@ -1,5 +1,6 @@
 import { buildStoryPlanSchema } from './story-plan.schema';
 import { templatesForAge } from '../../pdf/page-templates/page-templates.config';
+import { sceneFixture, visualBibleFixture } from './__fixtures__/visual-bible.fixture';
 
 const planWith = (template: string): unknown => ({
   title: 'Тест',
@@ -7,13 +8,14 @@ const planWith = (template: string): unknown => ({
   characterProfile: 'girl',
   lesson: 'урок',
   discussionQuestions: ['1?', '2?', '3?', '4?', '5?'],
+  visualBible: visualBibleFixture(),
   pages: [
-    { template: 'cover', beat: 'Обложка', intent: 'обложка' },
-    { template, beat: 'Завязка', intent: 'что-то' },
-    { template: 'image-top', beat: 'Конфликт', intent: 'что-то' },
-    { template: 'image-bottom', beat: 'Борьба', intent: 'что-то' },
-    { template: 'image-top', beat: 'Развязка', intent: 'что-то' },
-    { template: 'final', beat: 'Финал', intent: 'финал' },
+    { template: 'cover', beat: 'Обложка', intent: 'обложка', scene: sceneFixture() },
+    { template, beat: 'Завязка', intent: 'что-то', scene: sceneFixture() },
+    { template: 'image-top', beat: 'Конфликт', intent: 'что-то', scene: sceneFixture() },
+    { template: 'image-bottom', beat: 'Борьба', intent: 'что-то', scene: sceneFixture() },
+    { template: 'image-top', beat: 'Развязка', intent: 'что-то', scene: sceneFixture() },
+    { template: 'final', beat: 'Финал', intent: 'финал', scene: sceneFixture() },
   ],
 });
 
@@ -39,10 +41,12 @@ describe('buildStoryPlanSchema page-count per band', () => {
       characterProfile: 'girl',
       lesson: 'урок',
       discussionQuestions: ['1?', '2?', '3?', '4?', '5?'],
+      visualBible: visualBibleFixture(),
       pages: Array.from({ length: 9 }, (_, i) => ({
         template: i === 0 ? 'cover' : i === 8 ? 'final' : 'image-top',
         beat: 'Бит',
         intent: 'что-то',
+        scene: sceneFixture(),
       })),
     };
     const result3to4 = buildStoryPlanSchema(3).safeParse(eightPages);

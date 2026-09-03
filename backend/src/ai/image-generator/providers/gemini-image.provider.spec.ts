@@ -40,9 +40,8 @@ describe('GeminiImageProvider', () => {
     const ref = new Uint8Array([7]);
     await new GeminiImageProvider('key').generatePage({
       prompt: 'a fox',
-      artStyle: 'watercolor',
       imageSize: '1536x1024',
-      reference: ref,
+      references: [ref],
     });
     const [arg] = mockGenerateImage.mock.calls[0] as [
       { aspectRatio?: string; prompt: { text?: string; images?: Uint8Array[] } },
@@ -82,8 +81,8 @@ describe('GeminiImageProvider', () => {
     await expect(
       new GeminiImageProvider('key').generatePage({
         prompt: 'x',
-        artStyle: 'watercolor',
         imageSize: '1024x1024',
+        references: [],
       }),
     ).rejects.toBeInstanceOf(ImageGenerationError);
   });

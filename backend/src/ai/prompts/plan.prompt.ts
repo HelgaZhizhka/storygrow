@@ -51,6 +51,23 @@ Hard rules:
    «Лиза и гора конфет»). Do NOT name the abstract value/learning goal and
    never use the templates «история про…», «история с…», «… учится …» — those
    are dull.
+10. VISUAL BIBLE. Decide the book's visual world ONCE, so every page can be drawn
+   from the same fixed description:
+   • locations (1–3): each with a lowercase-slug id and an ENGLISH descriptor —
+     the key object, its materials/colours, what surrounds it.
+   • cast (0–3): every recurring person or animal BESIDES the hero (a younger
+     brother, a kitten). Each gets an id, the Russian name used in the story, a
+     short Russian role, and a FIXED English descriptor (kind/age + hair + outfit
+     + one distinctive detail).
+   • props (0–4): key objects, id + English descriptor.
+   • atmosphere: one English line — season, light, palette mood.
+   All descriptors are ENGLISH, concrete and PHYSICAL, and are reused VERBATIM on
+   every page, so nothing drifts. Set the hero descriptor to a fitting
+   placeholder (it is refined downstream). Then give EACH page a scene: which
+   location (locationId), which cast are present (castIds), which props (propIds),
+   whether the hero is on the page (heroOnPage — true on cover and final),
+   timeOfDay and framing. Do NOT describe actions in the bible — the page intent
+   already carries what happens.
 `.trim();
 
 const buildTemplateCatalogue = (childAge: number): string => {

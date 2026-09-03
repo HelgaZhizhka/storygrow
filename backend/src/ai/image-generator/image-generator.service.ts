@@ -8,11 +8,17 @@ import { PAGE_TEMPLATES } from '../../pdf/page-templates/page-templates.config';
 import { S3Service } from '../../s3/s3.service';
 import {
   DEFAULT_IMAGE_PROVIDER,
+  DEFAULT_MAX_REFERENCE_IMAGES,
   GEMINI_IMAGE_MODEL,
   GENERATION_MODEL,
+  MAX_REFERENCE_IMAGES,
+  STYLE_SUFFIXES,
   type ArtStyle,
   type ImageProviderName,
 } from '../ai.config';
+import { pickReferences } from './pick-references';
+import { buildIllustrationPrompt } from '../prompts/illustration.prompt';
+import { buildPagePrompt } from '../prompts/image-portrait.prompt';
 import { ImageContentPolicyError, ImageGenerationError } from './errors';
 import { simplifyIllustrationPrompt } from './prompt-simplifier';
 import { createTelemetry } from '../telemetry';
@@ -69,16 +75,17 @@ export class ImageGeneratorService {
 
       const portrait = await this.maybePortrait(input);
       const imageKeys = await Promise.all(
-        input.story.pages.map((page, i) =>
-          this.generatePage({
+        input.story.pages.map((page, i) => {
+          const req = this.buildPageRequest(input, page, portrait?.bytes);
+          return this.generatePage({
             bookId: input.bookId,
             pageNumber: i + 1,
-            prompt: this.pagePrompt(input.story, page, input.characterDescriptor),
+            prompt: req.prompt,
+            references: req.references,
+            labels: req.labels,
             template: page.template,
-            artStyle: input.artStyle,
-            reference: portrait?.bytes,
-          }),
-        ),
+          });
+        }),
       );
 
       span.update({ output: { count: imageKeys.length, portrait: portrait?.key ?? null } });
@@ -99,16 +106,66 @@ export class ImageGeneratorService {
     return this.provider.generatePortraitFromPhoto(input);
   }
 
-  private pagePrompt(
-    story: Story,
+  private referenceBudget(): number {
+    return MAX_REFERENCE_IMAGES[this.provider.modelLabel] ?? DEFAULT_MAX_REFERENCE_IMAGES;
+  }
+
+  // Assemble one page's final prompt + reference images. Visual Bible path (#348)
+  // when the story carries a bible + scene; otherwise the legacy path.
+  private buildPageRequest(
+    input: ImageGenInput,
     page: Story['pages'][number],
-    descriptor?: string | null,
-  ): string {
-    if (this.provider.usesReference) {
-      return descriptor ? `${descriptor}. ${page.illustrationPrompt}` : page.illustrationPrompt;
+    portraitBytes?: Uint8Array,
+  ): { prompt: string; references: Uint8Array[]; labels: string[] } {
+    const { visualBible } = input.story;
+    if (visualBible && page.scene) {
+      return this.biblePageRequest(input, page, portraitBytes);
     }
-    const prefix = story.characterProfile ? `${story.characterProfile}. ` : '';
-    return `${prefix}${page.illustrationPrompt}`;
+    return this.legacyPageRequest(input, page, portraitBytes);
+  }
+
+  private biblePageRequest(
+    input: ImageGenInput,
+    page: Story['pages'][number],
+    portraitBytes?: Uint8Array,
+  ): { prompt: string; references: Uint8Array[]; labels: string[] } {
+    const bible = input.story.visualBible!;
+    const scene = page.scene!;
+    const heroPortrait = this.provider.usesReference ? portraitBytes : undefined;
+    const { images, labels } = pickReferences({
+      scene,
+      sources: { heroPortrait },
+      budget: this.referenceBudget(),
+    });
+    const heroDescriptor = input.characterDescriptor ?? bible.hero.descriptor;
+    const prompt = buildIllustrationPrompt({
+      bible,
+      scene,
+      action: page.illustrationPrompt,
+      heroDescriptor,
+      artStyle: input.artStyle,
+      labels,
+    });
+    return { prompt, references: images, labels };
+  }
+
+  private legacyPageRequest(
+    input: ImageGenInput,
+    page: Story['pages'][number],
+    portraitBytes?: Uint8Array,
+  ): { prompt: string; references: Uint8Array[]; labels: string[] } {
+    if (this.provider.usesReference) {
+      const inner = input.characterDescriptor
+        ? `${input.characterDescriptor}. ${page.illustrationPrompt}`
+        : page.illustrationPrompt;
+      const prompt = buildPagePrompt(inner, input.artStyle);
+      return portraitBytes
+        ? { prompt, references: [portraitBytes], labels: ['hero'] }
+        : { prompt, references: [], labels: [] };
+    }
+    const prefix = input.story.characterProfile ? `${input.story.characterProfile}. ` : '';
+    const prompt = `${prefix}${page.illustrationPrompt}${STYLE_SUFFIXES[input.artStyle]}`;
+    return { prompt, references: [], labels: [] };
   }
 
   private async maybePortrait(
@@ -137,14 +194,20 @@ export class ImageGeneratorService {
     bookId: string;
     pageNumber: number;
     prompt: string;
+    references: Uint8Array[];
+    labels: string[];
     template: Story['pages'][number]['template'];
-    artStyle: ArtStyle;
-    reference?: Uint8Array;
   }): Promise<string> {
     return startActiveObservation(`image-generation.page-${opts.pageNumber}`, async (span) => {
       const slot = PAGE_TEMPLATES[opts.template].images[0];
       if (!slot) throw new Error(`Template '${opts.template}' has no image slot configured`);
-      span.update({ metadata: { bookId: opts.bookId, pageNumber: opts.pageNumber } });
+      span.update({
+        metadata: {
+          bookId: opts.bookId,
+          pageNumber: opts.pageNumber,
+          references: opts.labels,
+        },
+      });
       const bytes = await this.withSimplifyRetry(opts, slot.imageSize);
       const key = `books/${opts.bookId}/page-${opts.pageNumber}.png`;
       await this.s3.uploadObject({ key, body: Buffer.from(bytes), contentType: 'image/png' });
@@ -158,17 +221,15 @@ export class ImageGeneratorService {
       bookId: string;
       pageNumber: number;
       prompt: string;
-      artStyle: ArtStyle;
-      reference?: Uint8Array;
+      references: Uint8Array[];
     },
     imageSize: (typeof PAGE_TEMPLATES)[keyof typeof PAGE_TEMPLATES]['images'][0]['imageSize'],
   ): Promise<Uint8Array> {
     const gen = (prompt: string): Promise<Uint8Array> =>
       this.provider.generatePage({
         prompt,
-        artStyle: opts.artStyle,
         imageSize,
-        reference: opts.reference,
+        references: opts.references,
       });
     try {
       return await gen(opts.prompt);

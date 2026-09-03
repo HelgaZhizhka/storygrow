@@ -9,6 +9,7 @@ import { generateObject } from 'ai';
 import { StoryGeneratorService } from './story-generator.service';
 import type { GenerateStoryInput } from './story-generator.service';
 import type { Story, StoryPlan } from '../schemas';
+import { sceneFixture, visualBibleFixture } from '../schemas/__fixtures__/visual-bible.fixture';
 
 const mockGenerateObject = generateObject as jest.MockedFunction<typeof generateObject>;
 
@@ -18,13 +19,24 @@ const validPlan: StoryPlan = {
   characterProfile: '6-year-old girl with brown hair, blue dress',
   lesson: 'Дружба важна',
   discussionQuestions: ['Что случилось?', 'Почему?', 'Как?', 'Что узнала?', 'Что важно?'],
+  visualBible: visualBibleFixture(),
   pages: [
-    { template: 'cover', beat: 'Обложка', intent: 'Маша и кот на лугу' },
-    { template: 'image-top', beat: 'Завязка', intent: 'Маша играет с котом' },
-    { template: 'image-bottom', beat: 'Конфликт', intent: 'Кот убежал' },
-    { template: 'image-left', beat: 'Внутренняя борьба', intent: 'Маша ищет кота' },
-    { template: 'image-left', beat: 'Развязка', intent: 'Маша нашла кота' },
-    { template: 'final', beat: 'Финал', intent: 'Снова вместе' },
+    { template: 'cover', beat: 'Обложка', intent: 'Маша и кот на лугу', scene: sceneFixture() },
+    {
+      template: 'image-top',
+      beat: 'Завязка',
+      intent: 'Маша играет с котом',
+      scene: sceneFixture(),
+    },
+    { template: 'image-bottom', beat: 'Конфликт', intent: 'Кот убежал', scene: sceneFixture() },
+    {
+      template: 'image-left',
+      beat: 'Внутренняя борьба',
+      intent: 'Маша ищет кота',
+      scene: sceneFixture(),
+    },
+    { template: 'image-left', beat: 'Развязка', intent: 'Маша нашла кота', scene: sceneFixture() },
+    { template: 'final', beat: 'Финал', intent: 'Снова вместе', scene: sceneFixture() },
   ],
 };
 
@@ -60,6 +72,15 @@ const validStory: Story = {
     { template: 'final', text: 'Дружба важна', title: null, illustrationPrompt: 'Friends' },
   ],
   discussionQuestions: ['Что случилось?', 'Почему?', 'Как?', 'Что узнала?', 'Что важно?'],
+};
+
+const mergedStory: Story = {
+  ...validStory,
+  visualBible: {
+    ...visualBibleFixture(),
+    hero: { ...visualBibleFixture().hero, descriptor: validPlan.characterProfile },
+  },
+  pages: validStory.pages.map((p, i) => ({ ...p, scene: validPlan.pages[i].scene })),
 };
 
 const input: GenerateStoryInput = {
@@ -101,8 +122,17 @@ describe('StoryGeneratorService', () => {
   it('runs Plan, Prose, Title and returns the Prose Story', async () => {
     mockPlanThenProse();
     const result = await service.generateStory(input);
-    expect(result).toEqual(validStory);
+    expect(result).toEqual(mergedStory);
     expect(mockGenerateObject).toHaveBeenCalledTimes(3);
+  });
+
+  it('merges the Visual Bible and per-page scenes into the returned Story (#348)', async () => {
+    mockPlanThenProse();
+    const result = await service.generateStory(input);
+    expect(result.visualBible?.locations[0].id).toBe('home');
+    expect(result.pages.every((p) => p.scene !== undefined)).toBe(true);
+    // hero descriptor comes from characterProfile, not the plan's bible placeholder
+    expect(result.visualBible?.hero.descriptor).toBe(validPlan.characterProfile);
   });
 
   it('traces the two phases separately (story-planner, then story-prose)', async () => {

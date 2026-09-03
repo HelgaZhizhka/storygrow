@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { generateObject } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import type { OpenAIProvider } from '@ai-sdk/openai';
 import { z } from 'zod';
-import { buildStorySchema, buildStoryPlanSchema, type Story, type StoryPlan } from '../schemas';
+import { buildProseSchema, buildStoryPlanSchema, type Story, type StoryPlan } from '../schemas';
+import { normalizeVisualBible } from '../validators';
 import { ageToAgeBand, type AgeBand } from '../../pdf/page-templates/page-templates.config';
 import { PLAN_SYSTEM_PROMPT, buildPlanPrompt } from '../prompts/plan.prompt';
 import { buildProseSystemPrompt, buildProsePrompt } from '../prompts/prose.prompt';
@@ -48,6 +49,7 @@ export interface GenerateStoryInput {
  */
 @Injectable()
 export class StoryGeneratorService {
+  private readonly logger = new Logger(StoryGeneratorService.name);
   private readonly openai: OpenAIProvider;
 
   constructor(config: ConfigService) {
@@ -63,7 +65,10 @@ export class StoryGeneratorService {
     if (input.protagonistMode === 'child' && input.appearance) {
       plan.characterProfile = await this.deriveCharacterProfile(input);
     }
-    const story = await this.generateProse(plan, input, ageBand);
+    const prose = await this.generateProse(plan, input, ageBand);
+    // Merge the Visual Bible + per-page scenes into the persisted Story in code
+    // (#348) — the prose model is never asked to reproduce them.
+    const story = this.mergeVisualBible(prose, plan, input.bookId);
     // Title from the finished, concrete story — not the abstract plan (#232).
     const title = await this.deriveTitle({ story, heroName: plan.heroName, input, ageBand });
     return this.applyTitle(story, title);
@@ -140,7 +145,34 @@ export class StoryGeneratorService {
         bookId: input.bookId,
       }),
     });
-    return object;
+    const { plan, repairs } = normalizeVisualBible(object);
+    if (repairs > 0) {
+      this.logger.warn(`Book ${input.bookId}: Visual Bible repaired (${repairs} fixes)`);
+    }
+    return plan;
+  }
+
+  /**
+   * Merge the Plan's Visual Bible and per-page scenes into the persisted Story
+   * (#348). The hero descriptor comes from `characterProfile` (the derived /
+   * placeholder anchor) so one hero description drives text and image alike; the
+   * photo path overrides it again at image time (#128). Pages align 1:1 with the
+   * plan (Prose follows the plan exactly); a missing scene stays undefined.
+   */
+  private mergeVisualBible(story: Story, plan: StoryPlan, bookId: string): Story {
+    if (story.pages.length !== plan.pages.length) {
+      // Prose is instructed to follow the plan exactly; if it drifted, scenes
+      // align by index and any trailing page falls back to the legacy prompt.
+      this.logger.warn(
+        `Book ${bookId}: prose emitted ${story.pages.length} pages, plan has ${plan.pages.length}; scenes align by index`,
+      );
+    }
+    const visualBible = {
+      ...plan.visualBible,
+      hero: { ...plan.visualBible.hero, descriptor: plan.characterProfile },
+    };
+    const pages = story.pages.map((page, i) => ({ ...page, scene: plan.pages[i]?.scene }));
+    return { ...story, visualBible, pages };
   }
 
   private async generateProse(
@@ -150,7 +182,7 @@ export class StoryGeneratorService {
   ): Promise<Story> {
     const { object } = await generateObject({
       model: this.openai(input.model ?? PROSE_MODEL),
-      schema: buildStorySchema(ageBand),
+      schema: buildProseSchema(ageBand),
       system: buildProseSystemPrompt(ageBand),
       prompt: buildProsePrompt(plan, input),
       experimental_telemetry: createTelemetry('story-prose', {

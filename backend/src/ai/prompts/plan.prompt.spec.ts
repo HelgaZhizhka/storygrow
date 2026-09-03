@@ -1,4 +1,4 @@
-import { buildPlanPrompt } from './plan.prompt';
+import { buildPlanPrompt, PLAN_SYSTEM_PROMPT } from './plan.prompt';
 import type { BuildStoryPromptOptions } from './story-generator.prompt';
 
 const base: BuildStoryPromptOptions = {
@@ -110,5 +110,13 @@ describe('buildPlanPrompt — 3-4 band', () => {
     // FEAR_3_4, so assert band-correctness via any valid 3-4 hero rather
     // than one fixed hero.
     expect(['Катя', 'Мишка', 'Юра'].some((hero) => out.includes(hero))).toBe(true);
+  });
+});
+
+describe('PLAN_SYSTEM_PROMPT — Visual Bible rule (#348)', () => {
+  it('instructs the model to decide locations, cast, props and per-page scenes', () => {
+    expect(PLAN_SYSTEM_PROMPT).toContain('VISUAL BIBLE');
+    expect(PLAN_SYSTEM_PROMPT).toContain('heroOnPage');
+    expect(PLAN_SYSTEM_PROMPT).toContain('timeOfDay');
   });
 });

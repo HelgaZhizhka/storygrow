@@ -1144,3 +1144,25 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Product-owner review of the spec, then break it into the three implementation PRs listed in its Rollout section.
 
 **Blockers:** none.
+
+---
+
+## 2026-09-03 — feat(ai): Visual Bible schema, prompts, story merge + illustration assembler (#350)
+
+**Done:**
+- Added the Visual Bible (#348, PR 1 of 3): `visual-bible.schema.ts` (VisualBible + Scene with caps as constants), `visualBible` + per-page `scene` on the Plan schema, and optional `visualBible`/`scene` on the persisted Story (split `buildProseSchema` for the LLM output from `buildStorySchema` for the persisted contract, so the prose model is never asked to reproduce the bible).
+- `normalizeVisualBible` repairs dangling ids and forces cover/final `heroOnPage`, logging the repair count; `StoryGeneratorService` merges the bible + scenes into the Story in code after Prose (like `applyTitle`), with the hero descriptor sourced from `characterProfile`.
+- Plan prompt gains a VISUAL BIBLE rule; Prose rule 6 became action-only and rule 7 (recurring-creature descriptor) was removed — recurring characters are now bible `cast`. `illustration.prompt.ts` assembles each page prompt deterministically (hero-lock with "exactly one hero", cast, setting, props, action, framing, style, negatives). `pickReferences` selects hero/cast/location within the model reference budget; the provider interface moved from a single `reference?` to `references[]`, with prompt assembly centralised in the service (legacy path preserved for pre-#348 / Fast Flow stories).
+- Docs updated in-PR: CONTEXT.md (Visual Bible, Scene, Companion Descriptor superseded), ARCHITECTURE.md pipeline step.
+
+**Verified:**
+- `./init.sh` green (backend tsc/lint/tests, frontend tsc/lint/tests, format:check).
+- Live `eval:batch --only=Смелость` (5-6 and 3-4, child): 2/2 PASS, registerMatch 9/9 — the Plan model emits a schema-valid bible and register held. Flaw/observer cases running for extra confidence.
+
+**Decisions:**
+- The bible is merged in code, never re-emitted by an LLM; legacy stories without it take the current prompt path (no data migration).
+- Reference sheets, the `IMAGE_REFERENCE_SHEETS` flag, `referenceImageKeys`, and the `eval:images` comparison are PR 2 (#351) and PR 3 (#352).
+
+**Next:** open PR for #350; on merge, start #351 (reference sheets).
+
+**Blockers:** none.

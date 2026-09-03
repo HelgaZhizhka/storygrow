@@ -63,7 +63,7 @@ Synchronous generation path (~5 seconds): pick a pre-authored `Template`, fill p
 **Avoid:** "template flow" (acceptable informally, but "fast flow" is the term in code paths and docs).
 
 ### Custom Flow
-Asynchronous generation path (3-10 min): full AI pipeline via BullMQ job, all phases owned by `StoryGeneratorService` — **Plan** → **Prose** → **Title** (derived from the finished story, not the abstract plan — see [Story Plan]) → `StoryEvaluator` (with regeneration loop) → `ImageGenerator` (Gemini 2.5 Flash Image per page with a reference portrait for character consistency; gpt-image-1 fallback) → `PDFRenderer` (Puppeteer). Progress streamed to frontend via SSE. (Pre-ADR-0005 this began with a `VocabularyRag` stage and a single mega-call; both are superseded. The ADR-0005 "Read-Aloud Edit" phase was never built — Plan+Prose alone met the quality bar.)
+Asynchronous generation path (3-10 min): full AI pipeline via BullMQ job, all phases owned by `StoryGeneratorService` — **Plan** → **Prose** → **Title** (derived from the finished story, not the abstract plan — see [Story Plan]) → `StoryEvaluator` (with regeneration loop) → `ImageGenerator` (Gemini 2.5 Flash Image per page with a reference portrait for character consistency, and a [Visual Bible] fixing locations/cast/props so the whole book renders from one description — #348; gpt-image-1 fallback) → `PDFRenderer` (Puppeteer). Progress streamed to frontend via SSE. (Pre-ADR-0005 this began with a `VocabularyRag` stage and a single mega-call; both are superseded. The ADR-0005 "Read-Aloud Edit" phase was never built — Plan+Prose alone met the quality bar.)
 
 **Avoid:** "AI flow" (every flow technically uses AI somewhere — be specific), "slow flow" (negative framing).
 
@@ -88,9 +88,19 @@ Soft, concrete per-book material stored on `Book` (`interests`, `motifs`, `favor
 **Avoid:** "keywords", "constraints" — seeds are soft flavour, not hard requirements.
 
 ### Companion Descriptor
-A short, fixed English visual descriptor (species + colour + one detail) for a recurring non-hero animal/creature the story itself invents (e.g. a rescued kitten), so it renders consistently across every page it appears on — the same anchoring idea as `characterProfile`, extended past the hero. The Prose phase must invent and reuse one fixed descriptor per prose rule 7. Without it, a recurring animal drifts (colour/species changes page to page). (An earlier version also anchored user-named pets from a `belongings` seed via an isolated derivation call — removed in #245; see [Personalization Seeds].)
+**Superseded by the [Visual Bible] `cast` (#348).** Historically, a short fixed English descriptor for a recurring non-hero creature was invented by the Prose phase (old prose rule 7) and repeated in every `illustrationPrompt`. Recurring characters are now first-class `cast` entries in the Visual Bible with a fixed id + descriptor selected per page via the [Scene], so prose rule 7 was removed. (The earlier `belongings` named-pet seed was removed separately in #245; see [Personalization Seeds].)
 
-**Avoid:** "pet profile", "character sheet" — it is a short visual tag for image consistency, not a personality description.
+**Avoid:** re-introducing a per-page free-text descriptor for a recurring character — use a bible `cast` entry.
+
+### Visual Bible
+The book's visual world (#348), decided ONCE in the **Plan** phase and merged into the persisted `Story` in code (never re-emitted by an LLM): `hero`, `cast` (recurring people/animals besides the hero, ≤3), `locations` (≤3), `props` (≤4) and an `atmosphere` line. Every descriptor is **English, concrete and fixed for the whole book**, reused verbatim on every page so a location or secondary character can no longer drift between spreads. The hero descriptor comes from `characterProfile` (or the photo [Character Descriptor]); the illustration-prompt assembler builds each page prompt deterministically from the bible + the page [Scene] + the page action. Referential integrity is repaired by `normalizeVisualBible`, not by a schema pattern.
+
+**Avoid:** "style guide" (that is `Art Style`), "storyboard" — the bible is the fixed CAST/PLACES/PROPS, not the page layout.
+
+### Scene
+One page's selection from the [Visual Bible] (`Story.pages[].scene`, #348): `locationId`, `castIds`, `propIds`, `heroOnPage`, `timeOfDay`, `framing`. It says WHO and WHERE for the page (appearance/place come from the bible); the page's `illustrationPrompt` says only the ACTION. `heroOnPage` drives the "hero appears exactly once" lock and which references are passed. Optional on the Story so pre-#348 books and Fast Flow stories still parse.
+
+**Avoid:** "shot list" — a Scene is one page's bible selection, not a camera plan.
 
 ### Arc Type
 The narrative arc assigned to a `LearningGoal`, stored as `LearningGoal.arcType` (`virtue` | `flaw`).
