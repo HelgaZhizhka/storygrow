@@ -25,6 +25,7 @@ import { createTelemetry } from '../telemetry';
 import type { ImageProvider } from './providers/image-provider.interface';
 import { OpenAiImageProvider } from './providers/openai-image.provider';
 import { GeminiImageProvider } from './providers/gemini-image.provider';
+import { ReferenceSheetsService, type SheetSet } from './reference-sheets.service';
 
 export interface ImageGenInput {
   story: Story;
@@ -39,6 +40,22 @@ export interface ImageGenInput {
 export interface ImageGenResult {
   imageKeys: string[];
   characterPortraitKey: string | null;
+  /** S3 keys of generated reference sheets (#348, PR 2); empty when the flag is off. */
+  referenceImageKeys: string[];
+}
+
+/** Inputs for assembling one page's prompt + references (object-param, rule #13). */
+interface PageBuildContext {
+  input: ImageGenInput;
+  page: Story['pages'][number];
+  portraitBytes?: Uint8Array;
+  sheets?: SheetSet | null;
+}
+
+interface PageRequest {
+  prompt: string;
+  references: Uint8Array[];
+  labels: string[];
 }
 
 @Injectable()
@@ -46,14 +63,19 @@ export class ImageGeneratorService {
   private readonly logger = new Logger(ImageGeneratorService.name);
   private readonly textModel: LanguageModel;
   private readonly provider: ImageProvider;
+  // Reference sheets (#348, PR 2) are off until the eval:images comparison picks
+  // a production variant (ADR-0007). Flipped via IMAGE_REFERENCE_SHEETS=on.
+  private readonly sheetsEnabled: boolean;
 
   constructor(
     private readonly s3: S3Service,
     config: ConfigService,
+    private readonly referenceSheets: ReferenceSheetsService,
   ) {
     this.textModel = createOpenAI({ apiKey: config.getOrThrow<string>('OPENAI_API_KEY') })(
       GENERATION_MODEL,
     );
+    this.sheetsEnabled = (config.get<string>('IMAGE_REFERENCE_SHEETS') ?? 'off') === 'on';
     const name = (config.get<string>('IMAGE_PROVIDER') ??
       DEFAULT_IMAGE_PROVIDER) as ImageProviderName;
     this.provider =
@@ -74,9 +96,23 @@ export class ImageGeneratorService {
       });
 
       const portrait = await this.maybePortrait(input);
+      const sheets = await this.maybeSheets(input);
+      // 'bible+sheets' only when at least one sheet was actually produced — if
+      // every sheet was refused, the run is really the 'bible' variant (keeps the
+      // eval:images A/B labelling honest).
+      const variant = !input.story.visualBible
+        ? 'baseline'
+        : (sheets?.keys.length ?? 0) > 0
+          ? 'bible+sheets'
+          : 'bible';
       const imageKeys = await Promise.all(
         input.story.pages.map((page, i) => {
-          const req = this.buildPageRequest(input, page, portrait?.bytes);
+          const req = this.buildPageRequest({
+            input,
+            page,
+            portraitBytes: portrait?.bytes,
+            sheets,
+          });
           return this.generatePage({
             bookId: input.bookId,
             pageNumber: i + 1,
@@ -84,12 +120,31 @@ export class ImageGeneratorService {
             references: req.references,
             labels: req.labels,
             template: page.template,
+            variant,
           });
         }),
       );
 
       span.update({ output: { count: imageKeys.length, portrait: portrait?.key ?? null } });
-      return { imageKeys, characterPortraitKey: portrait?.key ?? null };
+      return {
+        imageKeys,
+        characterPortraitKey: portrait?.key ?? null,
+        referenceImageKeys: sheets?.keys ?? [],
+      };
+    });
+  }
+
+  // Generate location + cast reference sheets once per book (#348, PR 2), gated
+  // by IMAGE_REFERENCE_SHEETS and only for the bible path on a reference-capable
+  // provider. Returns null when sheets are off / not applicable.
+  private async maybeSheets(input: ImageGenInput): Promise<SheetSet | null> {
+    const bible = input.story.visualBible;
+    if (!this.sheetsEnabled || !this.provider.usesReference || !bible) return null;
+    return this.referenceSheets.generate({
+      bookId: input.bookId,
+      bible,
+      artStyle: input.artStyle,
+      provider: this.provider,
     });
   }
 
@@ -112,29 +167,26 @@ export class ImageGeneratorService {
 
   // Assemble one page's final prompt + reference images. Visual Bible path (#348)
   // when the story carries a bible + scene; otherwise the legacy path.
-  private buildPageRequest(
-    input: ImageGenInput,
-    page: Story['pages'][number],
-    portraitBytes?: Uint8Array,
-  ): { prompt: string; references: Uint8Array[]; labels: string[] } {
-    const { visualBible } = input.story;
-    if (visualBible && page.scene) {
-      return this.biblePageRequest(input, page, portraitBytes);
+  private buildPageRequest(ctx: PageBuildContext): PageRequest {
+    const { input, page } = ctx;
+    if (input.story.visualBible && page.scene) {
+      return this.biblePageRequest(ctx);
     }
-    return this.legacyPageRequest(input, page, portraitBytes);
+    return this.legacyPageRequest(ctx);
   }
 
-  private biblePageRequest(
-    input: ImageGenInput,
-    page: Story['pages'][number],
-    portraitBytes?: Uint8Array,
-  ): { prompt: string; references: Uint8Array[]; labels: string[] } {
+  private biblePageRequest(ctx: PageBuildContext): PageRequest {
+    const { input, page, portraitBytes, sheets } = ctx;
     const bible = input.story.visualBible!;
     const scene = page.scene!;
     const heroPortrait = this.provider.usesReference ? portraitBytes : undefined;
     const { images, labels } = pickReferences({
       scene,
-      sources: { heroPortrait },
+      sources: {
+        heroPortrait,
+        castSheets: sheets?.castSheets,
+        locationSheet: sheets?.locationSheets[scene.locationId],
+      },
       budget: this.referenceBudget(),
     });
     const heroDescriptor = input.characterDescriptor ?? bible.hero.descriptor;
@@ -149,11 +201,8 @@ export class ImageGeneratorService {
     return { prompt, references: images, labels };
   }
 
-  private legacyPageRequest(
-    input: ImageGenInput,
-    page: Story['pages'][number],
-    portraitBytes?: Uint8Array,
-  ): { prompt: string; references: Uint8Array[]; labels: string[] } {
+  private legacyPageRequest(ctx: PageBuildContext): PageRequest {
+    const { input, page, portraitBytes } = ctx;
     if (this.provider.usesReference) {
       const inner = input.characterDescriptor
         ? `${input.characterDescriptor}. ${page.illustrationPrompt}`
@@ -197,6 +246,7 @@ export class ImageGeneratorService {
     references: Uint8Array[];
     labels: string[];
     template: Story['pages'][number]['template'];
+    variant: string;
   }): Promise<string> {
     return startActiveObservation(`image-generation.page-${opts.pageNumber}`, async (span) => {
       const slot = PAGE_TEMPLATES[opts.template].images[0];
@@ -206,6 +256,7 @@ export class ImageGeneratorService {
           bookId: opts.bookId,
           pageNumber: opts.pageNumber,
           references: opts.labels,
+          variant: opts.variant,
         },
       });
       const bytes = await this.withSimplifyRetry(opts, slot.imageSize);

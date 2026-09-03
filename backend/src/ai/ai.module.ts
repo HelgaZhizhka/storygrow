@@ -4,6 +4,7 @@ import { StoryGeneratorService } from './story-generator/story-generator.service
 import { StoryEvaluatorService } from './story-generator/story-evaluator.service';
 import { StoryOrchestratorService } from './story-generator/story-orchestrator.service';
 import { ImageGeneratorService } from './image-generator/image-generator.service';
+import { ReferenceSheetsService } from './image-generator/reference-sheets.service';
 import { LearningGoalSafetyService } from './learning-goal-safety/learning-goal-safety.service';
 import { PhotoDescriptorService } from './photo/photo-descriptor.service';
 import { PhotoPortraitService } from './photo/photo-portrait.service';
@@ -18,6 +19,7 @@ import { S3Module } from '../s3/s3.module';
     StoryEvaluatorService,
     StoryOrchestratorService,
     ImageGeneratorService,
+    ReferenceSheetsService,
     LearningGoalSafetyService,
     PhotoDescriptorService,
     PhotoPortraitService,

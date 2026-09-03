@@ -37,4 +37,8 @@ describe('OpenAiImageProvider', () => {
   it('does not generate portraits', async () => {
     await expect(new OpenAiImageProvider().generatePortrait()).rejects.toThrow();
   });
+
+  it('does not generate location sheets (Gemini-only)', async () => {
+    await expect(new OpenAiImageProvider().generateLocationSheet()).rejects.toThrow();
+  });
 });

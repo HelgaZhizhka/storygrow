@@ -63,6 +63,9 @@ model Book {
   storyJson      Json?
   imageKeys             String[]     @default([])
   characterPortraitKey  String?
+  // S3 keys of generated Visual Bible reference sheets (#348, PR 2): location
+  // establishing shots and cast portraits. Empty unless IMAGE_REFERENCE_SHEETS=on.
+  referenceImageKeys    String[]     @default([])
   pdfKey                String?
   // Photo-character likeness (#128, child mode). childPhotoKey is the TRANSIENT
   // private S3 key of the raw upload — nulled the moment the stylised portrait is

@@ -42,6 +42,7 @@ jest.mock('../telemetry', () => ({
 import { Test } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { ImageGeneratorService } from './image-generator.service';
+import { ReferenceSheetsService } from './reference-sheets.service';
 import { ImageContentPolicyError } from './errors';
 import { S3Service } from '../../s3/s3.service';
 import type { Story } from '../schemas';
@@ -53,8 +54,12 @@ const mockS3 = {
   getObjectBytes: jest.fn(),
 };
 
-const makeMockConfig = (imageProvider: string) => ({
-  get: jest.fn((key: string) => (key === 'IMAGE_PROVIDER' ? imageProvider : undefined)),
+const makeMockConfig = (imageProvider: string, sheets = 'off') => ({
+  get: jest.fn((key: string) => {
+    if (key === 'IMAGE_PROVIDER') return imageProvider;
+    if (key === 'IMAGE_REFERENCE_SHEETS') return sheets;
+    return undefined;
+  }),
   getOrThrow: jest.fn(() => 'test-key'),
 });
 
@@ -85,12 +90,16 @@ const makeBibleStory = (): Story => ({
   })),
 });
 
-const makeService = async (imageProvider = 'openai'): Promise<ImageGeneratorService> => {
+const makeService = async (
+  imageProvider = 'openai',
+  sheets = 'off',
+): Promise<ImageGeneratorService> => {
   const module = await Test.createTestingModule({
     providers: [
       ImageGeneratorService,
+      ReferenceSheetsService,
       { provide: S3Service, useValue: mockS3 },
-      { provide: ConfigService, useValue: makeMockConfig(imageProvider) },
+      { provide: ConfigService, useValue: makeMockConfig(imageProvider, sheets) },
     ],
   }).compile();
   return module.get(ImageGeneratorService);
@@ -290,6 +299,65 @@ describe('ImageGeneratorService', () => {
         expect(call.prompt.text).toContain('as in reference image 1');
         expect(call.prompt.text).toContain('a green slide in a yard');
         expect(call.prompt.images).toHaveLength(1); // the hero portrait
+      }
+    });
+
+    it('does not generate reference sheets when IMAGE_REFERENCE_SHEETS is off', async () => {
+      const service = await makeService('gemini', 'off');
+      mockGenerateImage.mockResolvedValue({ image: { uint8Array: new Uint8Array([1]) } });
+      mockS3.uploadObject.mockResolvedValue(undefined);
+
+      const result = await service.generate({
+        story: makeBibleStory(),
+        bookId: 'book-off',
+        artStyle: 'watercolor',
+      });
+
+      expect(result.referenceImageKeys).toEqual([]);
+      // portrait + 2 pages only (no ref-location/ref-cast uploads)
+      const keys = mockS3.uploadObject.mock.calls.map(([a]) => (a as { key: string }).key);
+      expect(keys.some((k) => k.includes('/ref-'))).toBe(false);
+    });
+
+    it('generates location + cast sheets when the flag is on and passes them as page references', async () => {
+      const service = await makeService('gemini', 'on');
+      mockGenerateImage.mockResolvedValue({ image: { uint8Array: new Uint8Array([2]) } });
+      mockS3.uploadObject.mockResolvedValue(undefined);
+
+      const base = makeBibleStory();
+      const story: Story = {
+        ...base,
+        visualBible: {
+          ...base.visualBible!,
+          cast: [
+            { id: 'brother', name: 'братик', role: 'младший брат', descriptor: 'toddler boy' },
+          ],
+        },
+        pages: base.pages.map((p) => ({
+          ...p,
+          scene: sceneFixture({ locationId: 'home', castIds: ['brother'], heroOnPage: true }),
+        })),
+      };
+
+      const result = await service.generate({ story, bookId: 'book-on', artStyle: 'watercolor' });
+
+      // Two sheets generated (one location + one cast) and their keys returned.
+      expect(result.referenceImageKeys).toEqual(
+        expect.arrayContaining([
+          'books/book-on/ref-location-home.png',
+          'books/book-on/ref-cast-brother.png',
+        ]),
+      );
+      // Each page cites all three references (hero, cast, location) and passes 3 images.
+      const pageCalls = mockGenerateImage.mock.calls
+        .map(([arg]) => arg as { prompt: unknown })
+        .filter((a) => typeof a.prompt === 'object') as Array<{
+        prompt: { text: string; images: Uint8Array[] };
+      }>;
+      for (const call of pageCalls) {
+        expect(call.prompt.images).toHaveLength(3);
+        expect(call.prompt.text).toContain('братик — toddler boy (as in reference image 2)');
+        expect(call.prompt.text).toContain('as in reference image 3'); // location
       }
     });
   });

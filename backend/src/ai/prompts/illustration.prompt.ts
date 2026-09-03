@@ -89,3 +89,17 @@ export const buildIllustrationPrompt = (input: IllustrationPromptInput): string 
   ];
   return blocks.filter(Boolean).join(' ');
 };
+
+/**
+ * Location establishing-sheet prompt (#348, PR 2): a peopleless reference image
+ * of a location, generated once per book and passed as a reference so every page
+ * in that place matches. Cast portraits reuse `buildPortraitPrompt` (the cast
+ * descriptor as the character), so no separate builder is needed for them.
+ */
+export const buildLocationSheetPrompt = (
+  descriptor: string,
+  atmosphere: string,
+  artStyle: ArtStyle,
+): string =>
+  `Establishing shot of ${descriptor}. ${atmosphere}. No people, no animals` +
+  STYLE_SUFFIXES[artStyle];

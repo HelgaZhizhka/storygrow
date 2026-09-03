@@ -86,4 +86,17 @@ describe('GeminiImageProvider', () => {
       }),
     ).rejects.toBeInstanceOf(ImageGenerationError);
   });
+
+  it('generates a location sheet with a 3:2 aspect and no-people prompt', async () => {
+    mockGenerateImage.mockResolvedValue({ image: { uint8Array: bytes } });
+    await new GeminiImageProvider('key').generateLocationSheet({
+      descriptor: 'a green slide',
+      atmosphere: 'sunny yard',
+      artStyle: 'watercolor',
+    });
+    const [arg] = mockGenerateImage.mock.calls[0] as [{ aspectRatio?: string; prompt: string }];
+    expect(arg.aspectRatio).toBe('3:2');
+    expect(arg.prompt).toContain('a green slide');
+    expect(arg.prompt).toContain('No people');
+  });
 });

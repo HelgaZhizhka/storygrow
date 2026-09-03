@@ -124,7 +124,11 @@ export class GenerationProcessor extends WorkerHost {
         imageKeys = generated.imageKeys;
         await this.prisma.book.update({
           where: { id: bookId },
-          data: { imageKeys, characterPortraitKey: generated.characterPortraitKey },
+          data: {
+            imageKeys,
+            characterPortraitKey: generated.characterPortraitKey,
+            referenceImageKeys: generated.referenceImageKeys,
+          },
         });
       }
       this.bookProgress.emit(bookId, {
