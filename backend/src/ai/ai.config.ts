@@ -68,3 +68,23 @@ export const IMAGE_SIZE_TO_ASPECT_RATIO: Record<ImageSize, '1:1' | '2:3' | '3:2'
   '1024x1536': '2:3',
   '1536x1024': '3:2',
 };
+
+// ─── Visual Bible (#348) — structured visual continuity across pages ─────────
+// The bible fixes the book's visual world once (hero, cast, locations, props,
+// atmosphere); a per-page Scene selects from it. Caps keep a preschool book
+// small and bound the number of paid reference sheets.
+export const MAX_CAST = 3;
+export const MAX_LOCATIONS = 3;
+export const MAX_PROPS = 4;
+export const DESCRIPTOR_MAX_CHARS = 160;
+// The per-page ACTION line (what the characters DO) — appearance and place come
+// from the bible, so the action itself is short.
+export const ACTION_MAX_CHARS = 240;
+
+// Per-model cap on INPUT reference images (Google docs, checked 2026-09-03):
+// gemini-2.5-flash-image accepts 3; gemini-3-pro-image up to 14.
+export const MAX_REFERENCE_IMAGES: Record<string, number> = {
+  'gemini-2.5-flash-image': 3,
+  'gemini-3-pro-image': 14,
+};
+export const DEFAULT_MAX_REFERENCE_IMAGES = 3;

@@ -1,11 +1,7 @@
 import { generateImage, NoImageGeneratedError } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { GEMINI_IMAGE_MODEL, IMAGE_SIZE_TO_ASPECT_RATIO } from '../../ai.config';
-import {
-  buildPagePrompt,
-  buildPhotoPortraitPrompt,
-  buildPortraitPrompt,
-} from '../../prompts/image-portrait.prompt';
+import { buildPhotoPortraitPrompt, buildPortraitPrompt } from '../../prompts/image-portrait.prompt';
 import { ImageGenerationError } from '../errors';
 import type {
   ImageProvider,
@@ -39,8 +35,10 @@ export class GeminiImageProvider implements ImageProvider {
   }
 
   generatePage(input: PageInput): Promise<Uint8Array> {
-    const text = buildPagePrompt(input.prompt, input.artStyle);
-    const prompt: GeminiPrompt = input.reference ? { text, images: [input.reference] } : text;
+    // The service supplies the complete prompt (hero-lock, setting, style); the
+    // provider only attaches reference images.
+    const prompt: GeminiPrompt =
+      input.references.length > 0 ? { text: input.prompt, images: input.references } : input.prompt;
     return this.run(prompt, IMAGE_SIZE_TO_ASPECT_RATIO[input.imageSize]);
   }
 

@@ -1,6 +1,6 @@
 import { generateImage } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { IMAGE_MODEL, IMAGE_QUALITY, STYLE_SUFFIXES } from '../../ai.config';
+import { IMAGE_MODEL, IMAGE_QUALITY } from '../../ai.config';
 import { ImageGenerationError } from '../errors';
 import type { ImageProvider, PageInput } from './image-provider.interface';
 
@@ -20,11 +20,12 @@ export class OpenAiImageProvider implements ImageProvider {
   }
 
   async generatePage(input: PageInput): Promise<Uint8Array> {
-    const prompt = `${input.prompt}${STYLE_SUFFIXES[input.artStyle]}`;
+    // references are ignored (usesReference=false); the service already baked the
+    // style suffix into input.prompt.
     try {
       const result = await generateImage({
         model: openai.imageModel(IMAGE_MODEL),
-        prompt,
+        prompt: input.prompt,
         size: input.imageSize,
         maxRetries: OPENAI_MAX_RETRIES,
         providerOptions: { openai: { quality: IMAGE_QUALITY } },

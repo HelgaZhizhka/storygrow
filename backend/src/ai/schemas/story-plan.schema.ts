@@ -6,6 +6,7 @@ import {
   type TemplateName,
 } from '../../pdf/page-templates/page-templates.config';
 import { DISCUSSION_QUESTIONS_COUNT, PAGE_COUNT_BY_BAND } from '../ai.config';
+import { SceneSchema, VisualBibleSchema } from './visual-bible.schema';
 
 /**
  * StoryPlan — the first-class "bible" produced by the Plan phase (ADR-0005).
@@ -30,6 +31,8 @@ export const PlanPageSchema = z.object({
    * For the cover page, describe the scene the title sits on.
    */
   intent: z.string().min(1),
+  /** This page's selection from the Visual Bible (#348): place, cast, framing. */
+  scene: SceneSchema,
 });
 
 export type PlanPage = z.infer<typeof PlanPageSchema>;
@@ -52,6 +55,14 @@ export const StoryPlanSchema = z.object({
 
   /** Exactly five open-ended parent–child discussion questions (Russian). */
   discussionQuestions: z.array(z.string().min(1)).length(DISCUSSION_QUESTIONS_COUNT),
+
+  /**
+   * The book's visual world (#348) — hero, cast, locations, props, atmosphere.
+   * Decided here so every page renders from ONE fixed description. The hero
+   * descriptor is a placeholder in child mode (overridden downstream from the
+   * parent's appearance / photo), exactly like `characterProfile`.
+   */
+  visualBible: VisualBibleSchema,
 
   /**
    * Ordered page layout: first page 'cover', last page 'final', content pages in

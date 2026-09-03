@@ -13,10 +13,11 @@ export interface PhotoPortraitInput {
 }
 
 export interface PageInput {
+  /** The fully-assembled page prompt (hero-lock, cast, setting, action, style). */
   prompt: string;
-  artStyle: ArtStyle;
   imageSize: ImageSize;
-  reference?: Uint8Array;
+  /** Reference images to condition on, aligned to the prompt's "reference image k" mentions. */
+  references: Uint8Array[];
 }
 
 export interface ImageProvider {

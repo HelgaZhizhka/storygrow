@@ -45,6 +45,7 @@ import { ImageGeneratorService } from './image-generator.service';
 import { ImageContentPolicyError } from './errors';
 import { S3Service } from '../../s3/s3.service';
 import type { Story } from '../schemas';
+import { visualBibleFixture, sceneFixture } from '../schemas/__fixtures__/visual-bible.fixture';
 
 const mockS3 = {
   uploadObject: jest.fn(),
@@ -71,6 +72,18 @@ const makeStory = (opts: { characterProfile?: string; pageCount?: number } = {})
     discussionQuestions: ['Q1?', 'Q2?', 'Q3?', 'Q4?', 'Q5?'],
   };
 };
+
+const makeBibleStory = (): Story => ({
+  ...makeStory({ pageCount: 2 }),
+  visualBible: visualBibleFixture({
+    hero: { name: 'Алиса', descriptor: '5-year-old girl, red hair' },
+    locations: [{ id: 'home', name: 'дом', descriptor: 'a green slide in a yard' }],
+  }),
+  pages: makeStory({ pageCount: 2 }).pages.map((p) => ({
+    ...p,
+    scene: sceneFixture({ locationId: 'home', heroOnPage: true }),
+  })),
+});
 
 const makeService = async (imageProvider = 'openai'): Promise<ImageGeneratorService> => {
   const module = await Test.createTestingModule({
@@ -249,6 +262,35 @@ describe('ImageGeneratorService', () => {
       expect(pageCalls.every(([arg]) => arg.prompt.text?.includes('round face, blue eyes.'))).toBe(
         true,
       );
+    });
+  });
+
+  describe('Visual Bible path (#348)', () => {
+    it('assembles the hero-lock + location prompt and passes the portrait as reference 1', async () => {
+      const service = await makeService('gemini');
+      mockGenerateImage.mockResolvedValue({ image: { uint8Array: new Uint8Array([1]) } });
+      mockS3.uploadObject.mockResolvedValue(undefined);
+
+      const result = await service.generate({
+        story: makeBibleStory(),
+        bookId: 'book-b',
+        artStyle: 'watercolor',
+      });
+
+      expect(result.imageKeys).toHaveLength(2);
+      // page calls are the ones whose prompt is an object { text, images }
+      const pageCalls = mockGenerateImage.mock.calls
+        .map(([arg]) => arg as { prompt: unknown })
+        .filter((a) => typeof a.prompt === 'object') as Array<{
+        prompt: { text: string; images: Uint8Array[] };
+      }>;
+      expect(pageCalls).toHaveLength(2);
+      for (const call of pageCalls) {
+        expect(call.prompt.text).toContain('EXACTLY ONCE');
+        expect(call.prompt.text).toContain('as in reference image 1');
+        expect(call.prompt.text).toContain('a green slide in a yard');
+        expect(call.prompt.images).toHaveLength(1); // the hero portrait
+      }
     });
   });
 });

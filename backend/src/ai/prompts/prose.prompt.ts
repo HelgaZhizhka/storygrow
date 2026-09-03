@@ -41,17 +41,10 @@ Hard rules:
    of the book title, not the full title.
 5. State the moral only ONCE, on the final page, using the plan's lesson. On
    content pages neither narrator nor character states or defines the lesson.
-6. illustrationPrompt: a short ENGLISH description of the visual scene only
-   (no text/letters in the image). The characterProfile is prepended downstream —
-   do NOT repeat it. Keep it under 180 characters.
-7. RECURRING CHARACTERS you invent: any animal or creature (other than the hero)
-   that appears on MORE THAN ONE page — a kitten, a puppy, a bird — must get ONE
-   fixed short visual descriptor (species + colour + one distinctive detail),
-   decided the first time it appears, and repeated VERBATIM in the
-   illustrationPrompt of EVERY page it appears on. Its colour and kind must never
-   change between pages (e.g. not a black kitten on one page and a ginger one on
-   the next). Put the descriptor in the English illustrationPrompt, not the
-   Russian body text.
+6. illustrationPrompt: the page's ACTION in English — what the hero and any
+   listed characters are DOING, their poses and expressions, one composition hint.
+   Do NOT describe anyone's appearance or the place: both are fixed in the Visual
+   Bible and added downstream. No text/letters in the image. Keep it brief.
 
 THE VOICE — match this register (warm Сутеев read-aloud):
   • Warm narrator ("Жил-был…"), folk rhythm and inversion, gentle humour.
@@ -65,14 +58,28 @@ THE VOICE — match this register (warm Сутеев read-aloud):
 `.trim();
 };
 
-const renderPlanPages = (plan: StoryPlan, ageBand: AgeBand): string =>
-  plan.pages
+const renderPlanPages = (plan: StoryPlan, ageBand: AgeBand): string => {
+  const locName = (id: string): string =>
+    plan.visualBible.locations.find((l) => l.id === id)?.name ?? id;
+  const castName = (id: string): string =>
+    plan.visualBible.cast.find((c) => c.id === id)?.name ?? id;
+  return plan.pages
     .map((p, i) => {
       const cap = PAGE_TEMPLATES[p.template].maxChars[ageBand].text;
       const capStr = cap !== undefined ? `, text max ${cap} chars` : ', title only — no body text';
-      return `  Page ${i + 1} [${p.template}] (${p.beat}${capStr}): ${p.intent}`;
+      const withCast = p.scene.castIds.map(castName);
+      const castStr = withCast.length > 0 ? ` · with: ${withCast.join(', ')}` : '';
+      return `  Page ${i + 1} [${p.template}] (${p.beat}) @${locName(p.scene.locationId)}${castStr}${capStr}: ${p.intent}`;
     })
     .join('\n');
+};
+
+/** Cast roster so the prose uses the bible's names consistently (empty if none). */
+const renderCastRoster = (plan: StoryPlan): string => {
+  if (plan.visualBible.cast.length === 0) return '';
+  const lines = plan.visualBible.cast.map((c) => `  • ${c.name} — ${c.role}`).join('\n');
+  return `Characters besides the hero (use these exact names):\n${lines}\n\n`;
+};
 
 /** buildProsePrompt — the user-turn for the Prose phase. */
 export const buildProsePrompt = (plan: StoryPlan, opts: BuildStoryPromptOptions): string => {
@@ -86,7 +93,7 @@ Hero name (use on every page): ${plan.heroName}
 characterProfile (keep verbatim): ${plan.characterProfile}
 Lesson (final page only): ${plan.lesson}
 
-Pages to render (follow exactly):
+${renderCastRoster(plan)}Pages to render (follow exactly):
 ${renderPlanPages(plan, ageBand)}
 
 Discussion questions (carry over verbatim):
