@@ -44,6 +44,20 @@ export interface ImageGenResult {
   referenceImageKeys: string[];
 }
 
+/** Inputs for assembling one page's prompt + references (object-param, rule #13). */
+interface PageBuildContext {
+  input: ImageGenInput;
+  page: Story['pages'][number];
+  portraitBytes?: Uint8Array;
+  sheets?: SheetSet | null;
+}
+
+interface PageRequest {
+  prompt: string;
+  references: Uint8Array[];
+  labels: string[];
+}
+
 @Injectable()
 export class ImageGeneratorService {
   private readonly logger = new Logger(ImageGeneratorService.name);
@@ -83,10 +97,22 @@ export class ImageGeneratorService {
 
       const portrait = await this.maybePortrait(input);
       const sheets = await this.maybeSheets(input);
-      const variant = input.story.visualBible ? (sheets ? 'bible+sheets' : 'bible') : 'baseline';
+      // 'bible+sheets' only when at least one sheet was actually produced — if
+      // every sheet was refused, the run is really the 'bible' variant (keeps the
+      // eval:images A/B labelling honest).
+      const variant = !input.story.visualBible
+        ? 'baseline'
+        : (sheets?.keys.length ?? 0) > 0
+          ? 'bible+sheets'
+          : 'bible';
       const imageKeys = await Promise.all(
         input.story.pages.map((page, i) => {
-          const req = this.buildPageRequest(input, page, portrait?.bytes, sheets);
+          const req = this.buildPageRequest({
+            input,
+            page,
+            portraitBytes: portrait?.bytes,
+            sheets,
+          });
           return this.generatePage({
             bookId: input.bookId,
             pageNumber: i + 1,
@@ -141,25 +167,16 @@ export class ImageGeneratorService {
 
   // Assemble one page's final prompt + reference images. Visual Bible path (#348)
   // when the story carries a bible + scene; otherwise the legacy path.
-  private buildPageRequest(
-    input: ImageGenInput,
-    page: Story['pages'][number],
-    portraitBytes?: Uint8Array,
-    sheets?: SheetSet | null,
-  ): { prompt: string; references: Uint8Array[]; labels: string[] } {
-    const { visualBible } = input.story;
-    if (visualBible && page.scene) {
-      return this.biblePageRequest(input, page, portraitBytes, sheets);
+  private buildPageRequest(ctx: PageBuildContext): PageRequest {
+    const { input, page } = ctx;
+    if (input.story.visualBible && page.scene) {
+      return this.biblePageRequest(ctx);
     }
-    return this.legacyPageRequest(input, page, portraitBytes);
+    return this.legacyPageRequest(ctx);
   }
 
-  private biblePageRequest(
-    input: ImageGenInput,
-    page: Story['pages'][number],
-    portraitBytes?: Uint8Array,
-    sheets?: SheetSet | null,
-  ): { prompt: string; references: Uint8Array[]; labels: string[] } {
+  private biblePageRequest(ctx: PageBuildContext): PageRequest {
+    const { input, page, portraitBytes, sheets } = ctx;
     const bible = input.story.visualBible!;
     const scene = page.scene!;
     const heroPortrait = this.provider.usesReference ? portraitBytes : undefined;
@@ -184,11 +201,8 @@ export class ImageGeneratorService {
     return { prompt, references: images, labels };
   }
 
-  private legacyPageRequest(
-    input: ImageGenInput,
-    page: Story['pages'][number],
-    portraitBytes?: Uint8Array,
-  ): { prompt: string; references: Uint8Array[]; labels: string[] } {
+  private legacyPageRequest(ctx: PageBuildContext): PageRequest {
+    const { input, page, portraitBytes } = ctx;
     if (this.provider.usesReference) {
       const inner = input.characterDescriptor
         ? `${input.characterDescriptor}. ${page.illustrationPrompt}`
