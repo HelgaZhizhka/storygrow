@@ -44,7 +44,7 @@ const heroLock = (input: IllustrationPromptInput): string => {
   // the photo flow (#128) relies on named features (e.g. "red glasses") the
   // reference image may under-emphasize; legacy folded them into every page.
   const anchor = input.labels.includes('hero')
-    ? `Keep this exact child — same face, hair, and outfit — as in reference image 1 (${input.heroDescriptor}).`
+    ? `Keep this exact child — same face, hair, and outfit${refMention(input.labels, 'hero')} (${input.heroDescriptor}).`
     : `The hero is ${input.heroDescriptor}.`;
   return `${anchor} ${once}`;
 };

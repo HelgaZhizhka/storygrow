@@ -28,10 +28,10 @@ export interface PickedReferences {
 
 /**
  * pickReferences (#348) — choose the input reference images for one page within
- * the model's reference budget. Priority: hero → previous page → cast (in scene
- * order) → location. The previous page ranks high because it carries the whole
- * scene's objects/setting forward (cascade); faces then outrank the location
- * sheet. Whatever does not fit is carried by text only. Pure function.
+ * the model's reference budget. Priority: previous page → hero → cast (in scene
+ * order) → location. The previous page ranks first because it already carries
+ * the hero in-scene, so a tight (1-image) budget keeps cascade continuity; faces
+ * then outrank the location sheet. Whatever does not fit is carried by text only. Pure function.
  */
 export const pickReferences = (opts: {
   scene: Scene;
@@ -49,8 +49,11 @@ export const pickReferences = (opts: {
     }
   };
 
-  if (scene.heroOnPage) push(sources.heroPortrait, 'hero');
+  // Previous page first: it already contains the hero in-scene, so when the
+  // reference budget is tight (e.g. Grok's single-image edit) the cascade
+  // continuity is the most informative single reference.
   push(sources.previousPage, 'prev');
+  if (scene.heroOnPage) push(sources.heroPortrait, 'hero');
   for (const id of scene.castIds) push(sources.castSheets?.[id], `cast:${id}`);
   push(sources.locationSheet, 'location');
 

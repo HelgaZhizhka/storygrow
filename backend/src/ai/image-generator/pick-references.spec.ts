@@ -55,26 +55,31 @@ describe('pickReferences', () => {
     expect(labels).toEqual(['hero']);
   });
 
-  it('places the previous page right after the hero (cascade priority)', () => {
+  it('places the previous page first (cascade continuity outranks the portrait)', () => {
     const { labels } = pickReferences({
       scene: sceneFixture({ heroOnPage: true, castIds: ['a'] }),
       sources: { heroPortrait: bytes(1), previousPage: bytes(9), castSheets: { a: bytes(2) } },
       budget: 3,
     });
-    expect(labels).toEqual(['hero', 'prev', 'cast:a']);
+    expect(labels).toEqual(['prev', 'hero', 'cast:a']);
   });
 
-  it('drops the location before the previous page under a tight budget', () => {
-    const { labels } = pickReferences({
+  it('keeps only the previous page under a single-image budget (Grok)', () => {
+    const { labels, images } = pickReferences({
       scene: sceneFixture({ heroOnPage: true, castIds: ['a'] }),
-      sources: {
-        heroPortrait: bytes(1),
-        previousPage: bytes(9),
-        castSheets: { a: bytes(2) },
-        locationSheet: bytes(4),
-      },
-      budget: 3,
+      sources: { heroPortrait: bytes(1), previousPage: bytes(9), castSheets: { a: bytes(2) } },
+      budget: 1,
     });
-    expect(labels).toEqual(['hero', 'prev', 'cast:a']); // location dropped
+    expect(labels).toEqual(['prev']);
+    expect(images).toEqual([bytes(9)]);
+  });
+
+  it('uses the hero portrait as the single reference on page 1 (no previous page)', () => {
+    const { labels } = pickReferences({
+      scene: sceneFixture({ heroOnPage: true, castIds: [] }),
+      sources: { heroPortrait: bytes(1) },
+      budget: 1,
+    });
+    expect(labels).toEqual(['hero']);
   });
 });

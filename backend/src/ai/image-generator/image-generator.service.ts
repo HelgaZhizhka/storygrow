@@ -25,6 +25,7 @@ import { createTelemetry } from '../telemetry';
 import type { ImageProvider } from './providers/image-provider.interface';
 import { OpenAiImageProvider } from './providers/openai-image.provider';
 import { GeminiImageProvider } from './providers/gemini-image.provider';
+import { XaiImageProvider } from './providers/xai-image.provider';
 import { ReferenceSheetsService, type SheetSet } from './reference-sheets.service';
 
 export interface ImageGenInput {
@@ -86,10 +87,12 @@ export class ImageGeneratorService {
     this.provider =
       name === 'openai'
         ? new OpenAiImageProvider()
-        : new GeminiImageProvider(
-            config.getOrThrow<string>('GOOGLE_GENERATIVE_AI_API_KEY'),
-            config.get<string>('GEMINI_IMAGE_MODEL') ?? GEMINI_IMAGE_MODEL,
-          );
+        : name === 'xai'
+          ? new XaiImageProvider(config.getOrThrow<string>('XAI_API_KEY'))
+          : new GeminiImageProvider(
+              config.getOrThrow<string>('GOOGLE_GENERATIVE_AI_API_KEY'),
+              config.get<string>('GEMINI_IMAGE_MODEL') ?? GEMINI_IMAGE_MODEL,
+            );
     this.logger.log(`Image provider: ${name} (${this.provider.modelLabel})`);
   }
 

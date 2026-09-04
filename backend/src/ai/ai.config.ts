@@ -51,12 +51,16 @@ export const STYLE_SUFFIXES: Record<ArtStyle, string> = {
     ', semi-realistic 3D render, soft cinematic lighting, detailed, child-friendly, no text in image',
 };
 
-export type ImageProviderName = 'gemini' | 'openai';
+export type ImageProviderName = 'gemini' | 'openai' | 'xai';
 export const DEFAULT_IMAGE_PROVIDER: ImageProviderName = 'gemini';
 
 // Resolves to the GA id gemini-2.5-flash-preview-image. If it 404s, set that
 // explicit id here. Gemini takes no `size`, only an aspect ratio.
 export const GEMINI_IMAGE_MODEL = 'gemini-2.5-flash-image';
+
+// xAI Grok image model (image experiment) — its edit endpoint accepts ONE
+// reference image, so it can do baseline + cascade, but not multi-ref sheets.
+export const XAI_IMAGE_MODEL = 'grok-imagine-image-2.0';
 
 // Text/vision model for reading a child photo into a feature descriptor (#128).
 // An image-OUT model (GEMINI_IMAGE_MODEL) can't return structured text, so the
@@ -86,5 +90,6 @@ export const ACTION_MAX_CHARS = 240;
 export const MAX_REFERENCE_IMAGES: Record<string, number> = {
   'gemini-2.5-flash-image': 3,
   'gemini-3-pro-image': 14,
+  'grok-imagine-image-2.0': 1,
 };
 export const DEFAULT_MAX_REFERENCE_IMAGES = 3;
