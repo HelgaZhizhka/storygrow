@@ -54,4 +54,27 @@ describe('pickReferences', () => {
     });
     expect(labels).toEqual(['hero']);
   });
+
+  it('places the previous page right after the hero (cascade priority)', () => {
+    const { labels } = pickReferences({
+      scene: sceneFixture({ heroOnPage: true, castIds: ['a'] }),
+      sources: { heroPortrait: bytes(1), previousPage: bytes(9), castSheets: { a: bytes(2) } },
+      budget: 3,
+    });
+    expect(labels).toEqual(['hero', 'prev', 'cast:a']);
+  });
+
+  it('drops the location before the previous page under a tight budget', () => {
+    const { labels } = pickReferences({
+      scene: sceneFixture({ heroOnPage: true, castIds: ['a'] }),
+      sources: {
+        heroPortrait: bytes(1),
+        previousPage: bytes(9),
+        castSheets: { a: bytes(2) },
+        locationSheet: bytes(4),
+      },
+      budget: 3,
+    });
+    expect(labels).toEqual(['hero', 'prev', 'cast:a']); // location dropped
+  });
 });

@@ -27,6 +27,7 @@ import type { ArtStyle } from '../ai/ai.config';
 import {
   IMAGE_VARIANTS,
   sheetsFlagFor,
+  cascadeFor,
   storyForVariant,
   evalBookId,
   type ImageVariant,
@@ -83,7 +84,12 @@ const renderFixture = async (
     let story = storyForVariant(fixture.story, ctx.variant);
     if (ctx.maxPages) story = { ...story, pages: story.pages.slice(0, ctx.maxPages) };
     const bookId = evalBookId(ctx.variant, fixture.name);
-    const result = await ctx.service.generate({ story, bookId, artStyle: ART_STYLE });
+    const result = await ctx.service.generate({
+      story,
+      bookId,
+      artStyle: ART_STYLE,
+      cascade: cascadeFor(ctx.variant),
+    });
 
     const dir = join(OUT_ROOT, ctx.variant, fixture.name);
     mkdirSync(dir, { recursive: true });

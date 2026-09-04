@@ -4,13 +4,21 @@
  */
 import type { Story } from '../../ai/schemas';
 
-export type ImageVariant = 'baseline' | 'bible' | 'bible+sheets';
+export type ImageVariant = 'baseline' | 'bible' | 'bible+sheets' | 'bible+cascade';
 
-export const IMAGE_VARIANTS: readonly ImageVariant[] = ['baseline', 'bible', 'bible+sheets'];
+export const IMAGE_VARIANTS: readonly ImageVariant[] = [
+  'baseline',
+  'bible',
+  'bible+sheets',
+  'bible+cascade',
+];
 
 /** Whether a variant turns IMAGE_REFERENCE_SHEETS on. */
 export const sheetsFlagFor = (variant: ImageVariant): 'on' | 'off' =>
   variant === 'bible+sheets' ? 'on' : 'off';
+
+/** Whether a variant runs the sequential cascade (previous page → next reference). */
+export const cascadeFor = (variant: ImageVariant): boolean => variant === 'bible+cascade';
 
 /**
  * Shape the fixture story for a variant. `baseline` strips the Visual Bible and

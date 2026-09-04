@@ -360,5 +360,33 @@ describe('ImageGeneratorService', () => {
         expect(call.prompt.text).toContain('as in reference image 3'); // location
       }
     });
+
+    it('cascade: renders pages sequentially and passes the previous page as a reference', async () => {
+      const service = await makeService('gemini');
+      let n = 0;
+      mockGenerateImage.mockImplementation(() =>
+        Promise.resolve({ image: { uint8Array: new Uint8Array([++n]) } }),
+      );
+      mockS3.uploadObject.mockResolvedValue(undefined);
+
+      const result = await service.generate({
+        story: makeBibleStory(),
+        bookId: 'book-casc',
+        artStyle: 'watercolor',
+        cascade: true,
+      });
+
+      expect(result.imageKeys).toHaveLength(2);
+      const pageCalls = mockGenerateImage.mock.calls
+        .map(([arg]) => arg as { prompt: unknown })
+        .filter((a) => typeof a.prompt === 'object') as Array<{
+        prompt: { text: string; images: Uint8Array[] };
+      }>;
+      expect(pageCalls).toHaveLength(2);
+      // page 1: hero portrait only; page 2: hero + previous page
+      expect(pageCalls[0].prompt.images).toHaveLength(1);
+      expect(pageCalls[1].prompt.images).toHaveLength(2);
+      expect(pageCalls[1].prompt.text).toContain('previous scene');
+    });
   });
 });

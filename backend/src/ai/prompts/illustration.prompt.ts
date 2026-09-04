@@ -74,11 +74,20 @@ const propsBlock = (input: IllustrationPromptInput): string => {
   return descs.length > 0 ? `Visible objects: ${descs.join('; ')}.` : '';
 };
 
+/** Continuity line when the previous page is passed as a reference (cascade). */
+const prevBlock = (input: IllustrationPromptInput): string => {
+  const i = input.labels.indexOf('prev');
+  return i >= 0
+    ? `Keep the same objects, colours and the same place as in reference image ${i + 1} (the previous scene) — same slide, furniture and background, only the action changes.`
+    : '';
+};
+
 export const buildIllustrationPrompt = (input: IllustrationPromptInput): string => {
   const action = input.action.slice(0, ACTION_MAX_CHARS);
   const style = STYLE_SUFFIXES[input.artStyle].replace(/^,\s*/, '');
   const blocks = [
     input.scene.heroOnPage ? heroLock(input) : '',
+    prevBlock(input),
     castBlock(input),
     settingBlock(input),
     propsBlock(input),

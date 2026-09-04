@@ -1,6 +1,7 @@
 import {
   IMAGE_VARIANTS,
   sheetsFlagFor,
+  cascadeFor,
   storyForVariant,
   sanitizeId,
   evalBookId,
@@ -29,8 +30,18 @@ const story: Story = {
 };
 
 describe('eval-images-lib', () => {
-  it('covers all three variants', () => {
-    expect(IMAGE_VARIANTS).toEqual(['baseline', 'bible', 'bible+sheets']);
+  it('covers all four variants', () => {
+    expect(IMAGE_VARIANTS).toEqual(['baseline', 'bible', 'bible+sheets', 'bible+cascade']);
+  });
+
+  it('runs cascade only for bible+cascade, with sheets off', () => {
+    expect(cascadeFor('bible+cascade')).toBe(true);
+    expect(cascadeFor('bible+sheets')).toBe(false);
+    expect(sheetsFlagFor('bible+cascade')).toBe('off');
+  });
+
+  it('keeps the bible for bible+cascade', () => {
+    expect(storyForVariant(story, 'bible+cascade').visualBible).toBeDefined();
   });
 
   it('turns sheets on only for bible+sheets', () => {
