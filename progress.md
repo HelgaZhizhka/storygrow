@@ -1202,3 +1202,18 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Next:** #352 — `eval:images` harness, Baseline vs Bible vs Bible+sheets comparison, ADR-0007.
 
 **Blockers:** none.
+
+---
+
+## 2026-09-04 — docs: Google Cloud / OAuth setup reference for StoryGrow
+
+**Done:**
+- Added `docs/google-cloud-setup.md` after a Google project cleanup: records the single Cloud project (`storygrow-507614`), the StoryGrow prepaid billing account, the enabled Generative Language API, which env var holds which credential (`GOOGLE_GENERATIVE_AI_API_KEY` vs the `GOOGLE_CLIENT_*` OAuth pair), the OAuth Web client's redirect URIs and JS origins, and the Railway service domains (web vs api). No secret values in the file.
+
+**Context:**
+- The old projects (`metal-dimension-489813-s4`, `gen-lang-client-0313899978`) are deprecated; everything now lives under `storygrow-507614`. Deleting the old projects also removed the previous OAuth client, so the Google login must be reconfigured in the new project (steps captured in the doc).
+
+**Blocked (not in this PR):**
+- The `bible+cascade` image comparison (#356) is code-complete and unit-tested but cannot run until the StoryGrow Billing Account is funded (image generation is prepaid). One command runs it once funded.
+
+**Blockers:** StoryGrow Gemini billing has no balance yet — paid image runs paused.
