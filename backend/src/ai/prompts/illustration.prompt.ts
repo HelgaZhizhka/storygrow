@@ -4,14 +4,20 @@ import { ACTION_MAX_CHARS, STYLE_SUFFIXES } from '../ai.config';
 
 /**
  * Illustration-prompt assembly (#348) — builds a page's image prompt
- * deterministically from the Visual Bible + the page Scene + the page action,
- * in a fixed block order. This replaces the free-form ≤180-char prompt and the
- * old recurring-creature prose rule: appearance and place now come from ONE
- * fixed description, so nothing drifts.
+ * deterministically from the Visual Bible + the page Scene + the page action.
  *
- * `labels` align 1:1 (by index) with the reference images actually passed to the
- * model (from `pickReferences`); when a label is present the block cites
- * "reference image k" so the model anchors on the picture, not just the words.
+ * DELIBERATELY SHORT. A controlled test on one page (3 samples per shape, same
+ * portrait reference, Grok Imagine 2.0) showed the earlier dense prompt —
+ * hero-lock "as in reference image k", framing phrase, negatives — put the hero
+ * on the slide chute 3/3, while this minimal shape (identity + place + ACTION +
+ * style) rendered the correct pose 3/3; a vision judge agreed 6/6. Competing
+ * instructions dilute the action and the model latches onto a noun in the
+ * setting. Keep it lean: one fixed identity line, the setting, the action LAST
+ * and unqualified, then the style. No per-reference mentions — identity is
+ * carried by the reference image itself, not by words about it.
+ *
+ * `labels` are the reference labels actually passed (from `pickReferences`);
+ * only 'prev' (the cascade experiment) adds a continuity line.
  */
 export interface IllustrationPromptInput {
   bible: VisualBible;
@@ -21,82 +27,63 @@ export interface IllustrationPromptInput {
   /** Hero look to use: the photo descriptor when present, else the bible hero. */
   heroDescriptor: string;
   artStyle: ArtStyle;
-  /** Reference labels aligned to the passed images ('hero' | `cast:<id>` | 'location'). */
+  /** Reference labels aligned to the passed images ('hero' | 'prev' | `cast:<id>` | 'location'). */
   labels: readonly string[];
 }
 
-const FRAMING_PHRASE: Record<Scene['framing'], string> = {
-  wide: 'Wide shot showing the whole scene.',
-  medium: 'Medium shot.',
-  close: 'Close-up on the characters.',
+// No hero NAME here on purpose: naming the child in an image prompt makes models
+// write the name on a sign/label in the picture (seen: an "Alice" signpost).
+// The name belongs to the story text; the image only needs the look.
+const heroLine = (input: IllustrationPromptInput): string =>
+  input.scene.heroOnPage
+    ? `Keep this exact child: ${input.heroDescriptor}. The child appears exactly once.`
+    : '';
+
+const castLine = (input: IllustrationPromptInput): string => {
+  const parts = input.scene.castIds
+    .map((id) => input.bible.cast.find((c) => c.id === id))
+    .filter((m): m is VisualBible['cast'][number] => Boolean(m))
+    .map((m) => `${m.name} — ${m.descriptor}`);
+  return parts.length > 0 ? `Also in the scene: ${parts.join('; ')}.` : '';
 };
 
-/** "(as in reference image k)" when this label was actually passed, else ''. */
-const refMention = (labels: readonly string[], label: string): string => {
-  const i = labels.indexOf(label);
-  return i >= 0 ? ` (as in reference image ${i + 1})` : '';
-};
-
-const heroLock = (input: IllustrationPromptInput): string => {
-  const name = input.bible.hero.name;
-  const once = `${name} appears EXACTLY ONCE in the picture; never draw the hero twice.`;
-  // Reinforce the descriptor in TEXT even when the portrait is the reference —
-  // the photo flow (#128) relies on named features (e.g. "red glasses") the
-  // reference image may under-emphasize; legacy folded them into every page.
-  const anchor = input.labels.includes('hero')
-    ? `Keep this exact child — same face, hair, and outfit${refMention(input.labels, 'hero')} (${input.heroDescriptor}).`
-    : `The hero is ${input.heroDescriptor}.`;
-  return `${anchor} ${once}`;
-};
-
-const castBlock = (input: IllustrationPromptInput): string => {
-  const lines = input.scene.castIds
-    .map((id) => {
-      const member = input.bible.cast.find((c) => c.id === id);
-      if (!member) return '';
-      return `${member.name} — ${member.descriptor}${refMention(input.labels, `cast:${id}`)}`;
-    })
-    .filter(Boolean);
-  return lines.length > 0 ? `Also in the scene: ${lines.join('; ')}.` : '';
-};
-
-const settingBlock = (input: IllustrationPromptInput): string => {
+const settingLine = (input: IllustrationPromptInput): string => {
   const loc =
     input.bible.locations.find((l) => l.id === input.scene.locationId) ?? input.bible.locations[0];
-  const place = loc ? loc.descriptor : '';
-  return `Setting: ${place}${refMention(input.labels, 'location')}. Time: ${input.scene.timeOfDay}. ${input.bible.atmosphere}.`;
+  return `Setting: ${loc ? loc.descriptor : ''}. ${input.bible.atmosphere}.`;
 };
 
-const propsBlock = (input: IllustrationPromptInput): string => {
-  const descs = input.scene.propIds
-    .map((id) => input.bible.props.find((p) => p.id === id)?.descriptor)
-    .filter((d): d is string => Boolean(d));
-  return descs.length > 0 ? `Visible objects: ${descs.join('; ')}.` : '';
-};
+// Props are deliberately NOT emitted as their own line. A standalone
+// "Visible: a tall red slide…" right before the action made the prop the focal
+// subject and put the child ON the slide chute (judge: chute 3/3); without it the
+// same page rendered the correct ladder pose 3/3. The action already names what
+// the hero interacts with; props stay in the bible for the Plan and sheets.
 
-/** Continuity line when the previous page is passed as a reference (cascade). */
-const prevBlock = (input: IllustrationPromptInput): string => {
-  const i = input.labels.indexOf('prev');
-  return i >= 0
-    ? `Keep the same objects, colours and the same place as in reference image ${i + 1} (the previous scene) — same slide, furniture and background, only the action changes.`
+/** Continuity line only for the cascade experiment (previous page passed as a reference). */
+const prevLine = (input: IllustrationPromptInput): string =>
+  input.labels.includes('prev')
+    ? 'Same place and objects as the previous scene; only the action changes.'
     : '';
+
+/** Ensure the action reads as one sentence so the style suffix never merges into it. */
+const asSentence = (text: string): string => {
+  const trimmed = text.trim();
+  return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`;
 };
 
 export const buildIllustrationPrompt = (input: IllustrationPromptInput): string => {
-  const action = input.action.slice(0, ACTION_MAX_CHARS);
+  const action = asSentence(input.action.slice(0, ACTION_MAX_CHARS));
   const style = STYLE_SUFFIXES[input.artStyle].replace(/^,\s*/, '');
-  const blocks = [
-    input.scene.heroOnPage ? heroLock(input) : '',
-    prevBlock(input),
-    castBlock(input),
-    settingBlock(input),
-    propsBlock(input),
+  return [
+    heroLine(input),
+    castLine(input),
+    settingLine(input),
+    prevLine(input),
     action,
-    FRAMING_PHRASE[input.scene.framing],
-    `Style: ${style}.`,
-    'No text or letters in the image. No people or animals beyond those described above.',
-  ];
-  return blocks.filter(Boolean).join(' ');
+    `${style.charAt(0).toUpperCase()}${style.slice(1)}.`,
+  ]
+    .filter(Boolean)
+    .join(' ');
 };
 
 /**

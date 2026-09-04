@@ -295,8 +295,7 @@ describe('ImageGeneratorService', () => {
       }>;
       expect(pageCalls).toHaveLength(2);
       for (const call of pageCalls) {
-        expect(call.prompt.text).toContain('EXACTLY ONCE');
-        expect(call.prompt.text).toContain('as in reference image 1');
+        expect(call.prompt.text).toContain('appears exactly once');
         expect(call.prompt.text).toContain('a green slide in a yard');
         expect(call.prompt.images).toHaveLength(1); // the hero portrait
       }
@@ -356,8 +355,7 @@ describe('ImageGeneratorService', () => {
       }>;
       for (const call of pageCalls) {
         expect(call.prompt.images).toHaveLength(3);
-        expect(call.prompt.text).toContain('братик — toddler boy (as in reference image 2)');
-        expect(call.prompt.text).toContain('as in reference image 3'); // location
+        expect(call.prompt.text).toContain('братик — toddler boy');
       }
     });
 
