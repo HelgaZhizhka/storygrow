@@ -9,11 +9,14 @@
  * Then open the HTML (images are embedded as data URIs, so it is portable).
  */
 import { readdirSync, readFileSync, writeFileSync, existsSync, statSync } from 'node:fs';
+import sharp from 'sharp';
 import { join } from 'node:path';
 import { IMAGE_VARIANTS } from './lib/eval-images-lib';
 
 const flag = (name: string): string | undefined =>
   process.argv.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
+
+const THUMB_WIDTH = 320;
 
 const RUBRIC = [
   'heroConsistency — same child on every page',
@@ -28,8 +31,13 @@ const RUBRIC = [
 const dirs = (path: string): string[] =>
   existsSync(path) ? readdirSync(path).filter((d) => statSync(join(path, d)).isDirectory()) : [];
 
-const dataUri = (file: string): string =>
-  `data:image/png;base64,${readFileSync(file).toString('base64')}`;
+const thumbUri = async (file: string): Promise<string> => {
+  const buf = await sharp(readFileSync(file))
+    .resize({ width: THUMB_WIDTH })
+    .jpeg({ quality: 72 })
+    .toBuffer();
+  return `data:image/jpeg;base64,${buf.toString('base64')}`;
+};
 
 const esc = (s: string): string =>
   s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] ?? c);
@@ -39,7 +47,7 @@ interface Cell {
   src: string | null;
 }
 
-const buildRows = (root: string, variants: string[], fixture: string): Cell[][] => {
+const buildRows = async (root: string, variants: string[], fixture: string): Promise<Cell[][]> => {
   const pageCount = Math.max(
     0,
     ...variants.map((v) =>
@@ -50,18 +58,23 @@ const buildRows = (root: string, variants: string[], fixture: string): Cell[][] 
   );
   const rows: Cell[][] = [];
   for (let i = 1; i <= pageCount; i++) {
-    rows.push(
-      variants.map((v) => {
+    const cells = await Promise.all(
+      variants.map(async (v) => {
         const file = join(root, v, fixture, `page-${i}.png`);
-        return { variant: v, src: existsSync(file) ? dataUri(file) : null };
+        return { variant: v, src: existsSync(file) ? await thumbUri(file) : null };
       }),
     );
+    rows.push(cells);
   }
   return rows;
 };
 
-const renderFixture = (root: string, variants: string[], fixture: string): string => {
-  const rows = buildRows(root, variants, fixture);
+const renderFixture = async (
+  root: string,
+  variants: string[],
+  fixture: string,
+): Promise<string> => {
+  const rows = await buildRows(root, variants, fixture);
   const head = `<tr><th>page</th>${variants.map((v) => `<th>${esc(v)}</th>`).join('')}</tr>`;
   const body = rows
     .map(
@@ -74,7 +87,7 @@ const renderFixture = (root: string, variants: string[], fixture: string): strin
   return `<h2>${esc(fixture)}</h2><table>${head}${body}</table>`;
 };
 
-const main = (): void => {
+const main = async (): Promise<void> => {
   const root = flag('root') ?? 'output/eval-images';
   const out = flag('out') ?? join(root, 'comparison.html');
   const variants = IMAGE_VARIANTS.filter((v) => existsSync(join(root, v)));
@@ -85,7 +98,9 @@ const main = (): void => {
   const fixtures = [...new Set(variants.flatMap((v) => dirs(join(root, v))))].sort();
 
   const rubric = `<ul>${RUBRIC.map((r) => `<li>${esc(r)}</li>`).join('')}</ul>`;
-  const sections = fixtures.map((f) => renderFixture(root, [...variants], f)).join('\n');
+  const sections = (
+    await Promise.all(fixtures.map((f) => renderFixture(root, [...variants], f)))
+  ).join('\n');
   const html = `<!doctype html><meta charset="utf-8"><title>Visual Bible image comparison</title>
 <style>
   body { font: 14px system-ui, sans-serif; margin: 24px; color: #1a1a1a; }
@@ -105,4 +120,7 @@ ${sections}`;
   );
 };
 
-main();
+main().catch((e: unknown) => {
+  console.error(e);
+  process.exit(1);
+});
