@@ -1223,3 +1223,25 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Next:** on go-ahead, freeze 5 fixtures, run the three variants, generate the comparison, score the rubric, write ADR-0007.
 
 **Blockers:** none.
+
+---
+
+## 2026-09-04 — image consistency: findings that changed the design (#352, on #356)
+
+**Done (all on the open #356 branch, `./init.sh` green):**
+- Ran the full comparison on 5 frozen stories × baseline / bible / bible+sheets / bible+cascade (Gemini Flash), plus Gemini Pro and Grok Imagine 2.0 on the hardest story, plus 12 controlled single-page samples judged by a vision model. Added an `XaiImageProvider` (`IMAGE_PROVIDER=xai`, REST via fetch, single-reference edit endpoint) so Grok runs through the same pipeline.
+- **Rejected cascade (page N edited from page N−1) as a default.** Edit mode preserves the previous frame's composition, so the new action rendered wrong (hero on the slide chute) and locations bled (a slide inside the kitchen). It stays a flagged experiment.
+- **Adopted: neutral hero portrait as the reference on every page, fresh composition per page.** Holds identity, removes location bleed; parallel again (~35s/book vs ~130s for cascade).
+- **Found that the dense assembled prompt itself broke poses**, model-independently: same page, same portrait, 3 samples per shape — dense 0/3 correct, lean 3/3. Two general causes, not slide-specific: a standalone `Visible: <prop>` line before the action makes the prop the focal subject (the child ends up on it); the hero's NAME in an image prompt is rendered as a sign ("Alice"). Rewrote `illustration.prompt.ts` to identity + cast + setting + ACTION (last) + style; props stay in the bible for the Plan; the name stays in story text.
+- Re-ran the whole hardest book with the lean assembler on **both** Grok and Gemini Flash: slide correct (judge PASS on both), kitchen clean, adult scale natural, hero consistent — the three defects the product owner flagged are gone on both models without any per-object rule.
+- Prototyped the general safety net: a vision judge (`gemini-3.6-flash` + `generateObject`) classifying "does the picture match the page text"; agreed with the human eye 6/6 on the controlled slide samples, missed one "steps drawn on the chute" case → needs question calibration. Prototype kept untracked (`tmp-slide-judge.ts`), to become `ImageEval`.
+
+**Decisions:**
+- Default reference strategy = portrait per page (no cascade); assembler stays lean; judge + retry is the mechanism for unforeseen objects (not per-scenario prompt rules).
+- Model choice deferred to ADR-0007 with the product owner: Grok = best geometry/quality (~$0.04/img + $0.01/ref, 1 reference only); Gemini Flash = cheapest, now acceptable with the lean prompt; Pro not justified.
+
+**Risk surfaced:** `gemini-2.5-flash` (the photo-descriptor vision model) is unavailable on the new Google project (404 → use `gemini-3.6-flash`); breaks #128 on the new key. Tracked as a separate task.
+
+**Next:** product-owner review of the v2 books; then ADR-0007 (variant + model), turn the judge into `ImageEval`, and a prose rule to keep the hero's name out of the page action.
+
+**Blockers:** none.
