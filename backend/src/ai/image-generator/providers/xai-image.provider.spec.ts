@@ -3,8 +3,16 @@ global.fetch = mockFetch;
 
 import { XaiImageProvider } from './xai-image.provider';
 
+interface XaiBody {
+  model: string;
+  aspect_ratio: string;
+  image?: { type: string; url: string };
+}
+
 const b64 = Buffer.from([7, 7, 7]).toString('base64');
-const okResponse = { ok: true, json: async () => ({ data: [{ b64_json: b64 }] }) };
+const okResponse = { ok: true, json: () => Promise.resolve({ data: [{ b64_json: b64 }] }) };
+const bodyOf = (call: unknown[]): XaiBody =>
+  JSON.parse((call[1] as { body: string }).body) as XaiBody;
 
 describe('XaiImageProvider', () => {
   beforeEach(() => mockFetch.mockReset());
@@ -17,9 +25,9 @@ describe('XaiImageProvider', () => {
       references: [],
     });
     expect(out).toEqual(new Uint8Array([7, 7, 7]));
-    const [url, opts] = mockFetch.mock.calls[0] as [string, { body: string }];
-    expect(url).toContain('/v1/images/generations');
-    const body = JSON.parse(opts.body);
+    const call = mockFetch.mock.calls[0] as unknown[];
+    expect(call[0]).toContain('/v1/images/generations');
+    const body = bodyOf(call);
     expect(body.model).toBe('grok-imagine-image-2.0');
     expect(body.aspect_ratio).toBe('2:3');
   });
@@ -31,11 +39,11 @@ describe('XaiImageProvider', () => {
       imageSize: '1536x1024',
       references: [new Uint8Array([1, 2, 3])],
     });
-    const [url, opts] = mockFetch.mock.calls[0] as [string, { body: string }];
-    expect(url).toContain('/v1/images/edits');
-    const body = JSON.parse(opts.body);
-    expect(body.image.type).toBe('image_url');
-    expect(body.image.url).toMatch(/^data:image\/png;base64,/);
+    const call = mockFetch.mock.calls[0] as unknown[];
+    expect(call[0]).toContain('/v1/images/edits');
+    const body = bodyOf(call);
+    expect(body.image?.type).toBe('image_url');
+    expect(body.image?.url).toMatch(/^data:image\/png;base64,/);
     expect(body.aspect_ratio).toBe('3:2');
   });
 
@@ -43,7 +51,7 @@ describe('XaiImageProvider', () => {
     mockFetch.mockResolvedValue({
       ok: false,
       status: 400,
-      text: async () => 'content policy violation',
+      text: () => Promise.resolve('content policy violation'),
     });
     await expect(
       new XaiImageProvider('k').generatePage({
@@ -55,12 +63,6 @@ describe('XaiImageProvider', () => {
   });
 
   it('does not support location sheets', async () => {
-    await expect(
-      new XaiImageProvider('k').generateLocationSheet({
-        descriptor: 'd',
-        atmosphere: 'a',
-        artStyle: 'watercolor',
-      }),
-    ).rejects.toThrow();
+    await expect(new XaiImageProvider('k').generateLocationSheet()).rejects.toThrow();
   });
 });

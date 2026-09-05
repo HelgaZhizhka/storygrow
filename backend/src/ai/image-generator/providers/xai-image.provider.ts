@@ -3,7 +3,6 @@ import { buildPhotoPortraitPrompt, buildPortraitPrompt } from '../../prompts/ima
 import { ImageGenerationError } from '../errors';
 import type {
   ImageProvider,
-  LocationSheetInput,
   PageInput,
   PhotoPortraitInput,
   PortraitInput,
@@ -39,7 +38,7 @@ export class XaiImageProvider implements ImageProvider {
     );
   }
 
-  generateLocationSheet(_input: LocationSheetInput): Promise<Uint8Array> {
+  generateLocationSheet(): Promise<Uint8Array> {
     // Sheets need several references at once; Grok's edit takes only one.
     return Promise.reject(new Error('XaiImageProvider does not support location sheets'));
   }

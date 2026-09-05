@@ -44,7 +44,9 @@ Hard rules:
 6. illustrationPrompt: the page's ACTION in English — what the hero and any
    listed characters are DOING, their poses and expressions, one composition hint.
    Do NOT describe anyone's appearance or the place: both are fixed in the Visual
-   Bible and added downstream. No text/letters in the image. Keep it brief.
+   Bible and added downstream. Refer to the hero as "the child" (she/he), NEVER by
+   name — a name inside an image prompt gets drawn as a sign in the picture; the
+   name belongs to the Russian text only. No text/letters in the image. Keep it brief.
 
 THE VOICE — match this register (warm Сутеев read-aloud):
   • Warm narrator ("Жил-был…"), folk rhythm and inversion, gentle humour.

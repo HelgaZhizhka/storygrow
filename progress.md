@@ -1245,3 +1245,23 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Next:** product-owner review of the v2 books; then ADR-0007 (variant + model), turn the judge into `ImageEval`, and a prose rule to keep the hero's name out of the page action.
 
 **Blockers:** none.
+
+---
+
+## 2026-09-04 — ADR-0007: portrait-as-reference, lean prompt, Grok as default image model (#352, on #356)
+
+**Done:**
+- Product owner chose **Grok Imagine 2.0** as the default image model; wrote `docs/adr/0007-visual-continuity.md` (portrait-as-reference per page, no cascade by default, lean illustration prompt, Grok via `IMAGE_PROVIDER=xai` with Gemini fallback, sheets/cascade flag-gated experiments, judge + retry as the general safety net).
+- Re-rendered **all 5 frozen stories on Grok** with the lean assembler: 5/5 books, 0 failures, ~35–45 s each; slide page judged PASS (3rd independent confirmation); spot checks across the other stories: hero consistent, cast plausible, locations switch correctly (3-location `chestnost`), no signs/text, adult scale natural.
+- Prose rule 6 now keeps the hero's name out of `illustrationPrompt` (the name was being drawn as a signpost). Live `eval:text` 2/2 PASS (registerMatch 9/7) and a live story showed **0 of 7** page actions containing the name.
+- Config/docs for the decision: `.env.example` (+`XAI_API_KEY`, `IMAGE_PROVIDER=xai`), `CLAUDE.md` tech stack + env, ADR. Code default constant stays `gemini` so the app boots without an xAI key; production switches via env.
+- Merged #357 (Google Cloud / OAuth setup memo). Opened #358 (`ImageEval` judge + per-page retry) and #359 (vision model `gemini-2.5-flash` → `gemini-3.6-flash`, 404 on the new project).
+
+**Decisions:**
+- Illustration correctness for unforeseen objects = judge + retry (#358), not per-object prompt rules; the two general prompt principles (no standalone props line, no hero name) are in code with the evidence in comments.
+
+**Follow-ups noted:** the Plan sometimes omits the outfit from a cast descriptor (brother's sweater colour varied across pages) — enforce outfit in the cast descriptor at the Plan/normalizer level; optional cartoon style renders geometry more crisply.
+
+**Operational:** set `IMAGE_PROVIDER=xai` and `XAI_API_KEY` in Railway (`storygrow-api`) to activate the decision in production; keep the Gemini key for the photo descriptor and as fallback.
+
+**Blockers:** none.
