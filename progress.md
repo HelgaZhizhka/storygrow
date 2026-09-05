@@ -1217,3 +1217,11 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - The `bible+cascade` image comparison (#356) is code-complete and unit-tested but cannot run until the StoryGrow Billing Account is funded (image generation is prepaid). One command runs it once funded.
 
 **Blockers:** StoryGrow Gemini billing has no balance yet — paid image runs paused.
+
+---
+
+## 2026-09-05 — fix(ai): move Gemini vision model to gemini-3.6-flash (#359)
+
+**Done:** `GEMINI_VISION_MODEL` `gemini-2.5-flash` → `gemini-3.6-flash`. On the current Google project (`storygrow-507614`) the old id returns 404 "no longer available to new users", which broke the photo-descriptor step (#128). The new model was verified live during #348 (structured `generateObject` with image input via the judge prototype). Image model `gemini-2.5-flash-image` unchanged. Config assertion added.
+
+**Blockers:** none.

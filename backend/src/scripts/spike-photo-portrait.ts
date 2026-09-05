@@ -18,7 +18,7 @@
  *   GOOGLE_GENERATIVE_AI_API_KEY  (required) — Gemini key from Google AI Studio.
  *   GEMINI_MODEL         image model, default 'gemini-2.5-flash-image' (Nano Banana);
  *                        set 'gemini-3-pro-image' (Nano Banana Pro) for stronger likeness.
- *   GEMINI_VISION_MODEL  descriptor model, default 'gemini-2.5-flash'.
+ *   GEMINI_VISION_MODEL  descriptor model, default 'gemini-3.6-flash'.
  */
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { extname, resolve } from 'node:path';
@@ -33,7 +33,7 @@ if (!apiKey) {
 
 const google = createGoogleGenerativeAI({ apiKey });
 const IMAGE_MODEL = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash-image';
-const VISION_MODEL = process.env.GEMINI_VISION_MODEL ?? 'gemini-2.5-flash';
+const VISION_MODEL = process.env.GEMINI_VISION_MODEL ?? 'gemini-3.6-flash';
 const IN_DIR = resolve(__dirname, '../../spike-photos');
 // Per-model output dir so Flash and Pro runs coexist for side-by-side comparison.
 const OUT_ROOT = resolve(__dirname, `../../spike-photo-out/${IMAGE_MODEL}`);
