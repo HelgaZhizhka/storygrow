@@ -4,6 +4,7 @@ import {
   IMAGE_SIZE_TO_ASPECT_RATIO,
   DEFAULT_IMAGE_PROVIDER,
   GEMINI_IMAGE_MODEL,
+  GEMINI_VISION_MODEL,
 } from './ai.config';
 
 describe('STYLE_SUFFIXES', () => {
@@ -33,5 +34,12 @@ describe('image config', () => {
 
   it('targets the gemini flash image model', () => {
     expect(GEMINI_IMAGE_MODEL).toBe('gemini-2.5-flash-image');
+  });
+});
+
+describe('GEMINI_VISION_MODEL (#359)', () => {
+  it('is not the retired gemini-2.5-flash (404 on the current Google project)', () => {
+    expect(GEMINI_VISION_MODEL).not.toBe('gemini-2.5-flash');
+    expect(GEMINI_VISION_MODEL).toBe('gemini-3.6-flash');
   });
 });

@@ -64,8 +64,10 @@ export const XAI_IMAGE_MODEL = 'grok-imagine-image-2.0';
 
 // Text/vision model for reading a child photo into a feature descriptor (#128).
 // An image-OUT model (GEMINI_IMAGE_MODEL) can't return structured text, so the
-// descriptor step uses a normal multimodal text model.
-export const GEMINI_VISION_MODEL = 'gemini-2.5-flash';
+// descriptor step uses a normal multimodal text model. `gemini-2.5-flash` returns
+// 404 "no longer available to new users" on the current Google project (#359);
+// 3.6-flash is verified live with generateObject + image input.
+export const GEMINI_VISION_MODEL = 'gemini-3.6-flash';
 
 export const IMAGE_SIZE_TO_ASPECT_RATIO: Record<ImageSize, '1:1' | '2:3' | '3:2'> = {
   '1024x1024': '1:1',
