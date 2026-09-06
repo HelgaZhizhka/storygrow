@@ -1308,7 +1308,7 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 
 **Lesson:** review every page, never a sample — two pages per book hid all four defects.
 
----
+**Blockers:** none.
 
 ---
 
