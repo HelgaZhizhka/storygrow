@@ -165,6 +165,10 @@ storygrow/
          │        each prompt assembled from the       │
          │        Visual Bible + page Scene (#348);    │
          │        sheets unless IMAGE_REFERENCE_SHEETS=off│
+         │      → ImageJudge per page (unless IMAGE_EVAL=off):│
+         │        preflight + vision verdict → ImageEval│
+         │        row per attempt; failing page        │
+         │        re-rendered ≤ IMAGE_EVAL_MAX_RETRIES  │
          │      → upload to S3 → Book.imageKeys[]      │
          │      → portrait key → Book.characterPortraitKey│
          └───────────────────────────────────────────┘

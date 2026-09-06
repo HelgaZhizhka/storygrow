@@ -1,10 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { startActiveObservation } from '@langfuse/tracing';
 import { createOpenAI } from '@ai-sdk/openai';
 import type { LanguageModel } from 'ai';
 import { type Story } from '../schemas';
-import { PAGE_TEMPLATES } from '../../pdf/page-templates/page-templates.config';
 import { S3Service } from '../../s3/s3.service';
 import {
   DEFAULT_IMAGE_PROVIDER,
@@ -19,14 +18,14 @@ import {
 import { pickReferences } from './pick-references';
 import { buildIllustrationPrompt } from '../prompts/illustration.prompt';
 import { buildPagePrompt } from '../prompts/image-portrait.prompt';
-import { ImageContentPolicyError, ImageGenerationError } from './errors';
-import { simplifyIllustrationPrompt } from './prompt-simplifier';
-import { createTelemetry } from '../telemetry';
 import type { ImageProvider } from './providers/image-provider.interface';
 import { OpenAiImageProvider } from './providers/openai-image.provider';
 import { GeminiImageProvider } from './providers/gemini-image.provider';
 import { XaiImageProvider } from './providers/xai-image.provider';
 import { ReferenceSheetsService, type SheetSet } from './reference-sheets.service';
+import { ImageJudgeService } from './image-judge.service';
+import { PageRenderer } from './page-renderer';
+import type { ImageJudgeContext } from '../prompts/image-judge.prompt';
 
 export interface ImageGenInput {
   story: Story;
@@ -62,6 +61,8 @@ interface PageRequest {
   prompt: string;
   references: Uint8Array[];
   labels: string[];
+  /** What the image judge (#358) checks this page against. */
+  judgeContext: ImageJudgeContext;
 }
 
 @Injectable()
@@ -74,11 +75,14 @@ export class ImageGeneratorService {
   // page (outfit, even skin tone drifted). Cast portraits + a location sheet as
   // references fixed it 12/12 pages on Grok. IMAGE_REFERENCE_SHEETS=off disables.
   private readonly sheetsEnabled: boolean;
+  private readonly pages: PageRenderer;
 
   constructor(
     private readonly s3: S3Service,
     config: ConfigService,
     private readonly referenceSheets: ReferenceSheetsService,
+    // Optional so scripts/tests without a judge (or a DB) still construct the service.
+    @Optional() judge: ImageJudgeService | null = null,
   ) {
     this.textModel = createOpenAI({ apiKey: config.getOrThrow<string>('OPENAI_API_KEY') })(
       GENERATION_MODEL,
@@ -95,7 +99,15 @@ export class ImageGeneratorService {
               config.getOrThrow<string>('GOOGLE_GENERATIVE_AI_API_KEY'),
               config.get<string>('GEMINI_IMAGE_MODEL') ?? GEMINI_IMAGE_MODEL,
             );
-    this.logger.log(`Image provider: ${name} (${this.provider.modelLabel})`);
+    this.pages = new PageRenderer({
+      provider: this.provider,
+      s3,
+      textModel: this.textModel,
+      judge,
+    });
+    this.logger.log(
+      `Image provider: ${name} (${this.provider.modelLabel}); judge ${judge?.enabled ? 'on' : 'off'}`,
+    );
   }
 
   async generate(input: ImageGenInput): Promise<ImageGenResult> {
@@ -139,12 +151,10 @@ export class ImageGeneratorService {
     return Promise.all(
       input.story.pages.map(async (page, i) => {
         const req = this.buildPageRequest({ input, page, portraitBytes, sheets });
-        const { key } = await this.generatePage({
+        const { key } = await this.pages.render({
+          ...req,
           bookId: input.bookId,
           pageNumber: i + 1,
-          prompt: req.prompt,
-          references: req.references,
-          labels: req.labels,
           template: page.template,
           variant,
         });
@@ -166,12 +176,10 @@ export class ImageGeneratorService {
     for (let i = 0; i < input.story.pages.length; i++) {
       const page = input.story.pages[i];
       const req = this.buildPageRequest({ input, page, portraitBytes, sheets, previousPage });
-      const { key, bytes } = await this.generatePage({
+      const { key, bytes } = await this.pages.render({
+        ...req,
         bookId: input.bookId,
         pageNumber: i + 1,
-        prompt: req.prompt,
-        references: req.references,
-        labels: req.labels,
         template: page.template,
         variant,
       });
@@ -246,23 +254,34 @@ export class ImageGeneratorService {
       artStyle: input.artStyle,
       labels,
     });
-    return { prompt, references: images, labels };
+    const judgeContext: ImageJudgeContext = {
+      action: page.illustrationPrompt,
+      heroDescriptor: scene.heroOnPage ? heroDescriptor : null,
+      cast: bible.cast.filter((c) => scene.castIds.includes(c.id)),
+      location: bible.locations.find((l) => l.id === scene.locationId)?.descriptor ?? null,
+    };
+    return { prompt, references: images, labels, judgeContext };
   }
 
   private legacyPageRequest(ctx: PageBuildContext): PageRequest {
     const { input, page, portraitBytes } = ctx;
+    const judgeContext: ImageJudgeContext = {
+      action: page.illustrationPrompt,
+      heroDescriptor: input.characterDescriptor ?? input.story.characterProfile ?? null,
+      cast: [],
+    };
     if (this.provider.usesReference) {
       const inner = input.characterDescriptor
         ? `${input.characterDescriptor}. ${page.illustrationPrompt}`
         : page.illustrationPrompt;
       const prompt = buildPagePrompt(inner, input.artStyle);
       return portraitBytes
-        ? { prompt, references: [portraitBytes], labels: ['hero'] }
-        : { prompt, references: [], labels: [] };
+        ? { prompt, references: [portraitBytes], labels: ['hero'], judgeContext }
+        : { prompt, references: [], labels: [], judgeContext };
     }
     const prefix = input.story.characterProfile ? `${input.story.characterProfile}. ` : '';
     const prompt = `${prefix}${page.illustrationPrompt}${STYLE_SUFFIXES[input.artStyle]}`;
-    return { prompt, references: [], labels: [] };
+    return { prompt, references: [], labels: [], judgeContext };
   }
 
   private async maybePortrait(
@@ -285,71 +304,5 @@ export class ImageGeneratorService {
       span.update({ output: { key } });
       return { key, bytes };
     });
-  }
-
-  private async generatePage(opts: {
-    bookId: string;
-    pageNumber: number;
-    prompt: string;
-    references: Uint8Array[];
-    labels: string[];
-    template: Story['pages'][number]['template'];
-    variant: string;
-  }): Promise<{ key: string; bytes: Uint8Array }> {
-    return startActiveObservation(`image-generation.page-${opts.pageNumber}`, async (span) => {
-      const slot = PAGE_TEMPLATES[opts.template].images[0];
-      if (!slot) throw new Error(`Template '${opts.template}' has no image slot configured`);
-      span.update({
-        metadata: {
-          bookId: opts.bookId,
-          pageNumber: opts.pageNumber,
-          references: opts.labels,
-          variant: opts.variant,
-        },
-      });
-      const bytes = await this.withSimplifyRetry(opts, slot.imageSize);
-      const key = `books/${opts.bookId}/page-${opts.pageNumber}.png`;
-      await this.s3.uploadObject({ key, body: Buffer.from(bytes), contentType: 'image/png' });
-      span.update({ output: { key } });
-      return { key, bytes };
-    });
-  }
-
-  private async withSimplifyRetry(
-    opts: {
-      bookId: string;
-      pageNumber: number;
-      prompt: string;
-      references: Uint8Array[];
-    },
-    imageSize: (typeof PAGE_TEMPLATES)[keyof typeof PAGE_TEMPLATES]['images'][0]['imageSize'],
-  ): Promise<Uint8Array> {
-    const gen = (prompt: string): Promise<Uint8Array> =>
-      this.provider.generatePage({
-        prompt,
-        imageSize,
-        references: opts.references,
-      });
-    try {
-      return await gen(opts.prompt);
-    } catch (err: unknown) {
-      if (!(err instanceof ImageGenerationError) || !err.refused) throw err;
-      const simplified = await simplifyIllustrationPrompt(
-        opts.prompt,
-        this.textModel,
-        createTelemetry('image-generation.simplify-prompt', {
-          bookId: opts.bookId,
-          pageNumber: opts.pageNumber,
-        }),
-      );
-      try {
-        return await gen(simplified);
-      } catch (retryErr: unknown) {
-        if (retryErr instanceof ImageGenerationError && retryErr.refused) {
-          throw new ImageContentPolicyError(opts.pageNumber, simplified, retryErr);
-        }
-        throw retryErr;
-      }
-    }
   }
 }

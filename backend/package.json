@@ -27,7 +27,8 @@
     "eval:batch": "dotenv -e .env -- tsx src/scripts/eval-batch.ts",
     "postinstall": "prisma generate",
     "eval:images": "dotenv -e .env -- tsx src/scripts/eval-images.ts",
-    "eval:images-report": "tsx src/scripts/eval-images-report.ts"
+    "eval:images-report": "tsx src/scripts/eval-images-report.ts",
+    "eval:image-judge": "dotenv -e .env -- tsx src/scripts/eval-image-judge.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.83",

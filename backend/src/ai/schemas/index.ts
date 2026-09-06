@@ -29,3 +29,6 @@ export {
   FRAMING,
 } from './visual-bible.schema';
 export type { VisualBible, Scene, CastMember, Location, Prop } from './visual-bible.schema';
+
+export { ImageJudgeSchema, IMAGE_ARTEFACTS, imageVerdict } from './image-judge.schema';
+export type { ImageJudgeResult, ImageVerdict, ImageArtefact } from './image-judge.schema';

@@ -5,6 +5,9 @@ import { StoryEvaluatorService } from './story-generator/story-evaluator.service
 import { StoryOrchestratorService } from './story-generator/story-orchestrator.service';
 import { ImageGeneratorService } from './image-generator/image-generator.service';
 import { ReferenceSheetsService } from './image-generator/reference-sheets.service';
+import { ImageJudgeService } from './image-generator/image-judge.service';
+import { IMAGE_EVAL_SINK } from './image-generator/image-eval.sink';
+import { PrismaImageEvalStore } from './image-generator/image-eval.store';
 import { LearningGoalSafetyService } from './learning-goal-safety/learning-goal-safety.service';
 import { PhotoDescriptorService } from './photo/photo-descriptor.service';
 import { PhotoPortraitService } from './photo/photo-portrait.service';
@@ -20,6 +23,8 @@ import { S3Module } from '../s3/s3.module';
     StoryOrchestratorService,
     ImageGeneratorService,
     ReferenceSheetsService,
+    ImageJudgeService,
+    { provide: IMAGE_EVAL_SINK, useClass: PrismaImageEvalStore },
     LearningGoalSafetyService,
     PhotoDescriptorService,
     PhotoPortraitService,
