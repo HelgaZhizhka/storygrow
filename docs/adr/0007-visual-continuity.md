@@ -36,7 +36,9 @@ of by taste.
    had misled us into a budget of 1), so the budget is 5 there and 3 on Gemini
    Flash. Cascade stays a flag-gated experiment.
 5. **Correctness for unforeseen objects is handled by a judge + per-page retry**
-   (`ImageEval`, #358), not by per-object prompt rules.
+   (`ImageEval`, #358), not by per-object prompt rules. Shipped and on by
+   default since 2026-09-06 (calibration: 0 false fails / 65 good pages, 10/13
+   bad pages caught; `docs/process/image-judge-calibration-2026-09-06.md`).
 
 ## Evidence (all judged by a vision model and checked by eye)
 

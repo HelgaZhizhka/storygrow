@@ -1317,3 +1317,24 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Done:** `GEMINI_VISION_MODEL` `gemini-2.5-flash` → `gemini-3.6-flash`. On the current Google project (`storygrow-507614`) the old id returns 404 "no longer available to new users", which broke the photo-descriptor step (#128). The new model was verified live during #348 (structured `generateObject` with image input via the judge prototype). Image model `gemini-2.5-flash-image` unchanged. Config assertion added.
 
 **Blockers:** none.
+
+---
+
+## 2026-09-06 — feat(ai): ImageEval — vision judge + per-page retry, on by default (#358)
+
+**Done:**
+- `ImageJudgeService` (`gemini-3.6-flash` + `generateObject`, boolean criteria: heroMatch vs the portrait, heroOnce, sceneMatch, castConsistency / locationConsistency vs the sheets the page was generated from, adultScaleNatural, ageSafe, artefacts extraLimbs / mergedFaces / textInImage / wrongSurface). The judge sees the page first, then each reference with a caption; a PNG preflight (bytes, aspect vs template slot) runs before any vision call; a judge outage never fails a book.
+- `ImageEval` Prisma table + migration (one row per page per attempt, `scores`, `passed`, `failures`, `reasoning`), `PrismaImageEvalStore` behind an `IMAGE_EVAL_SINK` token so scripts can substitute an in-memory sink.
+- `PageRenderer` (extracted from `ImageGeneratorService`, which was near the 400-line cap): provider call + content-policy simplify-retry + judge loop — a failing page is re-rendered once (`IMAGE_EVAL_MAX_RETRIES=1`), the attempt with the fewest failures ships (soft gate), spans record attempts and failures.
+- `eval:images` reports judge verdicts per fixture; new `eval:image-judge` calibration runner over a labelled manifest with precision / recall + per-item table.
+- **Calibrated on 78 labelled pages** (38 good pages of the sheets re-render, 19 reviewed pages of the earlier set, 21 controlled ladder-page samples): v1 over-literal (13% false fails on good pages); after redefining sceneMatch as the MAIN event and spelling out wrongSurface → **0 false fails on 65 good pages, 10 of 13 bad pages caught** (misses: "steps painted on the chute" geometry, ambiguous even to people). Three of my own labels were wrong (the `lean3` samples carry an "Alice" badge — the judge caught it). Report: `docs/process/image-judge-calibration-2026-09-06.md`.
+- Flag flipped to **on by default** (`IMAGE_EVAL=off` disables); `.env.example`, `CONTEXT.md` (Image Eval entry), `docs/ARCHITECTURE.md` pipeline box, ADR-0007 decision 5 updated.
+- `./init.sh` green; 24 new unit tests (schema verdict, PNG preflight, judge service, page renderer, normalizer).
+
+**Cost:** ~1 vision call per page (≈$0.002) + one extra Grok image only for pages that fail.
+
+**Not done here (product-owner side):** the DoD's real UI book with `ImageEval` rows + `image-judge` spans — needs a generation on the deployed app (Railway: no env change required, the judge is on by default; set `IMAGE_EVAL=off` to disable).
+
+**Follow-ups:** show `ImageEval` on the admin dashboard; hero descriptor in the image prompt still the prose `characterProfile` (#360 area); the judge's retry uses the same prompt — a failure-aware nudge is a later experiment.
+
+**Blockers:** none.

@@ -38,7 +38,9 @@ type JudgeContent = Array<
  * against its action line and the very references it was generated from; a
  * deterministic preflight (bytes, aspect) runs first so no vision call is spent
  * on a broken file. Every verdict is persisted (one row per page per attempt)
- * and traced as an `image-judge` span. Gated by IMAGE_EVAL until calibrated.
+ * and traced as an `image-judge` span. ON by default (calibrated 2026-09-06:
+ * 0 false fails on 65 good pages, 10/13 bad pages caught — see
+ * docs/process/image-judge-calibration-2026-09-06.md); IMAGE_EVAL=off disables.
  */
 @Injectable()
 export class ImageJudgeService {
@@ -54,7 +56,7 @@ export class ImageJudgeService {
     this.google = createGoogleGenerativeAI({
       apiKey: config.get<string>('GOOGLE_GENERATIVE_AI_API_KEY') ?? '',
     });
-    this.enabled = (config.get<string>('IMAGE_EVAL') ?? 'off') === 'on';
+    this.enabled = (config.get<string>('IMAGE_EVAL') ?? 'on') !== 'off';
     const raw = parseInt(config.get<string>('IMAGE_EVAL_MAX_RETRIES') ?? '', 10);
     this.maxRetries = Number.isNaN(raw) ? IMAGE_EVAL_MAX_RETRIES_DEFAULT : raw;
   }

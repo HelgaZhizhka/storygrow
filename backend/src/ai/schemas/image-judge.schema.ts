@@ -7,9 +7,10 @@ import { z } from 'zod';
  *   extraLimbs   — extra / missing / fused limbs or fingers
  *   mergedFaces  — two faces or bodies blended into one
  *   textInImage  — letters, words, signs, labels drawn in the picture
- *   wrongSurface — a person or object placed on an impossible surface
- *                  (a child standing ON the slide chute the text has them
- *                  climbing beside, an adult inside play equipment)
+ *   wrongSurface — a person or object placed where a body cannot be (a child
+ *                  standing ON the slide chute the text has them climbing
+ *                  beside, an adult inside / fused with play equipment,
+ *                  floating)
  */
 export const IMAGE_ARTEFACTS = [
   'extraLimbs',

@@ -72,16 +72,16 @@ const verdictObject = (over: Record<string, unknown> = {}) => ({
 describe('ImageJudgeService', () => {
   beforeEach(() => mockGenerateObject.mockReset());
 
-  it('reads the flag and retries from config with defaults', () => {
-    const off = new ImageJudgeService(config({}), sink());
-    expect(off.enabled).toBe(false);
-    expect(off.maxRetries).toBe(1);
-    const on = new ImageJudgeService(
-      config({ IMAGE_EVAL: 'on', IMAGE_EVAL_MAX_RETRIES: '2' }),
+  it('is on by default, reads the flag and retries from config', () => {
+    const defaults = new ImageJudgeService(config({}), sink());
+    expect(defaults.enabled).toBe(true);
+    expect(defaults.maxRetries).toBe(1);
+    const off = new ImageJudgeService(
+      config({ IMAGE_EVAL: 'off', IMAGE_EVAL_MAX_RETRIES: '2' }),
       sink(),
     );
-    expect(on.enabled).toBe(true);
-    expect(on.maxRetries).toBe(2);
+    expect(off.enabled).toBe(false);
+    expect(off.maxRetries).toBe(2);
   });
 
   it('fails on preflight without calling the model and records the row', async () => {

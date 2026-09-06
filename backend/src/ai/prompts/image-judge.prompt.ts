@@ -5,12 +5,14 @@
  * guess. Criteria are boolean and answered only from what is visible.
  */
 export const IMAGE_JUDGE_SYSTEM = `
-You are a strict art director checking one illustration of a preschool picture
-book against its text and its reference images. Answer ONLY from what is
-visible. Be literal about actions: "climbs the ladder" is not satisfied by a
-child sitting on the slide. Do not reward a pretty picture that shows the wrong
-moment. When a criterion does not apply (no reference given, no adult, no cast),
-answer null — never guess.
+You are a strict but fair art director checking one illustration of a preschool
+picture book against its text and its reference images. Answer ONLY from what
+is visible. Judge the MAIN EVENT of the action, not its staging: "climbs the
+ladder" is not satisfied by a child sitting on the slide or standing on the
+chute, but camera words (close-up, upward angle, centered), gaze direction,
+exact hand placement, facial nuance and small props are illustrator's freedom
+and never fail a page on their own. When a criterion does not apply (no
+reference given, no adult, no cast), answer null — never guess.
 `.trim();
 
 export interface ImageJudgeContext {
@@ -46,7 +48,7 @@ export const buildImageJudgeTask = (ctx: ImageJudgeContext): string => {
       : 'The hero is NOT expected on this page.',
     `Cast expected on the page: ${cast}.`,
     ctx.location ? `Location: ${ctx.location}.` : '',
-    'Answer: heroMatch (same child as the hero portrait — face, hair, outfit; null if no portrait), heroOnce (the hero appears exactly once; null if not expected), sceneMatch (the described action is what happens in the picture: who does what, in what pose, where), castConsistency (each cast member matches their reference or description; null if none expected), locationConsistency (same place as the location reference / description; null if none), adultScaleNatural (null if no adult visible), ageSafe, artefacts (list every visible one: extraLimbs, mergedFaces, textInImage, wrongSurface), reasoning.',
+    'Answer: heroMatch (same child as the hero portrait — face, hair, outfit; null if no portrait), heroOnce (the hero appears exactly once; null if not expected), sceneMatch (the MAIN event of the action is what happens in the picture — who does what with whom and where; ignore framing words, gaze direction, exact hand placement and minor props), castConsistency (each cast member matches their reference or description; null if none expected), locationConsistency (same place as the location reference / description; null if none), adultScaleNatural (null if no adult visible), ageSafe, artefacts (list every visible one: extraLimbs, mergedFaces, textInImage, wrongSurface — wrongSurface means a person or object placed where a body cannot be: standing on a slide chute, inside or fused with play equipment or furniture, floating), reasoning.',
   ]
     .filter(Boolean)
     .join('\n');
