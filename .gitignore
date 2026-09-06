@@ -49,6 +49,9 @@ backend/spike-photo-out-qwen/
 # Generated artifacts (if any heavy output)
 /generated/
 
+# eval:images render artifacts (heavy throwaway PNGs + comparison HTML)
+output/
+
 # Local Docker volumes (if user maps any)
 .docker-data/
 

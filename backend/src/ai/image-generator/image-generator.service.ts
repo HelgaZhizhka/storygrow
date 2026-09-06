@@ -25,6 +25,7 @@ import { createTelemetry } from '../telemetry';
 import type { ImageProvider } from './providers/image-provider.interface';
 import { OpenAiImageProvider } from './providers/openai-image.provider';
 import { GeminiImageProvider } from './providers/gemini-image.provider';
+import { XaiImageProvider } from './providers/xai-image.provider';
 import { ReferenceSheetsService, type SheetSet } from './reference-sheets.service';
 
 export interface ImageGenInput {
@@ -35,6 +36,10 @@ export interface ImageGenInput {
   // portrait), plus the named-feature descriptor folded into every page prompt.
   approvedPortraitKey?: string | null;
   characterDescriptor?: string | null;
+  // Cascade experiment (#348): render pages sequentially, passing each rendered
+  // page as a reference to the next so objects/setting carry forward. Off by
+  // default (eval:images sets it for the bible+cascade variant).
+  cascade?: boolean;
 }
 
 export interface ImageGenResult {
@@ -50,6 +55,7 @@ interface PageBuildContext {
   page: Story['pages'][number];
   portraitBytes?: Uint8Array;
   sheets?: SheetSet | null;
+  previousPage?: Uint8Array;
 }
 
 interface PageRequest {
@@ -63,8 +69,10 @@ export class ImageGeneratorService {
   private readonly logger = new Logger(ImageGeneratorService.name);
   private readonly textModel: LanguageModel;
   private readonly provider: ImageProvider;
-  // Reference sheets (#348, PR 2) are off until the eval:images comparison picks
-  // a production variant (ADR-0007). Flipped via IMAGE_REFERENCE_SHEETS=on.
+  // Reference sheets (#348, PR 2) are ON by default (ADR-0007, 2026-09-05): with
+  // the hero portrait alone, cast members were text-only and re-drawn on every
+  // page (outfit, even skin tone drifted). Cast portraits + a location sheet as
+  // references fixed it 12/12 pages on Grok. IMAGE_REFERENCE_SHEETS=off disables.
   private readonly sheetsEnabled: boolean;
 
   constructor(
@@ -75,16 +83,18 @@ export class ImageGeneratorService {
     this.textModel = createOpenAI({ apiKey: config.getOrThrow<string>('OPENAI_API_KEY') })(
       GENERATION_MODEL,
     );
-    this.sheetsEnabled = (config.get<string>('IMAGE_REFERENCE_SHEETS') ?? 'off') === 'on';
+    this.sheetsEnabled = (config.get<string>('IMAGE_REFERENCE_SHEETS') ?? 'on') !== 'off';
     const name = (config.get<string>('IMAGE_PROVIDER') ??
       DEFAULT_IMAGE_PROVIDER) as ImageProviderName;
     this.provider =
       name === 'openai'
         ? new OpenAiImageProvider()
-        : new GeminiImageProvider(
-            config.getOrThrow<string>('GOOGLE_GENERATIVE_AI_API_KEY'),
-            config.get<string>('GEMINI_IMAGE_MODEL') ?? GEMINI_IMAGE_MODEL,
-          );
+        : name === 'xai'
+          ? new XaiImageProvider(config.getOrThrow<string>('XAI_API_KEY'))
+          : new GeminiImageProvider(
+              config.getOrThrow<string>('GOOGLE_GENERATIVE_AI_API_KEY'),
+              config.get<string>('GEMINI_IMAGE_MODEL') ?? GEMINI_IMAGE_MODEL,
+            );
     this.logger.log(`Image provider: ${name} (${this.provider.modelLabel})`);
   }
 
@@ -97,33 +107,10 @@ export class ImageGeneratorService {
 
       const portrait = await this.maybePortrait(input);
       const sheets = await this.maybeSheets(input);
-      // 'bible+sheets' only when at least one sheet was actually produced — if
-      // every sheet was refused, the run is really the 'bible' variant (keeps the
-      // eval:images A/B labelling honest).
-      const variant = !input.story.visualBible
-        ? 'baseline'
-        : (sheets?.keys.length ?? 0) > 0
-          ? 'bible+sheets'
-          : 'bible';
-      const imageKeys = await Promise.all(
-        input.story.pages.map((page, i) => {
-          const req = this.buildPageRequest({
-            input,
-            page,
-            portraitBytes: portrait?.bytes,
-            sheets,
-          });
-          return this.generatePage({
-            bookId: input.bookId,
-            pageNumber: i + 1,
-            prompt: req.prompt,
-            references: req.references,
-            labels: req.labels,
-            template: page.template,
-            variant,
-          });
-        }),
-      );
+      const variant = this.variantLabel(input, sheets);
+      const imageKeys = input.cascade
+        ? await this.generatePagesCascade(input, portrait?.bytes, sheets, variant)
+        : await this.generatePagesParallel(input, portrait?.bytes, sheets, variant);
 
       span.update({ output: { count: imageKeys.length, portrait: portrait?.key ?? null } });
       return {
@@ -132,6 +119,66 @@ export class ImageGeneratorService {
         referenceImageKeys: sheets?.keys ?? [],
       };
     });
+  }
+
+  // 'bible+sheets' only when a sheet was actually produced (an all-refused set is
+  // really 'bible'); 'bible+cascade' for the sequential cascade experiment. Keeps
+  // the eval:images A/B labelling honest.
+  private variantLabel(input: ImageGenInput, sheets: SheetSet | null): string {
+    if (!input.story.visualBible) return 'baseline';
+    if (input.cascade) return 'bible+cascade';
+    return (sheets?.keys.length ?? 0) > 0 ? 'bible+sheets' : 'bible';
+  }
+
+  private generatePagesParallel(
+    input: ImageGenInput,
+    portraitBytes: Uint8Array | undefined,
+    sheets: SheetSet | null,
+    variant: string,
+  ): Promise<string[]> {
+    return Promise.all(
+      input.story.pages.map(async (page, i) => {
+        const req = this.buildPageRequest({ input, page, portraitBytes, sheets });
+        const { key } = await this.generatePage({
+          bookId: input.bookId,
+          pageNumber: i + 1,
+          prompt: req.prompt,
+          references: req.references,
+          labels: req.labels,
+          template: page.template,
+          variant,
+        });
+        return key;
+      }),
+    );
+  }
+
+  // Cascade (#348): pages run in order; each rendered page becomes a reference
+  // for the next so objects/setting carry forward. Sequential by nature.
+  private async generatePagesCascade(
+    input: ImageGenInput,
+    portraitBytes: Uint8Array | undefined,
+    sheets: SheetSet | null,
+    variant: string,
+  ): Promise<string[]> {
+    const keys: string[] = [];
+    let previousPage: Uint8Array | undefined;
+    for (let i = 0; i < input.story.pages.length; i++) {
+      const page = input.story.pages[i];
+      const req = this.buildPageRequest({ input, page, portraitBytes, sheets, previousPage });
+      const { key, bytes } = await this.generatePage({
+        bookId: input.bookId,
+        pageNumber: i + 1,
+        prompt: req.prompt,
+        references: req.references,
+        labels: req.labels,
+        template: page.template,
+        variant,
+      });
+      keys.push(key);
+      previousPage = bytes;
+    }
+    return keys;
   }
 
   // Generate location + cast reference sheets once per book (#348, PR 2), gated
@@ -184,6 +231,7 @@ export class ImageGeneratorService {
       scene,
       sources: {
         heroPortrait,
+        previousPage: this.provider.usesReference ? ctx.previousPage : undefined,
         castSheets: sheets?.castSheets,
         locationSheet: sheets?.locationSheets[scene.locationId],
       },
@@ -247,7 +295,7 @@ export class ImageGeneratorService {
     labels: string[];
     template: Story['pages'][number]['template'];
     variant: string;
-  }): Promise<string> {
+  }): Promise<{ key: string; bytes: Uint8Array }> {
     return startActiveObservation(`image-generation.page-${opts.pageNumber}`, async (span) => {
       const slot = PAGE_TEMPLATES[opts.template].images[0];
       if (!slot) throw new Error(`Template '${opts.template}' has no image slot configured`);
@@ -263,7 +311,7 @@ export class ImageGeneratorService {
       const key = `books/${opts.bookId}/page-${opts.pageNumber}.png`;
       await this.s3.uploadObject({ key, body: Buffer.from(bytes), contentType: 'image/png' });
       span.update({ output: { key } });
-      return key;
+      return { key, bytes };
     });
   }
 

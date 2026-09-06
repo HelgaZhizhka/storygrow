@@ -158,13 +158,13 @@ storygrow/
          ┌───────────────────────────────────────────┐
          │ 3. ImageGenerator.generate(story)         │
          │      → portrait from characterProfile,     │
-         │        then Gemini 2.5 Flash Image per page │
-         │        WITH the portrait as a reference,    │
+         │        then Grok Imagine 2.0 per page (ADR-0007;│
+         │        Gemini Flash fallback via IMAGE_PROVIDER)│
+         │        WITH the portrait + cast/location    │
+         │        reference sheets as references (≤5), │
          │        each prompt assembled from the       │
-         │        Visual Bible + page Scene (#348);      │
-         │        optional per-location/cast reference   │
-         │        sheets when IMAGE_REFERENCE_SHEETS=on   │
-         │        (gpt-image-1 fallback via config)    │
+         │        Visual Bible + page Scene (#348);    │
+         │        sheets unless IMAGE_REFERENCE_SHEETS=off│
          │      → upload to S3 → Book.imageKeys[]      │
          │      → portrait key → Book.characterPortraitKey│
          └───────────────────────────────────────────┘

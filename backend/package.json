@@ -25,7 +25,9 @@
     "seed:illustrations": "dotenv -e .env -- tsx src/scripts/seed-fast-illustrations.ts",
     "eval:text": "dotenv -e .env -- tsx src/scripts/eval-text.ts",
     "eval:batch": "dotenv -e .env -- tsx src/scripts/eval-batch.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "eval:images": "dotenv -e .env -- tsx src/scripts/eval-images.ts",
+    "eval:images-report": "tsx src/scripts/eval-images-report.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.83",
