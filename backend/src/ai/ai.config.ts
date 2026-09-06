@@ -35,6 +35,11 @@ export const EVAL_MAX_RETRIES_DEFAULT = 2;
 // separately at EVAL_THRESHOLD so prose quality is never averaged away.
 export const GUARDRAIL_FLOOR_DEFAULT = 6;
 
+// Image judge (#358): a vision model checks every rendered page against its
+// action + references; a failing page is regenerated (same prompt, fresh
+// sample) at most this many times. Rows are written for EVERY attempt.
+export const IMAGE_EVAL_MAX_RETRIES_DEFAULT = 1;
+
 export const IMAGE_MODEL = 'gpt-image-1';
 export const IMAGE_QUALITY = 'medium';
 export type ArtStyle = 'watercolor' | 'cartoon' | 'storybook' | 'pixel' | 'realistic';
@@ -58,8 +63,8 @@ export const DEFAULT_IMAGE_PROVIDER: ImageProviderName = 'gemini';
 // explicit id here. Gemini takes no `size`, only an aspect ratio.
 export const GEMINI_IMAGE_MODEL = 'gemini-2.5-flash-image';
 
-// xAI Grok image model (image experiment) — its edit endpoint accepts ONE
-// reference image, so it can do baseline + cascade, but not multi-ref sheets.
+// xAI Grok image model (ADR-0007 default) — its edit endpoint accepts up to 5
+// reference images via the `images` array (probed 2026-09-05).
 export const XAI_IMAGE_MODEL = 'grok-imagine-image-2.0';
 
 // Text/vision model for reading a child photo into a feature descriptor (#128).

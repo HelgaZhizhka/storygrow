@@ -22,6 +22,8 @@ import type { ConfigService } from '@nestjs/config';
 import { S3Service } from '../s3/s3.service';
 import { ImageGeneratorService } from '../ai/image-generator/image-generator.service';
 import { ReferenceSheetsService } from '../ai/image-generator/reference-sheets.service';
+import { ImageJudgeService } from '../ai/image-generator/image-judge.service';
+import type { ImageEvalRow, ImageEvalSink } from '../ai/image-generator/image-eval.sink';
 import type { Story } from '../ai/schemas';
 import type { ArtStyle } from '../ai/ai.config';
 import {
@@ -50,12 +52,25 @@ const makeConfig = (sheets: 'on' | 'off'): ConfigService =>
     },
   }) as unknown as ConfigService;
 
-const buildService = (variant: ImageVariant): { service: ImageGeneratorService; s3: S3Service } => {
+/** In-memory ImageEval sink (#358): verdicts land in the summary JSON, not the DB. */
+class MemoryImageEvalSink implements ImageEvalSink {
+  readonly rows: ImageEvalRow[] = [];
+  record(row: ImageEvalRow): Promise<void> {
+    this.rows.push(row);
+    return Promise.resolve();
+  }
+}
+
+const buildService = (
+  variant: ImageVariant,
+): { service: ImageGeneratorService; s3: S3Service; evals: MemoryImageEvalSink } => {
   const config = makeConfig(sheetsFlagFor(variant));
   const s3 = new S3Service(config);
   s3.onModuleInit();
-  const service = new ImageGeneratorService(s3, config, new ReferenceSheetsService(s3));
-  return { service, s3 };
+  const evals = new MemoryImageEvalSink();
+  const judge = new ImageJudgeService(config, evals);
+  const service = new ImageGeneratorService(s3, config, new ReferenceSheetsService(s3), judge);
+  return { service, s3, evals };
 };
 
 interface FixtureResult {
@@ -64,6 +79,8 @@ interface FixtureResult {
   referenceImageKeys: string[];
   durationMs: number;
   error: string | null;
+  /** Judge verdicts for this fixture (IMAGE_EVAL=on), one per page per attempt. */
+  evals: ImageEvalRow[];
 }
 
 const loadFixtures = (dir: string, only?: string): { name: string; story: Story }[] =>
@@ -75,8 +92,33 @@ const loadFixtures = (dir: string, only?: string): { name: string; story: Story 
       story: JSON.parse(readFileSync(join(dir, f), 'utf8')) as Story,
     }));
 
+interface RenderCtx {
+  service: ImageGeneratorService;
+  s3: S3Service;
+  evals: MemoryImageEvalSink;
+  variant: ImageVariant;
+  maxPages?: number;
+}
+
+const evalsFor = (ctx: RenderCtx, bookId: string): ImageEvalRow[] =>
+  ctx.evals.rows.filter((r) => r.bookId === bookId);
+
+/** "5/7 pass, 2 retried, failed: p3(sceneMatch)" */
+const summariseEvals = (rows: ImageEvalRow[]): string => {
+  const pages = new Set(rows.map((r) => r.pageNumber));
+  const finalByPage = [...pages].map(
+    (p) => rows.filter((r) => r.pageNumber === p).sort((a, b) => b.attempt - a.attempt)[0],
+  );
+  const passed = finalByPage.filter((r) => r.passed).length;
+  const retried = finalByPage.filter((r) => r.attempt > 1).length;
+  const failed = finalByPage
+    .filter((r) => !r.passed)
+    .map((r) => `p${r.pageNumber}(${r.failures.join(',')})`);
+  return `${passed}/${pages.size} pass, ${retried} retried${failed.length ? `, failed: ${failed.join(' ')}` : ''}`;
+};
+
 const renderFixture = async (
-  ctx: { service: ImageGeneratorService; s3: S3Service; variant: ImageVariant; maxPages?: number },
+  ctx: RenderCtx,
   fixture: { name: string; story: Story },
 ): Promise<FixtureResult> => {
   const started = Date.now();
@@ -105,6 +147,7 @@ const renderFixture = async (
       referenceImageKeys: result.referenceImageKeys,
       durationMs: Date.now() - started,
       error: null,
+      evals: evalsFor(ctx, bookId),
     };
   } catch (e: unknown) {
     return {
@@ -113,6 +156,7 @@ const renderFixture = async (
       referenceImageKeys: [],
       durationMs: Date.now() - started,
       error: e instanceof Error ? e.message.slice(0, 200) : String(e).slice(0, 200),
+      evals: [],
     };
   }
 };
@@ -143,16 +187,17 @@ const main = async (): Promise<void> => {
     `eval:images variant=${variant} fixtures=${fixtures.length}` +
       `${maxPages ? ` maxPages=${maxPages}` : ''} — real Gemini image generation`,
   );
-  const { service, s3 } = buildService(variant);
+  const { service, s3, evals } = buildService(variant);
   const results: FixtureResult[] = [];
   for (const fixture of fixtures) {
     console.log(`▸ ${fixture.name}…`);
-    const r = await renderFixture({ service, s3, variant, maxPages }, fixture);
+    const r = await renderFixture({ service, s3, evals, variant, maxPages }, fixture);
     results.push(r);
+    const judged = r.evals.length > 0 ? `, judge ${summariseEvals(r.evals)}` : '';
     console.log(
       r.error
         ? `  ✗ ${r.error}`
-        : `  ✓ ${r.pages} pages, ${r.referenceImageKeys.length} sheets (${Math.round(r.durationMs / 1000)}s)`,
+        : `  ✓ ${r.pages} pages, ${r.referenceImageKeys.length} sheets${judged} (${Math.round(r.durationMs / 1000)}s)`,
     );
   }
 

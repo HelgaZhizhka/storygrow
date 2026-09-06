@@ -94,6 +94,7 @@ model Book {
   learningGoal   LearningGoal @relation(fields: [learningGoalId], references: [id])
   pages          BookPage[]
   evals          StoryEval[]
+  imageEvals     ImageEval[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 }
@@ -129,6 +130,25 @@ model BookPage {
 }
 
 // ─── Evaluation ────────────────────────────────────────────────────────────
+
+// One vision-judge verdict per rendered page per attempt (#358) — the image
+// counterpart of StoryEval. `scores` is the boolean criteria object
+// (ImageJudgeSchema), `failures` the failed gates; never silent: a row exists
+// for every attempt, including the ones the book shipped with.
+model ImageEval {
+  id         String   @id @default(cuid())
+  bookId     String
+  book       Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  pageNumber Int
+  attempt    Int      @default(1)
+  scores     Json
+  passed     Boolean  @default(false)
+  failures   String[] @default([])
+  reasoning  String?
+  judgedAt   DateTime @default(now())
+
+  @@index([bookId])
+}
 
 model StoryEval {
   id                   String   @id @default(cuid())
