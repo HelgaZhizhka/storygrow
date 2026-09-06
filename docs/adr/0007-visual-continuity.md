@@ -1,6 +1,6 @@
 # ADR-0007: Visual continuity — portrait-as-reference, lean illustration prompt, Grok as default image model
 
-**Status:** Accepted
+**Status:** Accepted (amended 2026-09-05: reference sheets on by default, 5-reference budget on Grok)
 **Date:** 2026-09-04
 **Issues:** #348 (tracker), #350/#351/#352 (rollout), PRs #353/#355/#356 · **Spec:** `docs/superpowers/specs/2026-09-03-visual-bible-design.md`
 
@@ -27,9 +27,14 @@ of by taste.
    `XAI_API_KEY`). Gemini `gemini-2.5-flash-image` stays the fallback behind the
    same flag; OpenAI `gpt-image-1` remains legacy. The code default constant stays
    `gemini` so the app boots without an xAI key; production sets `xai` via env.
-4. **Reference sheets (#355) and cascade stay flag-gated experiments** — not
-   defaults. Grok's edit endpoint takes one reference, so sheets do not apply
-   to it anyway.
+4. **Reference sheets (#355) are ON by default** (`IMAGE_REFERENCE_SHEETS=on`,
+   amended 2026-09-05): one stylised portrait per cast member and one
+   establishing shot per location, generated once per book and passed as
+   references next to the hero portrait (`pickReferences`: hero → cast →
+   location, within the model budget). Grok's edit endpoint accepts **up to 5**
+   input images via the `images` array (probed; the docs' single `image` field
+   had misled us into a budget of 1), so the budget is 5 there and 3 on Gemini
+   Flash. Cascade stays a flag-gated experiment.
 5. **Correctness for unforeseen objects is handled by a judge + per-page retry**
    (`ImageEval`, #358), not by per-object prompt rules.
 
@@ -47,6 +52,15 @@ of by taste.
   a signpost ("Alice").
 - **Whole hardest book with the lean prompt**: slide correct (judge PASS), kitchen
   clean, adult scale natural, hero consistent — on Grok *and* Gemini Flash.
+- **Cast drifts without a picture anchor (2026-09-05, found by the product owner
+  reviewing every page of the 5-book Grok set).** With only the hero portrait
+  passed, cast members were text-only and their descriptors lacked outfit or skin
+  tone: the toddler brother wore different clothes on every page, a friend's skin
+  tone changed between pages, a page whose plan flag said `heroOnPage: false`
+  (while its intent put the hero in the foreground) got no portrait and a generic
+  child. Re-rendering the two worst books on Grok with cast + location sheets as
+  references fixed it on **12/12 pages** (same text, same prompts); the
+  normalizer now forces `heroOnPage` when the page intent names the hero.
 - **Model:** Grok gives the best geometry and picture quality at ~$0.04/image +
   $0.01/reference (~$0.45/book); Gemini Flash is ~$0.35/book and acceptable with
   the lean prompt; Gemini Pro (~$1.20/book) improved geometry but degraded a face
@@ -56,9 +70,10 @@ of by taste.
 
 - **Cascade as default** — best raw continuity, but inherits poses/locations and
   is sequential (~130 s/book).
-- **Reference sheets as default** — location/cast anchors helped on Gemini, but
-  the lean prompt + portrait covers the drift they targeted, they add ~60% images,
-  and the chosen model accepts a single reference.
+- **Portrait-only (no sheets) as default** — the first version of this ADR chose
+  it, believing Grok accepted a single reference and that the lean prompt covered
+  the drift. A full-page review showed cast drift on 2 of 5 books; the sheets add
+  ~3 images per book (~+30% image cost on Grok) and remove it.
 - **Gemini Pro as default** — cost ×3.4 for mixed quality.
 - **Per-object prompt rules** ("how to draw a slide") — whack-a-mole; replaced by
   general principles (no props line, no name) plus the judge.
@@ -68,6 +83,12 @@ of by taste.
 - `IMAGE_PROVIDER=xai` + `XAI_API_KEY` must be set in Railway (`storygrow-api`)
   and locally; `.env.example` and `CLAUDE.md` updated. Gemini key remains
   required for the photo descriptor (vision) and as image fallback.
+- Sheets are on unless `IMAGE_REFERENCE_SHEETS=off`; a book costs ~3 extra
+  images plus $0.01 per reference per page on Grok.
+- Open: the hero descriptor in the image prompt is the prose `characterProfile`
+  (starts with the hero's name, prose phrasing, cut at 160 chars) — it should be
+  a visual-only descriptor; and the Plan should be required to give every cast
+  member an outfit and skin/hair colour (#360).
 - The photo-character feature (#128) sends a child's photo to the active image
   provider; using xAI for that step is a separate privacy decision (ADR-0006
   gaps, #332) — the photo path is outside the launch flow.

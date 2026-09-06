@@ -6,7 +6,8 @@ import { XaiImageProvider } from './xai-image.provider';
 interface XaiBody {
   model: string;
   aspect_ratio: string;
-  image?: { type: string; url: string };
+  images?: Array<{ type: string; url: string }>;
+  prompt?: string;
 }
 
 const b64 = Buffer.from([7, 7, 7]).toString('base64');
@@ -32,7 +33,7 @@ describe('XaiImageProvider', () => {
     expect(body.aspect_ratio).toBe('2:3');
   });
 
-  it('page with a reference calls the edits endpoint with the image as a data URI', async () => {
+  it('page with references calls the edits endpoint with every image as a data URI', async () => {
     mockFetch.mockResolvedValue(okResponse);
     await new XaiImageProvider('k').generatePage({
       prompt: 'a fox',
@@ -42,8 +43,8 @@ describe('XaiImageProvider', () => {
     const call = mockFetch.mock.calls[0] as unknown[];
     expect(call[0]).toContain('/v1/images/edits');
     const body = bodyOf(call);
-    expect(body.image?.type).toBe('image_url');
-    expect(body.image?.url).toMatch(/^data:image\/png;base64,/);
+    expect(body.images?.[0]?.type).toBe('image_url');
+    expect(body.images?.[0]?.url).toMatch(/^data:image\/png;base64,/);
     expect(body.aspect_ratio).toBe('3:2');
   });
 
@@ -62,7 +63,17 @@ describe('XaiImageProvider', () => {
     ).rejects.toMatchObject({ refused: true });
   });
 
-  it('does not support location sheets', async () => {
-    await expect(new XaiImageProvider('k').generateLocationSheet()).rejects.toThrow();
+  it('renders a location sheet as a landscape text-to-image generation', async () => {
+    mockFetch.mockResolvedValue(okResponse);
+    await new XaiImageProvider('k').generateLocationSheet({
+      descriptor: 'a cozy playroom',
+      atmosphere: 'sunny morning',
+      artStyle: 'watercolor',
+    });
+    const call = mockFetch.mock.calls[0] as unknown[];
+    expect(call[0]).toContain('/v1/images/generations');
+    const body = bodyOf(call);
+    expect(body.prompt).toContain('Establishing shot of a cozy playroom');
+    expect(body.aspect_ratio).toBe('3:2');
   });
 });

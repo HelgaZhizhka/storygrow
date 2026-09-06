@@ -55,7 +55,7 @@ See [PROJECT_PLAN.md](PROJECT_PLAN.md) for full concept, scope, roadmap, and bud
 | Storage | S3 / MinIO |
 | AI SDK | Vercel AI SDK (`ai`, `@ai-sdk/openai`, `@ai-sdk/google`, `zod`) — **not LangChain** |
 | LLM | OpenAI `gpt-4o` (story text), `gpt-4o-mini` (judge + fast flow), `text-embedding-3-small` |
-| Image gen | xAI `grok-imagine-image-2.0` (default via `IMAGE_PROVIDER=xai`, ADR-0007: portrait-as-reference per page, lean prompt) · Google `gemini-2.5-flash-image` (fallback) · OpenAI `gpt-image-1` (legacy) |
+| Image gen | xAI `grok-imagine-image-2.0` (default via `IMAGE_PROVIDER=xai`, ADR-0007: hero portrait + cast/location reference sheets per page, lean prompt, up to 5 references) · Google `gemini-2.5-flash-image` (fallback) · OpenAI `gpt-image-1` (legacy) |
 | Observability | LangFuse (self-hosted) |
 | PDF | Puppeteer |
 | Payments | Stripe |

@@ -1,8 +1,10 @@
 import { XAI_IMAGE_MODEL, IMAGE_SIZE_TO_ASPECT_RATIO } from '../../ai.config';
+import { buildLocationSheetPrompt } from '../../prompts/illustration.prompt';
 import { buildPhotoPortraitPrompt, buildPortraitPrompt } from '../../prompts/image-portrait.prompt';
 import { ImageGenerationError } from '../errors';
 import type {
   ImageProvider,
+  LocationSheetInput,
   PageInput,
   PhotoPortraitInput,
   PortraitInput,
@@ -14,11 +16,12 @@ type AspectRatio = '1:1' | '2:3' | '3:2';
 
 /**
  * xAI Grok image provider (image experiment #348) — Grok Imagine Image 2.0.
- * Text-to-image via `/v1/images/generations`; single-reference editing via
- * `/v1/images/edits` (the model accepts ONE input image). With a reference
- * budget of 1 (see MAX_REFERENCE_IMAGES) this supports baseline + cascade
- * (each page edited from the previous), but not multi-reference sheets.
- * Implemented over the REST API with global fetch — no new dependency.
+ * Text-to-image via `/v1/images/generations`; multi-reference editing via
+ * `/v1/images/edits` with the `images` array — the API accepts up to 5 input
+ * images (probed 2026-09-05: 8 → "supports at most 5 input image(s)"), so the
+ * hero portrait, cast portraits and a location sheet all fit (see
+ * MAX_REFERENCE_IMAGES). Implemented over the REST API with global fetch — no
+ * new dependency.
  */
 export class XaiImageProvider implements ImageProvider {
   readonly usesReference = true;
@@ -33,20 +36,22 @@ export class XaiImageProvider implements ImageProvider {
   generatePortraitFromPhoto(input: PhotoPortraitInput): Promise<Uint8Array> {
     return this.edit(
       buildPhotoPortraitPrompt(input.descriptor, input.artStyle),
-      input.photo,
+      [input.photo],
       '2:3',
     );
   }
 
-  generateLocationSheet(): Promise<Uint8Array> {
-    // Sheets need several references at once; Grok's edit takes only one.
-    return Promise.reject(new Error('XaiImageProvider does not support location sheets'));
+  generateLocationSheet(input: LocationSheetInput): Promise<Uint8Array> {
+    return this.generate(
+      buildLocationSheetPrompt(input.descriptor, input.atmosphere, input.artStyle),
+      '3:2',
+    );
   }
 
   generatePage(input: PageInput): Promise<Uint8Array> {
     const aspect = IMAGE_SIZE_TO_ASPECT_RATIO[input.imageSize];
     return input.references.length > 0
-      ? this.edit(input.prompt, input.references[0], aspect)
+      ? this.edit(input.prompt, input.references, aspect)
       : this.generate(input.prompt, aspect);
   }
 
@@ -61,12 +66,19 @@ export class XaiImageProvider implements ImageProvider {
     });
   }
 
-  private edit(prompt: string, image: Uint8Array, aspect: AspectRatio): Promise<Uint8Array> {
-    const url = `data:image/png;base64,${Buffer.from(image).toString('base64')}`;
+  private edit(
+    prompt: string,
+    references: readonly Uint8Array[],
+    aspect: AspectRatio,
+  ): Promise<Uint8Array> {
+    const images = references.map((bytes) => ({
+      url: `data:image/png;base64,${Buffer.from(bytes).toString('base64')}`,
+      type: 'image_url',
+    }));
     return this.request(EDIT_URL, {
       model: XAI_IMAGE_MODEL,
       prompt,
-      image: { url, type: 'image_url' },
+      images,
       aspect_ratio: aspect,
       response_format: 'b64_json',
     });

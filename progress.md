@@ -1282,3 +1282,30 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Operational:** set `IMAGE_PROVIDER=xai` and `XAI_API_KEY` in Railway (`storygrow-api`) to activate the decision in production; keep the Gemini key for the photo descriptor and as fallback.
 
 **Blockers:** none.
+
+---
+
+## 2026-09-06 — fix(ai): cast drift root cause — reference sheets on by default, Grok takes 5 references (#352, on #356)
+
+**Trigger:** the product owner reviewed every page of the 5-book Grok set and found what spot-checks had missed: the toddler brother wore different clothes on every page (zabota), a friend's skin tone changed between pages (chestnost), the hero was drawn as a generic boy on one page (delitsya p4), mom rendered inside a slide (smelost-6 p2).
+
+**Root causes (evidence in the fixtures and the API):**
+- `MAX_REFERENCE_IMAGES['grok-imagine-image-2.0']` was 1, so only the hero portrait was ever passed; every cast member was text-only, and cast descriptors often lack outfit / skin tone. Probing `/v1/images/edits` showed Grok accepts an `images` array of **up to 5** (8 → "supports at most 5 input image(s)").
+- The Plan set `heroOnPage: false` on a page whose intent puts the hero in the foreground; no portrait was passed. Same slip for cast: page 1 of delitsya names the friends in the action but omits them from `castIds`.
+- The location descriptor said "slides" (plural) and mom was text-only, so the playground and mom re-rolled each page.
+
+**Done:**
+- `XaiImageProvider`: multi-reference edits via `images: [{url,type}]`, `generateLocationSheet` implemented (3:2 generation), budget 5; spec updated.
+- `IMAGE_REFERENCE_SHEETS` default flipped to **on** (`off` disables); `.env.example` files updated.
+- `normalizeVisualBible`: forces `heroOnPage` when the page intent names the hero; adds a cast member to `castIds` when the intent names them (2 new tests).
+- ADR-0007 amended (sheets on by default, 5-reference budget on Grok, the cast-drift evidence, the rejected "portrait-only" default); `CLAUDE.md` tech-stack line and the `docs/ARCHITECTURE.md` pipeline box updated.
+- Re-rendered **all 5 books on Grok with sheets** (`bible+sheets`, 38 pages, 0 failures, ~50 s/book) and looked at **every page**: hero, cast and rooms/playgrounds identical across pages in all 5 books; delitsya p4 correct once the flag is true (fixture patched as the normalizer now does). Before/after reports in the session scratchpad (not committed; `backend/output/` is gitignored).
+- `./init.sh` green.
+
+**Cost:** ~3 extra sheet images per book plus $0.01 per reference per page on Grok (~+30% image cost).
+
+**Open (not in this PR):** the hero descriptor in the image prompt is the prose `characterProfile` (starts with the name, cut at 160 chars) — make it a visual-only descriptor; require outfit + skin/hair colour in every cast descriptor at Plan level (#360); the judge + retry (#358) remains the safety net for composition slips like "adult inside a slide".
+
+**Lesson:** review every page, never a sample — two pages per book hid all four defects.
+
+**Blockers:** none.

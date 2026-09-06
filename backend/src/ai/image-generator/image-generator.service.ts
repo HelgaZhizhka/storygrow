@@ -69,8 +69,10 @@ export class ImageGeneratorService {
   private readonly logger = new Logger(ImageGeneratorService.name);
   private readonly textModel: LanguageModel;
   private readonly provider: ImageProvider;
-  // Reference sheets (#348, PR 2) are off until the eval:images comparison picks
-  // a production variant (ADR-0007). Flipped via IMAGE_REFERENCE_SHEETS=on.
+  // Reference sheets (#348, PR 2) are ON by default (ADR-0007, 2026-09-05): with
+  // the hero portrait alone, cast members were text-only and re-drawn on every
+  // page (outfit, even skin tone drifted). Cast portraits + a location sheet as
+  // references fixed it 12/12 pages on Grok. IMAGE_REFERENCE_SHEETS=off disables.
   private readonly sheetsEnabled: boolean;
 
   constructor(
@@ -81,7 +83,7 @@ export class ImageGeneratorService {
     this.textModel = createOpenAI({ apiKey: config.getOrThrow<string>('OPENAI_API_KEY') })(
       GENERATION_MODEL,
     );
-    this.sheetsEnabled = (config.get<string>('IMAGE_REFERENCE_SHEETS') ?? 'off') === 'on';
+    this.sheetsEnabled = (config.get<string>('IMAGE_REFERENCE_SHEETS') ?? 'on') !== 'off';
     const name = (config.get<string>('IMAGE_PROVIDER') ??
       DEFAULT_IMAGE_PROVIDER) as ImageProviderName;
     this.provider =

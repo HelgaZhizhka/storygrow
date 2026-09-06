@@ -90,6 +90,6 @@ export const ACTION_MAX_CHARS = 240;
 export const MAX_REFERENCE_IMAGES: Record<string, number> = {
   'gemini-2.5-flash-image': 3,
   'gemini-3-pro-image': 14,
-  'grok-imagine-image-2.0': 1,
+  'grok-imagine-image-2.0': 5,
 };
 export const DEFAULT_MAX_REFERENCE_IMAGES = 3;
