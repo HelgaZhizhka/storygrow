@@ -67,6 +67,43 @@ describe('normalizeVisualBible', () => {
     expect(repairs).toBe(2);
   });
 
+  it('forces heroOnPage when the page intent names the hero (observer-mode slip)', () => {
+    const { plan, repairs } = normalizeVisualBible(
+      planWith([
+        {
+          template: 'image-top',
+          beat: 'b',
+          intent: 'Друзья убегают; Алиса остаётся на переднем плане с машинкой',
+          scene: sceneFixture({ locationId: 'home', heroOnPage: false }),
+        },
+        {
+          template: 'image-top',
+          beat: 'b',
+          intent: 'Друзья играют в мяч вдвоём',
+          scene: sceneFixture({ locationId: 'home', heroOnPage: false }),
+        },
+      ]),
+    );
+    expect(plan.pages[0].scene.heroOnPage).toBe(true);
+    expect(plan.pages[1].scene.heroOnPage).toBe(false);
+    expect(repairs).toBe(1);
+  });
+
+  it('adds a cast member the intent names but the scene omits', () => {
+    const { plan, repairs } = normalizeVisualBible(
+      planWith([
+        {
+          template: 'image-top',
+          beat: 'b',
+          intent: 'Алиса показывает братику красный мяч',
+          scene: sceneFixture({ locationId: 'home', castIds: [], heroOnPage: true }),
+        },
+      ]),
+    );
+    expect(plan.pages[0].scene.castIds).toEqual(['brother']);
+    expect(repairs).toBe(1);
+  });
+
   it('leaves a clean plan untouched (zero repairs)', () => {
     const { repairs } = normalizeVisualBible(
       planWith([

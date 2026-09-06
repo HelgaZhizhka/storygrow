@@ -1217,3 +1217,95 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - The `bible+cascade` image comparison (#356) is code-complete and unit-tested but cannot run until the StoryGrow Billing Account is funded (image generation is prepaid). One command runs it once funded.
 
 **Blockers:** StoryGrow Gemini billing has no balance yet — paid image runs paused.
+
+**Blockers:** none.
+
+---
+
+## 2026-09-03 — feat(ai): eval:images harness for the Visual Bible comparison (#352)
+
+**Done:**
+- Added the `eval:images` harness (#348, PR 3 of 3): renders a frozen set of Story fixtures through the real image pipeline for one variant (`baseline`/`bible`/`bible+sheets`), downloads pages under `output/eval-images/<variant>/<fixture>/`, and writes a JSON summary (page count, reference-sheet keys, timing). Variant logic (`storyForVariant`, `sheetsFlagFor`, `sanitizeId`, `evalBookId`) lives in a unit-tested `lib/eval-images-lib.ts`.
+- Extended `eval:batch` with `--stories-out=<dir>` to freeze fixtures once (text is never regenerated between variants).
+- Added `eval:images-report` — builds a single self-contained HTML laying the variants side by side per fixture page, with the manual scoring rubric, so the comparison can be scored by eye.
+- Ignored `output/` (the render artefacts + comparison HTML were not actually gitignored before).
+
+**Verified:**
+- `./init.sh` green including the new `eval-images-lib` unit tests.
+- End-to-end smoke: one hand-built fixture rendered via real Gemini on `bible+sheets` (max 1 page) produced a portrait + location sheet + cast sheet + page. The page shows the hero and the toddler brother matching their fixed cast descriptors, the slide matching the location descriptor, and exactly one hero — the stream's drift, fixed.
+
+**Decisions / gated:**
+- The full three-variant comparison (5 frozen fixtures × baseline/bible/bible+sheets ≈ €6 of Gemini generation), the filled rubric, the baseline JSON, ADR-0007's variant decision, flipping `IMAGE_REFERENCE_SHEETS` on, and the one real UI book with `StoryEval` + image spans are the paid/decision deliverables — held for explicit product-owner go-ahead.
+
+**Next:** on go-ahead, freeze 5 fixtures, run the three variants, generate the comparison, score the rubric, write ADR-0007.
+
+**Blockers:** none.
+
+---
+
+## 2026-09-04 — image consistency: findings that changed the design (#352, on #356)
+
+**Done (all on the open #356 branch, `./init.sh` green):**
+- Ran the full comparison on 5 frozen stories × baseline / bible / bible+sheets / bible+cascade (Gemini Flash), plus Gemini Pro and Grok Imagine 2.0 on the hardest story, plus 12 controlled single-page samples judged by a vision model. Added an `XaiImageProvider` (`IMAGE_PROVIDER=xai`, REST via fetch, single-reference edit endpoint) so Grok runs through the same pipeline.
+- **Rejected cascade (page N edited from page N−1) as a default.** Edit mode preserves the previous frame's composition, so the new action rendered wrong (hero on the slide chute) and locations bled (a slide inside the kitchen). It stays a flagged experiment.
+- **Adopted: neutral hero portrait as the reference on every page, fresh composition per page.** Holds identity, removes location bleed; parallel again (~35s/book vs ~130s for cascade).
+- **Found that the dense assembled prompt itself broke poses**, model-independently: same page, same portrait, 3 samples per shape — dense 0/3 correct, lean 3/3. Two general causes, not slide-specific: a standalone `Visible: <prop>` line before the action makes the prop the focal subject (the child ends up on it); the hero's NAME in an image prompt is rendered as a sign ("Alice"). Rewrote `illustration.prompt.ts` to identity + cast + setting + ACTION (last) + style; props stay in the bible for the Plan; the name stays in story text.
+- Re-ran the whole hardest book with the lean assembler on **both** Grok and Gemini Flash: slide correct (judge PASS on both), kitchen clean, adult scale natural, hero consistent — the three defects the product owner flagged are gone on both models without any per-object rule.
+- Prototyped the general safety net: a vision judge (`gemini-3.6-flash` + `generateObject`) classifying "does the picture match the page text"; agreed with the human eye 6/6 on the controlled slide samples, missed one "steps drawn on the chute" case → needs question calibration. Prototype kept untracked (`tmp-slide-judge.ts`), to become `ImageEval`.
+
+**Decisions:**
+- Default reference strategy = portrait per page (no cascade); assembler stays lean; judge + retry is the mechanism for unforeseen objects (not per-scenario prompt rules).
+- Model choice deferred to ADR-0007 with the product owner: Grok = best geometry/quality (~$0.04/img + $0.01/ref, 1 reference only); Gemini Flash = cheapest, now acceptable with the lean prompt; Pro not justified.
+
+**Risk surfaced:** `gemini-2.5-flash` (the photo-descriptor vision model) is unavailable on the new Google project (404 → use `gemini-3.6-flash`); breaks #128 on the new key. Tracked as a separate task.
+
+**Next:** product-owner review of the v2 books; then ADR-0007 (variant + model), turn the judge into `ImageEval`, and a prose rule to keep the hero's name out of the page action.
+
+**Blockers:** none.
+
+---
+
+## 2026-09-04 — ADR-0007: portrait-as-reference, lean prompt, Grok as default image model (#352, on #356)
+
+**Done:**
+- Product owner chose **Grok Imagine 2.0** as the default image model; wrote `docs/adr/0007-visual-continuity.md` (portrait-as-reference per page, no cascade by default, lean illustration prompt, Grok via `IMAGE_PROVIDER=xai` with Gemini fallback, sheets/cascade flag-gated experiments, judge + retry as the general safety net).
+- Re-rendered **all 5 frozen stories on Grok** with the lean assembler: 5/5 books, 0 failures, ~35–45 s each; slide page judged PASS (3rd independent confirmation); spot checks across the other stories: hero consistent, cast plausible, locations switch correctly (3-location `chestnost`), no signs/text, adult scale natural.
+- Prose rule 6 now keeps the hero's name out of `illustrationPrompt` (the name was being drawn as a signpost). Live `eval:text` 2/2 PASS (registerMatch 9/7) and a live story showed **0 of 7** page actions containing the name.
+- Config/docs for the decision: `.env.example` (+`XAI_API_KEY`, `IMAGE_PROVIDER=xai`), `CLAUDE.md` tech stack + env, ADR. Code default constant stays `gemini` so the app boots without an xAI key; production switches via env.
+- Merged #357 (Google Cloud / OAuth setup memo). Opened #358 (`ImageEval` judge + per-page retry) and #359 (vision model `gemini-2.5-flash` → `gemini-3.6-flash`, 404 on the new project).
+
+**Decisions:**
+- Illustration correctness for unforeseen objects = judge + retry (#358), not per-object prompt rules; the two general prompt principles (no standalone props line, no hero name) are in code with the evidence in comments.
+
+**Follow-ups noted:** the Plan sometimes omits the outfit from a cast descriptor (brother's sweater colour varied across pages) — enforce outfit in the cast descriptor at the Plan/normalizer level; optional cartoon style renders geometry more crisply.
+
+**Operational:** set `IMAGE_PROVIDER=xai` and `XAI_API_KEY` in Railway (`storygrow-api`) to activate the decision in production; keep the Gemini key for the photo descriptor and as fallback.
+
+**Blockers:** none.
+
+---
+
+## 2026-09-06 — fix(ai): cast drift root cause — reference sheets on by default, Grok takes 5 references (#352, on #356)
+
+**Trigger:** the product owner reviewed every page of the 5-book Grok set and found what spot-checks had missed: the toddler brother wore different clothes on every page (zabota), a friend's skin tone changed between pages (chestnost), the hero was drawn as a generic boy on one page (delitsya p4), mom rendered inside a slide (smelost-6 p2).
+
+**Root causes (evidence in the fixtures and the API):**
+- `MAX_REFERENCE_IMAGES['grok-imagine-image-2.0']` was 1, so only the hero portrait was ever passed; every cast member was text-only, and cast descriptors often lack outfit / skin tone. Probing `/v1/images/edits` showed Grok accepts an `images` array of **up to 5** (8 → "supports at most 5 input image(s)").
+- The Plan set `heroOnPage: false` on a page whose intent puts the hero in the foreground; no portrait was passed. Same slip for cast: page 1 of delitsya names the friends in the action but omits them from `castIds`.
+- The location descriptor said "slides" (plural) and mom was text-only, so the playground and mom re-rolled each page.
+
+**Done:**
+- `XaiImageProvider`: multi-reference edits via `images: [{url,type}]`, `generateLocationSheet` implemented (3:2 generation), budget 5; spec updated.
+- `IMAGE_REFERENCE_SHEETS` default flipped to **on** (`off` disables); `.env.example` files updated.
+- `normalizeVisualBible`: forces `heroOnPage` when the page intent names the hero; adds a cast member to `castIds` when the intent names them (2 new tests).
+- ADR-0007 amended (sheets on by default, 5-reference budget on Grok, the cast-drift evidence, the rejected "portrait-only" default); `CLAUDE.md` tech-stack line and the `docs/ARCHITECTURE.md` pipeline box updated.
+- Re-rendered **all 5 books on Grok with sheets** (`bible+sheets`, 38 pages, 0 failures, ~50 s/book) and looked at **every page**: hero, cast and rooms/playgrounds identical across pages in all 5 books; delitsya p4 correct once the flag is true (fixture patched as the normalizer now does). Before/after reports in the session scratchpad (not committed; `backend/output/` is gitignored).
+- `./init.sh` green.
+
+**Cost:** ~3 extra sheet images per book plus $0.01 per reference per page on Grok (~+30% image cost).
+
+**Open (not in this PR):** the hero descriptor in the image prompt is the prose `characterProfile` (starts with the name, cut at 160 chars) — make it a visual-only descriptor; require outfit + skin/hair colour in every cast descriptor at Plan level (#360); the judge + retry (#358) remains the safety net for composition slips like "adult inside a slide".
+
+**Lesson:** review every page, never a sample — two pages per book hid all four defects.
+
+**Blockers:** none.

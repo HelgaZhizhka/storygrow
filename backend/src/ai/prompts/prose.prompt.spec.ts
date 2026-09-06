@@ -92,3 +92,11 @@ describe('buildProsePrompt — scene context (#348)', () => {
     expect(out).toContain('братик — младший брат');
   });
 });
+
+describe('buildProseSystemPrompt — no hero name in the image action (#348)', () => {
+  it('tells the prose model to call the hero "the child" inside illustrationPrompt', () => {
+    const out = buildProseSystemPrompt('5-6');
+    expect(out).toContain('NEVER by');
+    expect(out).toContain('"the child"');
+  });
+});
