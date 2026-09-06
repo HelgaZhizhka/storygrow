@@ -1,6 +1,6 @@
 import { buildStoryPlanSchema } from './story-plan.schema';
 import { templatesForAge } from '../../pdf/page-templates/page-templates.config';
-import { sceneFixture, visualBibleFixture } from './__fixtures__/visual-bible.fixture';
+import { sceneFixture, planVisualBibleFixture } from './__fixtures__/visual-bible.fixture';
 
 const planWith = (template: string): unknown => ({
   title: 'Тест',
@@ -8,7 +8,7 @@ const planWith = (template: string): unknown => ({
   characterProfile: 'girl',
   lesson: 'урок',
   discussionQuestions: ['1?', '2?', '3?', '4?', '5?'],
-  visualBible: visualBibleFixture(),
+  visualBible: planVisualBibleFixture(),
   pages: [
     { template: 'cover', beat: 'Обложка', intent: 'обложка', scene: sceneFixture() },
     { template, beat: 'Завязка', intent: 'что-то', scene: sceneFixture() },
@@ -41,7 +41,7 @@ describe('buildStoryPlanSchema page-count per band', () => {
       characterProfile: 'girl',
       lesson: 'урок',
       discussionQuestions: ['1?', '2?', '3?', '4?', '5?'],
-      visualBible: visualBibleFixture(),
+      visualBible: planVisualBibleFixture(),
       pages: Array.from({ length: 9 }, (_, i) => ({
         template: i === 0 ? 'cover' : i === 8 ? 'final' : 'image-top',
         beat: 'Бит',

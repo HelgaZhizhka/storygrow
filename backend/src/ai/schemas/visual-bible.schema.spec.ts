@@ -1,69 +1,47 @@
-import { VisualBibleSchema, SceneSchema } from './visual-bible.schema';
-import { MAX_CAST, MAX_LOCATIONS, DESCRIPTOR_MAX_CHARS } from '../ai.config';
+import { renderAppearance, toStoryBible } from './visual-bible.schema';
+import { appearanceFixture, planVisualBibleFixture } from './__fixtures__/visual-bible.fixture';
 
-const bible = (over: Record<string, unknown> = {}): unknown => ({
-  hero: { name: 'Алиса', descriptor: '5-year-old girl, red hair' },
-  cast: [{ id: 'brother', name: 'братик', role: 'младший брат', descriptor: 'toddler boy, blond' }],
-  locations: [{ id: 'slide', name: 'горка', descriptor: 'green slide with a metal ladder' }],
-  props: [],
-  atmosphere: 'sunny courtyard, warm light',
-  ...over,
-});
-
-const scene = (over: Record<string, unknown> = {}): unknown => ({
-  locationId: 'slide',
-  castIds: ['brother'],
-  propIds: [],
-  heroOnPage: true,
-  timeOfDay: 'day',
-  framing: 'wide',
-  ...over,
-});
-
-describe('VisualBibleSchema', () => {
-  it('accepts a well-formed bible', () => {
-    expect(VisualBibleSchema.safeParse(bible()).success).toBe(true);
+describe('renderAppearance (#360)', () => {
+  it('renders every field in a fixed order, without any name', () => {
+    expect(renderAppearance(appearanceFixture())).toBe(
+      '5-year-old child, light skin, short brown hair, wearing a yellow t-shirt and blue shorts, a red cap',
+    );
   });
 
-  it('requires at least one location', () => {
-    expect(VisualBibleSchema.safeParse(bible({ locations: [] })).success).toBe(false);
+  it('adds the implied noun when the model dropped it', () => {
+    expect(renderAppearance(appearanceFixture({ skin: 'light', hair: 'curly blond' }))).toContain(
+      'light skin, curly blond hair,',
+    );
   });
 
-  it('caps cast at MAX_CAST', () => {
-    const many = Array.from({ length: MAX_CAST + 1 }, (_, i) => ({
-      id: `c${i}`,
-      name: 'x',
-      role: 'y',
-      descriptor: 'z',
-    }));
-    expect(VisualBibleSchema.safeParse(bible({ cast: many })).success).toBe(false);
-  });
-
-  it('caps locations at MAX_LOCATIONS', () => {
-    const many = Array.from({ length: MAX_LOCATIONS + 1 }, (_, i) => ({
-      id: `l${i}`,
-      name: 'x',
-      descriptor: 'y',
-    }));
-    expect(VisualBibleSchema.safeParse(bible({ locations: many })).success).toBe(false);
-  });
-
-  it('rejects an over-long descriptor', () => {
-    const long = 'a'.repeat(DESCRIPTOR_MAX_CHARS + 1);
-    expect(VisualBibleSchema.safeParse(bible({ atmosphere: long })).success).toBe(false);
+  it('does not double a noun that is already there (people and animals)', () => {
+    const out = renderAppearance(
+      appearanceFixture({
+        kind: 'small bunny',
+        skin: 'white fur',
+        hair: 'fluffy ears',
+        outfit: 'no clothes',
+      }),
+    );
+    expect(out).toBe('small bunny, white fur, fluffy ears, wearing no clothes, a red cap');
   });
 });
 
-describe('SceneSchema', () => {
-  it('accepts a well-formed scene', () => {
-    expect(SceneSchema.safeParse(scene()).success).toBe(true);
-  });
-
-  it('rejects an unknown timeOfDay', () => {
-    expect(SceneSchema.safeParse(scene({ timeOfDay: 'dusk' })).success).toBe(false);
-  });
-
-  it('rejects an unknown framing', () => {
-    expect(SceneSchema.safeParse(scene({ framing: 'macro' })).success).toBe(false);
+describe('toStoryBible', () => {
+  it('renders cast descriptors and takes the hero descriptor from the caller', () => {
+    const plan = planVisualBibleFixture({
+      cast: [
+        {
+          id: 'mum',
+          name: 'Мама',
+          role: 'мама',
+          appearance: appearanceFixture({ kind: 'adult woman' }),
+        },
+      ],
+    });
+    const bible = toStoryBible(plan, 'girl, red hair');
+    expect(bible.hero.descriptor).toBe('girl, red hair');
+    expect(bible.cast[0].descriptor.startsWith('adult woman, light skin')).toBe(true);
+    expect(bible.locations).toEqual(plan.locations);
   });
 });

@@ -9,7 +9,12 @@ import { generateObject } from 'ai';
 import { StoryGeneratorService } from './story-generator.service';
 import type { GenerateStoryInput } from './story-generator.service';
 import type { Story, StoryPlan } from '../schemas';
-import { sceneFixture, visualBibleFixture } from '../schemas/__fixtures__/visual-bible.fixture';
+import {
+  sceneFixture,
+  planVisualBibleFixture,
+  appearanceFixture,
+} from '../schemas/__fixtures__/visual-bible.fixture';
+import { renderAppearance, toStoryBible } from '../schemas';
 
 const mockGenerateObject = generateObject as jest.MockedFunction<typeof generateObject>;
 
@@ -19,7 +24,7 @@ const validPlan: StoryPlan = {
   characterProfile: '6-year-old girl with brown hair, blue dress',
   lesson: 'Дружба важна',
   discussionQuestions: ['Что случилось?', 'Почему?', 'Как?', 'Что узнала?', 'Что важно?'],
-  visualBible: visualBibleFixture(),
+  visualBible: planVisualBibleFixture(),
   pages: [
     { template: 'cover', beat: 'Обложка', intent: 'Маша и кот на лугу', scene: sceneFixture() },
     {
@@ -74,12 +79,15 @@ const validStory: Story = {
   discussionQuestions: ['Что случилось?', 'Почему?', 'Как?', 'Что узнала?', 'Что важно?'],
 };
 
+// What generateStory persists: the plan bible rendered to descriptors, the hero
+// descriptor = characterProfile rendered from the structured appearance (#360).
 const mergedStory: Story = {
   ...validStory,
-  visualBible: {
-    ...visualBibleFixture(),
-    hero: { ...visualBibleFixture().hero, descriptor: validPlan.characterProfile },
-  },
+  characterProfile: renderAppearance(planVisualBibleFixture().hero.appearance),
+  visualBible: toStoryBible(
+    planVisualBibleFixture(),
+    renderAppearance(planVisualBibleFixture().hero.appearance),
+  ),
   pages: validStory.pages.map((p, i) => ({ ...p, scene: validPlan.pages[i].scene })),
 };
 
@@ -131,8 +139,42 @@ describe('StoryGeneratorService', () => {
     const result = await service.generateStory(input);
     expect(result.visualBible?.locations[0].id).toBe('home');
     expect(result.pages.every((p) => p.scene !== undefined)).toBe(true);
-    // hero descriptor comes from characterProfile, not the plan's bible placeholder
-    expect(result.visualBible?.hero.descriptor).toBe(validPlan.characterProfile);
+    // Hero descriptor = characterProfile = the structured appearance rendered
+    // in code (#360) — never the model's free-text placeholder, never a name.
+    const rendered = renderAppearance(validPlan.visualBible.hero.appearance);
+    expect(result.characterProfile).toBe(rendered);
+    expect(result.visualBible?.hero.descriptor).toBe(rendered);
+    expect(rendered).not.toContain(validPlan.heroName);
+  });
+
+  it('renders every cast member descriptor from its structured appearance (#360)', async () => {
+    const withCast: StoryPlan = {
+      ...validPlan,
+      visualBible: planVisualBibleFixture({
+        cast: [
+          {
+            id: 'brother',
+            name: 'братик',
+            role: 'младший брат',
+            appearance: appearanceFixture({
+              kind: 'toddler boy',
+              skin: 'light skin',
+              hair: 'blond curls',
+              outfit: 'a white shirt and pink overalls',
+              detail: 'a dimple',
+            }),
+          },
+        ],
+      }),
+    };
+    mockGenerateObject
+      .mockResolvedValueOnce({ object: withCast } as never)
+      .mockResolvedValueOnce({ object: validStory } as never)
+      .mockResolvedValueOnce({ object: { title: validStory.title } } as never);
+    const result = await service.generateStory(input);
+    expect(result.visualBible?.cast[0].descriptor).toBe(
+      'toddler boy, light skin, blond curls, wearing a white shirt and pink overalls, a dimple',
+    );
   });
 
   it('traces the two phases separately (story-planner, then story-prose)', async () => {
