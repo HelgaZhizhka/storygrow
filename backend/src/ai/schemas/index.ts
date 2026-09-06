@@ -21,14 +21,28 @@ export type { JudgeScores, JudgeResult } from './judge.schema';
 
 export {
   VisualBibleSchema,
+  PlanVisualBibleSchema,
+  AppearanceSchema,
   SceneSchema,
   CastMemberSchema,
+  PlanCastMemberSchema,
   LocationSchema,
   PropSchema,
   TIME_OF_DAY,
   FRAMING,
+  renderAppearance,
+  toStoryBible,
 } from './visual-bible.schema';
-export type { VisualBible, Scene, CastMember, Location, Prop } from './visual-bible.schema';
+export type {
+  VisualBible,
+  PlanVisualBible,
+  Appearance,
+  Scene,
+  CastMember,
+  PlanCastMember,
+  Location,
+  Prop,
+} from './visual-bible.schema';
 
 export { ImageJudgeSchema, IMAGE_ARTEFACTS, imageVerdict } from './image-judge.schema';
 export type { ImageJudgeResult, ImageVerdict, ImageArtefact } from './image-judge.schema';

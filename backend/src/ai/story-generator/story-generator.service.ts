@@ -4,8 +4,15 @@ import { generateObject } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import type { OpenAIProvider } from '@ai-sdk/openai';
 import { z } from 'zod';
-import { buildProseSchema, buildStoryPlanSchema, type Story, type StoryPlan } from '../schemas';
-import { normalizeVisualBible } from '../validators';
+import {
+  buildProseSchema,
+  buildStoryPlanSchema,
+  type Story,
+  type StoryPlan,
+  renderAppearance,
+  toStoryBible,
+} from '../schemas';
+import { ensureHeroGender, normalizeVisualBible } from '../validators';
 import { ageToAgeBand, type AgeBand } from '../../pdf/page-templates/page-templates.config';
 import { PLAN_SYSTEM_PROMPT, buildPlanPrompt } from '../prompts/plan.prompt';
 import { buildProseSystemPrompt, buildProsePrompt } from '../prompts/prose.prompt';
@@ -59,12 +66,15 @@ export class StoryGeneratorService {
   async generateStory(input: GenerateStoryInput): Promise<Story> {
     const ageBand = ageToAgeBand(input.childAge);
     const plan = await this.generatePlan(input);
-    // Appearance is image-only: the Plan never sees it (so a hair-bow can't
-    // become plot). We derive the visual characterProfile separately here and
-    // override the plan's placeholder before the Prose phase carries it forward.
-    if (input.protagonistMode === 'child' && input.appearance) {
-      plan.characterProfile = await this.deriveCharacterProfile(input);
-    }
+    // The hero's look never comes from the model's free-text characterProfile
+    // (#360): it is rendered from the structured appearance (no name, no prose)
+    // or, in child mode with a parent-given appearance, derived in an isolated
+    // step so a hair-bow can't become plot. Prose carries it forward verbatim.
+    const heroLook = ensureHeroGender(plan.visualBible.hero.appearance, input.gender);
+    plan.characterProfile =
+      input.protagonistMode === 'child' && input.appearance
+        ? await this.deriveCharacterProfile(input)
+        : renderAppearance(heroLook);
     const prose = await this.generateProse(plan, input, ageBand);
     // Merge the Visual Bible + per-page scenes into the persisted Story in code
     // (#348) — the prose model is never asked to reproduce them.
@@ -167,12 +177,11 @@ export class StoryGeneratorService {
         `Book ${bookId}: prose emitted ${story.pages.length} pages, plan has ${plan.pages.length}; scenes align by index`,
       );
     }
-    const visualBible = {
-      ...plan.visualBible,
-      hero: { ...plan.visualBible.hero, descriptor: plan.characterProfile },
-    };
+    const visualBible = toStoryBible(plan.visualBible, plan.characterProfile);
     const pages = story.pages.map((page, i) => ({ ...page, scene: plan.pages[i]?.scene }));
-    return { ...story, visualBible, pages };
+    // The hero look is the plan's (rendered / derived) profile, set in code —
+    // never the prose model's copy of it (#360).
+    return { ...story, characterProfile: plan.characterProfile, visualBible, pages };
   }
 
   private async generateProse(

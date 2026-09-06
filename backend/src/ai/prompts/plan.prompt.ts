@@ -54,16 +54,20 @@ Hard rules:
 10. VISUAL BIBLE. Decide the book's visual world ONCE, so every page can be drawn
    from the same fixed description:
    • locations (1–3): each with a lowercase-slug id and an ENGLISH descriptor —
-     the key object, its materials/colours, what surrounds it.
+     ONE key object in the singular (one slide, one bench), its materials and
+     colours, what surrounds it. Never list several of the same thing.
+   • hero: name + a structured English appearance — kind ("6-year-old girl":
+     age AND boy/girl when the gender is given), skin tone, hair (colour +
+     style), outfit WITH colours, one distinctive detail. Every field is
+     required; do NOT put the name inside any field.
    • cast (0–3): every recurring person or animal BESIDES the hero (a younger
-     brother, a kitten). Each gets an id, the Russian name used in the story, a
-     short Russian role, and a FIXED English descriptor (kind/age + hair + outfit
-     + one distinctive detail).
+     brother, mum, a kitten). Each gets an id, the Russian name used in the
+     story, a short Russian role, and the same structured appearance (for an
+     animal: fur colour as skin, fur pattern as hair, "no clothes" as outfit).
    • props (0–4): key objects, id + English descriptor.
    • atmosphere: one English line — season, light, palette mood.
    All descriptors are ENGLISH, concrete and PHYSICAL, and are reused VERBATIM on
-   every page, so nothing drifts. Set the hero descriptor to a fitting
-   placeholder (it is refined downstream). Then give EACH page a scene: which
+   every page, so nothing drifts. Then give EACH page a scene: which
    location (locationId), which cast are present (castIds), which props (propIds),
    whether the hero is on the page (heroOnPage — true on cover and final),
    timeOfDay and framing. Do NOT describe actions in the bible — the page intent
@@ -94,11 +98,11 @@ const buildProtagonistBlock = (opts: BuildStoryPromptOptions): string => {
     // into the story/title.
     return `Protagonist: the child named "${opts.childName}" (age ${opts.childAge}, gender ${gender}).
 heroName MUST be "${opts.childName}".
-Set characterProfile to a fitting, age-appropriate English visual description.`;
+Give the hero a fitting, age-appropriate structured appearance in visualBible.hero; set characterProfile to the same look in one short English line.`;
   }
   return `Protagonist: an INVENTED character — NOT the child, do NOT use the child's real name.
 Invent a fitting name and appearance for an age-${opts.childAge} ${gender === 'unspecified' ? 'child' : gender} character.
-Set characterProfile to the invented character's English visual description.`;
+Put the look in visualBible.hero (structured appearance) and set characterProfile to the same look in one short English line.`;
 };
 
 /**
