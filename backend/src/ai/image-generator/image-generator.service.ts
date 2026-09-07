@@ -1,4 +1,4 @@
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { startActiveObservation } from '@langfuse/tracing';
 import { createOpenAI } from '@ai-sdk/openai';
@@ -81,8 +81,11 @@ export class ImageGeneratorService {
     private readonly s3: S3Service,
     config: ConfigService,
     private readonly referenceSheets: ReferenceSheetsService,
-    // Optional so scripts/tests without a judge (or a DB) still construct the service.
-    @Optional() judge: ImageJudgeService | null = null,
+    // Optional so scripts/tests without a judge (or a DB) still construct the
+    // service. The explicit token matters: with a union type Nest reflects
+    // `Object`, cannot resolve the provider, and @Optional silently injects
+    // null — the judge was OFF in the first real run despite the flag.
+    @Optional() @Inject(ImageJudgeService) judge: ImageJudgeService | null = null,
   ) {
     this.textModel = createOpenAI({ apiKey: config.getOrThrow<string>('OPENAI_API_KEY') })(
       GENERATION_MODEL,

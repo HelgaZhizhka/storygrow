@@ -43,6 +43,7 @@ import { Test } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { ImageGeneratorService } from './image-generator.service';
 import { ReferenceSheetsService } from './reference-sheets.service';
+import { ImageJudgeService } from './image-judge.service';
 import { ImageContentPolicyError } from './errors';
 import { S3Service } from '../../s3/s3.service';
 import type { Story } from '../schemas';
@@ -386,5 +387,34 @@ describe('ImageGeneratorService', () => {
       expect(pageCalls[1].prompt.images).toHaveLength(2);
       expect(pageCalls[1].prompt.text).toContain('previous scene');
     });
+  });
+});
+
+describe('ImageJudgeService wiring (DI)', () => {
+  it('receives the judge through Nest DI and judges bible pages', async () => {
+    mockGoogleImage.mockClear();
+    mockGenerateImage.mockResolvedValue({ image: { uint8Array: new Uint8Array([1]) } });
+    const judge = {
+      enabled: true,
+      maxRetries: 0,
+      judge: jest.fn().mockResolvedValue({ passed: true, failures: [] }),
+    };
+    const module = await Test.createTestingModule({
+      providers: [
+        ImageGeneratorService,
+        ReferenceSheetsService,
+        { provide: ImageJudgeService, useValue: judge },
+        { provide: S3Service, useValue: mockS3 },
+        { provide: ConfigService, useValue: makeMockConfig('gemini', 'off') },
+      ],
+    }).compile();
+    const service = module.get(ImageGeneratorService);
+    const story: Story = {
+      ...makeStory({ pageCount: 2 }),
+      visualBible: visualBibleFixture(),
+      pages: makeStory({ pageCount: 2 }).pages.map((p) => ({ ...p, scene: sceneFixture() })),
+    };
+    await service.generate({ story, bookId: 'b-di', artStyle: 'watercolor' });
+    expect(judge.judge).toHaveBeenCalledTimes(2);
   });
 });

@@ -1354,3 +1354,18 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Follow-ups:** `ImageEval` on the admin dashboard; consolidated image-pipeline document once the image work closes (owner request).
 
 **Blockers:** none.
+
+---
+
+## 2026-09-07 — fix(ai): ImageJudgeService was never injected — judge silently off (#364) + first real book with ImageEval rows
+
+**Found by doing the DoD, not by tests:** started the backend locally in e2e mode (`test-login`) to generate a real book through the real API and saw `Image provider: xai …; judge off` in the log although `IMAGE_EVAL` defaults to on. Cause: the constructor parameter was typed `ImageJudgeService | null`, Nest reflects a union as `Object`, cannot resolve the provider, and `@Optional()` silently injected null. Production had the judge off since #362 merged. Unit tests passed because they never exercised Nest DI for that parameter.
+
+**Done:**
+- Explicit `@Optional() @Inject(ImageJudgeService)` on the parameter; a DI-wiring test compiles a Nest testing module with the judge provider and asserts the judge is called per page.
+- **First real book with the full image pipeline** (local stack: Postgres/Redis/MinIO/LangFuse via docker compose, backend dev in e2e mode, Grok + Gemini judge): child "Соня" (5, girl), goal «Забота о младших», custom flow. Result: `ready` in ~2.5 min, 7 pages, title «Соня и мост из песочных куличей»; hero `5-year-old girl, fair skin, long blonde hair, wearing yellow dress with polka dots, small lavender backpack`, cast brother `3-year-old boy, fair skin, short brown hair, wearing blue overalls, toy truck` (structured appearance, #360); 1 portrait + 3 sheets; **7 `ImageEval` rows, all PASS on attempt 1**; 1 `StoryEval` row (passed, registerMatch 9); LangFuse: `image-judge.page-1…7` spans + 7 `image-judge:ai.generateObject` under the `image-generation` trace. Looked at all 7 pages: hero, brother, living room and backyard identical across pages, no text, no artefacts.
+- Live check of `gemini-3.6-flash` on the new Google key: one structured vision call answered correctly.
+
+**Operational (product owner):** Railway does NOT apply migrations automatically — run `node_modules/.bin/prisma migrate deploy` in the `storygrow-api` container (or as a pre-deploy command) before the next prod book: two migrations are pending there (`Book.referenceImageKeys` from #355, `ImageEval` from #362). Without the first, prod generation fails at the `referenceImageKeys` update.
+
+**Blockers:** none.
