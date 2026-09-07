@@ -1,4 +1,4 @@
-import type { PlanPage, Scene, StoryPlan } from '../schemas';
+import type { Appearance, PlanPage, Scene, StoryPlan } from '../schemas';
 
 export interface NormalizeResult {
   plan: StoryPlan;
@@ -122,4 +122,22 @@ export const normalizeVisualBible = (plan: StoryPlan): NormalizeResult => {
     return result.page;
   });
   return { plan: { ...plan, pages }, repairs };
+};
+
+const GENDER_WORD: Record<string, string> = { male: 'boy', female: 'girl' };
+const GENDERED = /\b(boy|girl|man|woman|male|female|son|daughter)\b/i;
+
+/**
+ * The hero's `kind` must carry the child's gender when it is known (#360):
+ * the model wrote "3-year-old child" for a girl and the portrait came out a
+ * boy while the text said "she". Deterministic: replace "child"/"kid" with the
+ * gender word, or append it. 'other' / unknown leaves the kind untouched.
+ */
+export const ensureHeroGender = (appearance: Appearance, gender?: string): Appearance => {
+  const word = gender ? GENDER_WORD[gender] : undefined;
+  if (!word || GENDERED.test(appearance.kind)) return appearance;
+  const kind = /\b(child|kid|toddler|preschooler)\b/i.test(appearance.kind)
+    ? appearance.kind.replace(/\b(child|kid|toddler|preschooler)\b/i, word)
+    : `${appearance.kind}, a ${word}`;
+  return { ...appearance, kind };
 };

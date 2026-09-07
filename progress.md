@@ -1338,3 +1338,19 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Follow-ups:** show `ImageEval` on the admin dashboard; hero descriptor in the image prompt still the prose `characterProfile` (#360 area); the judge's retry uses the same prompt — a failure-aware nudge is a later experiment.
 
 **Blockers:** none.
+
+---
+
+## 2026-09-06 — feat(ai): structured appearance for hero and cast — outfit and skin tone can no longer be omitted (#360)
+
+**Done:**
+- The Plan now emits a structured `appearance` (`kind`, `skin`, `hair`, `outfit`, `detail`, all required) for the hero and every cast member instead of a free-text descriptor (`PlanVisualBibleSchema`); the story keeps the rendered `descriptor` (`VisualBibleSchema`, unchanged downstream). `renderAppearance` builds the descriptor in code, adding the noun the model tends to drop ("light" → "light skin"), and `toStoryBible` renders the whole plan bible at merge time.
+- The hero's `characterProfile` is now set in code after the Plan — rendered from the structured appearance (no name, no prose sentence, no 160-char cut) or derived from the parent's appearance / photo — and the merged story takes it from the plan, never from the prose model's copy. This closes the "hero descriptor is the prose profile with the name" follow-up from #356.
+- Plan prompt rule 10 rewritten for structured appearance; locations must name ONE key object in the singular (the plural "slides" drew three slides).
+- Live check (`eval:batch --only=Забота`): hero, mum and a bunny all came back with skin/fur, hair, outfit and a detail; descriptors read cleanly in the prompt. Rendered the regenerated story on Grok with the **portrait only** (no sheets, judge off) — the issue's acceptance test: the little brother kept his green onesie, blond curls and blanket on **8/8 pages from text alone** (before #360 the same story re-dressed him every page).
+- Found and fixed one more omission the same way: the model wrote the hero's `kind` as "3-year-old child" for a girl and the portrait came out a boy while the text said "she". `ensureHeroGender` now puts the known gender (`male`/`female`) into `kind` deterministically after the Plan; the prompt asks for it too.
+- 6 new unit tests (renderer, story bible rendering, generator merge); fixtures split into plan (`planVisualBibleFixture`, `appearanceFixture`) and story shapes.
+
+**Follow-ups:** `ImageEval` on the admin dashboard; consolidated image-pipeline document once the image work closes (owner request).
+
+**Blockers:** none.

@@ -87,7 +87,10 @@ export const IMAGE_SIZE_TO_ASPECT_RATIO: Record<ImageSize, '1:1' | '2:3' | '3:2'
 export const MAX_CAST = 3;
 export const MAX_LOCATIONS = 3;
 export const MAX_PROPS = 4;
-export const DESCRIPTOR_MAX_CHARS = 160;
+// A story descriptor is RENDERED from structured appearance fields (#360), so
+// it may be longer than a free-text one; each appearance field is capped.
+export const DESCRIPTOR_MAX_CHARS = 320;
+export const APPEARANCE_FIELD_MAX_CHARS = 60;
 // The per-page ACTION line (what the characters DO) — appearance and place come
 // from the bible, so the action itself is short.
 export const ACTION_MAX_CHARS = 240;

@@ -1,7 +1,11 @@
 import { buildProseSystemPrompt, buildProsePrompt } from './prose.prompt';
 import type { BuildStoryPromptOptions } from './story-generator.prompt';
 import type { StoryPlan } from '../schemas';
-import { sceneFixture, visualBibleFixture } from '../schemas/__fixtures__/visual-bible.fixture';
+import {
+  sceneFixture,
+  planVisualBibleFixture,
+  appearanceFixture,
+} from '../schemas/__fixtures__/visual-bible.fixture';
 
 const plan: StoryPlan = {
   title: 'Катя и горка',
@@ -9,7 +13,7 @@ const plan: StoryPlan = {
   characterProfile: '3-year-old girl, brown hair',
   lesson: 'Пробуй, даже если страшно',
   discussionQuestions: ['1?', '2?', '3?', '4?', '5?'],
-  visualBible: visualBibleFixture(),
+  visualBible: planVisualBibleFixture(),
   pages: [
     { template: 'cover', beat: 'Завязка', intent: 'Катя у горки', scene: sceneFixture() },
     { template: 'image-top', beat: 'Трудность', intent: 'Катя боится', scene: sceneFixture() },
@@ -78,7 +82,14 @@ describe('buildProsePrompt — scene context (#348)', () => {
       ...plan,
       visualBible: {
         ...plan.visualBible,
-        cast: [{ id: 'brother', name: 'братик', role: 'младший брат', descriptor: 'toddler boy' }],
+        cast: [
+          {
+            id: 'brother',
+            name: 'братик',
+            role: 'младший брат',
+            appearance: appearanceFixture({ kind: 'toddler boy' }),
+          },
+        ],
         locations: [{ id: 'home', name: 'двор', descriptor: 'a yard' }],
       },
       pages: plan.pages.map((p) => ({

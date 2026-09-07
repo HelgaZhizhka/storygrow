@@ -5,7 +5,7 @@ import {
   type AgeBand,
   type TemplateName,
 } from '../../pdf/page-templates/page-templates.config';
-import { DISCUSSION_QUESTIONS_COUNT, PAGE_COUNT_BY_BAND } from '../ai.config';
+import { DESCRIPTOR_MAX_CHARS, DISCUSSION_QUESTIONS_COUNT, PAGE_COUNT_BY_BAND } from '../ai.config';
 import { SceneSchema, VisualBibleSchema } from './visual-bible.schema';
 
 /**
@@ -57,7 +57,7 @@ const baseProseSchema = z.object({
    * Visual description of the protagonist in English for the image generator,
    * kept as the existing consistency anchor and the photo-flow discriminator.
    */
-  characterProfile: z.string().min(1).max(120),
+  characterProfile: z.string().min(1).max(DESCRIPTOR_MAX_CHARS),
 
   /** Exactly five open-ended questions for parent–child discussion. */
   discussionQuestions: z.array(z.string().min(1)).length(DISCUSSION_QUESTIONS_COUNT),

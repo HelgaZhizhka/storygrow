@@ -5,8 +5,8 @@ import {
   templatesForAge,
   type TemplateName,
 } from '../../pdf/page-templates/page-templates.config';
-import { DISCUSSION_QUESTIONS_COUNT, PAGE_COUNT_BY_BAND } from '../ai.config';
-import { SceneSchema, VisualBibleSchema } from './visual-bible.schema';
+import { DESCRIPTOR_MAX_CHARS, DISCUSSION_QUESTIONS_COUNT, PAGE_COUNT_BY_BAND } from '../ai.config';
+import { PlanVisualBibleSchema, SceneSchema } from './visual-bible.schema';
 
 /**
  * StoryPlan — the first-class "bible" produced by the Plan phase (ADR-0005).
@@ -45,10 +45,12 @@ export const StoryPlanSchema = z.object({
   heroName: z.string().min(1),
 
   /**
-   * English visual description of the protagonist (the image-consistency anchor),
-   * prepended to every illustration prompt downstream. Carried into the Story.
+   * English visual description of the protagonist (the image-consistency anchor).
+   * Since #360 this is OVERWRITTEN in code right after the Plan: rendered from
+   * `visualBible.hero.appearance` (no name, no prose), or derived from the
+   * parent's appearance / photo. The model's own value is a placeholder.
    */
-  characterProfile: z.string().min(1).max(120),
+  characterProfile: z.string().min(1).max(DESCRIPTOR_MAX_CHARS),
 
   /** One short Russian sentence — the moral, stated only on the final page. */
   lesson: z.string().min(1),
@@ -57,12 +59,13 @@ export const StoryPlanSchema = z.object({
   discussionQuestions: z.array(z.string().min(1)).length(DISCUSSION_QUESTIONS_COUNT),
 
   /**
-   * The book's visual world (#348) — hero, cast, locations, props, atmosphere.
-   * Decided here so every page renders from ONE fixed description. The hero
-   * descriptor is a placeholder in child mode (overridden downstream from the
-   * parent's appearance / photo), exactly like `characterProfile`.
+   * The book's visual world (#348) — hero, cast, locations, props, atmosphere,
+   * with STRUCTURED appearance for every person/animal (#360). Decided here so
+   * every page renders from ONE fixed description; descriptors are rendered in
+   * code. The hero appearance is overridden downstream in child mode when the
+   * parent gave an appearance / photo.
    */
-  visualBible: VisualBibleSchema,
+  visualBible: PlanVisualBibleSchema,
 
   /**
    * Ordered page layout: first page 'cover', last page 'final', content pages in
