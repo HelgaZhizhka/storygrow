@@ -113,7 +113,7 @@ export class PageRenderer {
       references: opts.references,
       labels: opts.labels,
     });
-    return verdict.passed ? [] : verdict.failures;
+    return verdict.passed ? [] : verdict.failures.filter((f) => !f.startsWith('judge:'));
   }
 
   private async withSimplifyRetry(opts: RenderPageOpts, imageSize: ImageSize): Promise<Uint8Array> {

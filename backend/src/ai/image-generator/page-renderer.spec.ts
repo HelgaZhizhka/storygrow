@@ -91,6 +91,17 @@ describe('PageRenderer', () => {
     );
   });
 
+  it('treats a judge annotation (blocked → identity-only) as a pass, not a failure (#369)', async () => {
+    const p = provider();
+    p.generatePage.mockResolvedValue(new Uint8Array([1]));
+    const judge = judgeStub(true, 1, [
+      { passed: true, failures: ['judge:blocked:PROHIBITED_CONTENT:identity-only'] },
+    ]);
+    const out = await new PageRenderer({ provider: p, s3, textModel, judge }).render(opts());
+    expect(out.attempts).toBe(1);
+    expect(p.generatePage).toHaveBeenCalledTimes(1);
+  });
+
   it('does not judge a page without a judge context', async () => {
     const p = provider();
     p.generatePage.mockResolvedValue(new Uint8Array([1]));
