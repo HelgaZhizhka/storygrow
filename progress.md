@@ -1369,3 +1369,19 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Operational (product owner):** Railway does NOT apply migrations automatically — run `node_modules/.bin/prisma migrate deploy` in the `storygrow-api` container (or as a pre-deploy command) before the next prod book: two migrations are pending there (`Book.referenceImageKeys` from #355, `ImageEval` from #362). Without the first, prod generation fails at the `referenceImageKeys` update.
 
 **Blockers:** none.
+
+---
+
+## 2026-09-11 — docs(process): independent image-pipeline review recorded; judge calibration corrected (#368)
+
+**Done (wave 0 of acting on the review):**
+- Saved the 2026-09-09 independent architecture review as `docs/process/image-pipeline-review-2026-09-09.md` (English): 24 decisions in four blocks (A cleanup, B contract, C ops, D docs) with risk, size and order, plus the owner's decisions so far (wave 0 first; OpenAI *text* models stay, only the image provider is a deletion candidate; B8 deferred until B7+B9 are measured; LangFuse in prod is a separate decision).
+- Re-verified the review's key claims against the code: `timeOfDay`/`framing` have no consumer; Prose sees `characterProfile`; the `images_failed` retry re-buys portrait and sheets; the judge is the backend's only `@Optional` dependency; **the judge calibration counted six `judge:unavailable` rows as PASS**.
+- Corrected the calibration report: false-fail rate is 0/59 judged good pages, not 0/65; six pages were never judged. `eval:image-judge` now reports an unavailable judge as ERROR and excludes it from the matrix instead of counting it as a pass.
+- Re-ran the six pages from MinIO (old scratchpad was gone) — **deterministic** `PROHIBITED_CONTENT` block from Gemini on the judge's task text, surfaced by the AI SDK as "Invalid JSON response". Text-only ablation: the "Hero expected on the page: <descriptor>" line combined with those pages' action text trips the filter; every image alone passes; the same hero line on page 2 passes. In production such pages pass silently with no verdict.
+
+**Decisions:** the judge default stays on (the six pages are a filter blind spot, not false fails). Fix designed in #369: drop the hero descriptor line when the portrait is passed, record a block as its own outcome, recalibrate on the fixed text. No production code changed in this wave.
+
+**Next:** owner decides on waves A (cleanup), B (contract), C/D; #369 belongs to wave A (judge hardening, review item A3).
+
+**Blockers:** none.

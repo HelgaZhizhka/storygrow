@@ -1,5 +1,14 @@
 # Image judge calibration — 2026-09-06 (#358)
 
+> **Correction (2026-09-11, #368):** the v3 table below counted six `judge:unavailable` rows as
+> PASS, so "0 false fails on 65 good pages" was measured on **59**. Re-running those six pages
+> reproduces the failure deterministically: Gemini blocks the request with
+> `promptFeedback.blockReason: PROHIBITED_CONTENT` (its non-configurable filter), triggered by the
+> "Hero expected on the page: …" line combined with those pages' action text — not by any image
+> (ablation in #369). Corrected v3 numbers: **recall 10/13, false fails 0/59, 6 pages not judged.**
+> The calibration runner now reports an unavailable judge as ERROR and excludes it from the matrix.
+> A full re-calibration with the fixed task text is part of #369.
+
 How the vision judge (`ImageJudgeService`: `gemini-3.6-flash` + `generateObject`, boolean
 criteria, see `CONTEXT.md` → Image Eval) was calibrated before it was switched on by default.
 Runner: `pnpm --filter backend eval:image-judge --manifest=<json> --out=<md>` over a labelled
@@ -23,8 +32,8 @@ every page) is not a per-page judgement; it is prevented upstream by the referen
 | Version | Prompt change | Recall (bad caught) | False-fail rate (good pages) | Precision of a FAIL |
 |---|---|---|---|---|
 | v1 | "be literal about actions" | 8/10 (80%)* | 9/68 (13%)* | 47% |
-| v2 | sceneMatch = the MAIN event; framing words, gaze, hand placement, minor props never fail a page | 10/13 (77%) | 0/65 (0%) | 100% |
-| v3 (shipped) | wrongSurface spelled out: standing on a chute, inside / fused with equipment, floating | 10/13 (77%) | 0/65 (0%) | 100% |
+| v2 | sceneMatch = the MAIN event; framing words, gaze, hand placement, minor props never fail a page | 10/13 (77%) | 0/59 (0%)* | 100% |
+| v3 (shipped) | wrongSurface spelled out: standing on a chute, inside / fused with equipment, floating | 10/13 (77%) | 0/59 (0%)* | 100% |
 
 \* v1 was scored against a manifest with three wrong labels: the `lean3` samples were marked good,
 but they carry an "Alice" name badge and the child on the chute — the judge was right and the
@@ -40,13 +49,15 @@ recall 11/13, false fails 6/65 (9%), all six of them over-literal readings of st
 - One "sitting on the ladder" render (`calib/02`) passed in v3 after failing in v2 — a stochastic
   borderline (v2/v3 differ only in the wrongSurface wording).
 
-Nothing on the good pages was failed in v2 or v3, so a retry is never spent on a page a human
+\* 6 of the 65 good pages were never judged (see the correction at the top). Nothing on the 59
+judged good pages was failed in v2 or v3, so a retry is never spent on a page a human
 would have kept — the cost of the gate is one vision call per page (~$0.002) plus one extra image
 for the pages that actually fail.
 
 ## Decision
 
-`IMAGE_EVAL` defaults to **on** with `IMAGE_EVAL_MAX_RETRIES=1`: a failing page is re-rendered
+`IMAGE_EVAL` defaults to **on** with `IMAGE_EVAL_MAX_RETRIES=1` (decision taken on the uncorrected
+numbers; it stands, because the six unjudged pages are a blind spot of the filter, not false fails): a failing page is re-rendered
 once with the same prompt (fresh sample); the attempt with fewer failures ships; every attempt
 writes an `ImageEval` row and an `image-judge` LangFuse span. Soft gate — a judge false negative
 never blocks a book.
@@ -55,13 +66,13 @@ never blocks a book.
 
 | id | expected | judge | failures | reasoning |
 |---|---|---|---|---|
-| new/chestnost-6-child/p1 | pass | pass | judge:unavailable |  |
+| new/chestnost-6-child/p1 | pass | ERROR (blocked) | judge:unavailable | Gemini PROHIBITED_CONTENT on the task text — see correction |
 | new/chestnost-6-child/p2 | pass | pass |  | The illustration correctly depicts Alisa pointing at a patch of soil while Katya kneels in surprise. Both characters align well with their reference portraits in appearance and outfit, and the garden  |
 | new/chestnost-6-child/p3 | pass | pass |  | Alisa and Katya closely match their reference designs in the depicted garden setting. Alisa bends near the ground while Katya points, capturing the scene action accurately without visual artifacts. |
 | new/chestnost-6-child/p4 | pass | pass |  | The illustration faithfully depicts the described scene, accurately matching the character designs for Alisa and Katya as well as the garden location. |
-| new/chestnost-6-child/p5 | pass | pass | judge:unavailable |  |
+| new/chestnost-6-child/p5 | pass | ERROR (blocked) | judge:unavailable | Gemini PROHIBITED_CONTENT on the task text — see correction |
 | new/chestnost-6-child/p6 | pass | pass |  | The illustration accurately depicts the characters, garden setting, and required action while maintaining visual consistency with all reference images. |
-| new/chestnost-6-child/p7 | pass | pass | judge:unavailable |  |
+| new/chestnost-6-child/p7 | pass | ERROR (blocked) | judge:unavailable | Gemini PROHIBITED_CONTENT on the task text — see correction |
 | new/delitsya-s-drugimi-6-observer/p1 | pass | pass |  | The illustration accurately depicts Misha lifting a red toy car in the specified playground setting, closely matching both hero and location reference images without visible visual artefacts. |
 | new/delitsya-s-drugimi-6-observer/p2 | pass | pass |  | The illustration matches all references and page action descriptions accurately, featuring correct character appearances, central staging, and appropriate location details without visual artifacts. |
 | new/delitsya-s-drugimi-6-observer/p3 | pass | pass |  | The illustration matches all reference portraits for Misha, Sasha, and Anya, as well as the playground location. The main action of inviting Misha while he holds his toy car is correctly depicted with |
@@ -98,10 +109,10 @@ never blocks a book.
 | old/zabota-o-mladshih-3-child/p3 | pass | pass |  | The illustration accurately depicts Alisa kneeling beside Artyom as he rubs his eyes in a cozy playroom. Alisa matches the hero portrait's features and colorful dress perfectly, appearing only once. A |
 | old/zabota-o-mladshih-3-child/p4 | pass | pass |  | The illustration matches the hero portrait consistently in dress, hair, and features. Artyom matches his description with blond curls and big brown eyes. The main scene action of Alisa reaching toward |
 | old/zabota-o-mladshih-3-child/p5 | pass | pass |  | The illustration perfectly matches the hero portrait and description of both children, showing Alisa handing the teddy bear to Artyom in a cozy playroom. There are no visual artefacts or safety issues |
-| old/chestnost-6-child/p1 | pass | pass | judge:unavailable |  |
+| old/chestnost-6-child/p1 | pass | ERROR (blocked) | judge:unavailable | Gemini PROHIBITED_CONTENT on the task text — see correction |
 | old/chestnost-6-child/p3 | pass | pass |  | The illustration depicts Alisa bending down as seeds fall, with Katya pointing towards them in a garden setting. Both characters accurately match their descriptions and references. |
-| old/chestnost-6-child/p5 | pass | pass | judge:unavailable |  |
-| old/chestnost-6-child/p7 | pass | pass | judge:unavailable |  |
+| old/chestnost-6-child/p5 | pass | ERROR (blocked) | judge:unavailable | Gemini PROHIBITED_CONTENT on the task text — see correction |
+| old/chestnost-6-child/p7 | pass | ERROR (blocked) | judge:unavailable | Gemini PROHIBITED_CONTENT on the task text — see correction |
 | old/delitsya-s-drugimi-6-observer/p2 | pass | pass |  | The illustration accurately depicts Misha holding a toy car with Sasha and Anya nearby in a playground setting. Character appearances and background elements match all descriptions and reference portr |
 | old/delitsya-s-drugimi-6-observer/p4 | fail | FAIL | heroMatch | Misha's appearance differs from the reference portrait as he wears a blue t-shirt instead of red jumper and overalls, and lacks curly hair. The main scene action, cast descriptions, and playground loc |
 | old/smelost-6-child/p1 | pass | pass |  | The illustration perfectly matches the reference character and scene description. Alisa and her mother are sitting together on a bench in the foreground, with the playground slide visible in the backg |
