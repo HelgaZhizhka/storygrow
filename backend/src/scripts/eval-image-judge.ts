@@ -36,6 +36,8 @@ interface Outcome {
   passed: boolean;
   failures: string[];
   reasoning: string;
+  /** The judge itself failed (model error) — no verdict; excluded from the matrix. */
+  unavailable: boolean;
 }
 
 const flag = (name: string): string | undefined =>
@@ -82,10 +84,15 @@ const judgeEntry = async (
     passed: verdict.passed,
     failures: verdict.failures,
     reasoning: row?.reasoning ?? '',
+    unavailable: verdict.failures.includes('judge:unavailable'),
   };
 };
 
-const report = (outcomes: Outcome[]): string => {
+// An unavailable judge is NOT a pass: the production soft gate lets the page
+// through, but a calibration must not count it as a correct verdict.
+const report = (all: Outcome[]): string => {
+  const outcomes = all.filter((o) => !o.unavailable);
+  const errors = all.length - outcomes.length;
   const tp = outcomes.filter((o) => o.expected === 'fail' && !o.passed).length;
   const fn = outcomes.filter((o) => o.expected === 'fail' && o.passed).length;
   const fp = outcomes.filter((o) => o.expected === 'pass' && !o.passed).length;
@@ -97,14 +104,15 @@ const report = (outcomes: Outcome[]): string => {
     `| labelled FAIL | ${tp} | ${fn} |`,
     `| labelled PASS | ${fp} | ${tn} |`,
     ``,
-    `Recall on bad pages: ${pct(tp, tp + fn)} · Precision of a FAIL: ${pct(tp, tp + fp)} · False-fail rate on good pages: ${pct(fp, fp + tn)} (n=${outcomes.length})`,
+    `Recall on bad pages: ${pct(tp, tp + fn)} · Precision of a FAIL: ${pct(tp, tp + fp)} · False-fail rate on good pages: ${pct(fp, fp + tn)} (n=${outcomes.length} judged${errors > 0 ? `, ${errors} judge errors excluded — re-run them` : ''})`,
     ``,
     `| id | expected | judge | failures | reasoning |`,
     `|---|---|---|---|---|`,
-    ...outcomes.map(
-      (o) =>
-        `| ${o.id} | ${o.expected} | ${o.passed ? 'pass' : 'FAIL'}${(o.expected === 'pass') === o.passed ? '' : ' ✗'} | ${o.failures.join(', ')} | ${o.reasoning.replace(/\|/g, '/').slice(0, 200)} |`,
-    ),
+    ...all.map((o) => {
+      const verdict = o.unavailable ? 'ERROR' : o.passed ? 'pass' : 'FAIL';
+      const mark = o.unavailable || (o.expected === 'pass') === o.passed ? '' : ' ✗';
+      return `| ${o.id} | ${o.expected} | ${verdict}${mark} | ${o.failures.join(', ')} | ${o.reasoning.replace(/\|/g, '/').slice(0, 200)} |`;
+    }),
   ];
   return lines.join('\n');
 };
@@ -123,7 +131,8 @@ const main = async (): Promise<void> => {
   for (const entry of entries) {
     const o = await judgeEntry(judge, sink, entry, base);
     outcomes.push(o);
-    console.log(`${o.passed ? 'pass' : 'FAIL'}  (${o.expected})  ${o.id}  ${o.failures.join(',')}`);
+    const verdict = o.unavailable ? 'ERROR' : o.passed ? 'pass' : 'FAIL';
+    console.log(`${verdict}  (${o.expected})  ${o.id}  ${o.failures.join(',')}`);
   }
   const md = report(outcomes);
   const out = flag('out');
