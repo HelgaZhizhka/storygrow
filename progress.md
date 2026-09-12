@@ -1385,3 +1385,19 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Next:** owner decides on waves A (cleanup), B (contract), C/D; #369 belongs to wave A (judge hardening, review item A3).
 
 **Blockers:** none.
+
+---
+
+## 2026-09-11 — fix(ai): image judge no longer skips pages blocked by Gemini's safety filter (#369, review wave A)
+
+**Done:**
+- Judge task text: with the hero portrait passed as a reference the child is no longer described in text (the descriptor line + innocent page texts tripped Gemini's `PROHIBITED_CONTENT`); the descriptor stays only when no portrait exists.
+- Safety block → **identity-only retry** (no action text, `sceneMatch` null) so hero/cast/location/artefacts are still checked; verdict annotated `judge:blocked:<reason>:identity-only`. Any no-verdict case now **writes an `ImageEval` row** (`judge:blocked:<reason>` / `judge:unavailable`) instead of passing silently. `PageRenderer` never counts a `judge:` annotation as a failure.
+- `castConsistency` criterion spelled out (hair colour, hair length, outfit) — a text-only brown-haired «мама» vs "short blonde hair" was passed 3/3 before, failed 3/3 after.
+- Calibration set rebuilt into a durable folder (`backend/output/calibration/`, README inside) from disk + MinIO: 52 pages, 3 bad. Final run: **3/3 bad caught, 0/49 false fails, 0 unjudged.** Honest losses: the 21 ladder-page samples were only in a session scratchpad (chute recall not re-measured); the old zabota pages were overwritten in MinIO — five stale pairs looked like "false fails" until I noticed the judge was describing a different story; one label from 2026-09-06 corrected (the judge was right).
+- `eval:image-judge` treats an identity-only verdict as judged; `CONTEXT.md` Image Eval entry and the calibration report (v4 section) updated.
+- 6 new unit tests; `./init.sh` green.
+
+**Decision:** judge stays on by default; `IMAGE_EVAL_MAX_RETRIES` semantics unchanged. Review item A3 is half done (rows on every outcome); "judge as a required dependency + module test" is the next A3 PR.
+
+**Blockers:** none.

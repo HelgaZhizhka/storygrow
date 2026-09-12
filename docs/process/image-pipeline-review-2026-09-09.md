@@ -169,8 +169,10 @@ not notice the judge being dropped from the module.
 - **(Added 2026-09-11 while doing wave 0.)** The six `judge:unavailable` calibration rows are
   deterministic: Gemini blocks the judge request with `PROHIBITED_CONTENT` when the "Hero expected on
   the page" line meets certain innocent page texts; the production judge lets such pages through
-  with no verdict. Tracked as #369 (drop the hero line when a portrait is passed; record a block as
-  its own outcome; recalibrate).
+  with no verdict. Fixed in #369 (2026-09-11): hero line dropped when a portrait is passed,
+  identity-only retry after a block, every no-verdict case writes a row; recalibrated on the durable
+  52-page set — 3/3 bad caught, 0/49 false fails, 0 unjudged. This is review item A3's "a row on
+  `judge:unavailable`"; the "judge as a required dependency" half of A3 is still open.
 
 - **LangFuse is off in production.** Hard constraint 10 is not met for text or images — a separate
   track, but it must be known before any claim about tracing.

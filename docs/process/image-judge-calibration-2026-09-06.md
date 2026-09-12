@@ -62,6 +62,39 @@ once with the same prompt (fresh sample); the attempt with fewer failures ships;
 writes an `ImageEval` row and an `image-judge` LangFuse span. Soft gate — a judge false negative
 never blocks a book.
 
+## v4 — 2026-09-11 (#369): blind spot closed, recalibrated on the durable set
+
+**What changed in the judge**
+- When the hero portrait is passed as a reference the task no longer describes the child in text
+  ("Hero expected on the page: the child shown in the HERO portrait reference"); the descriptor
+  line is used only when there is no portrait. Text-only ablation had shown the descriptor line +
+  certain innocent page texts trip Gemini's non-configurable `PROHIBITED_CONTENT` filter.
+- A safety block is no longer silent: the judge retries once in **identity-only mode** (no action
+  text; `sceneMatch` becomes null) so hero, cast, location, proportions and artefacts are still
+  checked; the verdict is annotated `judge:blocked:<reason>:identity-only`. If that is blocked too,
+  or on any other judge error, a row is still written (`judge:blocked:<reason>` /
+  `judge:unavailable`) and the page passes the soft gate.
+- `castConsistency` now spells out what "matches" means for a text-only cast member: hair colour,
+  hair length and outfit included. Without it the judge let a brown-haired «мама» pass against
+  "short blonde hair" 3/3 times; with it, failed 3/3.
+
+**The set** now lives in `backend/output/calibration/` (gitignored, durable; see its README): the
+38 sheets-run pages with their real references, and 14 reviewed pages of the earlier portrait-only
+run — **52 pages, 3 labelled bad** (delitsya p4 generic boy; smelost-6 p2 mom inside the slide;
+chestnost p7 mama's hair colour, a label corrected on this pass — the judge was right, the
+2026-09-06 label was wrong). Two losses versus the original set, stated plainly: the 21 controlled
+ladder-page samples existed only in a session scratchpad and are gone, so **recall on "child on the
+chute" is not re-measured**; the five old zabota pages were overwritten in MinIO by a later render.
+
+| Run | Judged | Bad caught | False fails on good pages | Unjudged |
+|---|---|---|---|---|
+| v3 text on the 57-page rebuild | 56 | 2/2 | 0/54 (after removing 5 stale zabota pairs) | 1 (blocked by the action text) |
+| v4 final | **52** | **3/3** | **0/49** | **0** (1 via identity-only fallback) |
+
+Runner: `pnpm --filter backend eval:image-judge --manifest=output/calibration/manifest.json --out=<md>`;
+an unavailable/blocked judge is reported as ERROR and excluded from the matrix, an identity-only
+verdict counts as judged.
+
 ## Per-item verdicts (v3)
 
 | id | expected | judge | failures | reasoning |

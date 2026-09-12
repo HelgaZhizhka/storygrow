@@ -127,9 +127,57 @@ describe('ImageJudgeService', () => {
     expect(s.rows[0]).toMatchObject({ attempt: 2, passed: false, reasoning: 'fine' });
   });
 
-  it('never fails a book when the judge itself errors', async () => {
+  it('never fails a book when the judge itself errors, but records the row', async () => {
     mockGenerateObject.mockRejectedValue(new Error('503'));
-    const verdict = await new ImageJudgeService(config({}), sink()).judge(input());
+    const s = sink();
+    const verdict = await new ImageJudgeService(config({}), s).judge(input());
     expect(verdict).toEqual({ passed: true, failures: ['judge:unavailable'] });
+    expect(s.rows).toHaveLength(1);
+    expect(s.rows[0]).toMatchObject({ passed: true, failures: ['judge:unavailable'], scores: {} });
+  });
+
+  it('records a Gemini safety block as its own outcome (#369)', async () => {
+    const err = Object.assign(new Error('Invalid JSON response'), {
+      responseBody: '{"promptFeedback":{"blockReason":"PROHIBITED_CONTENT"},"usageMetadata":{}}',
+    });
+    mockGenerateObject.mockRejectedValue(err);
+    const s = sink();
+    const verdict = await new ImageJudgeService(config({}), s).judge(input());
+    expect(verdict).toEqual({ passed: true, failures: ['judge:blocked:PROHIBITED_CONTENT'] });
+    expect(s.rows[0].failures).toEqual(['judge:blocked:PROHIBITED_CONTENT']);
+  });
+
+  it('retries without the action after a safety block and records the identity-only verdict (#369)', async () => {
+    const blocked = Object.assign(new Error('Invalid JSON response'), {
+      responseBody: '{"promptFeedback":{"blockReason":"PROHIBITED_CONTENT"}}',
+    });
+    mockGenerateObject
+      .mockRejectedValueOnce(blocked)
+      .mockResolvedValueOnce({ object: verdictObject({ sceneMatch: null, heroMatch: false }) });
+    const s = sink();
+    const verdict = await new ImageJudgeService(config({}), s).judge(input());
+    expect(verdict).toEqual({
+      passed: false,
+      failures: ['heroMatch', 'judge:blocked:PROHIBITED_CONTENT:identity-only'],
+    });
+    const calls = mockGenerateObject.mock.calls as unknown[][];
+    const secondTask = (calls[1][0] as { messages: Array<{ content: Array<{ text?: string }> }> })
+      .messages[0].content[0].text;
+    expect(secondTask).toContain('No page action is given');
+    expect(secondTask).not.toContain('climbs the ladder');
+    expect(s.rows).toHaveLength(1);
+    expect(s.rows[0].failures).toContain('judge:blocked:PROHIBITED_CONTENT:identity-only');
+  });
+
+  it('does not describe the child in text when the portrait is among the references (#369)', async () => {
+    mockGenerateObject.mockResolvedValue({ object: verdictObject() });
+    await new ImageJudgeService(config({}), sink()).judge(input());
+    const [firstCall] = mockGenerateObject.mock.calls as unknown[][];
+    const call = firstCall[0] as {
+      messages: Array<{ content: Array<{ type: string; text?: string }> }>;
+    };
+    const task = call.messages[0].content[0].text ?? '';
+    expect(task).toContain('HERO portrait reference');
+    expect(task).not.toContain('girl, red hair');
   });
 });

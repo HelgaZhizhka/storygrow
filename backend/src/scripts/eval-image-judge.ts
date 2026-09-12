@@ -84,7 +84,10 @@ const judgeEntry = async (
     passed: verdict.passed,
     failures: verdict.failures,
     reasoning: row?.reasoning ?? '',
-    unavailable: verdict.failures.includes('judge:unavailable'),
+    // A verdict annotated ':identity-only' (fallback after a safety block) IS a verdict.
+    unavailable: verdict.failures.some(
+      (f) => f.startsWith('judge:') && !f.endsWith(':identity-only'),
+    ),
   };
 };
 

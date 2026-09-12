@@ -31,8 +31,8 @@ export const ImageJudgeSchema = z.object({
   heroMatch: z.boolean().nullable(),
   /** The hero appears exactly once. null when the hero is not expected on the page. */
   heroOnce: z.boolean().nullable(),
-  /** The page's described ACTION is what the picture shows (who does what, where). */
-  sceneMatch: z.boolean(),
+  /** The page's described ACTION is what the picture shows (who does what, where). null in the identity-only fallback (no action given). */
+  sceneMatch: z.boolean().nullable(),
   /** Each cast member matches their reference / description. null when no cast on the page. */
   castConsistency: z.boolean().nullable(),
   /** The place matches the location reference / description. null when none was given. */

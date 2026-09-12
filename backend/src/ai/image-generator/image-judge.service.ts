@@ -5,12 +5,18 @@ import { createGoogleGenerativeAI, type GoogleGenerativeAIProvider } from '@ai-s
 import { startActiveObservation } from '@langfuse/tracing';
 import type { ImageSize } from '../../pdf/page-templates/page-templates.config';
 import { GEMINI_VISION_MODEL, IMAGE_EVAL_MAX_RETRIES_DEFAULT } from '../ai.config';
-import { ImageJudgeSchema, imageVerdict, type ImageVerdict } from '../schemas';
+import {
+  ImageJudgeSchema,
+  imageVerdict,
+  type ImageJudgeResult,
+  type ImageVerdict,
+} from '../schemas';
 import {
   IMAGE_JUDGE_SYSTEM,
   buildImageJudgeTask,
   referenceCaption,
   type ImageJudgeContext,
+  type JudgeTaskMode,
 } from '../prompts/image-judge.prompt';
 import { createTelemetry } from '../telemetry';
 import { preflightImage } from './png-size';
@@ -80,32 +86,63 @@ export class ImageJudgeService {
       await this.persist(input, verdict, {}, null);
       return verdict;
     }
+    const full = await this.ask(input, 'full');
+    if (full.ok) return this.record(input, full.result, []);
+    // A safety block on the task text (#369): retry without the action, so the
+    // picture is still checked for identity, cast, location and artefacts.
+    const fallback = full.blockReason ? await this.ask(input, 'identity') : null;
+    if (fallback?.ok) {
+      return this.record(input, fallback.result, [
+        `judge:blocked:${full.blockReason}:identity-only`,
+      ]);
+    }
+    const reason = fallback?.blockReason ?? full.blockReason;
+    const failures = [reason ? `judge:blocked:${reason}` : 'judge:unavailable'];
+    this.logger.warn(`Judge gave no verdict for page ${input.pageNumber}: ${failures[0]}`);
+    await this.persist(input, { passed: true, failures }, {}, full.error);
+    return { passed: true, failures };
+  }
+
+  private async ask(input: JudgePageInput, mode: JudgeTaskMode): Promise<AskResult> {
     try {
       const { object } = await generateObject({
         model: this.google(GEMINI_VISION_MODEL),
         schema: ImageJudgeSchema,
         system: IMAGE_JUDGE_SYSTEM,
-        messages: [{ role: 'user', content: this.buildContent(input) }],
+        messages: [{ role: 'user', content: this.buildContent(input, mode) }],
         experimental_telemetry: createTelemetry('image-judge', {
           bookId: input.bookId,
           pageNumber: input.pageNumber,
           attempt: input.attempt,
+          mode,
         }),
       });
-      const verdict = imageVerdict(object);
-      await this.persist(input, verdict, object, object.reasoning);
-      return verdict;
+      return { ok: true, result: object };
     } catch (err: unknown) {
-      this.logger.warn(`Judge unavailable for page ${input.pageNumber}: ${String(err)}`);
-      return { passed: true, failures: ['judge:unavailable'] };
+      return { ok: false, blockReason: blockReasonOf(err), error: String(err).slice(0, 300) };
     }
+  }
+
+  /** Persist a real verdict; `notes` carries a non-failing annotation such as the identity-only fallback. */
+  private async record(
+    input: JudgePageInput,
+    result: ImageJudgeResult,
+    notes: string[],
+  ): Promise<ImageVerdict> {
+    const verdict = imageVerdict(result);
+    const annotated = { passed: verdict.passed, failures: [...verdict.failures, ...notes] };
+    await this.persist(input, annotated, result, result.reasoning);
+    return annotated;
   }
 
   // Page image first, then each reference with a caption so the model compares
   // against the right picture. The cascade 'prev' reference is not a judge input.
-  private buildContent(input: JudgePageInput): JudgeContent {
+  private buildContent(input: JudgePageInput, mode: JudgeTaskMode): JudgeContent {
+    const portraitPassed = input.labels.some(
+      (label, i) => label === 'hero' && !!input.references[i],
+    );
     const content: JudgeContent = [
-      { type: 'text', text: buildImageJudgeTask(input.context) },
+      { type: 'text', text: buildImageJudgeTask(input.context, portraitPassed, mode) },
       { type: 'image', image: input.image, mediaType: 'image/png' },
     ];
     input.labels.forEach((label, i) => {
@@ -139,3 +176,15 @@ export class ImageJudgeService {
 }
 
 type ImageEvalRowScores = Parameters<ImageEvalSink['record']>[0]['scores'];
+
+type AskResult =
+  | { ok: true; result: ImageJudgeResult }
+  | { ok: false; blockReason: string | null; error: string };
+
+/** Gemini reports a safety block as HTTP 200 with `promptFeedback.blockReason`; the SDK throws "Invalid JSON response". */
+const blockReasonOf = (err: unknown): string | null => {
+  const body = (err as { responseBody?: unknown })?.responseBody;
+  if (typeof body !== 'string') return null;
+  const match = /"blockReason"\s*:\s*"(\w+)"/.exec(body);
+  return match ? match[1] : null;
+};
