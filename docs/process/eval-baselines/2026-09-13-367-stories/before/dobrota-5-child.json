@@ -1,0 +1,141 @@
+{
+  "title": "Алиса и танцующие листики",
+  "characterProfile": "5-year-old girl, light skin, curly brown hair, wearing blue dress with yellow polka dots, red ribbon in her hair",
+  "discussionQuestions": [
+    "1. Что сделала Алиса, чтобы проявить доброту?",
+    "2. Почему цветок выглядел грустным?",
+    "3. Что заставило Алису изменить своё решение?",
+    "4. Как цветок отблагодарил Алису?",
+    "5. Какие еще способы проявить доброту ты знаешь?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и танцующие листики",
+      "illustrationPrompt": "the child gazes at several potted plants, thoughtful; one hand resting; soft smile; centered composition",
+      "scene": {
+        "locationId": "window-garden",
+        "castIds": [],
+        "propIds": ["flower-pot"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса наклонилась к горшку: \"Ты чего поник?\" — шепчет. Лепестки свисают, как мокрые ушки. \"Ничего, сейчас разберёмся\", — говорит Алиса и осторожно трогает сухую землю пальцем.",
+      "title": null,
+      "illustrationPrompt": "the child leans toward a drooping flower, whispering; fingertip tests dry soil; close-up, slight tilt",
+      "scene": {
+        "locationId": "window-garden",
+        "castIds": [],
+        "propIds": ["flower-pot"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Из комнаты уже щебечет заставка мультфильма. \"Сейчас побегу… или сначала цветок?\" — думает Алиса. Она то на экран поглянет, то на горшок, словно маятник туда‑сюда.",
+      "title": null,
+      "illustrationPrompt": "the child looks back and forth between a glowing screen and a flowerpot; torn expression; mid-shot, head turning",
+      "scene": {
+        "locationId": "window-garden",
+        "castIds": [],
+        "propIds": ["flower-pot"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса встаёт на носочки: сердце зовёт к экрану, а взгляд не отлипает от горшка. \"Ещё минуточка… или вода срочно?\" — шепчет Алиса. Ноги её топчутся на месте, то вперёд, то назад.",
+      "title": null,
+      "illustrationPrompt": "the child rises on tiptoes, hands hovering; eyes darting between two directions; feet fidget; medium shot",
+      "scene": {
+        "locationId": "window-garden",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса вспоминает мамины слова: \"Если кому-то нужна помощь — помоги\". \"Ну всё, потом досмотрю\", — решает Алиса и кивает сама себе.",
+      "title": null,
+      "illustrationPrompt": "the child nods firmly, turning from a screen toward a watering can; determined expression; three-quarter view",
+      "scene": {
+        "locationId": "window-garden",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса берёт лейку, наливает воду и льёт тонкой струйкой. Земля темнеет, пузырьки шепчут. \"Пей, дружок\", — говорит Алиса, и листики уже приподнимаются.",
+      "title": null,
+      "illustrationPrompt": "the child pours water from a small watering can; gentle stream; leaves perk up; close-up on hands and plant",
+      "scene": {
+        "locationId": "window-garden",
+        "castIds": [],
+        "propIds": ["flower-pot", "watering-can"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Кот выглядывает, тянется нюхнуть листик. \"Смотри, Кот, как он ожил!\" — смеётся Алиса. Цветок стал нарядный, и Алиса рада: успела помочь вовремя.",
+      "title": null,
+      "illustrationPrompt": "the child and the cat examine the refreshed flower; the child smiles while the cat sniffs a leaf; low angle near the pot",
+      "scene": {
+        "locationId": "window-garden",
+        "castIds": ["cat"],
+        "propIds": ["flower-pot"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса улыбается и тихо гладит горшок: \"До встречи\", — говорит она цветку. Доброта — это забота о тех, кто нуждается.",
+      "title": null,
+      "illustrationPrompt": "the child smiles and gently pats the flowerpot; calm, content; simple centered composition",
+      "scene": {
+        "locationId": "window-garden",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "5-year-old girl, light skin, curly brown hair, wearing blue dress with yellow polka dots, red ribbon in her hair"
+    },
+    "cast": [
+      {
+        "id": "cat",
+        "name": "Кот",
+        "role": "домашний питомец",
+        "descriptor": "cat, white skin, fluffy, wearing no clothes, green eyes"
+      }
+    ],
+    "locations": [
+      {
+        "id": "window-garden",
+        "name": "подоконник",
+        "descriptor": "one flower pot on a wooden windowsill, with sunlight streaming in"
+      }
+    ],
+    "props": [
+      {
+        "id": "flower-pot",
+        "descriptor": "clay flower pot with a drooping daisy"
+      },
+      {
+        "id": "watering-can",
+        "descriptor": "bright green watering can"
+      }
+    ],
+    "atmosphere": "Spring morning with a soft, warm light."
+  }
+}

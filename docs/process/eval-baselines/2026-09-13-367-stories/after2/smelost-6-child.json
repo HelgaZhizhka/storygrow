@@ -1,0 +1,149 @@
+{
+  "title": "Алиса и Гигантская Горка",
+  "discussionQuestions": [
+    "1. Как выглядела горка, когда Алиса на неё смотрела?",
+    "2. Почему Алисе стало страшно перед спуском?",
+    "3. Что Алисе помогло набраться смелости?",
+    "4. Как Алиса себя чувствовала после спуска?",
+    "5. Что помогает тебе быть смелым, когда страшно?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и Гигантская Горка",
+      "illustrationPrompt": "The child (she) looks up at a tall slide, one hand to chest, a small hesitant smile; medium shot, slide towering above.",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса и Маша играют на площадке, хохочут и переглядываются. Рядом высится горка, такая большая! «Когда-нибудь я с неё скочу, как ветер», — шепчет Алиса и не сводит глаз.",
+      "title": null,
+      "illustrationPrompt": "The child (she) plays with another child, then glances toward the tall slide with a determined, dreamy look; medium wide shot including both kids and the slide.",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["masha"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Алиса решает: «Сейчас попробую!» Подходит ближе, задирает голову. А горка — ой! — будто стала ещё выше, и каждая ступенька кажется очень-очень длинной.",
+      "title": null,
+      "illustrationPrompt": "The child (she) stands near the base of the slide, craning her neck upward, one foot forward then paused; left-weighted composition.",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса топчется у лестницы. «На качелях всё просто — сел да качайся, — бормочет Алиса. — А тут так высоко…» Она делает шажок вперёд — и тут же осторожно пятится назад.",
+      "title": null,
+      "illustrationPrompt": "The child (she) steps toward the slide stairs, then steps back, eyes flicking toward the swings, hands fidgeting; low angle.",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Дома мама говорила: «Вдохни поглубже, посчитай до трёх — и вперёд». Алиса это вспоминает и тихо шепчет: «Попробую!» И внутри у Алисы загорается маленькое «да».",
+      "title": null,
+      "illustrationPrompt": "At home, the child (she) listens to her mother speaking gently; the child nods with new resolve; close two-shot.",
+      "scene": {
+        "locationId": "home",
+        "castIds": ["mother"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса ставит ногу на первую ступеньку: раз, два, три — и вот уже наверху. «Вдох… выдох», — шепчет Алиса и садится на край. Раз! — и поехала вниз, летит, смеётся, держится крепко.",
+      "title": null,
+      "illustrationPrompt": "The child (she) climbs the ladder, taking deep breaths, then sits at the top and pushes off to slide down; wide shot along the slide.",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса съезжает и, коснувшись земли, кричит: «Ура-а!» Маша подпрыгивает у песочницы: «Ещё раз?» — «Ещё!» — смеётся Алиса. И уже бежит к лестнице, будто горка её зовёт.",
+      "title": null,
+      "illustrationPrompt": "At the bottom of the slide, the child (she) throws up her arms shouting hooray; the other child near the sandbox cheers; low angle.",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["masha"],
+        "propIds": ["sandbox"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Дома Алиса улыбается: «Получилось!» Теперь Алиса знает, что ей уже не так страшно. Быть смелым — это действовать, даже если немного страшно.",
+      "title": null,
+      "illustrationPrompt": "At home, the child (she) smiles to herself, hand on heart, calm posture; centered close-up.",
+      "scene": {
+        "locationId": "home",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "6-year-old girl, light skin, short blond hair, wearing red dress, polka-dot bow",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "6-year-old girl, light skin, short blond hair, wearing red dress, polka-dot bow"
+    },
+    "cast": [
+      {
+        "id": "masha",
+        "name": "Маша",
+        "role": "подруга",
+        "descriptor": "6-year-old girl, light skin, long brown hair, wearing blue jeans and a yellow T-shirt, butterfly clip"
+      },
+      {
+        "id": "mother",
+        "name": "мама",
+        "role": "мама",
+        "descriptor": "adult woman, light skin, curly black hair, wearing green blouse and black pants, gold necklace"
+      }
+    ],
+    "locations": [
+      {
+        "id": "playground",
+        "name": "детская площадка",
+        "descriptor": "one tall slide, metal and yellow, beside a sandbox"
+      },
+      {
+        "id": "home",
+        "name": "дом",
+        "descriptor": "one cozy living room, soft sofa, warm colors"
+      }
+    ],
+    "props": [
+      {
+        "id": "sandbox",
+        "name": "песочница",
+        "descriptor": "a small wooden sandbox, filled with sand, surrounded by small plants"
+      }
+    ],
+    "atmosphere": "Sunny autumn day with gentle, warm light."
+  }
+}

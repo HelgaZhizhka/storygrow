@@ -1,0 +1,142 @@
+{
+  "title": "Ника и секрет волшебной коробки",
+  "discussionQuestions": [
+    "1. Что было в коробке у Ники?",
+    "2. Почему Ника не хотела делиться игрушками?",
+    "3. Как Ника почувствовала себя, когда осталась одна?",
+    "4. Что она сделала, чтобы исправить ситуацию?",
+    "5. А какими игрушками ты любишь делиться с друзьями?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Ника и секрет волшебной коробки",
+      "illustrationPrompt": "the child holds a small toy box; two friends lean in happily; the child looks surprised and pleased; group centered, box prominent",
+      "scene": {
+        "locationId": "living_room",
+        "castIds": ["anya", "misha"],
+        "propIds": ["box"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Жила-была Ника, и подарили ей волшебную коробку с игрушками. Открыла Ника крышку, вынула игрушечного кота и прошептала: «Ты у меня особенный». Коробку придвинула поближе и заулыбалась.",
+      "title": null,
+      "illustrationPrompt": "the child opens the box and lifts a toy cat, hugging it close; delighted expression; close-up with the box beside",
+      "scene": {
+        "locationId": "living_room",
+        "castIds": [],
+        "propIds": ["box", "toy_cat"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "На площадке Аня и Миша попросили: «Ника, давай вместе котиком поиграем?» А Ника прижала коробку и кота к себе: «Не дам, это моё сокровище». Повернулась в сторону и замолчала.",
+      "title": null,
+      "illustrationPrompt": "the child clutches the box and toy cat to chest, turning away; two friends reach out, asking; triangle grouping",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["anya", "misha"],
+        "propIds": ["box", "toy_cat"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Сидит Ника в сторонке и краем глаза смотрит. Аня с Мишей уже смеются да хлопают в ладоши, придумали игру вдвоём. Никто Нику не зовёт, и слова застряли у неё на губах.",
+      "title": null,
+      "illustrationPrompt": "the child sits a little apart watching; two friends play a hand-clap game together, laughing; the child foreground left, friends mid-right",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["anya", "misha"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Опустила Ника плечи, поставила рядом коробку и погладила игрушечного кота. «Эх, котик, без ребят скучно», — прошептала Ника. Стало тихо-тихо, и сразу захотелось всё поправить.",
+      "title": null,
+      "illustrationPrompt": "the child sits alone with the box beside and the toy cat on the lap, head lowered; one hand stroking the toy; intimate close-up",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["box", "toy_cat"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Собралась Ника с духом, подошла к Ане и Мише. «Простите, давайте вместе! Держите кота по очереди, а коробку откроем вместе», — сказала Ника и протянула игрушку. Улыбка робкая, но настоящая.",
+      "title": null,
+      "illustrationPrompt": "the child steps toward the two friends, offering the toy cat forward; the box opened nearby; friends react with warm surprise; open semicircle",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["anya", "misha"],
+        "propIds": ["box", "toy_cat"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Теперь Ника, Аня и Миша играют вместе: котик то у одного на руках, то у другого, и всем весело. Ника смеётся громче всех. Делиться — это радостно, и все вокруг становятся счастливее.",
+      "title": null,
+      "illustrationPrompt": "the child and two friends play together passing the toy cat, all smiling; lively circle composition",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["anya", "misha"],
+        "propIds": ["toy_cat"],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "6-year-old girl, light skin, brown curly hair, wearing blue dress with yellow stars, red headband",
+  "visualBible": {
+    "hero": {
+      "name": "Ника",
+      "descriptor": "6-year-old girl, light skin, brown curly hair, wearing blue dress with yellow stars, red headband"
+    },
+    "cast": [
+      {
+        "id": "anya",
+        "name": "Аня",
+        "role": "подруга",
+        "descriptor": "6-year-old girl, dark skin, black straight hair, wearing green overalls, bright smile"
+      },
+      {
+        "id": "misha",
+        "name": "Миша",
+        "role": "друг",
+        "descriptor": "6-year-old boy, light skin, blonde short hair, wearing striped t-shirt, blue sneakers"
+      }
+    ],
+    "locations": [
+      {
+        "id": "living_room",
+        "name": "гостиная",
+        "descriptor": "one cozy sofa, soft blankets and warm yellow walls"
+      },
+      {
+        "id": "playground",
+        "name": "детская площадка",
+        "descriptor": "one tall slide, surrounded by green grass and colourful flowers"
+      }
+    ],
+    "props": [
+      {
+        "id": "box",
+        "name": "коробка",
+        "descriptor": "a small wooden box with a rainbow lid"
+      },
+      {
+        "id": "toy_cat",
+        "name": "игрушечный кот",
+        "descriptor": "a plush cat with a red bow"
+      }
+    ],
+    "atmosphere": "Sunny spring day with a cheerful atmosphere."
+  }
+}

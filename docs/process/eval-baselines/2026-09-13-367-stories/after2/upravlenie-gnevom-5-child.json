@@ -1,0 +1,148 @@
+{
+  "title": "Алиса и приключение с капризным роботом",
+  "discussionQuestions": [
+    "1. Что Алиса делала, когда игрушки не слушались?",
+    "2. Как Алиса повела себя с роботом, когда рассердилась?",
+    "3. Почему Алисе стало грустно после поломки?",
+    "4. Как Алиса починила робота?",
+    "5. Что можешь сделать ты, чтобы успокоиться, когда сердишься?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и приключение с капризным роботом",
+      "illustrationPrompt": "the child faces the viewer with a gentle, determined smile, one hand over chest; simple centered composition",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса достаёт из коробки робота, ставит его и шепчет: «Маршируй!» А он то падает, то не мигает — ну совсем не слушается. «Дыши потихоньку», — тихо напоминает мама, а Алиса уже пыхтит.",
+      "title": null,
+      "illustrationPrompt": "the child kneels by a toy box, holding the robot that keeps tipping; the mother nearby leaning kindly; the child frowns mid-words; three-quarter view",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["mama"],
+        "propIds": ["toy-box", "robot"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "«Ну и не надо!» — выкрикнула Алиса и швырнула робота в сторону. Робот ударился и хрясь — тонкая антенна согнулась и треснула. Алиса замерла, руки сами спрятались за спину.",
+      "title": null,
+      "illustrationPrompt": "the child mid-throw; the robot arcs to the side as its antenna snaps; the child’s mouth open in a shout; dynamic diagonal composition",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": ["robot"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса глядит на робота: антенна висит криво. «Я… не хотела так», — шепчет Алиса и трогает её кончиком пальца. В тишине Алиса ищет слова, чтобы сказать про это.",
+      "title": null,
+      "illustrationPrompt": "the child crouches near the robot on the floor, gently touching the bent antenna; eyes wide; close-up low angle",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": ["robot"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса садится и обнимает колени. «Злость ушла, а комок внутри остался», — шепчет Алиса. Она шмыгает носом и репетирует, как сказать об этом вслух.",
+      "title": null,
+      "illustrationPrompt": "the child sits alone hugging knees, head bowed with a tear; quiet centered composition, no robot in frame",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "На кухне мама присаживается рядом: «Давай попробуем починить его вместе?» Алиса кивает: «Я скажу, что рассердилась, а делать буду бережно». Они аккуратно выпрямляют антенну и проверяют робота.",
+      "title": null,
+      "illustrationPrompt": "the child and the mother together carefully straighten the robot’s antenna with their hands; both focused; side-by-side medium shot",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": ["mama"],
+        "propIds": ["robot"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Робот снова стоит ровно. «Спасибо, мама», — говорит Алиса и прижимает робота к себе. «Обещаю быть аккуратной и говорить, когда мне трудно», — шепчет Алиса, а мама улыбается.",
+      "title": null,
+      "illustrationPrompt": "the child hugs the robot; the mother close by with a warm hand on the child’s shoulder; both smiling; medium close composition",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": ["mama"],
+        "propIds": ["robot"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса глубоко выдыхает и произносит то, что чувствует — и сразу легче. Когда злишься, найди способ выразить это словами.",
+      "title": null,
+      "illustrationPrompt": "the child stands calm with a hand on chest, gently exhaling; peaceful expression; simple centered framing",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "5-year-old girl, light skin, curly blonde hair, wearing blue dress with yellow stripes and red shoes, always carries a small robot toy",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "5-year-old girl, light skin, curly blonde hair, wearing blue dress with yellow stripes and red shoes, always carries a small robot toy"
+    },
+    "cast": [
+      {
+        "id": "mama",
+        "name": "мама",
+        "role": "мама Алисы",
+        "descriptor": "adult woman, light skin, short brown hair, wearing green sweater and jeans, wears glasses"
+      }
+    ],
+    "locations": [
+      {
+        "id": "living-room",
+        "name": "гостиная",
+        "descriptor": "spacious room with a red couch, wooden floors, and a big window"
+      },
+      {
+        "id": "kitchen",
+        "name": "кухня",
+        "descriptor": "cozy kitchen with a round table, wooden chairs, and a fruit basket"
+      }
+    ],
+    "props": [
+      {
+        "id": "robot",
+        "name": "робот",
+        "descriptor": "small metal toy robot, shiny and blue"
+      },
+      {
+        "id": "toy-box",
+        "name": "коробка для игрушек",
+        "descriptor": "large wooden toy box, painted red with a lid"
+      }
+    ],
+    "atmosphere": "A warm sunny afternoon in spring, with a peaceful and bright mood."
+  }
+}

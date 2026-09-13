@@ -1,0 +1,144 @@
+{
+  "title": "Алиса и прыгучий пончик",
+  "discussionQuestions": [
+    "1. Почему Алиса так хотела пончик?",
+    "2. Что сделала Алиса, когда её попросили подождать?",
+    "3. Как Алиса почувствовала себя, когда пончик испортился?",
+    "4. Что сделала Алиса, чтобы всё исправить?",
+    "5. Как ты учишься ждать, когда чего-то хочешь?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и прыгучий пончик",
+      "illustrationPrompt": "the child waiting, eyes on a donut, hands clasped; composition: donut large in foreground",
+      "scene": {
+        "locationId": "bakery",
+        "castIds": [],
+        "propIds": ["donut"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса обожает пончики. Завидела любимый — и уже тянет ладошки: «Скорей ко мне!» Она подпрыгивает на носочках и смеётся: «Ну можно уже сейчас?»",
+      "title": null,
+      "illustrationPrompt": "the child reaching toward a donut, bouncing on toes, whispering; composition: donut slightly above reach",
+      "scene": {
+        "locationId": "bakery",
+        "castIds": [],
+        "propIds": ["donut"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "«Алиса, подожди, сначала…» — начала Мама. «Потом!» — крикнула Алиса и стрелой понеслась вперёд, едва Мама договорила слово. Никаких «потом» у Алисы — только бегом!",
+      "title": null,
+      "illustrationPrompt": "the child dashing ahead while the mother reaches out mid-sentence; composition: mother slightly behind with raised hand",
+      "scene": {
+        "locationId": "bakery",
+        "castIds": ["mama"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "«Подожди минутку», — сказал Пекарь. Но Алиса уже ухватила пончик — скользко, да мимо! «Ой!» — выдохнула Алиса, а пончик шлёпнулся на пол и покатился в сторону.",
+      "title": null,
+      "illustrationPrompt": "the baker holding out a calming hand; the child grabbing; donut slipping and falling; composition: close-up of falling donut between them",
+      "scene": {
+        "locationId": "bakery",
+        "castIds": ["shopkeeper"],
+        "propIds": ["donut"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса опустила плечи и сжала пустые ладошки: «Вот так я торопилась…» Она тихо вздохнула: теперь вкусного не видать, и осталась Алиса ни с чем.",
+      "title": null,
+      "illustrationPrompt": "the child standing alone, looking at empty hands, shoulders lowered; composition: open space around to show pause",
+      "scene": {
+        "locationId": "bakery",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса подошла к Пекарю: «Простите меня, я поспешила и вышло плохо». Потом глянула на Маму: «Мама, как всё исправить? Я буду слушать и ждать, только подскажи».",
+      "title": null,
+      "illustrationPrompt": "the child facing the baker with an apologetic gesture, then turning to the mother with a questioning look; composition: triangle between all three",
+      "scene": {
+        "locationId": "bakery",
+        "castIds": ["mama", "shopkeeper"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Пекарь кивает и делает новый пончик — ловко и неторопливо. «Я подожду», — шепчет Алиса и встаёт рядом с Мамой. Они болтают вполголоса, и ждать вдруг стало приятно.",
+      "title": null,
+      "illustrationPrompt": "the baker shaping a new donut; the child stands calmly beside the mother, chatting softly; composition: baker left, pair right",
+      "scene": {
+        "locationId": "bakery",
+        "castIds": ["mama", "shopkeeper"],
+        "propIds": ["donut"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Смотрит Алиса и улыбается: всё получилось как надо. Иногда нужно терпеливо ждать, и всё получится хорошо.",
+      "title": null,
+      "illustrationPrompt": "the child relaxed with a gentle smile, hands folded calmly; composition: simple centered portrait",
+      "scene": {
+        "locationId": "bakery",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "5-year-old girl, light skin, curly brown hair, wearing yellow dress with polka dots, red shoes",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "5-year-old girl, light skin, curly brown hair, wearing yellow dress with polka dots, red shoes"
+    },
+    "cast": [
+      {
+        "id": "mama",
+        "name": "Мама",
+        "role": "мама Алисы",
+        "descriptor": "adult woman, light skin, straight black hair, wearing blue blouse and jeans, glasses"
+      },
+      {
+        "id": "shopkeeper",
+        "name": "Пекарь",
+        "role": "пекарь",
+        "descriptor": "adult man, tan skin, bald, wearing white apron, flour on hands"
+      }
+    ],
+    "locations": [
+      {
+        "id": "bakery",
+        "name": "Булочная",
+        "descriptor": "a small cozy bakery with wooden shelves and colorful pastries"
+      }
+    ],
+    "props": [
+      {
+        "id": "donut",
+        "name": "Пончик",
+        "descriptor": "large chocolate donut with sprinkles"
+      }
+    ],
+    "atmosphere": "Spring morning, bright and cheerful with a warm palette."
+  }
+}

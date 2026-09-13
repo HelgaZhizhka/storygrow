@@ -1,0 +1,125 @@
+{
+  "title": "Алиса и танец с мишкой у кроватки",
+  "characterProfile": "3-year-old child, fair skin, light brown curly hair, wearing red dress with yellow polka dots, loves a striped teddy bear",
+  "discussionQuestions": [
+    "1. Что Алиса увидела в кроватке?",
+    "2. Почему братик заплакал?",
+    "3. Что Алиса пыталась сделать, чтобы помочь?",
+    "4. Как братик отреагировал на песенку?",
+    "5. Как ты можешь помочь младшим в семье?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и танец с мишкой у кроватки",
+      "illustrationPrompt": "the child looking at her baby brother in a crib; the child leaning close, curious; centered framing on crib",
+      "scene": {
+        "locationId": "nursery",
+        "castIds": ["brother"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Братик вдруг заплакал, тоненько-тоненько. «Ой, что же делать?» — шепчет Алиса и прижимает мишку.",
+      "title": null,
+      "illustrationPrompt": "the child hugs a striped teddy bear while the baby brother cries; the child looks concerned; medium shot",
+      "scene": {
+        "locationId": "nursery",
+        "castIds": ["brother"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса встаёт на цыпочки и поёт тихо-тихо: «Спи, братик, спи». Она чуть качает ладошкой у кроватки.",
+      "title": null,
+      "illustrationPrompt": "the child on tiptoes singing beside the crib, gently rocking with one hand; side view, soft expression",
+      "scene": {
+        "locationId": "nursery",
+        "castIds": ["brother"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса гладит братика по спинке и снова поёт: «Спи, братик, спи». «Вот так, тихо-тихо…» — шепчет она.",
+      "title": null,
+      "illustrationPrompt": "the child softly stroking the baby brother and singing again; close, calm faces; over-shoulder view",
+      "scene": {
+        "locationId": "nursery",
+        "castIds": ["brother"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Братик стих и сладко задремал. Алиса поправила одеяльце и шепнула: «Спи, братик».",
+      "title": null,
+      "illustrationPrompt": "the baby brother sleeping; the child tucking the blanket and watching quietly; close-up on both",
+      "scene": {
+        "locationId": "nursery",
+        "castIds": ["brother"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса тихонько гладит братика и шепчет: «Спи, братик, спи». Полосатый мишка тоже молчит: тс-с.",
+      "title": null,
+      "illustrationPrompt": "the child gently patting the baby brother and whispering; striped teddy bear tucked in arm; quiet composition",
+      "scene": {
+        "locationId": "nursery",
+        "castIds": ["brother"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алисе нравится помогать братику. Помогать младшим делает их счастливыми.",
+      "title": null,
+      "illustrationPrompt": "the child smiling proudly beside the sleeping baby brother; one hand resting on crib edge; centered framing",
+      "scene": {
+        "locationId": "nursery",
+        "castIds": ["brother"],
+        "propIds": ["teddy"],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "3-year-old child, fair skin, light brown curly hair, wearing red dress with yellow polka dots, loves a striped teddy bear"
+    },
+    "cast": [
+      {
+        "id": "brother",
+        "name": "братик",
+        "role": "младший брат",
+        "descriptor": "newborn, fair skin, light brown tufts hair, wearing white onesie, small blue blanket"
+      }
+    ],
+    "locations": [
+      {
+        "id": "nursery",
+        "name": "детская",
+        "descriptor": "a white crib, pastel walls with star patterns, soft blue rug"
+      }
+    ],
+    "props": [
+      {
+        "id": "teddy",
+        "descriptor": "a striped teddy bear"
+      }
+    ],
+    "atmosphere": "warm spring morning, soft light, peaceful mood"
+  }
+}

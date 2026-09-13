@@ -1,0 +1,148 @@
+{
+  "title": "Алиса и книга с бабочками",
+  "discussionQuestions": [
+    "1. Какую книгу Алиса нашла на полке?",
+    "2. Почему Алиса испугалась, когда книжка упала?",
+    "3. Что нового Алиса узнала, когда открыла книгу?",
+    "4. Как Алиса потом помогла другим детям?",
+    "5. Какие книги ты любишь читать и почему?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и книга с бабочками",
+      "illustrationPrompt": "The child in the living room, thoughtful, hand to chin, eyes curious; centered composition.",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Жила-была девочка Алиса. Сидит Алиса с Бабушкой в гостиной, ножками болтает да на полку посматривает. «Какие у тебя книги, Бабушка! — шепчет Алиса. — А эта о чём?»",
+      "title": null,
+      "illustrationPrompt": "The child sits with grandmother in the living room, both looking at a shelf of books; the child points; bottom-weighted composition.",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["grandma"],
+        "propIds": ["shelf"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Тянется Алиса к верхней полке: «Достану сама!» Да только зацепила — шлёп! — книга соскользнула и бухнулась на пол. «Ой!» — вздрогнула Алиса и прижала ладошки к щёкам.",
+      "title": null,
+      "illustrationPrompt": "The child reaches up to a shelf as a book falls; the child is startled; grandmother nearby; top-weighted composition.",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["grandma"],
+        "propIds": ["book", "shelf"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Сидит Алиса рядом с книгой и мнётся: открыть ли? «А вдруг нельзя без Бабушки?» — шепчет Алиса. А любопытство в ней щекочет: «Ну хоть одним глазком…»",
+      "title": null,
+      "illustrationPrompt": "The child crouches near the book, hand hovering over the cover, unsure; left-weighted composition.",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": ["book"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "«Ладно», — решилась Алиса и бережно раскрыла книгу. И ахнула: внутри чудеса — старинные картинки, листья, бабочки, горы. Страница шуршит, а глаза у Алисы округлились.",
+      "title": null,
+      "illustrationPrompt": "The child opens the book carefully, eyes wide at old illustrations; bottom-weighted composition.",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": ["book"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Уселась Алиса с Бабушкой и водит пальцем по картинкам в книге. «Смотри, Бабушка: как у дерева корни пьют воду!» — читает Алиса. «Вот это да, умница», — кивает Бабушка.",
+      "title": null,
+      "illustrationPrompt": "The child shows a page to grandmother, pointing at nature pictures in the book; both engaged; top-weighted composition.",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["grandma"],
+        "propIds": ["book"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "В сад выходит Алиса и идёт между цветами. «Смотрите, этот распускается утром, а тот любит тень», — рассказывает Алиса, вспоминая картинки из книги и показывая на лепестки.",
+      "title": null,
+      "illustrationPrompt": "In the garden, the child walks and gestures toward flowers as if explaining; left-weighted composition.",
+      "scene": {
+        "locationId": "garden",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Теперь Алиса в саду радуется находкам и охотно делится тем, что узнала. Любопытство приводит к новым знаниям и открытиям.",
+      "title": null,
+      "illustrationPrompt": "In the garden, the child stands happily with open hands, looking outward; centered composition.",
+      "scene": {
+        "locationId": "garden",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "6-year-old girl, fair skin, curly brown hair, wearing red dress with a blue ribbon, wearing glasses",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "6-year-old girl, fair skin, curly brown hair, wearing red dress with a blue ribbon, wearing glasses"
+    },
+    "cast": [
+      {
+        "id": "grandma",
+        "name": "Бабушка",
+        "role": "бабушка Алисы",
+        "descriptor": "elderly woman, fair skin, gray in a bun hair, wearing blue shawl, kind eyes"
+      }
+    ],
+    "locations": [
+      {
+        "id": "living-room",
+        "name": "гостиная",
+        "descriptor": "a cozy living room with a comfy armchair and a wooden bookshelf"
+      },
+      {
+        "id": "garden",
+        "name": "сад",
+        "descriptor": "a bright garden with colorful flowers and a small bench"
+      }
+    ],
+    "props": [
+      {
+        "id": "book",
+        "name": "книга",
+        "descriptor": "a dusty old book with a leather cover"
+      },
+      {
+        "id": "shelf",
+        "name": "полка",
+        "descriptor": "a wooden shelf filled with various books"
+      }
+    ],
+    "atmosphere": "A sunny spring afternoon with warm colors and a cozy feel."
+  }
+}

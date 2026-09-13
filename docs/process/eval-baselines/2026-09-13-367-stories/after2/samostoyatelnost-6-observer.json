@@ -1,0 +1,148 @@
+{
+  "title": "Катя и упрямый зонтик",
+  "discussionQuestions": [
+    "1. Что Катя собралась делать в дождливый день?",
+    "2. Как зонтик пытался помешать Кате?",
+    "3. Почему Катя не попросила помощи у мамы?",
+    "4. Что помогло Кате справиться с зонтиком?",
+    "5. Чему Катя научилась в конце истории?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Катя и упрямый зонтик",
+      "illustrationPrompt": "The child holds a closed umbrella while mom readies the rubber boots; the child looks eager; boots in foreground; three-quarter view.",
+      "scene": {
+        "locationId": "hallway",
+        "castIds": ["mom"],
+        "propIds": ["umbrella", "boots"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Катя присела, натянула резиновые сапоги — один, другой, шлёп! «Зонтик со мной, я готова», — сказала Катя и аккуратно взяла его за ручку.",
+      "title": null,
+      "illustrationPrompt": "The child crouches to pull on rubber boots and reaches for the umbrella handle; focused expression; side angle.",
+      "scene": {
+        "locationId": "hallway",
+        "castIds": [],
+        "propIds": ["umbrella", "boots"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "На веранде Катя потянула за ремешок, нажала — никак. «Эй, непокорный зонтик, не упрямься», — шепчет Катя, крутит кнопочку, а он только складывается да щёлкает впустую.",
+      "title": null,
+      "illustrationPrompt": "The child struggles with the umbrella latch, pressing the button; umbrella still closed; close-up on hands and determined face.",
+      "scene": {
+        "locationId": "front-porch",
+        "castIds": [],
+        "propIds": ["umbrella"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "«Позвать бы маму…» — вырвалось у Кати и тут же спряталось. Катя глубоко вздохнула: «Нет уж, сама разберусь», — поставила зонтик перед собой и попробовала ещё раз, не торопясь.",
+      "title": null,
+      "illustrationPrompt": "The child pauses with the closed umbrella, glancing off as if to call mom, then sets herself to try again; medium shot, centered.",
+      "scene": {
+        "locationId": "front-porch",
+        "castIds": [],
+        "propIds": ["umbrella"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Мама рядом, а Катя вспоминает её слова: «Сдвинь колечко, найди кнопочку, держи крепко обеими руками». «Так-так», — бормочет Катя и делает всё медленно, по порядку.",
+      "title": null,
+      "illustrationPrompt": "Mom stands nearby, calm; the child holds the umbrella, fingers near ring and button, repeating the steps; two-shot from the side.",
+      "scene": {
+        "locationId": "front-porch",
+        "castIds": ["mom"],
+        "propIds": ["umbrella"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Катя собрала всю смелость в кулачок, нажала ровно — и вдруг: «Щёлк!» Зонтик распахнулся над Катей, как большой цветок, а Катя рассмеялась: «Получилось! Я сама открыла!»",
+      "title": null,
+      "illustrationPrompt": "The child presses; umbrella pops open mid-motion; the child smiles in delight; centered composition.",
+      "scene": {
+        "locationId": "front-porch",
+        "castIds": [],
+        "propIds": ["umbrella"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Катя важно шагает по веранде в резиновых сапогах, зонтик держит прямо над собой. «Вот как надо!» — говорит Катя и идёт, пускай капли стучат по куполу.",
+      "title": null,
+      "illustrationPrompt": "The child strides proudly with the open umbrella; raindrops patter on the canopy; rubber boots stepping; side view.",
+      "scene": {
+        "locationId": "front-porch",
+        "castIds": [],
+        "propIds": ["umbrella", "boots"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Быть самостоятельным — это не бояться попробовать что-то новое и сделать самому.",
+      "title": null,
+      "illustrationPrompt": "Mom and the child share a warm look; the child stands close to mom; simple, centered composition.",
+      "scene": {
+        "locationId": "front-porch",
+        "castIds": ["mom"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "6-year-old girl, light skin, curly blonde hair, wearing red raincoat, flower-shaped hairpin",
+  "visualBible": {
+    "hero": {
+      "name": "Катя",
+      "descriptor": "6-year-old girl, light skin, curly blonde hair, wearing red raincoat, flower-shaped hairpin"
+    },
+    "cast": [
+      {
+        "id": "mom",
+        "name": "мама",
+        "role": "мама Кати",
+        "descriptor": "adult woman, light skin, brown ponytail, wearing blue sweater, glasses"
+      }
+    ],
+    "locations": [
+      {
+        "id": "hallway",
+        "name": "прихожая",
+        "descriptor": "small hallway with a wooden bench and coat hooks"
+      },
+      {
+        "id": "front-porch",
+        "name": "веранда",
+        "descriptor": "wooden porch with potted plants"
+      }
+    ],
+    "props": [
+      {
+        "id": "umbrella",
+        "name": "зонтик",
+        "descriptor": "red umbrella with a yellow handle"
+      },
+      {
+        "id": "boots",
+        "name": "резиновые сапоги",
+        "descriptor": "yellow rubber boots"
+      }
+    ],
+    "atmosphere": "Rainy day with soft light and fresh spring colors."
+  }
+}

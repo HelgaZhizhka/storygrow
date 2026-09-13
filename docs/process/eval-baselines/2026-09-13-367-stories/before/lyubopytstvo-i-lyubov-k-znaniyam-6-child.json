@@ -1,0 +1,148 @@
+{
+  "title": "Алиса и загадочная книга с верхней полки",
+  "characterProfile": "6-year-old girl, light skin, brown, shoulder-length hair, wearing red dress with a butterfly print, curious eyes",
+  "discussionQuestions": [
+    "1. Что Алиса любила делать в библиотеке?",
+    "2. Какая книга привлекла внимание Алисы?",
+    "3. Почему Алиса сначала боялась открыть книгу?",
+    "4. Что Алиса узнала в новой книге?",
+    "5. Как Алиса стала относиться к книге в конце?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и загадочная книга с верхней полки",
+      "illustrationPrompt": "The child enters holding her mother's hand; the librarian greets them with a friendly wave; the child looks around wide-eyed; wide shot.",
+      "scene": {
+        "locationId": "library",
+        "castIds": ["nina"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Жила-была Алиса — читатель отважный: каждый день ей хотелось открыть что-то новое. Она прошептала меж полок: «Какие тут тайны?». «Выбирай, смелая читательница», — сказала Нина.",
+      "title": null,
+      "illustrationPrompt": "The child moves along rows, whispering with excitement; the librarian smiles encouragingly nearby; top-weighted composition.",
+      "scene": {
+        "locationId": "library",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "И вдруг — на самой верхней полке — книга без яркой обложки. «Ой, а тебя я не видела», — сказала Алиса. Книга будто тихонько ждала именно её.",
+      "title": null,
+      "illustrationPrompt": "The child spots a plain old book high up and reaches toward it curiously; close-up on hand and book; bottom-weighted framing.",
+      "scene": {
+        "locationId": "library",
+        "castIds": [],
+        "propIds": ["book"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Алиса потянулась — и застыла. «А если там сплошные непонятные слова?» — шепнула она. Руку спрятала за спину, потом снова вытянула — играет в «можно-нельзя».",
+      "title": null,
+      "illustrationPrompt": "Side view: the child hesitates with one hand half-extended toward the book, then pulls it back; left-weighted composition.",
+      "scene": {
+        "locationId": "library",
+        "castIds": [],
+        "propIds": ["book"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "«Ну что ж, попробуем», — сказала Алиса и глубоко вздохнула. Она раскрыла книгу осторожно, как дверцу в тайную комнату, и странички зашелестели, будто шепнули: «Здравствуй!».",
+      "title": null,
+      "illustrationPrompt": "The child carefully opens the book with a small delighted gasp; pages rustle; top-weighted composition.",
+      "scene": {
+        "locationId": "library",
+        "castIds": [],
+        "propIds": ["book"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Дома Алиса читала вслух, а Сергей пододвинулся поближе. «Ещё страницу!» — просит он. Алиса улыбнулась, перевернула лист, и истории побежали, как картинки, прямо у них в комнате.",
+      "title": null,
+      "illustrationPrompt": "The child reads aloud while the little brother scoots close and listens intently; bottom-focused composition.",
+      "scene": {
+        "locationId": "home-livingroom",
+        "castIds": ["sergei"],
+        "propIds": ["book"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Алиса теперь книгу к сердцу — и в кресло, и под стол, и на ковёр. «Хочешь послушать?» — зовёт она Сергея, и он уже несёт подушку: «Конечно!».",
+      "title": null,
+      "illustrationPrompt": "The child carries the book around, beckoning the little brother who brings a pillow; left-focused framing.",
+      "scene": {
+        "locationId": "home-livingroom",
+        "castIds": ["sergei"],
+        "propIds": ["book"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Теперь Алиса смело тянется к новым страницам и зовёт слушать Сергея. Интересно познавать мир и делать открытия.",
+      "title": null,
+      "illustrationPrompt": "The child reaches for a new page and gestures for the little brother to listen; centered, calm framing.",
+      "scene": {
+        "locationId": "home-livingroom",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "6-year-old girl, light skin, brown, shoulder-length hair, wearing red dress with a butterfly print, curious eyes"
+    },
+    "cast": [
+      {
+        "id": "nina",
+        "name": "Нина",
+        "role": "библиотекарь",
+        "descriptor": "woman, olive skin, black, tied in a bun hair, wearing green cardigan and glasses, friendly smile"
+      },
+      {
+        "id": "sergei",
+        "name": "Сергей",
+        "role": "младший братик",
+        "descriptor": "4-year-old boy, light skin, blonde, messy hair, wearing striped t-shirt and shorts, playful laugh"
+      }
+    ],
+    "locations": [
+      {
+        "id": "library",
+        "name": "библиотека",
+        "descriptor": "one wooden bookshelf filled with colorful books, a comfy chair nearby"
+      },
+      {
+        "id": "home-livingroom",
+        "name": "гостиная",
+        "descriptor": "one cozy sofa with a knitted blanket, colorful cushions around"
+      }
+    ],
+    "props": [
+      {
+        "id": "book",
+        "descriptor": "a large, dusty book with a golden cover"
+      }
+    ],
+    "atmosphere": "Sunny afternoon with soft, warm light filtering through library windows."
+  }
+}

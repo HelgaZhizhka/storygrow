@@ -1,0 +1,131 @@
+{
+  "title": "Алиса и кресло высоченное",
+  "discussionQuestions": [
+    "1. Что Алиса хотела сделать сначала?",
+    "2. Почему кресло оказалось сложным?",
+    "3. Какой фразой Алиса поддерживала себя?",
+    "4. Что произошло, когда Алиса поднялась на кресло?",
+    "5. Что Алиса почувствовала в конце?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и кресло высоченное",
+      "illustrationPrompt": "the child reaching toward a tall chair, eager to climb; open hand toward the seat; centered, low angle",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": ["big-chair"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Кресло высокое-превысокое, Алиса смотрит снизу. «Как забраться?» — шепчет Алиса. Мама кивает: «Подумай».",
+      "title": null,
+      "illustrationPrompt": "the child looks up at the tall chair; mom crouches beside with a gentle encouraging gesture; frame emphasizes chair height",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["mama"],
+        "propIds": ["big-chair"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса берётся за край и пробует залезть. «Я смогу!» — говорит Алиса, снова и снова. Но не сразу выходит.",
+      "title": null,
+      "illustrationPrompt": "the child grips the chair edge with both hands and tries to climb; determined face; close-up on hands and feet",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": ["big-chair"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Снова пытается: «Я смогу, я смогу!» — шепчет Алиса. Осторожно ставит ножку на край и подтягивается.",
+      "title": null,
+      "illustrationPrompt": "the child places one foot on the chair edge and pulls up with her hands; focused expression; side view to show progress",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": ["big-chair"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса раз — и наверху! Поднимается уверенно и усаживается в кресле. «Ура!» — улыбается Алиса, качая ногой.",
+      "title": null,
+      "illustrationPrompt": "the child sits proudly in the chair, smiling big; relaxed posture; wide shot to show the whole chair",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": ["big-chair"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса берёт книжку и устраивается поудобнее. Листает и читает понемногу. «Я смогу!» — думает Алиса.",
+      "title": null,
+      "illustrationPrompt": "the child sits in the chair holding an open book on her lap, reading calmly; medium shot",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": ["big-chair", "storybook"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Иногда стоит попробовать ещё раз, чтобы справиться с задачей, — думает Алиса. Ура!",
+      "title": null,
+      "illustrationPrompt": "the child alone, thoughtful and happy, a small smile; simple centered composition",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "4-year-old girl, light skin, blond curly hair, wearing red dress with star pattern, green shoes",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "4-year-old girl, light skin, blond curly hair, wearing red dress with star pattern, green shoes"
+    },
+    "cast": [
+      {
+        "id": "mama",
+        "name": "мама",
+        "role": "мама Алисы",
+        "descriptor": "adult woman, light skin, brown, straight hair, wearing blue blouse and jeans, glasses"
+      }
+    ],
+    "locations": [
+      {
+        "id": "living-room",
+        "name": "гостиная",
+        "descriptor": "small cozy living room with a wooden coffee table, a lamp, and curtains"
+      }
+    ],
+    "props": [
+      {
+        "id": "big-chair",
+        "name": "кресло",
+        "descriptor": "high armchair, wooden, with a blue cushion"
+      },
+      {
+        "id": "storybook",
+        "name": "книжка",
+        "descriptor": "illustrated children's book, colorful cover"
+      }
+    ],
+    "atmosphere": "Sunny afternoon, warm colors, cozy and inviting."
+  }
+}

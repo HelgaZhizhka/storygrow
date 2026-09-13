@@ -1,0 +1,131 @@
+{
+  "title": "Петя и колдовская бутылочка",
+  "discussionQuestions": [
+    "1. Что носил Петя на спине?",
+    "2. Почему Маше было нужно помочь?",
+    "3. Что принёс Петя для помощи?",
+    "4. Как Маша поблагодарила Петю?",
+    "5. Как ты можешь помочь другу?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Петя и колдовская бутылочка",
+      "illustrationPrompt": "The child and Masha playing together on the playground, both smiling; wide friendly composition.",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["masha"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Жил-был Петя. Тут Маша — бах! — уронила наклейки. «Ой, не собрать…» — шепчет Маша, хлопает ладошками.",
+      "title": null,
+      "illustrationPrompt": "Masha kneeling with scattered stickers, worried; the child noticing and leaning toward her; medium shot.",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["masha"],
+        "propIds": ["stickers"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Петя поднимает бутылочку воды и бежит к Маше. «Помочь? Помочь?» — звонко повторяет Петя, глядя в глаза.",
+      "title": null,
+      "illustrationPrompt": "The child lifting a water bottle and hurrying to Masha, calling out; Masha looks up; dynamic angle.",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["masha"],
+        "propIds": ["water-bottle"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Петя протягивает Маше бутылочку: «Помочь?» — ещё раз и ласково. «Спасибо…» — Маша кивает, вытирает лоб.",
+      "title": null,
+      "illustrationPrompt": "The child offering the water bottle to Masha with a caring smile; Masha reaching for it; close interaction.",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["masha"],
+        "propIds": ["water-bottle"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "«Спасибо, Петя!» — говорит Маша, собирая последнюю. Петя кивает: «Ура, все наклейки с тобой!» И оба улыбаются.",
+      "title": null,
+      "illustrationPrompt": "Masha holding a neat stack of stickers; the child nodding proudly; both smiling; low angle to show gathered stickers.",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["masha"],
+        "propIds": ["stickers"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Петя держит бутылочку, Маша делает глоток. «Теперь ты!» — говорит она. Петя пьёт и смеётся: «Вдвоём вкуснее!»",
+      "title": null,
+      "illustrationPrompt": "The child holds the bottle while Masha takes a sip; then the child takes a sip; friendly smiles; medium close-up.",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["masha"],
+        "propIds": ["water-bottle"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Петя с Машей переглянулись и улыбнулись. Дарить доброту — это просто и приятно.",
+      "title": null,
+      "illustrationPrompt": "The child and Masha side by side, relaxed and happy, sharing a warm smile; centered, simple composition.",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["masha"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "4-year-old boy, fair skin, curly brown hair, wearing blue overalls, red sneakers, green backpack",
+  "visualBible": {
+    "hero": {
+      "name": "Петя",
+      "descriptor": "4-year-old boy, fair skin, curly brown hair, wearing blue overalls, red sneakers, green backpack"
+    },
+    "cast": [
+      {
+        "id": "masha",
+        "name": "Маша",
+        "role": "подружка",
+        "descriptor": "4-year-old girl, light brown skin, black bob hair, wearing yellow dress, pink headband"
+      }
+    ],
+    "locations": [
+      {
+        "id": "playground",
+        "name": "игровая площадка",
+        "descriptor": "a red slide, green grass, colourful sandbox"
+      }
+    ],
+    "props": [
+      {
+        "id": "stickers",
+        "name": "наклейки",
+        "descriptor": "bright and colourful stickers"
+      },
+      {
+        "id": "water-bottle",
+        "name": "бутылочка воды",
+        "descriptor": "small blue plastic water bottle"
+      }
+    ],
+    "atmosphere": "A sunny spring afternoon with a warm, cheerful mood."
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "title": "Коля и игрушечная морковка",
+  "characterProfile": "4-year-old boy, fair skin, curly brown hair, wearing blue t-shirt, white shorts, red sneakers, red sneakers",
+  "discussionQuestions": [
+    "1. Что нашёл Коля в парке?",
+    "2. Почему зайчонок выглядел испуганным?",
+    "3. Как Коля помог зайчонку успокоиться?",
+    "4. Что Коля сделал ещё раз, чтобы помочь зайчонку?",
+    "5. Как ты можешь проявить доброту к другу?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Коля и игрушечная морковка",
+      "illustrationPrompt": "the child kneels as a small bunny peeks out; the child’s hand gently extended; centered scene",
+      "scene": {
+        "locationId": "park",
+        "castIds": ["bunny"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Коля идёт по парку и замирает: под кустом жмётся Зайчонок. «Потерялся?» — шепчет Коля.",
+      "title": null,
+      "illustrationPrompt": "the child notices a little bunny trembling; the child leans in softly; close-up composition",
+      "scene": {
+        "locationId": "park",
+        "castIds": ["bunny"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Коля гладит Зайчонка и говорит: «Не бойся, я помогу». Зайчонок нюхает ладошку.",
+      "title": null,
+      "illustrationPrompt": "the child gently pets the bunny; the child’s mouth slightly open as if speaking; bunny sniffs hand; right-weighted",
+      "scene": {
+        "locationId": "park",
+        "castIds": ["bunny"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Коля даёт Зайчонку игрушечную морковку и шепчет: «Не бойся, я помогу» ещё раз.",
+      "title": null,
+      "illustrationPrompt": "the child offers a toy carrot to the bunny; the child repeats comforting gesture; bunny reaching; centered",
+      "scene": {
+        "locationId": "park",
+        "castIds": ["bunny"],
+        "propIds": ["carrot"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Зайчонок тянется к Коле и перестаёт дрожать. «Вместе не страшно», — говорит Коля.",
+      "title": null,
+      "illustrationPrompt": "the bunny relaxes and nuzzles the child’s hand; the child smiles gently; medium shot",
+      "scene": {
+        "locationId": "park",
+        "castIds": ["bunny"],
+        "propIds": ["carrot"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Коля укрывает Зайчонка пледом и ещё раз говорит: «Не бойся, я помогу». Рядом теплее.",
+      "title": null,
+      "illustrationPrompt": "the child wraps the bunny with a small blanket; sitting close together; low, cozy framing",
+      "scene": {
+        "locationId": "park",
+        "castIds": ["bunny"],
+        "propIds": ["blanket"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Коля радуется: он помог Зайчонку. Проявлять доброту к тем, кто нуждается.",
+      "title": null,
+      "illustrationPrompt": "the child beams with quiet joy beside the now-calm bunny; simple balanced framing",
+      "scene": {
+        "locationId": "park",
+        "castIds": ["bunny"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "visualBible": {
+    "hero": {
+      "name": "Коля",
+      "descriptor": "4-year-old boy, fair skin, curly brown hair, wearing blue t-shirt, white shorts, red sneakers, red sneakers"
+    },
+    "cast": [
+      {
+        "id": "bunny",
+        "name": "Зайчонок",
+        "role": "потерявшийся зайчонок",
+        "descriptor": "small bunny, white fur, soft ears, wearing no clothes, tiny pink nose"
+      }
+    ],
+    "locations": [
+      {
+        "id": "park",
+        "name": "парк",
+        "descriptor": "a wooden bench, surrounded by green grass and flowers"
+      }
+    ],
+    "props": [
+      {
+        "id": "carrot",
+        "descriptor": "orange toy carrot"
+      },
+      {
+        "id": "blanket",
+        "descriptor": "soft plaid blanket"
+      }
+    ],
+    "atmosphere": "Springtime, bright morning light, cheerful and warm."
+  }
+}

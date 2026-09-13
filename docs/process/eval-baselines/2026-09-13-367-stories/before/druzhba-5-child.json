@@ -1,0 +1,152 @@
+{
+  "title": "Алиса и песочный замок у башни",
+  "characterProfile": "5-year-old child, light skin, short brown hair, wearing blue overalls, red sneakers, always carries a small backpack",
+  "discussionQuestions": [
+    "1. Какой секрет Алиса узнала о песочнице?",
+    "2. Что смутило Алису, когда она увидела других детей?",
+    "3. Как Алиса решила проблему внутри себя?",
+    "4. Что она сделала, чтобы завести новых друзей?",
+    "5. Как Алиса теперь проводит время в песочнице?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и песочный замок у башни",
+      "illustrationPrompt": "the child walks carrying a small bucket and shovel, backpack on; eager stride; wide shot",
+      "scene": {
+        "locationId": "sandbox",
+        "castIds": [],
+        "propIds": ["bucket", "shovel"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Вот пришла Алиса и присела на край. Катя с Иваном вместе лепят куличи, смеются, у них целая дорожка и мостик. «Как здорово у вас получается!» — шепчет Алиса, глядя не мигая.",
+      "title": null,
+      "illustrationPrompt": "the child sits nearby watching Katya and Ivan shape sand cakes; the child leans forward curiously; medium wide shot",
+      "scene": {
+        "locationId": "sandbox",
+        "castIds": ["katya", "ivan"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Но Алиса мнётся у края и смотрит на носки. «А вдруг Катя и Иван скажут: нет мест?» — думает Алиса и прячет лопатку за спину. Ноги будто прилипли, шаг не делается.",
+      "title": null,
+      "illustrationPrompt": "the child fidgets, looking down at toes, hiding a toy shovel behind back; Katya and Ivan play together in background; medium shot",
+      "scene": {
+        "locationId": "sandbox",
+        "castIds": ["katya", "ivan"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "«Подойти? Или самой построить кулич?» — спорит с собой Алиса и рисует пальцем круг. «Если они заняты… а если обрадуются?» — Алиса дует на ладошку, будто надувает в себе смелость.",
+      "title": null,
+      "illustrationPrompt": "close-up of the child tracing a circle with a finger and blowing on her palm as if to gather courage; tight framing",
+      "scene": {
+        "locationId": "sandbox",
+        "castIds": [],
+        "propIds": ["bucket"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Набрала Алиса воздуха — и шагнула. «Привет, я Алиса. Можно с вами?» — говорит она и протягивает ведёрко. Катя с Иваном переглянулись, и место у башни словно само освободилось.",
+      "title": null,
+      "illustrationPrompt": "the child steps forward and offers a bucket to Katya and Ivan; small hopeful smile; medium wide shot",
+      "scene": {
+        "locationId": "sandbox",
+        "castIds": ["katya", "ivan"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "«А давайте построим замок с рвом!» — предлагает Алиса. «Я буду башню, а вы — мост!» — улыбается она. Катя с Иваном кивают: «Давай!» — и руки зашуршали песком рядом с Алисой.",
+      "title": null,
+      "illustrationPrompt": "the child suggests with animated hands; Katya and Ivan nod; all three start scooping sand together; medium overhead",
+      "scene": {
+        "locationId": "sandbox",
+        "castIds": ["katya", "ivan"],
+        "propIds": ["shovel", "bucket"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "С тех пор Алиса встречает Катю и Ивана каждый день: то куличи печёт, то дорожки рисует палочкой. «Завтра опять?» — зовёт Алиса на прощанье. «Опять!» — смеются друзья и машут ладошками.",
+      "title": null,
+      "illustrationPrompt": "the child with Katya and Ivan drawing paths with a stick, then waving goodbye to each other; wide shot",
+      "scene": {
+        "locationId": "garden",
+        "castIds": ["katya", "ivan"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса радуется, что рядом новые друзья и игры ждут её каждый день: строят башни, копают ров, зовут друг друга. Цени дружбу и заботься о друзьях.",
+      "title": null,
+      "illustrationPrompt": "the child laughing with two friends around a finished sand castle; warm group close-up",
+      "scene": {
+        "locationId": "sandbox",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "5-year-old child, light skin, short brown hair, wearing blue overalls, red sneakers, always carries a small backpack"
+    },
+    "cast": [
+      {
+        "id": "katya",
+        "name": "Катя",
+        "role": "девочка-соседка",
+        "descriptor": "5-year-old girl, medium skin, curly black hair, wearing yellow dress, green hat, carries a teddy bear"
+      },
+      {
+        "id": "ivan",
+        "name": "Иван",
+        "role": "мальчик-сосед",
+        "descriptor": "5-year-old boy, dark skin, short curly black hair, wearing red T-shirt, blue shorts, wears round glasses"
+      }
+    ],
+    "locations": [
+      {
+        "id": "sandbox",
+        "name": "песочница",
+        "descriptor": "large wooden sandbox, filled with yellow sand, surrounded by green grass"
+      },
+      {
+        "id": "garden",
+        "name": "сад",
+        "descriptor": "small garden with colorful flowers, wooden bench, around stone path"
+      }
+    ],
+    "props": [
+      {
+        "id": "bucket",
+        "descriptor": "red plastic bucket"
+      },
+      {
+        "id": "shovel",
+        "descriptor": "blue plastic shovel"
+      }
+    ],
+    "atmosphere": "Sunny spring day, bright and cheerful palette."
+  }
+}

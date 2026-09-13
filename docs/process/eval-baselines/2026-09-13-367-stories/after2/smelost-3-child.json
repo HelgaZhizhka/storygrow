@@ -1,0 +1,113 @@
+{
+  "title": "Алиса и тёмный уголок",
+  "discussionQuestions": [
+    "1. Что было страшным для Алисы?",
+    "2. Как Алиса почувствовала себя в начале?",
+    "3. Что Алиса делала, чтобы быть смелой?",
+    "4. Что произошло, когда она наконец заглянула?",
+    "5. Как ты думаешь, что Алиса увидела в уголке?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и тёмный уголок",
+      "illustrationPrompt": "the child smiles and gives a small wave; welcoming pose; wide view framing",
+      "scene": {
+        "locationId": "playroom",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса увидела тёмный уголок. «Ой, темно…» — сказала Алиса. Ноги стоят, а глаза глядят.",
+      "title": null,
+      "illustrationPrompt": "the child notices a dark corner, body slightly leaning back; eyes fixed on it; medium shot",
+      "scene": {
+        "locationId": "playroom",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса шагнула к уголку. «Не боюсь! Не боюсь!» — сказала Алиса. И встала на носочки.",
+      "title": null,
+      "illustrationPrompt": "the child takes a small step toward the corner, mouth mid-speech; cautious stride; low angle",
+      "scene": {
+        "locationId": "playroom",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса сделала ещё один шаг. «Не боюсь! Не боюсь!» — повторила Алиса. Уголок ближе-ближе.",
+      "title": null,
+      "illustrationPrompt": "the child takes a second step toward the corner, chin a bit higher; the corner closer; centered",
+      "scene": {
+        "locationId": "playroom",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса заглянула в уголок. «Ах!» — сказала Алиса и засмеялась. Там сидит забавная мягкая игрушка.",
+      "title": null,
+      "illustrationPrompt": "the child bends and peeks into the corner, breaking into a smile; a plush toy is revealed; close-up",
+      "scene": {
+        "locationId": "playroom",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Улыбаясь, Алиса вернулась к уголку. «Не боюсь! Не боюсь!» — сказала Алиса. И шагнула ещё раз.",
+      "title": null,
+      "illustrationPrompt": "the child turns back and approaches the corner again with a smile; steady step; same framing as before",
+      "scene": {
+        "locationId": "playroom",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса знает: Быть смелым значит действовать, несмотря на страх.",
+      "title": null,
+      "illustrationPrompt": "the child stands tall near the corner, calm and ready to act; simple centered composition",
+      "scene": {
+        "locationId": "playroom",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "3-year-old girl, fair skin, curly blonde hair, wearing red dress with white dots, wearing green shoes",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "3-year-old girl, fair skin, curly blonde hair, wearing red dress with white dots, wearing green shoes"
+    },
+    "cast": [],
+    "locations": [
+      {
+        "id": "playroom",
+        "name": "комната для игр",
+        "descriptor": "playroom with colorful walls, one cozy corner with a brown armchair, and toys scattered around"
+      }
+    ],
+    "props": [],
+    "atmosphere": "warm, cozy afternoon light, a playful and safe atmosphere."
+  }
+}

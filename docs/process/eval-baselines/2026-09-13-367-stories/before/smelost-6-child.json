@@ -1,0 +1,134 @@
+{
+  "title": "Алиса и качающаяся скамейка",
+  "characterProfile": "6-year-old girl, light skin, curly blonde hair, wearing red dress and yellow shoes, green backpack",
+  "discussionQuestions": [
+    "1. Какой Алиса была на качелях раньше?",
+    "2. Что испугало Алису сначала?",
+    "3. Что помогло Алисе почувствовать себя смелее?",
+    "4. Как Алиса справилась со страхом?",
+    "5. Что могло бы помочь тебе, если ты почувствуешь страх?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и качающаяся скамейка",
+      "illustrationPrompt": "the child and her friend playing; the child glances at a gently rocking bench; both cheerful; wide composition with bench included",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["katya"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Жил-был день на площадке — и вдруг Алиса увидела: скамейка сама качается, ветер её толкает. «Она меня сбросит?» — прошептала Алиса и замерла в шаге. Сердечко тук-тук, а ножки не идут.",
+      "title": null,
+      "illustrationPrompt": "the child hesitates a step from a rocking bench, hand to chest, eyes wide; side view",
+      "scene": {
+        "locationId": "bench",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Можно позвать Катю? Или самой? «Если сяду — упаду… а если проверю — узнаю», — спорит Алиса с собой. То делает шаг, то отступит, то пальцем толкнёт доску.",
+      "title": null,
+      "illustrationPrompt": "the child debates with herself near the bench, taking a step forward then back; fingertip taps the bench; medium shot",
+      "scene": {
+        "locationId": "bench",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "«Возьму медведя на удачу», — решила Алиса и прижала его к груди. «Пойдём, ты первый проверяешь, а я рядом», — шутливо сказала она и шагнула смелее.",
+      "title": null,
+      "illustrationPrompt": "the child hugs a teddy bear to chest, speaks to it, and takes a brave step toward the bench; three-quarter view",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["teddy"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса аккуратно присела, доски лишь мягко покачнулись. «Ой, да это как лодочка!» — засмеялась Алиса. Ветер плавно толкнул ещё раз, и сидеть оказалось спокойно и весело.",
+      "title": null,
+      "illustrationPrompt": "the child carefully sits on the bench, surprise turning into a smile as it gently rocks; hands gripping seat; medium close-up",
+      "scene": {
+        "locationId": "bench",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Подошла Катя: «Пустишь рядом?» — «Конечно!» — ответила Алиса и подвинулась. Они вместе нашли ритм: вперёд-назад, раз-два, и смех катится, как мячик.",
+      "title": null,
+      "illustrationPrompt": "the child and her friend sit side by side on the bench, rocking together and laughing; wide shot",
+      "scene": {
+        "locationId": "bench",
+        "castIds": ["katya"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Теперь Алиса вспоминает: ветер просто качал доски, а не пугал её. Быть смелым — это преодолевать страх, чтобы увидеть, что страшного нет.",
+      "title": null,
+      "illustrationPrompt": "the child walks past the bench with a proud smile, teddy in hand; the friend waves in the background; closing composition",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["flower"],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "6-year-old girl, light skin, curly blonde hair, wearing red dress and yellow shoes, green backpack"
+    },
+    "cast": [
+      {
+        "id": "katya",
+        "name": "Катя",
+        "role": "подруга",
+        "descriptor": "6-year-old girl, dark skin, straight black hair, wearing blue shorts and white t-shirt, pink hairband"
+      }
+    ],
+    "locations": [
+      {
+        "id": "playground",
+        "name": "игровая площадка",
+        "descriptor": "one swing made of wood, surrounded by colorful flowers"
+      },
+      {
+        "id": "bench",
+        "name": "скамейка",
+        "descriptor": "one wooden bench, painted green, next to the swing"
+      }
+    ],
+    "props": [
+      {
+        "id": "teddy",
+        "descriptor": "small brown teddy bear"
+      },
+      {
+        "id": "flower",
+        "descriptor": "yellow daffodil"
+      }
+    ],
+    "atmosphere": "Sunny spring day with a cheerful, bright palette."
+  }
+}
