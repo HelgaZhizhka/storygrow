@@ -234,7 +234,7 @@ independent of B and can run in parallel.
 | A1 + A8: cascade, `timeOfDay`/`framing`, Pro leftovers, harness variants, spikes | #372 | done |
 | A3 part 2 + A4 + A5: judge required, fail-loud config, `AiModule` test, `check:book` | #373 | done |
 | C1: idempotent `images_failed` retry (pulled forward into wave A) | #374 | done |
-| A6 + A7: OpenAI image provider, simplifier | #375 | open, deferred |
+| A6 + A7: OpenAI image provider, simplifier | #375 | done (LangFuse span count unavailable — off in prod, no local instance; deleted on the structural argument: the simplifier's prompt is DALL-E-specific and drops hero + setting, which the judge would fail anyway) |
 | B1 + B7 + B9: Prose contract (in frame list, no hero look, judge sees bible) + the misleading «Жил-был…» hint fixed | #367 | done — measured neutral-to-positive (see progress 2026-09-13); ornate similes remain a register topic for B8 / exemplar work |
 | B10: structured Location with size, `proportionsNatural` | #366 | done |
 | B3 + B5 + B6: one hero-appearance source, photo path | #376 | done |

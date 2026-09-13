@@ -16,7 +16,6 @@ type AspectRatio = '1:1' | '2:3' | '3:2';
 type GeminiPrompt = string | { text: string; images: Uint8Array[] };
 
 export class GeminiImageProvider implements ImageProvider {
-  readonly usesReference = true;
   readonly modelLabel = GEMINI_IMAGE_MODEL;
   /** gemini-2.5-flash-image accepts 3 input images (Google docs, checked 2026-09-03). */
   readonly maxReferences = 3;

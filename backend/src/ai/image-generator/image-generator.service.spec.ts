@@ -3,24 +3,14 @@ jest.mock('../../generated/prisma/client', () => ({
 }));
 
 const mockGenerateImage = jest.fn();
-const mockGenerateText = jest.fn();
 
 jest.mock('ai', () => ({
   generateImage: (...args: unknown[]): unknown => mockGenerateImage(...args),
-  generateText: (...args: unknown[]): unknown => mockGenerateText(...args),
   NoImageGeneratedError: class NoImageGeneratedError extends Error {
     static isInstance(e: unknown): boolean {
       return e instanceof Error && e.constructor.name === 'NoImageGeneratedError';
     }
   },
-}));
-
-const mockTextModel = { id: 'gpt-4o-mini-mock' };
-const mockCreateOpenAI = jest.fn().mockReturnValue(jest.fn().mockReturnValue(mockTextModel));
-
-jest.mock('@ai-sdk/openai', () => ({
-  openai: { imageModel: jest.fn((id: string) => ({ id })) },
-  createOpenAI: (...args: unknown[]): unknown => mockCreateOpenAI(...args),
 }));
 
 const mockGoogleImage = jest.fn((id: string) => ({ id }));
@@ -44,7 +34,6 @@ import { ConfigService } from '@nestjs/config';
 import { ImageGeneratorService } from './image-generator.service';
 import { ReferenceSheetsService } from './reference-sheets.service';
 import { ImageJudgeService } from './image-judge.service';
-import { ImageContentPolicyError } from './errors';
 import { S3Service } from '../../s3/s3.service';
 import type { Story } from '../schemas';
 import { visualBibleFixture, sceneFixture } from '../schemas/__fixtures__/visual-bible.fixture';
@@ -98,7 +87,7 @@ const passThroughJudge = () => ({
   judge: jest.fn().mockResolvedValue({ passed: true, failures: [] }),
 });
 
-const makeService = async (imageProvider = 'openai'): Promise<ImageGeneratorService> => {
+const makeService = async (imageProvider = 'gemini'): Promise<ImageGeneratorService> => {
   const module = await Test.createTestingModule({
     providers: [
       ImageGeneratorService,
@@ -116,101 +105,25 @@ describe('ImageGeneratorService', () => {
     jest.clearAllMocks();
   });
 
-  describe('OpenAI provider (usesReference=false)', () => {
-    it('generates one image per page, uploads each to S3, returns imageKeys and null portrait', async () => {
-      const service = await makeService('openai');
-      mockGenerateImage.mockResolvedValue({ image: { uint8Array: new Uint8Array([1, 2, 3]) } });
-      mockS3.uploadObject.mockResolvedValue(undefined);
-
-      const story = makeStory({ pageCount: 3 });
-      const result = await service.generate({ story, bookId: 'book-1', artStyle: 'watercolor' });
-
-      expect(result.imageKeys).toEqual([
-        'books/book-1/page-1.png',
-        'books/book-1/page-2.png',
-        'books/book-1/page-3.png',
-      ]);
-      expect(result.characterPortraitKey).toBeNull();
-      expect(mockGenerateImage).toHaveBeenCalledTimes(3);
-      expect(mockS3.uploadObject).toHaveBeenCalledTimes(3);
-    });
-
-    it('skips the portrait on the openai provider and returns a null portrait key', async () => {
-      const service = await makeService('openai');
-      mockGenerateImage.mockResolvedValue({ image: { uint8Array: new Uint8Array([1]) } });
-      mockS3.uploadObject.mockResolvedValue(undefined);
-
-      const story = makeStory({ characterProfile: 'a girl', pageCount: 1 });
-      const result = await service.generate({ story, bookId: 'book-2', artStyle: 'watercolor' });
-
-      expect(result.characterPortraitKey).toBeNull();
-      expect(mockS3.uploadObject).toHaveBeenCalledTimes(1);
-    });
-
-    it('uploads each image with image/png contentType and deterministic key', async () => {
-      const service = await makeService('openai');
+  describe('page images (every provider takes references, #375)', () => {
+    it('generates one image per page and uploads each with image/png and a deterministic key', async () => {
+      const service = await makeService();
       mockGenerateImage.mockResolvedValue({ image: { uint8Array: new Uint8Array([1]) } });
       mockS3.uploadObject.mockResolvedValue(undefined);
 
       const story = makeStory({ pageCount: 2 });
-      await service.generate({ story, bookId: 'book-xyz', artStyle: 'watercolor' });
+      const result = await service.generate({ story, bookId: 'book-xyz', artStyle: 'watercolor' });
 
-      expect(mockS3.uploadObject).toHaveBeenCalledWith(
-        expect.objectContaining({
-          key: 'books/book-xyz/page-1.png',
-          contentType: 'image/png',
-        }),
-      );
-      expect(mockS3.uploadObject).toHaveBeenCalledWith(
-        expect.objectContaining({
-          key: 'books/book-xyz/page-2.png',
-          contentType: 'image/png',
-        }),
-      );
+      expect(result.imageKeys).toEqual(['books/book-xyz/page-1.png', 'books/book-xyz/page-2.png']);
+      for (const key of result.imageKeys) {
+        expect(mockS3.uploadObject).toHaveBeenCalledWith(
+          expect.objectContaining({ key, contentType: 'image/png' }),
+        );
+      }
     });
 
-    it('on content policy error: simplifies prompt via LLM and retries image generation', async () => {
-      const service = await makeService('openai');
-      mockGenerateText.mockResolvedValue({ text: 'simplified safe prompt' });
-      mockS3.uploadObject.mockResolvedValue(undefined);
-
-      // First call: throw an error that unambiguously maps to ImageGenerationError('refused')
-      // via the provider's isContentPolicyError cause.code check.
-      // Second call (after simplification): succeeds.
-      const contentPolicyErr = Object.assign(new Error('image generation failed'), {
-        cause: { code: 'content_policy_violation' },
-      });
-      mockGenerateImage
-        .mockRejectedValueOnce(contentPolicyErr)
-        .mockResolvedValue({ image: { uint8Array: new Uint8Array([9, 8, 7]) } });
-
-      const story = makeStory({ pageCount: 1 });
-      const result = await service.generate({ story, bookId: 'b', artStyle: 'watercolor' });
-
-      // Simplify step must have been called exactly once (the retry path was taken)
-      expect(mockGenerateText).toHaveBeenCalledTimes(1);
-      // Provider was called twice: original attempt + simplified retry
-      expect(mockGenerateImage).toHaveBeenCalledTimes(2);
-      // The page was ultimately produced and uploaded to S3
-      expect(mockS3.uploadObject).toHaveBeenCalledWith(
-        expect.objectContaining({ key: 'books/b/page-1.png', contentType: 'image/png' }),
-      );
-      expect(result.imageKeys).toEqual(['books/b/page-1.png']);
-    });
-
-    it('throws ImageContentPolicyError when both original and simplified prompt are rejected', async () => {
-      const service = await makeService('openai');
-      mockGenerateImage.mockRejectedValue(new Error('content_policy_violation'));
-      mockGenerateText.mockResolvedValue({ text: 'simplified prompt' });
-
-      const story = makeStory({ pageCount: 1 });
-      await expect(
-        service.generate({ story, bookId: 'b', artStyle: 'watercolor' }),
-      ).rejects.toBeInstanceOf(ImageContentPolicyError);
-    });
-
-    it('propagates non-content-policy errors as-is', async () => {
-      const service = await makeService('openai');
+    it('propagates a provider error as-is (no simplify-and-retry)', async () => {
+      const service = await makeService();
       mockGenerateImage.mockRejectedValueOnce(new Error('network timeout'));
 
       const story = makeStory({ pageCount: 1 });
@@ -220,7 +133,7 @@ describe('ImageGeneratorService', () => {
     });
   });
 
-  describe('Gemini provider (usesReference=true)', () => {
+  describe('Gemini provider', () => {
     it('generates a portrait then one image per page and returns the portrait key', async () => {
       const service = await makeService('gemini');
       mockGenerateImage.mockResolvedValue({ image: { uint8Array: new Uint8Array([1]) } });

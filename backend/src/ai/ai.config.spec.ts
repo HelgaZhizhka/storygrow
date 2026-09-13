@@ -29,7 +29,7 @@ describe('image config', () => {
     expect(IMAGE_SIZE_TO_ASPECT_RATIO['1536x1024']).toBe('3:2');
   });
 
-  it('defaults to the gemini provider', () => {
+  it('defaults to the xai provider', () => {
     expect(DEFAULT_IMAGE_PROVIDER).toBe('xai');
   });
 
@@ -46,11 +46,14 @@ describe('GEMINI_VISION_MODEL (#359)', () => {
 });
 
 describe('parseImageProvider (#373)', () => {
-  it('defaults to xai and accepts the three known providers', () => {
+  it('defaults to xai and accepts the two reference-capable providers', () => {
     expect(parseImageProvider(undefined)).toBe('xai');
     expect(parseImageProvider('')).toBe('xai');
     expect(parseImageProvider('gemini')).toBe('gemini');
-    expect(parseImageProvider('openai')).toBe('openai');
+  });
+
+  it('no longer knows the OpenAI image provider (#375: it took no references)', () => {
+    expect(() => parseImageProvider('openai')).toThrow(/IMAGE_PROVIDER/);
   });
 
   it('throws on an unknown value instead of silently selecting another model', () => {

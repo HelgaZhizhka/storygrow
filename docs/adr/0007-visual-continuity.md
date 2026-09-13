@@ -1,6 +1,6 @@
 # ADR-0007: Visual continuity — portrait-as-reference, lean illustration prompt, Grok as default image model
 
-**Status:** Accepted (amended 2026-09-05: reference sheets on by default, 5-reference budget on Grok)
+**Status:** Accepted (amended 2026-09-05: reference sheets on by default, 5-reference budget on Grok; amended 2026-09-13, #375: the OpenAI `gpt-image-1` provider and the DALL-E prompt simplifier deleted — every provider takes references, a refusal fails the page loud)
 **Date:** 2026-09-04
 **Issues:** #348 (tracker), #350/#351/#352 (rollout), PRs #353/#355/#356 · **Spec:** `docs/superpowers/specs/2026-09-03-visual-bible-design.md`
 
@@ -25,8 +25,10 @@ of by taste.
    "as in reference image k" mentions (`illustration.prompt.ts`).
 3. **Default image model: xAI Grok Imagine 2.0** (`IMAGE_PROVIDER=xai`,
    `XAI_API_KEY`). Gemini `gemini-2.5-flash-image` stays the fallback behind the
-   same flag; OpenAI `gpt-image-1` remains legacy. The code default constant stays
-   `gemini` so the app boots without an xAI key; production sets `xai` via env.
+   same flag. OpenAI `gpt-image-1` was kept as legacy until #375 removed it: it
+   took no references, so no portrait, no sheets, no photo — a silent quality
+   regression, not a fallback. The code default is `xai` since #373 (the app
+   needs a Gemini key anyway, so "boots without an xAI key" was never real).
 4. **Reference sheets (#355) are ON by default** (`IMAGE_REFERENCE_SHEETS=on`,
    amended 2026-09-05): one stylised portrait per cast member and one
    establishing shot per location, generated once per book and passed as
