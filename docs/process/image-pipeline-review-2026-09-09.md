@@ -239,7 +239,7 @@ independent of B and can run in parallel.
 | B10: structured Location with size, `proportionsNatural` | #366 | done |
 | B3 + B5 + B6: one hero-appearance source, photo path | #376 | done |
 | B8: post-Prose illustrator brief | #377 | deferred until #367 is measured |
-| A2 + B2 + B4: page count by Plan, `.describe()`, repairs by kind | #378 | open |
+| A2 + B2 + B4: page count by Plan, `.describe()`, repairs by kind | #378 | done (legacy path removed after a prod count: 18 ready books without a bible, none can re-enter image generation) |
 | C2 + C4: ImageEval dashboard, provenance, cost | #379 | open |
 | C3: limits linter, S3 key layout | #380 | open |
 | D1: consolidated image-pipeline document | #381 | last |

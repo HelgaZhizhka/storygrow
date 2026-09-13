@@ -48,7 +48,9 @@ export class StoryEvaluatorService {
 
   async evaluate(input: EvaluateInput): Promise<EvalCheckResult> {
     const { story, childAge, learningGoal, bookId, corpusWords } = input;
-    const structural = validateBookPlan(story.pages, childAge);
+    const structural = validateBookPlan(story.pages, childAge, {
+      expectScenes: Boolean(story.visualBible),
+    });
     const languagePurity = checkLanguagePurity(story);
     const compliance = checkCompliance(story, corpusWords);
     const judgeResult = await this.judgeStory({ story, childAge, learningGoal, bookId });

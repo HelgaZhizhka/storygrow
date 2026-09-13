@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { startActiveObservation } from '@langfuse/tracing';
 import { ConfigService } from '@nestjs/config';
 import { generateObject } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
@@ -15,6 +16,7 @@ import {
   AppearanceSchema,
   heroKind,
   type Appearance,
+  impliedNounsAdded,
 } from '../schemas';
 import { normalizeVisualBible } from '../validators';
 import { ageToAgeBand, type AgeBand } from '../../pdf/page-templates/page-templates.config';
@@ -75,6 +77,11 @@ export class StoryGeneratorService {
     const appearance = await this.resolveHeroAppearance(plan, input);
     plan.visualBible.hero.appearance = appearance;
     plan.characterProfile = renderAppearance(appearance);
+    // Canary (#378): nouns the renderer had to add because the model dropped
+    // them; should fall to zero now that the schema fields carry descriptions.
+    const implied = impliedNounsAdded(appearance);
+    if (implied > 0)
+      this.logger.log(`Book ${input.bookId}: renderAppearance added ${implied} implied noun(s)`);
     const prose = await this.generateProse(plan, input, ageBand);
     // Merge the Visual Bible + per-page scenes into the persisted Story in code
     // (#348) — the prose model is never asked to reproduce them.
@@ -169,9 +176,17 @@ export class StoryGeneratorService {
         bookId: input.bookId,
       }),
     });
-    const { plan, repairs } = normalizeVisualBible(object);
+    const { plan, repairs, repairKinds } = normalizeVisualBible(object);
+    // Measured by kind (#378): each kind is a contract gap in the Plan output
+    // worth closing at the schema, not papering over silently.
+    await startActiveObservation('story-plan.normalize', (span) => {
+      span.update({ metadata: { bookId: input.bookId }, output: { repairs, ...repairKinds } });
+      return Promise.resolve();
+    });
     if (repairs > 0) {
-      this.logger.warn(`Book ${input.bookId}: Visual Bible repaired (${repairs} fixes)`);
+      this.logger.warn(
+        `Book ${input.bookId}: Visual Bible repaired (${repairs}): ${JSON.stringify(repairKinds)}`,
+      );
     }
     return plan;
   }
@@ -184,15 +199,20 @@ export class StoryGeneratorService {
    * plan (Prose follows the plan exactly); a missing scene stays undefined.
    */
   private mergeVisualBible(story: ProseOutput, plan: StoryPlan, bookId: string): Story {
-    if (story.pages.length !== plan.pages.length) {
-      // Prose is instructed to follow the plan exactly; if it drifted, scenes
-      // align by index and any trailing page falls back to the legacy prompt.
-      this.logger.warn(
-        `Book ${bookId}: prose emitted ${story.pages.length} pages, plan has ${plan.pages.length}; scenes align by index`,
-      );
-    }
     const visualBible = toStoryBible(plan.visualBible, plan.characterProfile);
-    const pages = story.pages.map((page, i) => ({ ...page, scene: plan.pages[i]?.scene }));
+    // The schema fixes the page count to the plan's (#378); a page whose
+    // template differs from the plan gets NO scene, and the structural check
+    // turns that into a regeneration with feedback instead of a silent misfit.
+    const pages = story.pages.map((page, i) => {
+      const planned = plan.pages[i];
+      if (planned.template !== page.template) {
+        this.logger.warn(
+          `Book ${bookId}: page ${i + 1} template ${page.template} differs from the plan's ${planned.template}`,
+        );
+        return page;
+      }
+      return { ...page, scene: planned.scene };
+    });
     // The hero look is the plan's (rendered / derived) profile, set in code —
     // never the prose model's copy of it (#360).
     return { ...story, characterProfile: plan.characterProfile, visualBible, pages };
@@ -205,7 +225,7 @@ export class StoryGeneratorService {
   ): Promise<ProseOutput> {
     const { object } = await generateObject({
       model: this.openai(input.model ?? PROSE_MODEL),
-      schema: buildProseSchema(ageBand),
+      schema: buildProseSchema(ageBand, plan.pages.length),
       system: buildProseSystemPrompt(ageBand),
       prompt: buildProsePrompt(plan, input),
       experimental_telemetry: createTelemetry('story-prose', {

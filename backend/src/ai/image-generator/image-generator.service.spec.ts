@@ -63,16 +63,21 @@ const makeMockConfig = (imageProvider: string) => ({
   getOrThrow: jest.fn(() => 'test-key'),
 });
 
+// Every story carries a Visual Bible + a scene per page: the pre-#348 legacy
+// path was removed in #378 and a bible-less story is now a hard error.
 const makeStory = (opts: { characterProfile?: string; pageCount?: number } = {}): Story => {
   const pageCount = opts.pageCount ?? 3;
+  const characterProfile = opts.characterProfile ?? '5-year-old girl with red hair';
   return {
     title: 'Test',
-    characterProfile: opts.characterProfile ?? '5-year-old girl with red hair',
+    characterProfile,
+    visualBible: visualBibleFixture({ hero: { name: 'Алиса', descriptor: characterProfile } }),
     pages: Array.from({ length: pageCount }, (_, i) => ({
       template: i === 0 ? ('cover' as const) : ('image-top' as const),
       text: i === 0 ? null : `page ${i}`,
       title: i === 0 ? 'Cover' : null,
       illustrationPrompt: `prompt-${i}`,
+      scene: sceneFixture({ locationId: 'home', heroOnPage: true }),
     })),
     discussionQuestions: ['Q1?', 'Q2?', 'Q3?', 'Q4?', 'Q5?'],
   };
@@ -84,10 +89,6 @@ const makeBibleStory = (): Story => ({
     hero: { name: 'Алиса', descriptor: '5-year-old girl, red hair' },
     locations: [{ id: 'home', name: 'дом', descriptor: 'a green slide in a yard' }],
   }),
-  pages: makeStory({ pageCount: 2 }).pages.map((p) => ({
-    ...p,
-    scene: sceneFixture({ locationId: 'home', heroOnPage: true }),
-  })),
 });
 
 // The judge is a required dependency (#373); these tests exercise the image
@@ -230,8 +231,8 @@ describe('ImageGeneratorService', () => {
 
       expect(result.imageKeys).toHaveLength(2);
       expect(result.characterPortraitKey).toBe('books/book-1/portrait.png');
-      // 1 portrait + 2 pages
-      expect(mockS3.uploadObject).toHaveBeenCalledTimes(3);
+      // 1 portrait + 1 location sheet + 2 pages
+      expect(mockS3.uploadObject).toHaveBeenCalledTimes(4);
     });
 
     it('skips portrait when characterProfile is empty', async () => {
@@ -242,13 +243,23 @@ describe('ImageGeneratorService', () => {
       const story: Story = {
         title: 'No Profile',
         characterProfile: '',
-        pages: [{ template: 'image-top', text: 'text', title: null, illustrationPrompt: 'p1' }],
+        visualBible: visualBibleFixture({ hero: { name: 'Алиса', descriptor: '' } }),
+        pages: [
+          {
+            template: 'image-top',
+            text: 'text',
+            title: null,
+            illustrationPrompt: 'p1',
+            scene: sceneFixture({ locationId: 'home', heroOnPage: true }),
+          },
+        ],
         discussionQuestions: ['Q1?', 'Q2?', 'Q3?', 'Q4?', 'Q5?'],
       };
       const result = await service.generate({ story, bookId: 'book-3', artStyle: 'cartoon' });
 
       expect(result.characterPortraitKey).toBeNull();
-      expect(mockS3.uploadObject).toHaveBeenCalledTimes(1);
+      // 1 location sheet + 1 page (no portrait upload)
+      expect(mockS3.uploadObject).toHaveBeenCalledTimes(2);
     });
 
     it('photo flow: loads the approved portrait, generates no portrait, folds descriptor into pages', async () => {
@@ -269,10 +280,16 @@ describe('ImageGeneratorService', () => {
       // Approved portrait is loaded, not generated, and reused as the key.
       expect(mockS3.getObjectBytes).toHaveBeenCalledWith('books/book-9/portrait.png');
       expect(result.characterPortraitKey).toBe('books/book-9/portrait.png');
-      // Only the 2 page images are uploaded (no portrait upload).
-      expect(mockS3.uploadObject).toHaveBeenCalledTimes(2);
+      // 1 location sheet + 2 page images are uploaded (no portrait upload).
+      expect(mockS3.uploadObject).toHaveBeenCalledTimes(3);
       // Descriptor is folded into each page prompt (the provider wraps it further).
-      const pageCalls = mockGenerateImage.mock.calls as Array<[{ prompt: { text?: string } }]>;
+      // page calls only — the location sheet is a peopleless establishing shot
+      const pageCalls = (
+        mockGenerateImage.mock.calls as Array<[{ prompt: string | { text?: string } }]>
+      ).filter(
+        (call): call is [{ prompt: { text?: string } }] => typeof call[0].prompt === 'object',
+      );
+      expect(pageCalls).toHaveLength(2);
       expect(pageCalls.every(([arg]) => arg.prompt.text?.includes('round face, blue eyes.'))).toBe(
         true,
       );
@@ -374,5 +391,20 @@ describe('ImageJudgeService wiring (DI)', () => {
     };
     await service.generate({ story, bookId: 'b-di', artStyle: 'watercolor' });
     expect(judge.judge).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('no Visual Bible (#378)', () => {
+  it('fails loud instead of falling back to the removed legacy prompt', async () => {
+    const service = await makeService('gemini');
+    const { visualBible: _omit, ...legacy } = makeStory({ pageCount: 1 });
+    void _omit;
+    await expect(
+      service.generate({
+        story: { ...legacy, pages: legacy.pages.map(({ scene: _s, ...p }) => (void _s, p)) },
+        bookId: 'book-legacy',
+        artStyle: 'watercolor',
+      }),
+    ).rejects.toThrow(/no Visual Bible/);
   });
 });
