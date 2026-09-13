@@ -9,6 +9,7 @@ import { BookImageService } from '../books/book-image.service';
 import { BookProgressService } from '../books/book-progress.service';
 import { PdfRenderService } from '../pdf/pdf-render.service';
 import type { Story } from '../ai/schemas';
+import { AppearanceSchema, heroKind, renderAppearance } from '../ai/schemas';
 import { GENERATION_QUEUE, type GenerateBookPayload } from './generation.types';
 
 interface BookWithRelations {
@@ -19,6 +20,7 @@ interface BookWithRelations {
   artStyle: 'watercolor' | 'cartoon' | 'storybook' | 'pixel' | 'realistic';
   characterPortraitKey: string | null;
   characterDescriptor: string | null;
+  characterAppearance: unknown;
   referenceImageKeys: string[];
   interests: string[];
   motifs: string[];
@@ -121,7 +123,7 @@ export class GenerationProcessor extends WorkerHost {
           bookId,
           artStyle: book.artStyle,
           approvedPortraitKey: isPhotoFlow ? book.characterPortraitKey : null,
-          characterDescriptor: book.characterDescriptor,
+          characterDescriptor: isPhotoFlow ? heroLookFromPhoto(book) : null,
           run: await this.nextImageRun(bookId),
           // Same story as the failed run → its portrait and sheets are still
           // valid: reuse them instead of buying them again (#374).
@@ -192,6 +194,7 @@ export class GenerationProcessor extends WorkerHost {
         artStyle: true,
         characterPortraitKey: true,
         characterDescriptor: true,
+        characterAppearance: true,
         referenceImageKeys: true,
         interests: true,
         motifs: true,
@@ -223,3 +226,19 @@ export class GenerationProcessor extends WorkerHost {
     await this.prisma.book.update({ where: { id: bookId }, data: { status } });
   }
 }
+
+/**
+ * Photo mode (#376): the pages and the judge get the English structured look the
+ * vision call extracted (skin, hair, the outfit worn in the photo), with `kind`
+ * from the child's age + gender — the same shape every other mode uses. Books
+ * uploaded before #376 have no structured look and fall back to the Russian
+ * face line the portrait was built from.
+ */
+const heroLookFromPhoto = (book: BookWithRelations): string | null => {
+  const parsed = AppearanceSchema.safeParse(book.characterAppearance);
+  if (!parsed.success) return book.characterDescriptor;
+  return renderAppearance({
+    ...parsed.data,
+    kind: heroKind(book.child.age, book.child.gender ?? undefined),
+  });
+};

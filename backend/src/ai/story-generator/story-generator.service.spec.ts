@@ -81,12 +81,15 @@ const validStory: Story = {
 
 // What generateStory persists: the plan bible rendered to descriptors, the hero
 // descriptor = characterProfile rendered from the structured appearance (#360).
+// In child mode the hero's kind is built from age + gender (#376): the input
+// fixture is a 6-year-old with no gender → "6-year-old child".
+const heroLook = { ...planVisualBibleFixture().hero.appearance, kind: '6-year-old child' };
 const mergedStory: Story = {
   ...validStory,
-  characterProfile: renderAppearance(planVisualBibleFixture().hero.appearance),
+  characterProfile: renderAppearance(heroLook),
   visualBible: toStoryBible(
-    planVisualBibleFixture(),
-    renderAppearance(planVisualBibleFixture().hero.appearance),
+    { ...planVisualBibleFixture(), hero: { name: 'Герой', appearance: heroLook } },
+    renderAppearance(heroLook),
   ),
   pages: validStory.pages.map((p, i) => ({ ...p, scene: validPlan.pages[i].scene })),
 };
@@ -141,7 +144,7 @@ describe('StoryGeneratorService', () => {
     expect(result.pages.every((p) => p.scene !== undefined)).toBe(true);
     // Hero descriptor = characterProfile = the structured appearance rendered
     // in code (#360) — never the model's free-text placeholder, never a name.
-    const rendered = renderAppearance(validPlan.visualBible.hero.appearance);
+    const rendered = renderAppearance(heroLook);
     expect(result.characterProfile).toBe(rendered);
     expect(result.visualBible?.hero.descriptor).toBe(rendered);
     expect(rendered).not.toContain(validPlan.heroName);
@@ -246,5 +249,68 @@ describe('StoryGeneratorService', () => {
 
     const titleCall = mockGenerateObject.mock.calls[2][0] as { system: string };
     expect(titleCall.system).toContain('40 characters maximum'); // 3-4 cap, via buildTitleSystem
+  });
+});
+
+describe('hero appearance — one source in every mode (#376)', () => {
+  let service: StoryGeneratorService;
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    const module = await Test.createTestingModule({
+      providers: [
+        StoryGeneratorService,
+        { provide: ConfigService, useValue: { getOrThrow: () => 'k', get: () => undefined } },
+      ],
+    }).compile();
+    service = module.get(StoryGeneratorService);
+  });
+
+  it('child mode with a parent description: derived structured look wins, kind from age + gender, bible and profile agree', async () => {
+    const derived = appearanceFixture({
+      kind: 'ignored by the system',
+      hair: 'long wavy red hair',
+      outfit: 'a green dress',
+      detail: 'round glasses',
+    });
+    mockGenerateObject
+      .mockResolvedValueOnce({ object: validPlan } as never) // plan
+      .mockResolvedValueOnce({ object: derived } as never) // appearance derivation
+      .mockResolvedValueOnce({ object: validStory } as never) // prose
+      .mockResolvedValueOnce({ object: { title: validStory.title } } as never); // title
+    const story = await service.generateStory({
+      ...input,
+      protagonistMode: 'child',
+      appearance: 'рыжие волнистые волосы, очки',
+      gender: 'female',
+      childAge: 5,
+    });
+    const expected = renderAppearance({ ...derived, kind: '5-year-old girl' });
+    expect(story.characterProfile).toBe(expected);
+    expect(story.visualBible?.hero.descriptor).toBe(expected);
+    expect(expected).toContain('long wavy red hair');
+    expect(expected).not.toContain('ignored by the system');
+  });
+
+  it('child mode without a description: the Plan look with kind from age + gender', async () => {
+    mockPlanThenProse();
+    const story = await service.generateStory({
+      ...input,
+      protagonistMode: 'child',
+      appearance: undefined,
+      gender: 'male',
+      childAge: 6,
+    });
+    expect(story.characterProfile.startsWith('6-year-old boy,')).toBe(true);
+    expect(story.visualBible?.hero.descriptor).toBe(story.characterProfile);
+  });
+
+  it('observer mode: the Plan-invented look stands as is', async () => {
+    mockPlanThenProse();
+    const story = await service.generateStory({
+      ...input,
+      protagonistMode: 'observer',
+      appearance: undefined,
+    });
+    expect(story.characterProfile).toBe(renderAppearance(validPlan.visualBible.hero.appearance));
   });
 });

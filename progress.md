@@ -1486,3 +1486,19 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - 254 backend tests, `./init.sh` green; `CONTEXT.md` (Visual Bible, Image Eval) and the review tracking updated.
 
 **Blockers:** none.
+
+---
+
+## 2026-09-13 — feat(ai): one source for the hero appearance in every mode; photo path gets structured English fields (#376, review B3+B5+B6)
+
+**Why:** up to six appearance strings per book, and in the real launch flow (parent describes the child) the hero's look was free text from gpt-4o-mini with no required fields — no skin tone, exactly the omission class #360 closed for cast. Photo mode fed a Russian face line into the page prompt and the judge.
+
+**Done:**
+- **One `Appearance` resolved once after the Plan** (`resolveHeroAppearance`), written back into the bible and rendered into `characterProfile`: the portrait, every page's hero line and the judge context are the same words in every mode (asserted in tests for child-with-description, child-without, observer).
+- **`kind` from age + gender in code** (`heroKind`); `ensureHeroGender` (which derived from model text what the input already knew) deleted.
+- **Parent description → the same `AppearanceSchema`** via `generateObject` (was free text): skin tone always present, outfit always with colours, `detail` keeps EVERY distinctive thing the parent wrote. Found in the real book: the parent wrote «круглые очки … веснушки» and the first prompt kept only the freckles — fixed the instruction; a three-description probe now returns "round glasses, freckles".
+- **Photo mode:** the vision call also returns a structured English `appearance` (skin, hair, the outfit worn in the photo, one detail), stored in `Book.characterAppearance` (migration `20260913170000`); the processor renders it with `kind` from the child's age + gender for the pages and the judge, while the Russian face line stays for the portrait step and parent editing. Books uploaded before #376 fall back to the Russian line.
+- **Real book** (local stack, child mode with a parent description): «Вера и мягкая игрушка дружбы» — profile «5-year-old girl, light skin, shoulder-length curly red hair, wearing a green dress with white polka dots, freckles»; portrait and all 7 pages match it (red curls, polka-dot dress, freckles); judge 7/7 first attempt; `check:book` OK. Photo mode covered by unit tests (no photo available locally).
+- 321 backend tests, `./init.sh` green; `CONTEXT.md` (Photo Character, Character Profile), review tracking updated.
+
+**Blockers:** none.

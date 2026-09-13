@@ -51,6 +51,17 @@ export type Appearance = z.infer<typeof AppearanceSchema>;
 const withNoun = (value: string, noun: string, alreadyThere: RegExp): string =>
   alreadyThere.test(value) ? value : `${value} ${noun}`;
 
+/**
+ * The hero's `kind` is built in code from what the input already knows (#376):
+ * age and gender. The Plan model wrote "3-year-old child" for a girl and the
+ * portrait came out a boy; deriving from model text what the input states was
+ * the wrong direction. 'other' / unknown gender → "child".
+ */
+export const heroKind = (age: number, gender?: string): string => {
+  const word = gender === 'female' ? 'girl' : gender === 'male' ? 'boy' : 'child';
+  return `${age}-year-old ${word}`;
+};
+
 /** The fixed English descriptor every page and sheet uses. No name — a name in an image prompt gets drawn as a label. */
 export const renderAppearance = (a: Appearance): string => {
   const skin = withNoun(a.skin.trim(), 'skin', /skin|fur|feather|scale|coat|complexion/i);
