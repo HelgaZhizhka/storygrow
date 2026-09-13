@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { startActiveObservation } from '@langfuse/tracing';
 import { createOpenAI } from '@ai-sdk/openai';
@@ -6,9 +6,9 @@ import type { LanguageModel } from 'ai';
 import { type Story } from '../schemas';
 import { S3Service } from '../../s3/s3.service';
 import {
-  DEFAULT_IMAGE_PROVIDER,
   GENERATION_MODEL,
   STYLE_SUFFIXES,
+  parseImageProvider,
   type ArtStyle,
   type ImageProviderName,
 } from '../ai.config';
@@ -62,35 +62,22 @@ export class ImageGeneratorService {
   private readonly logger = new Logger(ImageGeneratorService.name);
   private readonly textModel: LanguageModel;
   private readonly provider: ImageProvider;
-  // Reference sheets (#348, PR 2) are ON by default (ADR-0007, 2026-09-05): with
-  // the hero portrait alone, cast members were text-only and re-drawn on every
-  // page (outfit, even skin tone drifted). Cast portraits + a location sheet as
-  // references fixed it 12/12 pages on Grok. IMAGE_REFERENCE_SHEETS=off disables.
-  private readonly sheetsEnabled: boolean;
   private readonly pages: PageRenderer;
 
+  // The judge is a REQUIRED dependency (#373): the first real run after #362
+  // had it silently off because it was declared optional. Scripts construct it
+  // with an in-memory sink; nothing runs the image pipeline without a judge.
   constructor(
     private readonly s3: S3Service,
     config: ConfigService,
     private readonly referenceSheets: ReferenceSheetsService,
-    // Optional so scripts/tests without a judge (or a DB) still construct the
-    // service. The explicit token matters: with a union type Nest reflects
-    // `Object`, cannot resolve the provider, and @Optional silently injects
-    // null — the judge was OFF in the first real run despite the flag.
-    @Optional() @Inject(ImageJudgeService) judge: ImageJudgeService | null = null,
+    judge: ImageJudgeService,
   ) {
     this.textModel = createOpenAI({ apiKey: config.getOrThrow<string>('OPENAI_API_KEY') })(
       GENERATION_MODEL,
     );
-    this.sheetsEnabled = (config.get<string>('IMAGE_REFERENCE_SHEETS') ?? 'on') !== 'off';
-    const name = (config.get<string>('IMAGE_PROVIDER') ??
-      DEFAULT_IMAGE_PROVIDER) as ImageProviderName;
-    this.provider =
-      name === 'openai'
-        ? new OpenAiImageProvider()
-        : name === 'xai'
-          ? new XaiImageProvider(config.getOrThrow<string>('XAI_API_KEY'))
-          : new GeminiImageProvider(config.getOrThrow<string>('GOOGLE_GENERATIVE_AI_API_KEY'));
+    const name = parseImageProvider(config.get<string>('IMAGE_PROVIDER'));
+    this.provider = buildProvider(name, config);
     this.pages = new PageRenderer({
       provider: this.provider,
       s3,
@@ -98,7 +85,7 @@ export class ImageGeneratorService {
       judge,
     });
     this.logger.log(
-      `Image provider: ${name} (${this.provider.modelLabel}); judge ${judge?.enabled ? 'on' : 'off'}`,
+      `Image provider: ${name} (${this.provider.modelLabel}); judge on, max re-renders ${judge.maxRetries}`,
     );
   }
 
@@ -144,12 +131,12 @@ export class ImageGeneratorService {
     );
   }
 
-  // Generate location + cast reference sheets once per book (#348, PR 2), gated
-  // by IMAGE_REFERENCE_SHEETS and only for the bible path on a reference-capable
-  // provider. Returns null when sheets are off / not applicable.
+  // Generate location + cast reference sheets once per book (#348, PR 2) — always
+  // on since ADR-0007's amendment (cast drifted without them); only for the
+  // bible path on a reference-capable provider. Returns null when not applicable.
   private async maybeSheets(input: ImageGenInput): Promise<SheetSet | null> {
     const bible = input.story.visualBible;
-    if (!this.sheetsEnabled || !this.provider.usesReference || !bible) return null;
+    if (!this.provider.usesReference || !bible) return null;
     return this.referenceSheets.generate({
       bookId: input.bookId,
       bible,
@@ -255,3 +242,14 @@ export class ImageGeneratorService {
     });
   }
 }
+
+const buildProvider = (name: ImageProviderName, config: ConfigService): ImageProvider => {
+  switch (name) {
+    case 'xai':
+      return new XaiImageProvider(config.getOrThrow<string>('XAI_API_KEY'));
+    case 'gemini':
+      return new GeminiImageProvider(config.getOrThrow<string>('GOOGLE_GENERATIVE_AI_API_KEY'));
+    case 'openai':
+      return new OpenAiImageProvider();
+  }
+};

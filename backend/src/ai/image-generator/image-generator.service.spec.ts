@@ -55,10 +55,9 @@ const mockS3 = {
   getObjectBytes: jest.fn(),
 };
 
-const makeMockConfig = (imageProvider: string, sheets = 'off') => ({
+const makeMockConfig = (imageProvider: string) => ({
   get: jest.fn((key: string) => {
     if (key === 'IMAGE_PROVIDER') return imageProvider;
-    if (key === 'IMAGE_REFERENCE_SHEETS') return sheets;
     return undefined;
   }),
   getOrThrow: jest.fn(() => 'test-key'),
@@ -91,16 +90,21 @@ const makeBibleStory = (): Story => ({
   })),
 });
 
-const makeService = async (
-  imageProvider = 'openai',
-  sheets = 'off',
-): Promise<ImageGeneratorService> => {
+// The judge is a required dependency (#373); these tests exercise the image
+// path, so a pass-through judge with no re-renders keeps them focused.
+const passThroughJudge = () => ({
+  maxRetries: 0,
+  judge: jest.fn().mockResolvedValue({ passed: true, failures: [] }),
+});
+
+const makeService = async (imageProvider = 'openai'): Promise<ImageGeneratorService> => {
   const module = await Test.createTestingModule({
     providers: [
       ImageGeneratorService,
       ReferenceSheetsService,
+      { provide: ImageJudgeService, useValue: passThroughJudge() },
       { provide: S3Service, useValue: mockS3 },
-      { provide: ConfigService, useValue: makeMockConfig(imageProvider, sheets) },
+      { provide: ConfigService, useValue: makeMockConfig(imageProvider) },
     ],
   }).compile();
   return module.get(ImageGeneratorService);
@@ -298,29 +302,12 @@ describe('ImageGeneratorService', () => {
       for (const call of pageCalls) {
         expect(call.prompt.text).toContain('appears exactly once');
         expect(call.prompt.text).toContain('a green slide in a yard');
-        expect(call.prompt.images).toHaveLength(1); // the hero portrait
+        expect(call.prompt.images).toHaveLength(2); // the hero portrait + the location sheet (sheets always on)
       }
     });
 
-    it('does not generate reference sheets when IMAGE_REFERENCE_SHEETS is off', async () => {
-      const service = await makeService('gemini', 'off');
-      mockGenerateImage.mockResolvedValue({ image: { uint8Array: new Uint8Array([1]) } });
-      mockS3.uploadObject.mockResolvedValue(undefined);
-
-      const result = await service.generate({
-        story: makeBibleStory(),
-        bookId: 'book-off',
-        artStyle: 'watercolor',
-      });
-
-      expect(result.referenceImageKeys).toEqual([]);
-      // portrait + 2 pages only (no ref-location/ref-cast uploads)
-      const keys = mockS3.uploadObject.mock.calls.map(([a]) => (a as { key: string }).key);
-      expect(keys.some((k) => k.includes('/ref-'))).toBe(false);
-    });
-
-    it('generates location + cast sheets when the flag is on and passes them as page references', async () => {
-      const service = await makeService('gemini', 'on');
+    it('generates location + cast sheets and passes them as page references', async () => {
+      const service = await makeService('gemini');
       mockGenerateImage.mockResolvedValue({ image: { uint8Array: new Uint8Array([2]) } });
       mockS3.uploadObject.mockResolvedValue(undefined);
 
@@ -367,7 +354,6 @@ describe('ImageJudgeService wiring (DI)', () => {
     mockGoogleImage.mockClear();
     mockGenerateImage.mockResolvedValue({ image: { uint8Array: new Uint8Array([1]) } });
     const judge = {
-      enabled: true,
       maxRetries: 0,
       judge: jest.fn().mockResolvedValue({ passed: true, failures: [] }),
     };
@@ -377,7 +363,7 @@ describe('ImageJudgeService wiring (DI)', () => {
         ReferenceSheetsService,
         { provide: ImageJudgeService, useValue: judge },
         { provide: S3Service, useValue: mockS3 },
-        { provide: ConfigService, useValue: makeMockConfig('gemini', 'off') },
+        { provide: ConfigService, useValue: makeMockConfig('gemini') },
       ],
     }).compile();
     const service = module.get(ImageGeneratorService);

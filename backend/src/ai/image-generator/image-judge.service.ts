@@ -44,15 +44,15 @@ type JudgeContent = Array<
  * against its action line and the very references it was generated from; a
  * deterministic preflight (bytes, aspect) runs first so no vision call is spent
  * on a broken file. Every verdict is persisted (one row per page per attempt)
- * and traced as an `image-judge` span. ON by default (calibrated 2026-09-06:
- * 0 false fails on 65 good pages, 10/13 bad pages caught — see
- * docs/process/image-judge-calibration-2026-09-06.md); IMAGE_EVAL=off disables.
+ * and traced as an `image-judge` span. Always on (calibration:
+ * docs/process/image-judge-calibration-2026-09-06.md); the only lever is
+ * IMAGE_EVAL_MAX_RETRIES (0 = judge and record, never re-render).
  */
 @Injectable()
 export class ImageJudgeService {
   private readonly logger = new Logger(ImageJudgeService.name);
   private readonly google: GoogleGenerativeAIProvider;
-  readonly enabled: boolean;
+  /** Kill switch from IMAGE_EVAL_MAX_RETRIES: 0 = judge and write rows, never buy a re-render. */
   readonly maxRetries: number;
 
   constructor(
@@ -60,11 +60,12 @@ export class ImageJudgeService {
     @Inject(IMAGE_EVAL_SINK) private readonly sink: ImageEvalSink,
   ) {
     this.google = createGoogleGenerativeAI({
-      apiKey: config.get<string>('GOOGLE_GENERATIVE_AI_API_KEY') ?? '',
+      apiKey: config.getOrThrow<string>('GOOGLE_GENERATIVE_AI_API_KEY'),
     });
-    this.enabled = (config.get<string>('IMAGE_EVAL') ?? 'on') !== 'off';
-    const raw = parseInt(config.get<string>('IMAGE_EVAL_MAX_RETRIES') ?? '', 10);
-    this.maxRetries = Number.isNaN(raw) ? IMAGE_EVAL_MAX_RETRIES_DEFAULT : raw;
+    // ConfigModule's validate hook already coerces this to a number in the app;
+    // scripts hand in raw env strings, so accept both.
+    const raw = Number(config.get<string | number>('IMAGE_EVAL_MAX_RETRIES') ?? NaN);
+    this.maxRetries = Number.isInteger(raw) && raw >= 0 ? raw : IMAGE_EVAL_MAX_RETRIES_DEFAULT;
   }
 
   /** Judge one attempt and persist the verdict. Never throws on a judge failure: a broken judge must not fail a book. */

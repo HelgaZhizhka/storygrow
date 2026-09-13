@@ -232,7 +232,7 @@ independent of B and can run in parallel.
 | Wave 0: record the review, correct the calibration | #368 | done (#370) |
 | A3 part 1: judge rows on every outcome, safety-block fallback, recalibration | #369 | done (#371) |
 | A1 + A8: cascade, `timeOfDay`/`framing`, Pro leftovers, harness variants, spikes | #372 | done |
-| A3 part 2 + A4 + A5: judge required, fail-loud config, `AiModule` test, `check:book` | #373 | open |
+| A3 part 2 + A4 + A5: judge required, fail-loud config, `AiModule` test, `check:book` | #373 | done |
 | C1: idempotent `images_failed` retry (pulled forward into wave A) | #374 | open |
 | A6 + A7: OpenAI image provider, simplifier | #375 | open, deferred |
 | B1 + B7 + B9: Prose contract (in frame list, no hero look, judge sees bible) | #367 | open — next |

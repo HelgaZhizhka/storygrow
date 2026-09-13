@@ -25,7 +25,7 @@ export interface RenderPageOpts {
 export interface RenderedPage {
   key: string;
   bytes: Uint8Array;
-  /** Attempts made (1 = passed first time or judge off). */
+  /** Attempts made (1 = passed first time, or no judge context). */
   attempts: number;
 }
 
@@ -36,7 +36,7 @@ interface Attempt {
 
 /**
  * PageRenderer (#348/#358) — renders ONE page: provider call with the
- * content-policy simplify-and-retry, then (when the judge is on) the vision
+ * content-policy simplify-and-retry, then the vision
  * verdict and a fresh re-render of that page only while it fails, up to
  * `judge.maxRetries`. The attempt with the fewest failures is uploaded — a page
  * that never passes still ships (soft gate) with every attempt on record, so
@@ -48,7 +48,7 @@ export class PageRenderer {
       provider: ImageProvider;
       s3: S3Service;
       textModel: LanguageModel;
-      judge: ImageJudgeService | null;
+      judge: ImageJudgeService;
     },
   ) {}
 
@@ -79,9 +79,8 @@ export class PageRenderer {
     opts: RenderPageOpts,
     imageSize: ImageSize,
   ): Promise<{ best: Attempt; attempts: number }> {
-    const judge = this.deps.judge;
-    const judging = Boolean(judge?.enabled && opts.judgeContext);
-    const maxAttempts = judging ? 1 + (judge?.maxRetries ?? 0) : 1;
+    const judging = Boolean(opts.judgeContext);
+    const maxAttempts = judging ? 1 + this.deps.judge.maxRetries : 1;
     let best: Attempt | null = null;
     let attempt = 0;
     while (attempt < maxAttempts) {
@@ -101,7 +100,7 @@ export class PageRenderer {
     bytes: Uint8Array,
     attempt: number,
   ): Promise<string[]> {
-    const verdict = await this.deps.judge!.judge({
+    const verdict = await this.deps.judge.judge({
       bookId: opts.bookId,
       pageNumber: opts.pageNumber,
       attempt,
