@@ -292,7 +292,7 @@ export class BooksService {
       .jpeg({ quality: 85 })
       .toBuffer();
 
-    const { hasChildFace, descriptor } = await this.imageServiceCall(() =>
+    const { hasChildFace, descriptor, appearance } = await this.imageServiceCall(() =>
       this.photoDescriptor.describePhoto({
         photo: new Uint8Array(jpeg),
         mimeType: 'image/jpeg',
@@ -309,7 +309,12 @@ export class BooksService {
     await this.s3.uploadObject({ key, body: jpeg, contentType: 'image/jpeg' });
     await this.prisma.book.update({
       where: { id: bookId },
-      data: { childPhotoKey: key, characterDescriptor: descriptor, photoConsent: true },
+      data: {
+        childPhotoKey: key,
+        characterDescriptor: descriptor,
+        characterAppearance: appearance,
+        photoConsent: true,
+      },
     });
     return { descriptor };
   }

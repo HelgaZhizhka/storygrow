@@ -28,12 +28,23 @@ describe('PhotoDescriptorService', () => {
 
   it('returns the parsed descriptor for a valid child face', async () => {
     mockGenerateObject.mockResolvedValueOnce({
-      object: { hasChildFace: true, ageYears: 5, descriptor: 'round face, blue eyes' },
+      object: {
+        hasChildFace: true,
+        ageYears: 5,
+        descriptor: 'round face, blue eyes',
+        appearance: {
+          kind: 'x',
+          skin: 'light skin',
+          hair: 'blond hair',
+          outfit: 'a blue shirt',
+          detail: 'freckles',
+        },
+      },
     } as Awaited<ReturnType<typeof generateObject>>);
 
     const result = await service.describePhoto({ photo, mimeType: 'image/jpeg', bookId: 'b1' });
 
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       hasChildFace: true,
       ageYears: 5,
       descriptor: 'round face, blue eyes',
