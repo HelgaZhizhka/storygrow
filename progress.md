@@ -1401,3 +1401,17 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Decision:** judge stays on by default; `IMAGE_EVAL_MAX_RETRIES` semantics unchanged. Review item A3 is half done (rows on every outcome); "judge as a required dependency + module test" is the next A3 PR.
 
 **Blockers:** none.
+
+---
+
+## 2026-09-13 — refactor(ai): delete the finished experiments — cascade, unused Scene fields, Pro leftovers, harness variants (#372, review A1+A8)
+
+**Done (pure deletion, no behaviour change on the production path):**
+- Cascade end to end: `ImageGenInput.cascade`, the sequential page loop, the `prev` reference slot in `pickReferences`, the continuity line and the `labels` field in the illustration prompt, the judge's `prev` skip, the `bible+cascade` harness variant.
+- `Scene.timeOfDay` / `framing` (no consumer anywhere; a per-page time of day contradicts one sheet per location), `TIME_OF_DAY` / `FRAMING` constants, the Plan prompt line asking for them.
+- Gemini Pro leftovers: the `GEMINI_IMAGE_MODEL` env override, the `MAX_REFERENCE_IMAGES` map with its 14 / silent-3 entries — the reference budget is now a property of each provider (`maxReferences`: Grok 5, Gemini Flash 3, OpenAI 0).
+- Harness: the variant layer (`IMAGE_VARIANTS`, `storyForVariant`, `sheetsFlagFor`, `cascadeFor`, `variantLabel`, the `variant` span field) is gone; `eval:images --run=<label>` always exercises the production path under the real env flags, `eval:images-report` compares run folders. Three spike scripts and the Qwen env lines deleted.
+- Docs: ADR-0007 §4 (cascade removed, evidence retained), `CONTEXT.md` Scene entry, env examples; the review record got a tracking table mapping every item to its issue (`review-2026-09` label).
+- Harness smoke after the change: `eval:images --run=after-372 --max-pages=1` on one fixture through the real Grok path (see below).
+
+**Blockers:** none.

@@ -19,13 +19,14 @@ type AspectRatio = '1:1' | '2:3' | '3:2';
  * Text-to-image via `/v1/images/generations`; multi-reference editing via
  * `/v1/images/edits` with the `images` array — the API accepts up to 5 input
  * images (probed 2026-09-05: 8 → "supports at most 5 input image(s)"), so the
- * hero portrait, cast portraits and a location sheet all fit (see
- * MAX_REFERENCE_IMAGES). Implemented over the REST API with global fetch — no
- * new dependency.
+ * hero portrait, cast portraits and a location sheet all fit. Implemented over
+ * the REST API with global fetch — no new dependency.
  */
 export class XaiImageProvider implements ImageProvider {
   readonly usesReference = true;
   readonly modelLabel = XAI_IMAGE_MODEL;
+  /** Probed 2026-09-05: 8 images → "supports at most 5 input image(s)". */
+  readonly maxReferences = 5;
 
   constructor(private readonly apiKey: string) {}
 

@@ -136,7 +136,7 @@ export class ImageJudgeService {
   }
 
   // Page image first, then each reference with a caption so the model compares
-  // against the right picture. The cascade 'prev' reference is not a judge input.
+  // against the right picture.
   private buildContent(input: JudgePageInput, mode: JudgeTaskMode): JudgeContent {
     const portraitPassed = input.labels.some(
       (label, i) => label === 'hero' && !!input.references[i],
@@ -147,7 +147,7 @@ export class ImageJudgeService {
     ];
     input.labels.forEach((label, i) => {
       const bytes = input.references[i];
-      if (label === 'prev' || !bytes) return;
+      if (!bytes) return;
       const castName = label.startsWith('cast:')
         ? input.context.cast.find((c) => c.id === label.slice(5))?.name
         : undefined;

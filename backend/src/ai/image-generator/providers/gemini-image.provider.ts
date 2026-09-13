@@ -17,14 +17,14 @@ type GeminiPrompt = string | { text: string; images: Uint8Array[] };
 
 export class GeminiImageProvider implements ImageProvider {
   readonly usesReference = true;
-  readonly modelLabel: string;
+  readonly modelLabel = GEMINI_IMAGE_MODEL;
+  /** gemini-2.5-flash-image accepts 3 input images (Google docs, checked 2026-09-03). */
+  readonly maxReferences = 3;
   private readonly google: ReturnType<typeof createGoogleGenerativeAI>;
-  private readonly model: string;
+  private readonly model = GEMINI_IMAGE_MODEL;
 
-  constructor(apiKey: string, model: string = GEMINI_IMAGE_MODEL) {
+  constructor(apiKey: string) {
     this.google = createGoogleGenerativeAI({ apiKey });
-    this.model = model;
-    this.modelLabel = model;
   }
 
   generatePortrait(input: PortraitInput): Promise<Uint8Array> {

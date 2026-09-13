@@ -15,9 +15,6 @@ import { ACTION_MAX_CHARS, STYLE_SUFFIXES } from '../ai.config';
  * setting. Keep it lean: one fixed identity line, the setting, the action LAST
  * and unqualified, then the style. No per-reference mentions — identity is
  * carried by the reference image itself, not by words about it.
- *
- * `labels` are the reference labels actually passed (from `pickReferences`);
- * only 'prev' (the cascade experiment) adds a continuity line.
  */
 export interface IllustrationPromptInput {
   bible: VisualBible;
@@ -27,8 +24,6 @@ export interface IllustrationPromptInput {
   /** Hero look to use: the photo descriptor when present, else the bible hero. */
   heroDescriptor: string;
   artStyle: ArtStyle;
-  /** Reference labels aligned to the passed images ('hero' | 'prev' | `cast:<id>` | 'location'). */
-  labels: readonly string[];
 }
 
 // No hero NAME here on purpose: naming the child in an image prompt makes models
@@ -59,12 +54,6 @@ const settingLine = (input: IllustrationPromptInput): string => {
 // same page rendered the correct ladder pose 3/3. The action already names what
 // the hero interacts with; props stay in the bible for the Plan and sheets.
 
-/** Continuity line only for the cascade experiment (previous page passed as a reference). */
-const prevLine = (input: IllustrationPromptInput): string =>
-  input.labels.includes('prev')
-    ? 'Same place and objects as the previous scene; only the action changes.'
-    : '';
-
 /** Ensure the action reads as one sentence so the style suffix never merges into it. */
 const asSentence = (text: string): string => {
   const trimmed = text.trim();
@@ -78,7 +67,6 @@ export const buildIllustrationPrompt = (input: IllustrationPromptInput): string 
     heroLine(input),
     castLine(input),
     settingLine(input),
-    prevLine(input),
     action,
     `${style.charAt(0).toUpperCase()}${style.slice(1)}.`,
   ]

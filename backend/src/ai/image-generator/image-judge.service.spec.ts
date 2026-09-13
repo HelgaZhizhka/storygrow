@@ -95,12 +95,12 @@ describe('ImageJudgeService', () => {
     expect(s.rows[0]).toMatchObject({ pageNumber: 2, attempt: 1, passed: false, scores: {} });
   });
 
-  it('sends the page first, then each captioned reference (never the cascade prev)', async () => {
+  it('sends the page first, then each captioned reference', async () => {
     mockGenerateObject.mockResolvedValue({ object: verdictObject() });
     await new ImageJudgeService(config({}), sink()).judge(
       input({
-        labels: ['prev', 'hero', 'cast:brother'],
-        references: [new Uint8Array([9]), new Uint8Array([1]), new Uint8Array([2])],
+        labels: ['hero', 'cast:brother'],
+        references: [new Uint8Array([1]), new Uint8Array([2])],
       }),
     );
     const [firstCall] = mockGenerateObject.mock.calls as unknown[][];

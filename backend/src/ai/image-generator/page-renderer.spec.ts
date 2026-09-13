@@ -14,6 +14,7 @@ import type { S3Service } from '../../s3/s3.service';
 
 const provider = (): ImageProvider & { generatePage: jest.Mock } => ({
   usesReference: true,
+  maxReferences: 3,
   modelLabel: 'test',
   generatePage: jest.fn(),
   generatePortrait: jest.fn(),
@@ -41,7 +42,6 @@ const opts = (over: Partial<RenderPageOpts> = {}): RenderPageOpts => ({
   references: [],
   labels: [],
   template: 'image-top',
-  variant: 'bible',
   judgeContext: { action: 'a', cast: [] },
   ...over,
 });

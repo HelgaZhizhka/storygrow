@@ -117,6 +117,5 @@ describe('PLAN_SYSTEM_PROMPT — Visual Bible rule (#348)', () => {
   it('instructs the model to decide locations, cast, props and per-page scenes', () => {
     expect(PLAN_SYSTEM_PROMPT).toContain('VISUAL BIBLE');
     expect(PLAN_SYSTEM_PROMPT).toContain('heroOnPage');
-    expect(PLAN_SYSTEM_PROMPT).toContain('timeOfDay');
   });
 });

@@ -7,10 +7,7 @@ import { type Story } from '../schemas';
 import { S3Service } from '../../s3/s3.service';
 import {
   DEFAULT_IMAGE_PROVIDER,
-  DEFAULT_MAX_REFERENCE_IMAGES,
-  GEMINI_IMAGE_MODEL,
   GENERATION_MODEL,
-  MAX_REFERENCE_IMAGES,
   STYLE_SUFFIXES,
   type ArtStyle,
   type ImageProviderName,
@@ -35,10 +32,6 @@ export interface ImageGenInput {
   // portrait), plus the named-feature descriptor folded into every page prompt.
   approvedPortraitKey?: string | null;
   characterDescriptor?: string | null;
-  // Cascade experiment (#348): render pages sequentially, passing each rendered
-  // page as a reference to the next so objects/setting carry forward. Off by
-  // default (eval:images sets it for the bible+cascade variant).
-  cascade?: boolean;
 }
 
 export interface ImageGenResult {
@@ -54,7 +47,6 @@ interface PageBuildContext {
   page: Story['pages'][number];
   portraitBytes?: Uint8Array;
   sheets?: SheetSet | null;
-  previousPage?: Uint8Array;
 }
 
 interface PageRequest {
@@ -98,10 +90,7 @@ export class ImageGeneratorService {
         ? new OpenAiImageProvider()
         : name === 'xai'
           ? new XaiImageProvider(config.getOrThrow<string>('XAI_API_KEY'))
-          : new GeminiImageProvider(
-              config.getOrThrow<string>('GOOGLE_GENERATIVE_AI_API_KEY'),
-              config.get<string>('GEMINI_IMAGE_MODEL') ?? GEMINI_IMAGE_MODEL,
-            );
+          : new GeminiImageProvider(config.getOrThrow<string>('GOOGLE_GENERATIVE_AI_API_KEY'));
     this.pages = new PageRenderer({
       provider: this.provider,
       s3,
@@ -122,10 +111,7 @@ export class ImageGeneratorService {
 
       const portrait = await this.maybePortrait(input);
       const sheets = await this.maybeSheets(input);
-      const variant = this.variantLabel(input, sheets);
-      const imageKeys = input.cascade
-        ? await this.generatePagesCascade(input, portrait?.bytes, sheets, variant)
-        : await this.generatePagesParallel(input, portrait?.bytes, sheets, variant);
+      const imageKeys = await this.generatePages(input, portrait?.bytes, sheets);
 
       span.update({ output: { count: imageKeys.length, portrait: portrait?.key ?? null } });
       return {
@@ -136,20 +122,13 @@ export class ImageGeneratorService {
     });
   }
 
-  // 'bible+sheets' only when a sheet was actually produced (an all-refused set is
-  // really 'bible'); 'bible+cascade' for the sequential cascade experiment. Keeps
-  // the eval:images A/B labelling honest.
-  private variantLabel(input: ImageGenInput, sheets: SheetSet | null): string {
-    if (!input.story.visualBible) return 'baseline';
-    if (input.cascade) return 'bible+cascade';
-    return (sheets?.keys.length ?? 0) > 0 ? 'bible+sheets' : 'bible';
-  }
-
-  private generatePagesParallel(
+  // Every page is composed fresh, in parallel, from the same references
+  // (ADR-0007). The cascade experiment (page N edited from page N−1) was
+  // removed in #372: it inherited poses and bled locations.
+  private generatePages(
     input: ImageGenInput,
     portraitBytes: Uint8Array | undefined,
     sheets: SheetSet | null,
-    variant: string,
   ): Promise<string[]> {
     return Promise.all(
       input.story.pages.map(async (page, i) => {
@@ -159,37 +138,10 @@ export class ImageGeneratorService {
           bookId: input.bookId,
           pageNumber: i + 1,
           template: page.template,
-          variant,
         });
         return key;
       }),
     );
-  }
-
-  // Cascade (#348): pages run in order; each rendered page becomes a reference
-  // for the next so objects/setting carry forward. Sequential by nature.
-  private async generatePagesCascade(
-    input: ImageGenInput,
-    portraitBytes: Uint8Array | undefined,
-    sheets: SheetSet | null,
-    variant: string,
-  ): Promise<string[]> {
-    const keys: string[] = [];
-    let previousPage: Uint8Array | undefined;
-    for (let i = 0; i < input.story.pages.length; i++) {
-      const page = input.story.pages[i];
-      const req = this.buildPageRequest({ input, page, portraitBytes, sheets, previousPage });
-      const { key, bytes } = await this.pages.render({
-        ...req,
-        bookId: input.bookId,
-        pageNumber: i + 1,
-        template: page.template,
-        variant,
-      });
-      keys.push(key);
-      previousPage = bytes;
-    }
-    return keys;
   }
 
   // Generate location + cast reference sheets once per book (#348, PR 2), gated
@@ -219,10 +171,6 @@ export class ImageGeneratorService {
     return this.provider.generatePortraitFromPhoto(input);
   }
 
-  private referenceBudget(): number {
-    return MAX_REFERENCE_IMAGES[this.provider.modelLabel] ?? DEFAULT_MAX_REFERENCE_IMAGES;
-  }
-
   // Assemble one page's final prompt + reference images. Visual Bible path (#348)
   // when the story carries a bible + scene; otherwise the legacy path.
   private buildPageRequest(ctx: PageBuildContext): PageRequest {
@@ -242,11 +190,10 @@ export class ImageGeneratorService {
       scene,
       sources: {
         heroPortrait,
-        previousPage: this.provider.usesReference ? ctx.previousPage : undefined,
         castSheets: sheets?.castSheets,
         locationSheet: sheets?.locationSheets[scene.locationId],
       },
-      budget: this.referenceBudget(),
+      budget: this.provider.maxReferences,
     });
     const heroDescriptor = input.characterDescriptor ?? bible.hero.descriptor;
     const prompt = buildIllustrationPrompt({
@@ -255,7 +202,6 @@ export class ImageGeneratorService {
       action: page.illustrationPrompt,
       heroDescriptor,
       artStyle: input.artStyle,
-      labels,
     });
     const judgeContext: ImageJudgeContext = {
       action: page.illustrationPrompt,

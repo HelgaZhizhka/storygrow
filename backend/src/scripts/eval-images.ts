@@ -1,18 +1,18 @@
 /**
  * eval:images (#348, PR 3) — render a FROZEN set of Story fixtures through the
- * real image pipeline for ONE variant, so Baseline vs Bible vs Bible+sheets can
- * be compared on the SAME stories (only the image path varies; text is never
- * regenerated). Images land under output/eval-images/<variant>/<fixture>/ and a
- * JSON summary records counts, reference-sheet keys, and per-fixture timing.
- * LangFuse (when configured) carries per-span cost/latency and the `variant`
- * page metadata for the A/B read.
+ * real image pipeline under the real env flags (IMAGE_PROVIDER, sheets, judge),
+ * so a change can be compared before/after on the SAME stories (text is never
+ * regenerated). A run is just a label: images land under
+ * output/eval-images/<run>/<fixture>/ and a JSON summary records counts,
+ * reference-sheet keys, judge verdicts and per-fixture timing. (The A/B variant
+ * layer was removed in #372 once ADR-0007 was decided.)
  *
  * Fixtures come from `eval:batch --stories-out=<dir>` (frozen once). Costs real
- * Gemini image generation — run deliberately.
+ * image generation — run deliberately.
  *
  * Usage:
- *   pnpm --filter backend eval:images --variant=baseline|bible|bible+sheets \
- *        --stories=<dir> [--only=<substr>] [--max-pages=N] [--out=path.json]
+ *   pnpm --filter backend eval:images --run=<label> --stories=<dir> \
+ *        [--only=<substr>] [--max-pages=N] [--out=path.json]
  */
 import '../instrument';
 import { shutdownTelemetry } from '../instrument';
@@ -26,14 +26,7 @@ import { ImageJudgeService } from '../ai/image-generator/image-judge.service';
 import type { ImageEvalRow, ImageEvalSink } from '../ai/image-generator/image-eval.sink';
 import type { Story } from '../ai/schemas';
 import type { ArtStyle } from '../ai/ai.config';
-import {
-  IMAGE_VARIANTS,
-  sheetsFlagFor,
-  cascadeFor,
-  storyForVariant,
-  evalBookId,
-  type ImageVariant,
-} from './lib/eval-images-lib';
+import { evalBookId } from './lib/eval-images-lib';
 
 const OUT_ROOT = 'output/eval-images';
 const ART_STYLE: ArtStyle = 'watercolor';
@@ -41,10 +34,9 @@ const ART_STYLE: ArtStyle = 'watercolor';
 const flag = (name: string): string | undefined =>
   process.argv.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
 
-const makeConfig = (sheets: 'on' | 'off'): ConfigService =>
+const makeConfig = (): ConfigService =>
   ({
-    get: (key: string): string | undefined =>
-      key === 'IMAGE_REFERENCE_SHEETS' ? sheets : process.env[key],
+    get: (key: string): string | undefined => process.env[key],
     getOrThrow: (key: string): string => {
       const v = process.env[key];
       if (v == null || v === '') throw new Error(`Missing env: ${key}`);
@@ -61,10 +53,12 @@ class MemoryImageEvalSink implements ImageEvalSink {
   }
 }
 
-const buildService = (
-  variant: ImageVariant,
-): { service: ImageGeneratorService; s3: S3Service; evals: MemoryImageEvalSink } => {
-  const config = makeConfig(sheetsFlagFor(variant));
+const buildService = (): {
+  service: ImageGeneratorService;
+  s3: S3Service;
+  evals: MemoryImageEvalSink;
+} => {
+  const config = makeConfig();
   const s3 = new S3Service(config);
   s3.onModuleInit();
   const evals = new MemoryImageEvalSink();
@@ -96,7 +90,7 @@ interface RenderCtx {
   service: ImageGeneratorService;
   s3: S3Service;
   evals: MemoryImageEvalSink;
-  variant: ImageVariant;
+  run: string;
   maxPages?: number;
 }
 
@@ -123,17 +117,12 @@ const renderFixture = async (
 ): Promise<FixtureResult> => {
   const started = Date.now();
   try {
-    let story = storyForVariant(fixture.story, ctx.variant);
+    let story = fixture.story;
     if (ctx.maxPages) story = { ...story, pages: story.pages.slice(0, ctx.maxPages) };
-    const bookId = evalBookId(ctx.variant, fixture.name);
-    const result = await ctx.service.generate({
-      story,
-      bookId,
-      artStyle: ART_STYLE,
-      cascade: cascadeFor(ctx.variant),
-    });
+    const bookId = evalBookId(ctx.run, fixture.name);
+    const result = await ctx.service.generate({ story, bookId, artStyle: ART_STYLE });
 
-    const dir = join(OUT_ROOT, ctx.variant, fixture.name);
+    const dir = join(OUT_ROOT, ctx.run, fixture.name);
     mkdirSync(dir, { recursive: true });
     await Promise.all(
       result.imageKeys.map(async (key, i) => {
@@ -162,14 +151,14 @@ const renderFixture = async (
 };
 
 const main = async (): Promise<void> => {
-  const variant = flag('variant') as ImageVariant | undefined;
+  const run = flag('run');
   const stories = flag('stories');
   const only = flag('only')?.toLowerCase();
   const maxPages = flag('max-pages') ? Number(flag('max-pages')) : undefined;
   const out = flag('out');
 
-  if (!variant || !IMAGE_VARIANTS.includes(variant)) {
-    console.error(`--variant must be one of: ${IMAGE_VARIANTS.join(', ')}`);
+  if (!run || !/^[a-z0-9][a-z0-9-]*$/i.test(run)) {
+    console.error('--run=<label> is required (letters, digits, dashes), e.g. --run=after-372');
     process.exit(1);
   }
   if (!stories) {
@@ -184,14 +173,14 @@ const main = async (): Promise<void> => {
   }
 
   console.log(
-    `eval:images variant=${variant} fixtures=${fixtures.length}` +
-      `${maxPages ? ` maxPages=${maxPages}` : ''} — real Gemini image generation`,
+    `eval:images run=${run} fixtures=${fixtures.length}` +
+      `${maxPages ? ` maxPages=${maxPages}` : ''} — real image generation under the current env`,
   );
-  const { service, s3, evals } = buildService(variant);
+  const { service, s3, evals } = buildService();
   const results: FixtureResult[] = [];
   for (const fixture of fixtures) {
     console.log(`▸ ${fixture.name}…`);
-    const r = await renderFixture({ service, s3, evals, variant, maxPages }, fixture);
+    const r = await renderFixture({ service, s3, evals, run, maxPages }, fixture);
     results.push(r);
     const judged = r.evals.length > 0 ? `, judge ${summariseEvals(r.evals)}` : '';
     console.log(
@@ -201,11 +190,11 @@ const main = async (): Promise<void> => {
     );
   }
 
-  const summary = { generatedAt: new Date().toISOString(), variant, results };
-  const outPath = out ?? join(OUT_ROOT, `${variant}.json`);
+  const summary = { generatedAt: new Date().toISOString(), run, results };
+  const outPath = out ?? join(OUT_ROOT, `${run}.json`);
   mkdirSync(OUT_ROOT, { recursive: true });
   writeFileSync(outPath, JSON.stringify(summary, null, 2));
-  console.log(`\nImages: ${join(OUT_ROOT, variant)}/  ·  summary: ${outPath}`);
+  console.log(`\nImages: ${join(OUT_ROOT, run)}/  ·  summary: ${outPath}`);
 
   await shutdownTelemetry();
   if (results.some((r) => r.error !== null)) process.exit(1);
