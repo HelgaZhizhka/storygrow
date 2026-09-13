@@ -1429,3 +1429,18 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - 246 backend AI/config/script tests green; `./init.sh` green; real local boot checked (see below).
 
 **Blockers:** none.
+
+---
+
+## 2026-09-13 — fix(generation): images_failed retry is idempotent — portrait and sheets reused, ImageEval attempts numbered per run (#374, review C1)
+
+**Problem:** a retry after `images_failed` bought the portrait and the reference sheets again and wrote `ImageEval` rows with `attempt = 1` on top of the earlier ones, double-counting "passed on first attempt".
+
+**Done:**
+- `ImageEval.run` (migration `20260913140000_image_eval_run`, index `(bookId, run)`): every image generation of a book is a run; attempts are numbered per run, history is never overwritten. `check:book` checks the latest run and prints it.
+- `ImageGeneratorService.generate` takes `run`, `reuse: { portraitKey, referenceImageKeys }` and `onArtefacts`: the portrait and the sheets of an earlier run of the SAME story are loaded from S3 (`ReferenceSheetsService.load`) instead of generated; portrait + sheet keys are persisted on the Book **as soon as they exist**, so a crash in the page phase no longer loses them.
+- `GenerationProcessor`: computes the next run from the max `ImageEval.run`, passes `reuse` only when `storyJson` was reused (a regenerated story never inherits an old portrait), persists artefacts via `onArtefacts`.
+- Real proof through the API (local stack): the slide book set to `images_failed` with no page images → `POST /books/:id/retry-images` → `ready` in ~50 s; log `reusing saved storyJson` + `Reused 2 reference sheets from an earlier run`, portrait key unchanged; `ImageEval` run 1: 9 rows kept, run 2: 10 rows (p4 re-rendered and passed; p6/p7 failed twice — Masha on the chute — shipped as best attempt, visible in the rows); `check:book` OK on run 2.
+- 277 backend tests green (processor: run numbering, reuse only on story reuse, early artefact persistence; sheets `load`; judge rows carry `run`); `./init.sh` green. `CONTEXT.md` Image Eval entry updated.
+
+**Blockers:** none.

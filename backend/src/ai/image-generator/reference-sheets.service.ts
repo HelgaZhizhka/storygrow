@@ -49,6 +49,26 @@ export class ReferenceSheetsService {
     });
   }
 
+  /**
+   * Reload the sheets of an earlier run of the same book from S3 (#374) instead
+   * of generating them again. Keys are the ones this service produced
+   * (`ref-location-<id>.png`, `ref-cast-<id>.png`); anything else is ignored.
+   */
+  async load(keys: string[]): Promise<SheetSet> {
+    const set: SheetSet = { castSheets: {}, locationSheets: {}, keys: [] };
+    await Promise.all(
+      keys.map(async (key) => {
+        const match = /ref-(location|cast)-(.+)\.png$/.exec(key);
+        if (!match) return;
+        const bytes = await this.s3.getObjectBytes(key);
+        (match[1] === 'location' ? set.locationSheets : set.castSheets)[match[2]] = bytes;
+        set.keys.push(key);
+      }),
+    );
+    this.logger.log(`Reused ${set.keys.length} reference sheets from an earlier run`);
+    return set;
+  }
+
   private async locationSheet(
     input: GenerateInput,
     loc: VisualBible['locations'][number],

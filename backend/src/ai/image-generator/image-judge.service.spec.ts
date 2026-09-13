@@ -46,6 +46,7 @@ const input = (over: Partial<JudgePageInput> = {}): JudgePageInput => ({
   bookId: 'b1',
   pageNumber: 2,
   attempt: 1,
+  run: 1,
   image: png(1536, 1024),
   imageSize: '1536x1024',
   context: {
@@ -103,7 +104,13 @@ describe('ImageJudgeService', () => {
     expect(verdict).toEqual({ passed: false, failures: ['preflight:aspect'] });
     expect(mockGenerateObject).not.toHaveBeenCalled();
     expect(s.rows).toHaveLength(1);
-    expect(s.rows[0]).toMatchObject({ pageNumber: 2, attempt: 1, passed: false, scores: {} });
+    expect(s.rows[0]).toMatchObject({
+      pageNumber: 2,
+      attempt: 1,
+      run: 1,
+      passed: false,
+      scores: {},
+    });
   });
 
   it('sends the page first, then each captioned reference', async () => {

@@ -44,6 +44,8 @@ const mockBook = {
   imageKeys: [] as string[],
   protagonistMode: 'child' as const,
   artStyle: 'watercolor' as const,
+  characterPortraitKey: null as string | null,
+  referenceImageKeys: [] as string[],
   child: { name: 'Маша', age: 6, gender: 'female', appearance: 'brown hair' },
   learningGoal: { title: 'дружба', description: 'научиться дружить' },
 };
@@ -52,6 +54,9 @@ const mockPrisma = {
   book: {
     findUnique: jest.fn(),
     update: jest.fn(),
+  },
+  imageEval: {
+    aggregate: jest.fn().mockResolvedValue({ _max: { run: null } }),
   },
 };
 
@@ -141,13 +146,17 @@ describe('GenerationProcessor', () => {
         appearance: 'brown hair',
       }),
     );
-    expect(mockImageGen.generate).toHaveBeenCalledWith({
-      story: mockStory,
-      bookId: 'book-1',
-      artStyle: 'watercolor',
-      approvedPortraitKey: null,
-      characterDescriptor: undefined,
-    });
+    expect(mockImageGen.generate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        story: mockStory,
+        bookId: 'book-1',
+        artStyle: 'watercolor',
+        approvedPortraitKey: null,
+        characterDescriptor: undefined,
+        run: 1,
+        reuse: undefined,
+      }),
+    );
     expect(mockPrisma.book.update).toHaveBeenNthCalledWith(3, {
       where: { id: 'book-1' },
       data: { imageKeys: keys, characterPortraitKey: 'books/book-1/portrait.png' },
@@ -282,13 +291,93 @@ describe('GenerationProcessor', () => {
     await processor.process(job);
 
     expect(mockOrchestrator.generate).not.toHaveBeenCalled();
-    expect(mockImageGen.generate).toHaveBeenCalledWith({
-      story: mockStory,
-      bookId: 'book-1',
-      artStyle: 'watercolor',
-      approvedPortraitKey: null,
-      characterDescriptor: undefined,
+    expect(mockImageGen.generate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        story: mockStory,
+        bookId: 'book-1',
+        artStyle: 'watercolor',
+        approvedPortraitKey: null,
+        characterDescriptor: undefined,
+        run: 1,
+        reuse: { portraitKey: null, referenceImageKeys: [] },
+      }),
+    );
+  });
+
+  it('retry after images_failed: run 2, reuses the saved portrait + sheets, persists artefacts early (#374)', async () => {
+    const bookWithArtefacts = {
+      ...mockBook,
+      storyJson: mockStory,
+      imageKeys: [],
+      characterPortraitKey: 'books/book-1/portrait.png',
+      referenceImageKeys: ['books/book-1/ref-location-home.png'],
+    };
+    mockPrisma.book.update.mockResolvedValue({});
+    mockPrisma.book.findUnique.mockResolvedValueOnce(bookWithArtefacts);
+    mockPrisma.imageEval.aggregate.mockResolvedValueOnce({ _max: { run: 1 } });
+    mockImageGen.generate.mockImplementationOnce(
+      async (input: {
+        onArtefacts?: (a: {
+          characterPortraitKey: string | null;
+          referenceImageKeys: string[];
+        }) => Promise<void>;
+      }) => {
+        await input.onArtefacts?.({
+          characterPortraitKey: 'books/book-1/portrait.png',
+          referenceImageKeys: ['books/book-1/ref-location-home.png'],
+        });
+        return {
+          imageKeys: ['k1'],
+          characterPortraitKey: 'books/book-1/portrait.png',
+          referenceImageKeys: ['books/book-1/ref-location-home.png'],
+        };
+      },
+    );
+    mockBookImage.signKeys.mockResolvedValueOnce(['u1']);
+    mockPdfRender.render.mockResolvedValueOnce('books/book-1/book.pdf');
+
+    await processor.process(makeJob({ bookId: 'book-1', userId: 'user-1' }));
+
+    expect(mockImageGen.generate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        run: 2,
+        reuse: {
+          portraitKey: 'books/book-1/portrait.png',
+          referenceImageKeys: ['books/book-1/ref-location-home.png'],
+        },
+      }),
+    );
+    // artefacts were written to the Book before the pages finished
+    expect(mockPrisma.book.update).toHaveBeenCalledWith({
+      where: { id: 'book-1' },
+      data: {
+        characterPortraitKey: 'books/book-1/portrait.png',
+        referenceImageKeys: ['books/book-1/ref-location-home.png'],
+      },
     });
+  });
+
+  it('does not reuse artefacts when the story itself was regenerated', async () => {
+    mockPrisma.book.update.mockResolvedValue({});
+    mockPrisma.book.findUnique.mockResolvedValueOnce({
+      ...mockBook,
+      characterPortraitKey: 'books/book-1/portrait.png',
+      referenceImageKeys: ['books/book-1/ref-location-home.png'],
+    });
+    mockOrchestrator.generate.mockResolvedValueOnce({ story: mockStory, attempts: 1 });
+    mockImageGen.generate.mockResolvedValueOnce({
+      imageKeys: ['k1'],
+      characterPortraitKey: null,
+      referenceImageKeys: [],
+    });
+    mockBookImage.signKeys.mockResolvedValueOnce(['u1']);
+    mockPdfRender.render.mockResolvedValueOnce('books/book-1/book.pdf');
+
+    await processor.process(makeJob({ bookId: 'book-1', userId: 'user-1' }));
+
+    expect(mockImageGen.generate).toHaveBeenCalledWith(
+      expect.objectContaining({ reuse: undefined }),
+    );
   });
 
   it('skips both orchestrator and image-gen on retry when both storyJson and imageKeys are saved', async () => {

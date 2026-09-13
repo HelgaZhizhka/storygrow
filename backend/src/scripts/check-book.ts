@@ -19,6 +19,7 @@ const flag = (name: string): string | undefined =>
 interface Row {
   pageNumber: number;
   attempt: number;
+  run: number;
   passed: boolean;
   failures: string[];
 }
@@ -56,19 +57,24 @@ const main = async (): Promise<void> => {
   try {
     const book = await prisma.book.findUniqueOrThrow({
       where: { id: bookId },
-      include: { imageEvals: { orderBy: [{ pageNumber: 'asc' }, { attempt: 'asc' }] } },
+      include: {
+        imageEvals: { orderBy: [{ run: 'asc' }, { pageNumber: 'asc' }, { attempt: 'asc' }] },
+      },
     });
     const story = book.storyJson as { pages?: unknown[] } | null;
     const pageCount = story?.pages?.length ?? 0;
+    // Only the latest run is the book's current set of pages; earlier runs are history (#374).
+    const latestRun = Math.max(1, ...book.imageEvals.map((r) => r.run));
+    const rows = book.imageEvals.filter((r) => r.run === latestRun);
     console.log(
-      `book ${book.id} status=${book.status} pages=${pageCount} images=${book.imageKeys.length} ImageEval rows=${book.imageEvals.length}`,
+      `book ${book.id} status=${book.status} pages=${pageCount} images=${book.imageKeys.length} ImageEval rows=${book.imageEvals.length} (run ${latestRun}: ${rows.length})`,
     );
-    for (const r of book.imageEvals) {
+    for (const r of rows) {
       console.log(
         `  p${r.pageNumber} a${r.attempt} ${r.passed ? 'PASS' : 'FAIL'} ${r.failures.join(',')}`,
       );
     }
-    const problems = checkBook(pageCount, book.imageEvals);
+    const problems = checkBook(pageCount, rows);
     if (problems.length > 0) {
       console.error(`\ncheck:book FAILED\n${problems.map((p) => `  - ${p}`).join('\n')}`);
       process.exit(1);

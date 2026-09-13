@@ -141,6 +141,8 @@ model ImageEval {
   book       Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
   pageNumber Int
   attempt    Int      @default(1)
+  /** Generation run of the book (1 = first; a retry after images_failed is 2, …) so attempts never collide across runs (#374). */
+  run        Int      @default(1)
   scores     Json
   passed     Boolean  @default(false)
   failures   String[] @default([])
@@ -148,6 +150,7 @@ model ImageEval {
   judgedAt   DateTime @default(now())
 
   @@index([bookId])
+  @@index([bookId, run])
 }
 
 model StoryEval {

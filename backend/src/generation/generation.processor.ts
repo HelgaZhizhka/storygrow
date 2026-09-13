@@ -19,6 +19,7 @@ interface BookWithRelations {
   artStyle: 'watercolor' | 'cartoon' | 'storybook' | 'pixel' | 'realistic';
   characterPortraitKey: string | null;
   characterDescriptor: string | null;
+  referenceImageKeys: string[];
   interests: string[];
   motifs: string[];
   favoriteWords: string[];
@@ -63,6 +64,7 @@ export class GenerationProcessor extends WorkerHost {
 
       // On retry: skip orchestrator if story was already generated and saved
       let story: Story;
+      const storyReused = book.storyJson != null;
       if (book.storyJson) {
         this.logger.log(`Book ${bookId}: reusing saved storyJson (retry path)`);
         story = book.storyJson;
@@ -120,6 +122,16 @@ export class GenerationProcessor extends WorkerHost {
           artStyle: book.artStyle,
           approvedPortraitKey: isPhotoFlow ? book.characterPortraitKey : null,
           characterDescriptor: book.characterDescriptor,
+          run: await this.nextImageRun(bookId),
+          // Same story as the failed run → its portrait and sheets are still
+          // valid: reuse them instead of buying them again (#374).
+          reuse: storyReused
+            ? {
+                portraitKey: book.characterPortraitKey,
+                referenceImageKeys: book.referenceImageKeys,
+              }
+            : undefined,
+          onArtefacts: (artefacts) => this.persistArtefacts(bookId, artefacts),
         });
         imageKeys = generated.imageKeys;
         await this.prisma.book.update({
@@ -180,6 +192,7 @@ export class GenerationProcessor extends WorkerHost {
         artStyle: true,
         characterPortraitKey: true,
         characterDescriptor: true,
+        referenceImageKeys: true,
         interests: true,
         motifs: true,
         favoriteWords: true,
@@ -189,6 +202,21 @@ export class GenerationProcessor extends WorkerHost {
     });
     if (!book) throw new Error(`Book ${bookId} not found for user ${userId}`);
     return { ...book, storyJson: book.storyJson as Story | null };
+  }
+
+  /** Each image generation of a book is a run; ImageEval attempts are numbered per run (#374). */
+  private async nextImageRun(bookId: string): Promise<number> {
+    const agg = await this.prisma.imageEval.aggregate({ where: { bookId }, _max: { run: true } });
+    return (agg._max.run ?? 0) + 1;
+  }
+
+  // Persist the portrait and sheet keys the moment they exist, so a crash in the
+  // page phase leaves them on the Book for the next run to reuse (#374).
+  private async persistArtefacts(
+    bookId: string,
+    artefacts: { characterPortraitKey: string | null; referenceImageKeys: string[] },
+  ): Promise<void> {
+    await this.prisma.book.update({ where: { id: bookId }, data: artefacts });
   }
 
   private async setStatus(bookId: string, status: BookStatus): Promise<void> {
