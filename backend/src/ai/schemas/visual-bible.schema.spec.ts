@@ -1,5 +1,9 @@
-import { renderAppearance, toStoryBible } from './visual-bible.schema';
-import { appearanceFixture, planVisualBibleFixture } from './__fixtures__/visual-bible.fixture';
+import { renderAppearance, renderLocation, toStoryBible } from './visual-bible.schema';
+import {
+  appearanceFixture,
+  locationFixture,
+  planVisualBibleFixture,
+} from './__fixtures__/visual-bible.fixture';
 
 describe('renderAppearance (#360)', () => {
   it('renders every field in a fixed order, without any name', () => {
@@ -42,6 +46,33 @@ describe('toStoryBible', () => {
     const bible = toStoryBible(plan, 'girl, red hair');
     expect(bible.hero.descriptor).toBe('girl, red hair');
     expect(bible.cast[0].descriptor.startsWith('adult woman, light skin')).toBe(true);
-    expect(bible.locations).toEqual(plan.locations);
+    expect(bible.locations.map((l) => l.id)).toEqual(plan.locations.map((l) => l.id));
+  });
+});
+
+describe('renderLocation (#366)', () => {
+  it('puts the key object first and its size next to the child right after it', () => {
+    expect(
+      renderLocation(
+        locationFixture({
+          keyObject: 'a red plastic slide with a wooden ladder',
+          size: 'much taller than the child',
+          materials: 'red plastic chute, pale wooden rungs',
+          surroundings: 'green grass and one birch',
+        }),
+      ),
+    ).toBe(
+      'a red plastic slide with a wooden ladder, much taller than the child, red plastic chute, pale wooden rungs, surrounded by green grass and one birch',
+    );
+  });
+
+  it('is what the story bible carries as the location descriptor', () => {
+    const plan = planVisualBibleFixture();
+    const bible = toStoryBible(plan, 'girl');
+    expect(bible.locations[0]).toEqual({
+      id: 'home',
+      name: 'дом',
+      descriptor: renderLocation(plan.locations[0]),
+    });
   });
 });

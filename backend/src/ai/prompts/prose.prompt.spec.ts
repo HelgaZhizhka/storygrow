@@ -5,6 +5,7 @@ import {
   sceneFixture,
   planVisualBibleFixture,
   appearanceFixture,
+  locationFixture,
 } from '../schemas/__fixtures__/visual-bible.fixture';
 
 const plan: StoryPlan = {
@@ -90,7 +91,7 @@ describe('buildProsePrompt — scene context (#348)', () => {
             appearance: appearanceFixture({ kind: 'toddler boy' }),
           },
         ],
-        locations: [{ id: 'home', name: 'двор', descriptor: 'a yard' }],
+        locations: [locationFixture({ id: 'home', name: 'двор', keyObject: 'a yard bench' })],
         props: [{ id: 'ball', name: 'красный мячик', descriptor: 'a red ball' }],
       },
       pages: plan.pages.map((p) => ({
@@ -104,7 +105,7 @@ describe('buildProsePrompt — scene context (#348)', () => {
     expect(out).toContain('братик — младший брат');
     // English descriptors never reach Prose
     expect(out).not.toContain('a red ball');
-    expect(out).not.toContain('a yard');
+    expect(out).not.toContain('a yard bench');
   });
 
   it('never shows the hero look to Prose; passes name and gender explicitly (#367)', () => {

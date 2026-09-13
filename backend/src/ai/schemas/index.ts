@@ -29,6 +29,9 @@ export {
   LocationSchema,
   PropSchema,
   PlanPropSchema,
+  PlanLocationSchema,
+  OBJECT_SIZES,
+  renderLocation,
   renderAppearance,
   toStoryBible,
 } from './visual-bible.schema';
@@ -40,6 +43,8 @@ export type {
   CastMember,
   PlanCastMember,
   Location,
+  PlanLocation,
+  ObjectSize,
   Prop,
 } from './visual-bible.schema';
 

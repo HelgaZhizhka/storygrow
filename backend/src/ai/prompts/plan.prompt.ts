@@ -53,9 +53,11 @@ Hard rules:
    are dull.
 10. VISUAL BIBLE. Decide the book's visual world ONCE, so every page can be drawn
    from the same fixed description:
-   • locations (1–3): each with a lowercase-slug id and an ENGLISH descriptor —
-     ONE key object in the singular (one slide, one bench), its materials and
-     colours, what surrounds it. Never list several of the same thing.
+   • locations (1–3): each with a lowercase-slug id, the Russian name, and a
+     structured ENGLISH look: keyObject — ONE object in the singular (one slide,
+     one bench; never several of the same thing); size — how big it is next to
+     the child (the pictures have no other scale anchor; a "sky-high" slide must
+     be "much taller than the child"); materials and colours; surroundings.
    • hero: name + a structured English appearance — kind ("6-year-old girl":
      age AND boy/girl when the gender is given), skin tone, hair (colour +
      style), outfit WITH colours, one distinctive detail. Every field is

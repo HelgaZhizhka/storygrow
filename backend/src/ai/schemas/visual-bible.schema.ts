@@ -83,14 +83,47 @@ export const CastMemberSchema = z.object({
 });
 export type CastMember = z.infer<typeof CastMemberSchema>;
 
-export const LocationSchema = z.object({
+/**
+ * How big the location's key object is next to the child (#366). A peopleless
+ * establishing sheet has no scale anchor, so without this the model drew a
+ * "sky-high" slide toddler-sized and the child came out giant on every page.
+ */
+export const OBJECT_SIZES = [
+  'smaller than the child',
+  "about the child's height",
+  "twice the child's height",
+  'much taller than the child',
+] as const;
+export type ObjectSize = (typeof OBJECT_SIZES)[number];
+
+/** Location as the PLAN emits it: structured, so size can never be omitted. */
+export const PlanLocationSchema = z.object({
   id: bibleId,
   /** Russian name (e.g. "горка во дворе"). */
   name: z.string().min(1),
-  /** Fixed English description: the key object, its materials/colours, surroundings. */
+  /** ONE key object in the singular, English: "a red metal slide with a wooden ladder". */
+  keyObject: appearanceField,
+  /** The key object's size next to the child. */
+  size: z.enum(OBJECT_SIZES),
+  /** Materials and colours of the key object: "red plastic chute, pale wooden rungs". */
+  materials: appearanceField,
+  /** What surrounds it: "green grass, a low hedge, one birch". */
+  surroundings: appearanceField,
+});
+export type PlanLocation = z.infer<typeof PlanLocationSchema>;
+
+/** Location as the STORY persists it (rendered descriptor, used by prompts, sheets and the judge). */
+export const LocationSchema = z.object({
+  id: bibleId,
+  name: z.string().min(1),
+  /** Rendered by `renderLocation`; fixed for the whole book. */
   descriptor,
 });
 export type Location = z.infer<typeof LocationSchema>;
+
+/** The fixed English location descriptor: key object first, its size next to the child, then materials and surroundings. */
+export const renderLocation = (l: PlanLocation): string =>
+  `${l.keyObject}, ${l.size}, ${l.materials}, surrounded by ${l.surroundings}`;
 
 /** Prop as the PLAN emits it: the Russian name is what Prose may mention (#367). */
 export const PlanPropSchema = z.object({
@@ -103,8 +136,9 @@ export const PlanPropSchema = z.object({
 export const PropSchema = z.object({ id: bibleId, name: z.string().min(1).optional(), descriptor });
 export type Prop = z.infer<typeof PropSchema>;
 
+const MIN_LOCATIONS = 1;
+
 const bibleBase = {
-  locations: z.array(LocationSchema).min(1).max(MAX_LOCATIONS),
   /** One English line fixed for the whole book: season, light, palette mood. */
   atmosphere: descriptor,
 };
@@ -113,6 +147,7 @@ const bibleBase = {
 export const PlanVisualBibleSchema = z.object({
   hero: z.object({ name: z.string().min(1), appearance: AppearanceSchema }),
   cast: z.array(PlanCastMemberSchema).max(MAX_CAST),
+  locations: z.array(PlanLocationSchema).min(MIN_LOCATIONS).max(MAX_LOCATIONS),
   props: z.array(PlanPropSchema).max(MAX_PROPS),
   ...bibleBase,
 });
@@ -122,6 +157,7 @@ export type PlanVisualBible = z.infer<typeof PlanVisualBibleSchema>;
 export const VisualBibleSchema = z.object({
   hero: z.object({ name: z.string().min(1), descriptor }),
   cast: z.array(CastMemberSchema).max(MAX_CAST),
+  locations: z.array(LocationSchema).min(MIN_LOCATIONS).max(MAX_LOCATIONS),
   props: z.array(PropSchema).max(MAX_PROPS),
   ...bibleBase,
 });
@@ -140,7 +176,7 @@ export const toStoryBible = (plan: PlanVisualBible, heroDescriptor: string): Vis
     role,
     descriptor: renderAppearance(appearance),
   })),
-  locations: plan.locations,
+  locations: plan.locations.map((l) => ({ id: l.id, name: l.name, descriptor: renderLocation(l) })),
   props: plan.props,
   atmosphere: plan.atmosphere,
 });

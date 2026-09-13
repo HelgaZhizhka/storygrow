@@ -37,8 +37,13 @@ export const ImageJudgeSchema = z.object({
   castConsistency: z.boolean().nullable(),
   /** The place matches the location reference / description. null when none was given. */
   locationConsistency: z.boolean().nullable(),
-  /** Any adult is drawn at a natural size relative to the child. null when no adult is visible. */
-  adultScaleNatural: z.boolean().nullable(),
+  /**
+   * People and objects are in believable proportion to the child, and an object
+   * the text calls tall / big reads as such (#366: a "sky-high" slide drawn
+   * toddler-sized makes the child a giant). null when nothing on the page can
+   * be compared with the child.
+   */
+  proportionsNatural: z.boolean().nullable(),
   /** Suitable for a preschool picture book (no fear, injury, weapons, nudity). */
   ageSafe: z.boolean(),
   artefacts: z.array(z.enum(IMAGE_ARTEFACTS)),
@@ -60,7 +65,7 @@ const GATES: ReadonlyArray<keyof Omit<ImageJudgeResult, 'artefacts' | 'reasoning
   'sceneMatch',
   'castConsistency',
   'locationConsistency',
-  'adultScaleNatural',
+  'proportionsNatural',
   'ageSafe',
 ];
 

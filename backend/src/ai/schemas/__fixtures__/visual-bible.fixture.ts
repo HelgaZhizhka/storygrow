@@ -1,4 +1,10 @@
-import type { Appearance, PlanVisualBible, Scene, VisualBible } from '../visual-bible.schema';
+import type {
+  Appearance,
+  PlanLocation,
+  PlanVisualBible,
+  Scene,
+  VisualBible,
+} from '../visual-bible.schema';
 
 /** Minimal valid Scene for tests that don't care about the specific selection. */
 export const sceneFixture = (over: Partial<Scene> = {}): Scene => ({
@@ -30,10 +36,21 @@ export const appearanceFixture = (over: Partial<Appearance> = {}): Appearance =>
 });
 
 /** Minimal valid PLAN bible (structured appearance) for plan fixtures. */
+/** Minimal valid structured location (#366). */
+export const locationFixture = (over: Partial<PlanLocation> = {}): PlanLocation => ({
+  id: 'home',
+  name: 'дом',
+  keyObject: 'a soft green sofa',
+  size: "about the child's height",
+  materials: 'green velvet, wooden legs',
+  surroundings: 'a round rug and a bookshelf',
+  ...over,
+});
+
 export const planVisualBibleFixture = (over: Partial<PlanVisualBible> = {}): PlanVisualBible => ({
   hero: { name: 'Герой', appearance: appearanceFixture() },
   cast: [],
-  locations: [{ id: 'home', name: 'дом', descriptor: 'a cosy room' }],
+  locations: [locationFixture()],
   props: [],
   atmosphere: 'warm daylight',
   ...over,

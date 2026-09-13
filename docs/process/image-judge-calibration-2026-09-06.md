@@ -95,6 +95,27 @@ Runner: `pnpm --filter backend eval:image-judge --manifest=output/calibration/ma
 an unavailable/blocked judge is reported as ERROR and excluded from the matrix, an identity-only
 verdict counts as judged.
 
+## v5 — 2026-09-13 (#366): `adultScaleNatural` → `proportionsNatural`
+
+The scale criterion now covers objects as well as adults: people and objects in believable
+proportion to the child, and an object the location calls tall reads tall (a slide «much
+taller than the child» must tower over her). Same durable 52-page set:
+
+| Run | Judged | Bad caught | False fails on good pages | Unjudged |
+|---|---|---|---|---|
+| v5 | 52 | **3/3** | **1/49** | 0 |
+
+The one false fail (`new/smelost-3-child/p8`, `castConsistency`, not the new criterion) is a
+judge being right about its inputs: that book's cast sheet for «мама» was generated from a
+pre-#360 free-text descriptor without the word *adult* and came out as a girl; the page shows
+an adult woman, so "does not match the reference" is true. Structured appearance (`kind: adult
+woman`, #360/#363) makes this unreproducible in new books. The label stays *pass* (a reader
+would keep the page).
+
+Acceptance for the new criterion is the real book generated after the change (see progress
+2026-09-13, #366): the Plan emitted «slide, much taller than the child», the establishing sheet
+drew a tall tower, and the child is in proportion on all seven pages (judge 7/7 first attempt).
+
 ## Per-item verdicts (v3)
 
 | id | expected | judge | failures | reasoning |

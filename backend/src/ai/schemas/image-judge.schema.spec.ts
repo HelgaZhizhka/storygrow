@@ -6,7 +6,7 @@ const clean: ImageJudgeResult = {
   sceneMatch: true,
   castConsistency: null,
   locationConsistency: true,
-  adultScaleNatural: null,
+  proportionsNatural: null,
   ageSafe: true,
   artefacts: [],
   reasoning: 'ok',
@@ -22,9 +22,9 @@ describe('imageVerdict', () => {
   });
 
   it('fails on any false gate and names it', () => {
-    const v = imageVerdict({ ...clean, sceneMatch: false, adultScaleNatural: false });
+    const v = imageVerdict({ ...clean, sceneMatch: false, proportionsNatural: false });
     expect(v.passed).toBe(false);
-    expect(v.failures).toEqual(['sceneMatch', 'adultScaleNatural']);
+    expect(v.failures).toEqual(['sceneMatch', 'proportionsNatural']);
   });
 
   it('fails on artefacts with a prefixed label', () => {
