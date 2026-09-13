@@ -1517,3 +1517,20 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - 289 ai/generation/admin tests pass; `./init.sh` green; `CONTEXT.md` (Visual Bible) and the review tracking updated.
 
 **Blockers:** none.
+
+## 2026-09-13 — docs(ai): safety-boundary research → ADR-0004 v2 draft (phase 0b of the Suteev refactor)
+
+**Done:**
+- Research summary in `docs/process/2026-09-safety-boundary-research.md`: 11 personalised-book products (none publishes a forbidden-list; samples are uniformly soft), regulators (BBFC U, Ofcom 1.13, PBS, ACMA, 436-ФЗ ст. 5/7/8, Apple/Google/PEGI, CSM), psychology (Bandura, Richert & Smith 2011, Walker 2015, Cantor, Пропп, Выготский, Запорожец, Чуковский, Смирнова), and the Russian canon (21 works; wolves/foxes/bears are the 2–4 kindergarten list under 0+).
+- ADR-0004 amendment v2 (status Proposed, v1 kept): risk axis = imitable act by the hero, not scary element; 10-row «Допустимо / Недопустимо» table with per-row sources; proposed rule 7 (`plan.prompt.ts`) and criterion 4 (`judge.prompt.ts`) text, NOT applied; 4 eval cases with a fairy-tale antagonist via `seeds.motifs` + one negative probe.
+
+**Decisions:**
+- Keep every v1 hard ban that is a concrete act (unknown real animal, stranger, fire, water, heights, going off alone) — absolute for the named hero regardless of outcome.
+- New in v2: no blow by the hero (imitable even in cartoon), no on-page harm / grotesque antagonist, no realistic disaster (6+ per 436-ФЗ), stricter fairy-tale markers at 3–4.
+- Companion-pays-for-disobedience («Цыплёнок и Утёнок») documented but NOT enabled — owner's call.
+
+**Next:**
+- Owner reviews the table and both prompt texts; then a PR applies rule 7 + criterion 4 + `story-generator.prompt.ts` line 43, rewrites `CONTEXT.md` → Safe Conflict, adds `seeds` to `EvalCase`, and runs the 4 new cases as the regression baseline.
+
+**Blockers:**
+- none (branch `issue/safety-boundary-v2-research`, no PR by request)
