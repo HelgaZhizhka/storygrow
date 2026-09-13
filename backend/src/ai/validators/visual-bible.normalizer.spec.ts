@@ -4,6 +4,7 @@ import {
   planVisualBibleFixture,
   sceneFixture,
   appearanceFixture,
+  locationFixture,
 } from '../schemas/__fixtures__/visual-bible.fixture';
 
 const planWith = (pages: StoryPlan['pages']): StoryPlan => ({
@@ -22,8 +23,8 @@ const planWith = (pages: StoryPlan['pages']): StoryPlan => ({
       },
     ],
     locations: [
-      { id: 'home', name: 'дом', descriptor: 'a room' },
-      { id: 'yard', name: 'двор', descriptor: 'a yard' },
+      locationFixture({ id: 'home', name: 'дом' }),
+      locationFixture({ id: 'yard', name: 'двор', keyObject: 'a wooden swing' }),
     ],
     props: [{ id: 'ball', name: 'мячик', descriptor: 'a red ball' }],
   }),

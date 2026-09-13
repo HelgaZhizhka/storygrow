@@ -1471,3 +1471,18 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - 252 backend tests; `./init.sh` green; `CONTEXT.md` (Visual Bible, Story Eval) updated; review tracking table updated.
 
 **Blockers:** none.
+
+---
+
+## 2026-09-13 — fix(ai): object scale — structured Location with size next to the child; judge criterion `proportionsNatural` (#366, review B10)
+
+**Why:** «Соня и небо-высокая горка» drew the "sky-high" slide toddler-sized and the child giant. A peopleless establishing sheet has no scale anchor and the location descriptor said nothing about size.
+
+**Done:**
+- Plan emits a **structured location**: `keyObject` (one object, singular), `size` (enum: smaller than the child / about the child's height / twice the child's height / much taller than the child), `materials`, `surroundings`; `renderLocation` builds the descriptor in code (size right after the object) for the sheet, the page prompt and the judge alike. Persisted stories keep a `descriptor` (old rows still validate).
+- Judge: `adultScaleNatural` replaced by **`proportionsNatural`** (people and objects in proportion to the child; an object the world calls tall reads tall).
+- **Recalibrated** on the durable 52-page set: 3/3 bad caught, 1/49 false fails (a pre-#360 cast sheet drawn as a girl — the judge was right about its inputs; documented in the calibration report v5), 0 unjudged.
+- **Real book** through the API (local stack): «Соня и заколка-цветок на высокой горке» — Plan wrote «slide, much taller than the child, metal and plastic…», the sheet drew a tall tower, and on all 7 pages the slide towers over the girls (p7: Sonya in front of it, three times her height). Judge 7/7 on attempt 1; `check:book` OK. All pages reviewed by eye.
+- 254 backend tests, `./init.sh` green; `CONTEXT.md` (Visual Bible, Image Eval) and the review tracking updated.
+
+**Blockers:** none.

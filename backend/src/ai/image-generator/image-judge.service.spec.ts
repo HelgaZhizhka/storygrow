@@ -66,7 +66,7 @@ const verdictObject = (over: Record<string, unknown> = {}) => ({
   sceneMatch: true,
   castConsistency: true,
   locationConsistency: true,
-  adultScaleNatural: null,
+  proportionsNatural: null,
   ageSafe: true,
   artefacts: [],
   reasoning: 'fine',
