@@ -55,6 +55,14 @@ export const JudgeScoreSchema = z.object({
    * abstract words, word-painting of what the picture should show).
    */
   registerMatch: scoreField(),
+
+  /**
+   * INFORMATIONAL (#367, not gated yet): the text names only things the
+   * illustrations can show — the pages' fixed world (locations, cast, props).
+   * Low when the prose invents objects, food, animals, weather or scenery
+   * absent from the world («песок» where the world has only «трава»).
+   */
+  pictureConsistency: scoreField(),
 });
 
 export type JudgeScores = z.infer<typeof JudgeScoreSchema>;

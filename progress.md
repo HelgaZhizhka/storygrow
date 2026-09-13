@@ -1444,3 +1444,30 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - 277 backend tests green (processor: run numbering, reuse only on story reuse, early artefact persistence; sheets `load`; judge rows carry `run`); `./init.sh` green. `CONTEXT.md` Image Eval entry updated.
 
 **Blockers:** none.
+
+---
+
+## 2026-09-13 — fix(ai): Prose sees the world it may write in; hero look out of its contract; text judge sees the bible (#367, review B1+B7+B9)
+
+**Why:** the slide book had «песок брызнул» where the pictures showed grass — Prose saw only the Russian name of a location and completed the world from its prior. It also saw the hero's `characterProfile` (contradicting CONTEXT.md), and opened books with «Жил-был день на площадке».
+
+**Done:**
+- **Props get a Russian `name`** in the Plan (required; optional on persisted stories); the Plan owns intent↔world coherence (everything an intent names must exist in the page's location or props).
+- **Prose contract:** per page a «в кадре: место, герой, cast, реквизит» list (Russian names only — English descriptors never reach Prose) and rule 7 *"THE WORLD IS FIXED — unfold with dialogue, gesture and feeling, never with new objects, food, animals, weather or scenery"*. `characterProfile` removed from the Prose prompt and from the Prose output schema (`ProseOutput`); the hero is passed as name + gender («— девочка (она)»).
+- **Text judge sees the world** (places, characters, props) and reports an informational `pictureConsistency` (stored, not gated).
+- **Opener hint fixed:** the system prompt's `Warm narrator ("Жил-был…")` was being applied to days and yards; it now says a folk opening is about the HERO, never a day or a place.
+- **Measured** on the 14-case `eval:batch` set (baselines committed in `docs/process/eval-baselines/2026-09-13-{before,after,after2}-367.json`; `after` = contract change only, `after2` = + opener fix, shipped):
+
+| | before | after2 |
+|---|---|---|
+| pass rate | 14/14 | 14/14 |
+| registerMatch (mean) | 8.2 | 8.4 |
+| earnedResolution / structure / moral | 8.0 / 8.7 / 8.8 | 8.3 / 8.8 / 9.1 |
+| «Жил-был день/двор…» openers | 4 | 0 |
+| «будто/словно» | 9 | 4 |
+| pictureConsistency (new judge, before stories re-judged) | 9.4 | 9.6 |
+
+  Honest reading: the world constraint is cheap insurance — the «песок/трава» class is rare on this set (before stories already scored 9.4 when re-judged), so it is not a measurable win here; the register moved only slightly (within noise) and the opener fix is the one deterministic improvement. Ornate similes («как комета — бум») are exemplar/register territory, not a contract problem — left for the B8 / exemplar work with owner reading.
+- 252 backend tests; `./init.sh` green; `CONTEXT.md` (Visual Bible, Story Eval) updated; review tracking table updated.
+
+**Blockers:** none.

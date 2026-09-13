@@ -11,6 +11,7 @@ import {
   type StoryPlan,
   renderAppearance,
   toStoryBible,
+  type ProseOutput,
 } from '../schemas';
 import { ensureHeroGender, normalizeVisualBible } from '../validators';
 import { ageToAgeBand, type AgeBand } from '../../pdf/page-templates/page-templates.config';
@@ -169,7 +170,7 @@ export class StoryGeneratorService {
    * photo path overrides it again at image time (#128). Pages align 1:1 with the
    * plan (Prose follows the plan exactly); a missing scene stays undefined.
    */
-  private mergeVisualBible(story: Story, plan: StoryPlan, bookId: string): Story {
+  private mergeVisualBible(story: ProseOutput, plan: StoryPlan, bookId: string): Story {
     if (story.pages.length !== plan.pages.length) {
       // Prose is instructed to follow the plan exactly; if it drifted, scenes
       // align by index and any trailing page falls back to the legacy prompt.
@@ -188,7 +189,7 @@ export class StoryGeneratorService {
     plan: StoryPlan,
     input: GenerateStoryInput,
     ageBand: AgeBand,
-  ): Promise<Story> {
+  ): Promise<ProseOutput> {
     const { object } = await generateObject({
       model: this.openai(input.model ?? PROSE_MODEL),
       schema: buildProseSchema(ageBand),

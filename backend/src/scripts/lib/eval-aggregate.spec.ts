@@ -16,6 +16,7 @@ const run = (overrides: Partial<EvalRunResult>): EvalRunResult => ({
     length: 9,
     earnedResolution: 8,
     registerMatch: 8,
+    pictureConsistency: 7,
   },
   structuralErrorCount: 0,
   avgChars: 170,

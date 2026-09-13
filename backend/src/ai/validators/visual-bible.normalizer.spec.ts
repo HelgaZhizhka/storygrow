@@ -25,7 +25,7 @@ const planWith = (pages: StoryPlan['pages']): StoryPlan => ({
       { id: 'home', name: 'дом', descriptor: 'a room' },
       { id: 'yard', name: 'двор', descriptor: 'a yard' },
     ],
-    props: [{ id: 'ball', descriptor: 'a red ball' }],
+    props: [{ id: 'ball', name: 'мячик', descriptor: 'a red ball' }],
   }),
   pages,
 });

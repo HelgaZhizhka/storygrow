@@ -126,6 +126,7 @@ const runOne = async (
         length: 0,
         earnedResolution: 0,
         registerMatch: 0,
+        pictureConsistency: 7,
       },
       structuralErrorCount: 0,
       avgChars: 0,
