@@ -19,17 +19,21 @@ import { SceneSchema, VisualBibleSchema } from './visual-bible.schema';
  * template.maxChars in BookPlanValidator after generation (belt-and-braces).
  */
 export const ProsePageSchema = z.object({
-  template: z.enum([...TEMPLATE_NAMES] as [TemplateName, ...TemplateName[]]),
-  /** Narrative body text for this page. Null only for cover template. */
-  text: z.string().min(1).nullable(),
-  /** Title text — required for 'cover' template; null for all other templates. */
-  title: z.string().min(1).nullable(),
-  /**
-   * The page's ACTION in English — what the hero and any cast are doing, poses
-   * and expressions, one composition hint. NOT appearance or place (those are
-   * fixed in the Visual Bible and added by the illustration-prompt assembler).
-   */
-  illustrationPrompt: z.string().min(1),
+  template: z
+    .enum([...TEMPLATE_NAMES] as [TemplateName, ...TemplateName[]])
+    .describe('The template of this page — exactly as in the plan.'),
+  text: z
+    .string()
+    .min(1)
+    .nullable()
+    .describe('Russian read-aloud body text for this page; null only on the cover.'),
+  title: z.string().min(1).nullable().describe('Cover title (short); null on every other page.'),
+  illustrationPrompt: z
+    .string()
+    .min(1)
+    .describe(
+      'The page ACTION in English: what "the child" and any listed characters are doing, poses, one composition hint. No appearance, no place, no name.',
+    ),
 });
 
 /**
@@ -51,16 +55,19 @@ const baseProseSchema = z.object({
    * Book title — stored in the database and shown in the app UI.
    * The cover page has its own `pages[0].title` field for display.
    */
-  title: z.string().min(1).max(120),
+  title: z.string().min(1).max(120).describe("Book title, Russian — the plan's title verbatim."),
 
   /**
    * Visual description of the protagonist in English for the image generator,
    * kept as the existing consistency anchor and the photo-flow discriminator.
+   * Set in code from the Plan; the Prose output schema omits it.
    */
   characterProfile: z.string().min(1).max(DESCRIPTOR_MAX_CHARS),
 
-  /** Exactly five open-ended questions for parent–child discussion. */
-  discussionQuestions: z.array(z.string().min(1)).length(DISCUSSION_QUESTIONS_COUNT),
+  discussionQuestions: z
+    .array(z.string().min(1))
+    .length(DISCUSSION_QUESTIONS_COUNT)
+    .describe("The plan's five discussion questions, verbatim."),
 
   pages: z.array(ProsePageSchema),
 });
@@ -85,14 +92,16 @@ const baseStorySchema = baseProseSchema.extend({
 const proseOutputSchema = baseProseSchema.omit({ characterProfile: true });
 export type ProseOutput = z.infer<typeof proseOutputSchema>;
 
-export const buildProseSchema = (ageBand: AgeBand): typeof proseOutputSchema => {
+/**
+ * The Plan owns the page count (#378): Prose must return exactly `pageCount`
+ * pages, so scenes never have to be aligned by index or fall back.
+ */
+export const buildProseSchema = (ageBand: AgeBand, pageCount: number): typeof proseOutputSchema => {
   const coverTitleMax = PAGE_TEMPLATES.cover.maxChars[ageBand].title ?? 60;
-  const { min, max } = PAGE_COUNT_BY_BAND[ageBand];
   return proseOutputSchema.extend({
     pages: z
       .array(ProsePageSchema.extend({ title: z.string().min(1).max(coverTitleMax).nullable() }))
-      .min(min)
-      .max(max),
+      .length(pageCount),
   });
 };
 

@@ -314,3 +314,46 @@ describe('hero appearance — one source in every mode (#376)', () => {
     expect(story.characterProfile).toBe(renderAppearance(validPlan.visualBible.hero.appearance));
   });
 });
+
+describe('plan-owned pages (#378)', () => {
+  let service: StoryGeneratorService;
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    const module = await Test.createTestingModule({
+      providers: [
+        StoryGeneratorService,
+        { provide: ConfigService, useValue: { getOrThrow: () => 'k', get: () => undefined } },
+      ],
+    }).compile();
+    service = module.get(StoryGeneratorService);
+  });
+
+  it("asks Prose for exactly the plan's page count", async () => {
+    mockPlanThenProse();
+    await service.generateStory(input);
+    const proseCall = mockGenerateObject.mock.calls[1][0] as {
+      schema: { safeParse: (v: unknown) => { success: boolean } };
+    };
+    const tooFew = { ...validStory, pages: validStory.pages.slice(0, -1) };
+    expect(proseCall.schema.safeParse(tooFew).success).toBe(false);
+    expect(proseCall.schema.safeParse({ ...validStory, characterProfile: undefined }).success).toBe(
+      true,
+    );
+  });
+
+  it('attaches no scene to a page whose template differs from the plan (the structural check catches it)', async () => {
+    const drifted = {
+      ...validStory,
+      pages: validStory.pages.map((p, i) =>
+        i === 1 ? { ...p, template: 'image-bottom' as const } : p,
+      ),
+    };
+    mockGenerateObject
+      .mockResolvedValueOnce({ object: validPlan } as never)
+      .mockResolvedValueOnce({ object: drifted } as never)
+      .mockResolvedValueOnce({ object: { title: validStory.title } } as never);
+    const story = await service.generateStory(input);
+    expect(story.pages[1].scene).toBeUndefined();
+    expect(story.pages[0].scene).toBeDefined();
+  });
+});

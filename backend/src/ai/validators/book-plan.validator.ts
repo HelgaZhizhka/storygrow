@@ -14,9 +14,24 @@ import { CheckResult } from './check-result';
  * Returns all errors, not just the first — the caller uses this to build
  * regeneration feedback that fixes all violations at once.
  */
-export const validateBookPlan = (pages: Page[], childAge: number): CheckResult => {
+export const validateBookPlan = (
+  pages: Page[],
+  childAge: number,
+  opts: { expectScenes?: boolean } = {},
+): CheckResult => {
   const errors: string[] = [];
   const ageBand = ageToAgeBand(childAge);
+
+  // #378: a story written against a Plan must carry the plan's scene on every
+  // page; a page without one means Prose changed the template the plan fixed.
+  if (opts.expectScenes) {
+    pages.forEach((page, index) => {
+      if (!page.scene)
+        errors.push(
+          `[page:${index}] does not follow the plan (template changed) — keep the plan's page order and templates`,
+        );
+    });
+  }
 
   if (pages.length === 0) {
     return { passed: false, errors: ['Page list is empty'] };

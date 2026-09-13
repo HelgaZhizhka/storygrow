@@ -22,27 +22,34 @@ import { PlanVisualBibleSchema, SceneSchema } from './visual-bible.schema';
 
 /** One planned page: layout + which beat it carries + what happens (not the wording). */
 export const PlanPageSchema = z.object({
-  template: z.enum([...TEMPLATE_NAMES] as [TemplateName, ...TemplateName[]]),
-  /** Arc beat this page carries, e.g. "Завязка", "Расплата" (from the beat sheet). */
-  beat: z.string().min(1),
-  /**
-   * What happens on this page, in Russian — content and emotional beat, NOT the
-   * final sentence. The Prose phase turns this into the actual read-aloud text.
-   * For the cover page, describe the scene the title sits on.
-   */
-  intent: z.string().min(1),
-  /** This page's selection from the Visual Bible (#348): place, cast, props, hero. */
-  scene: SceneSchema,
+  template: z
+    .enum([...TEMPLATE_NAMES] as [TemplateName, ...TemplateName[]])
+    .describe('Page template from the catalogue; first page "cover", last page "final".'),
+  beat: z
+    .string()
+    .min(1)
+    .describe('Arc beat this page carries, e.g. "Завязка", "Расплата" (from the beat sheet).'),
+  intent: z
+    .string()
+    .min(1)
+    .describe(
+      'What happens on this page, in Russian — content and emotional beat, NOT the final sentence. For the cover, the scene the title sits on.',
+    ),
+  scene: SceneSchema.describe(
+    "This page's selection from the Visual Bible: place, cast, props, hero.",
+  ),
 });
 
 export type PlanPage = z.infer<typeof PlanPageSchema>;
 
 export const StoryPlanSchema = z.object({
   /** Book title (Russian). Carried verbatim into the final Story. */
-  title: z.string().min(1).max(120),
+  title: z.string().min(1).max(120).describe('Book title, Russian.'),
 
-  /** The hero's name — fixed here so it can never drift across pages. */
-  heroName: z.string().min(1),
+  heroName: z
+    .string()
+    .min(1)
+    .describe("The hero's name — fixed here so it can never drift across pages."),
 
   /**
    * English visual description of the protagonist (the image-consistency anchor).
@@ -50,13 +57,23 @@ export const StoryPlanSchema = z.object({
    * `visualBible.hero.appearance` (no name, no prose), or derived from the
    * parent's appearance / photo. The model's own value is a placeholder.
    */
-  characterProfile: z.string().min(1).max(DESCRIPTOR_MAX_CHARS),
+  characterProfile: z
+    .string()
+    .min(1)
+    .max(DESCRIPTOR_MAX_CHARS)
+    .describe(
+      'Placeholder — the hero look is taken from visualBible.hero; write one short English line.',
+    ),
 
-  /** One short Russian sentence — the moral, stated only on the final page. */
-  lesson: z.string().min(1),
+  lesson: z
+    .string()
+    .min(1)
+    .describe('One short Russian sentence — the moral, stated only on the final page.'),
 
-  /** Exactly five open-ended parent–child discussion questions (Russian). */
-  discussionQuestions: z.array(z.string().min(1)).length(DISCUSSION_QUESTIONS_COUNT),
+  discussionQuestions: z
+    .array(z.string().min(1))
+    .length(DISCUSSION_QUESTIONS_COUNT)
+    .describe('Exactly five open-ended parent–child discussion questions, Russian.'),
 
   /**
    * The book's visual world (#348) — hero, cast, locations, props, atmosphere,

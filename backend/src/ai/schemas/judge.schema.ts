@@ -26,26 +26,32 @@ export const GUARDRAIL_KEYS = [
  */
 export const JudgeScoreSchema = z.object({
   /** Vocabulary is appropriate for the child's age / grade level. */
-  ageAppropriateVocab: scoreField(),
+  ageAppropriateVocab: scoreField().describe(
+    "Vocabulary fits the child's age; heavy penalty for any non-Russian words.",
+  ),
 
   /** Story contains a clear moral lesson tied to the learning goal. */
-  hasMoralLesson: scoreField(),
+  hasMoralLesson: scoreField().describe('The story clearly teaches the stated learning goal.'),
 
   /** A complete narrative arc is present (setup → conflict → resolution). */
-  structureCompleteness: scoreField(),
+  structureCompleteness: scoreField().describe('A complete arc: setup → conflict → resolution.'),
 
   /** Content is safe; models no real-world danger the hero approaches. */
-  safetyForChildren: scoreField(),
+  safetyForChildren: scoreField().describe(
+    'Content is safe; the resolution never rewards approaching a real danger.',
+  ),
 
   /** Story length is appropriate for the target age. */
-  length: scoreField(),
+  length: scoreField().describe('Page count and content volume suit the target age.'),
 
   /**
    * The moral is EARNED, not asserted: a real stake/consequence precedes the
    * resolution (a flaw visibly costs the hero), and the ending follows from the
    * hero's own action — not instant forgiveness, luck, or a stated maxim.
    */
-  earnedResolution: scoreField(),
+  earnedResolution: scoreField().describe(
+    "The moral is earned by a real cost and the hero's own action, not announced.",
+  ),
 
   /**
    * CRAFT signal (ADR-0005). Two-sided register match against the gold
@@ -54,7 +60,9 @@ export const JudgeScoreSchema = z.object({
    * and when it is MORE ORNATE (decorative adult similes/clichés, rare or
    * abstract words, word-painting of what the picture should show).
    */
-  registerMatch: scoreField(),
+  registerMatch: scoreField().describe(
+    "Two-sided closeness to the gold exemplars' voice: low when flatter, low when more ornate.",
+  ),
 
   /**
    * INFORMATIONAL (#367, not gated yet): the text names only things the
@@ -62,7 +70,9 @@ export const JudgeScoreSchema = z.object({
    * Low when the prose invents objects, food, animals, weather or scenery
    * absent from the world («песок» where the world has only «трава»).
    */
-  pictureConsistency: scoreField(),
+  pictureConsistency: scoreField().describe(
+    "Informational: the text names only what the illustrations' fixed world can show.",
+  ),
 });
 
 export type JudgeScores = z.infer<typeof JudgeScoreSchema>;
@@ -76,8 +86,10 @@ export type JudgeScores = z.infer<typeof JudgeScoreSchema>;
 export const JudgeSchema = z.object({
   scores: JudgeScoreSchema,
 
-  /** Judge's concise reasoning (names the key register strengths/weaknesses). */
-  reasoning: z.string().min(1),
+  reasoning: z
+    .string()
+    .min(1)
+    .describe('2–3 sentences naming the register verdict and the concrete phrases that drove it.'),
 });
 
 export type JudgeResult = z.infer<typeof JudgeSchema>;

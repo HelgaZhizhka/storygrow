@@ -1502,3 +1502,18 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - 321 backend tests, `./init.sh` green; `CONTEXT.md` (Photo Character, Character Profile), review tracking updated.
 
 **Blockers:** none.
+
+## 2026-09-13 — refactor(ai): Plan owns the page count, model-facing schemas describe their fields, normalizer repairs counted by kind (#378, review A2+B2+B4)
+
+**Why:** three things were true of the same seam. Prose could return a different number of pages than the Plan decided and `mergeVisualBible` matched pages by index, so a dropped or added page silently attached the wrong scene. The Plan prompt explained field meanings in prose while the schema — the only thing the model must satisfy — was undocumented. And the normalizer reported "N repairs" with no way to tell a dangling location from a hero forced onto a page, so a noisy Plan could not be measured.
+
+**Done:**
+- **Prose schema built per call** (`buildProseSchema(ageBand, pageCount)`): `pages` is `.length(plan.pages.length)`; the model cannot hand back fewer or more pages. `mergeVisualBible` attaches a scene only when the page's template equals the plan's; a mismatch leaves the page without a scene and `validateBookPlan(..., { expectScenes })` fails it with a plain reason («does not follow the plan (template changed)»), sending the story into the normal regeneration loop instead of rendering it with someone else's scene.
+- **`.describe()` on every model-facing field** in story-plan, visual-bible, story (prose), judge, image-judge and photo-descriptor schemas; Plan rule 10 shrunk to the decisions only (what to decide, not what each field means).
+- **Repairs by kind:** `normalizeVisualBible` returns `repairKinds` (`danglingLocation`, `droppedCastId`, `droppedPropId`, `addedCast`, `heroForced`); logged and put on a `story-plan.normalize` LangFuse span so the Plan's noise is a number per kind, not a total.
+- **Legacy no-bible image path deleted.** Prod count before deleting: 18 ready books, all pre-#348 without a Visual Bible; a ready book never re-enters image generation, so nothing can hit the path. A story without a bible or a page without a scene now fails loud («regenerate the story»).
+- **Real book** through the local API (observer mode, goal «делиться»): «Маша и спрятанная коробка печенья» — Prose returned exactly the plan's 6 pages, every page kept its template and got its scene; normalizer 0 repairs (no warn line, span written); judge: p1 blocked by Gemini safety twice (identity-only verdict recorded both times, passed on attempt 2), p2 failed `proportionsNatural` twice (table not «twice the child's height» — kept after the retry budget, both rows recorded), p3–p6 passed first attempt; `check:book` OK.
+- **Found, not fixed here (text track, #390):** the Plan declared an empty cast while the story is about sharing with a brother; Prose then wrote the brother onto pages 4–6 («Маша с братом рассмеялись») and the pictures show the girl alone. Rule 7 forbids Prose inventing cast, but nothing checks it — a candidate for the text-judge or a structural check once the grilling session decides.
+- 289 ai/generation/admin tests pass; `./init.sh` green; `CONTEXT.md` (Visual Bible) and the review tracking updated.
+
+**Blockers:** none.

@@ -48,7 +48,7 @@ describe('normalizeVisualBible', () => {
   });
 
   it('drops unknown and duplicate cast/prop ids', () => {
-    const { plan, repairs } = normalizeVisualBible(
+    const { plan, repairs, repairKinds } = normalizeVisualBible(
       planWith([
         {
           template: 'image-top',
@@ -65,6 +65,12 @@ describe('normalizeVisualBible', () => {
     expect(plan.pages[0].scene.castIds).toEqual(['brother']);
     expect(plan.pages[0].scene.propIds).toEqual(['ball']);
     expect(repairs).toBe(3); // ghost + duplicate brother + sword
+    expect(repairKinds).toMatchObject({
+      droppedCastId: 2,
+      droppedPropId: 1,
+      danglingLocation: 0,
+      heroForced: 0,
+    });
   });
 
   it('forces heroOnPage on cover and final pages', () => {

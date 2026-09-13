@@ -1,10 +1,30 @@
 import type { PlanPage, Scene, StoryPlan } from '../schemas';
 
+export const REPAIR_KINDS = [
+  'danglingLocation',
+  'droppedCastId',
+  'droppedPropId',
+  'addedCast',
+  'heroForced',
+] as const;
+export type RepairKind = (typeof REPAIR_KINDS)[number];
+export type RepairCounts = Record<RepairKind, number>;
+
 export interface NormalizeResult {
   plan: StoryPlan;
-  /** Number of repairs made (dangling ids dropped, hero flags forced). */
+  /** Total repairs made. */
   repairs: number;
+  /** Repairs by kind (#378) — each kind is a measurable contract gap in the Plan output. */
+  repairKinds: RepairCounts;
 }
+
+const zeroCounts = (): RepairCounts =>
+  Object.fromEntries(REPAIR_KINDS.map((k) => [k, 0])) as RepairCounts;
+
+const addCounts = (a: RepairCounts, b: RepairCounts): RepairCounts =>
+  Object.fromEntries(REPAIR_KINDS.map((k) => [k, a[k] + b[k]])) as RepairCounts;
+
+const total = (c: RepairCounts): number => REPAIR_KINDS.reduce((s, k) => s + c[k], 0);
 
 interface BibleIds {
   locations: Set<string>;
@@ -54,26 +74,32 @@ const cleanIds = (ids: string[], known: Set<string>): { kept: string[]; dropped:
 };
 
 /** Repair one page's scene against the bible ids; returns the page + repair count. */
-const normalizePage = (page: PlanPage, ids: BibleIds): { page: PlanPage; repairs: number } => {
+const normalizePage = (
+  page: PlanPage,
+  ids: BibleIds,
+): { page: PlanPage; repairKinds: RepairCounts } => {
   const scene: Scene = page.scene;
-  let repairs = 0;
+  const counts = zeroCounts();
 
   let locationId = scene.locationId;
   if (!ids.locations.has(locationId)) {
     locationId = ids.fallbackLocation;
-    repairs++;
+    counts.danglingLocation++;
   }
 
   const cast = cleanIds(scene.castIds, ids.cast);
   const props = cleanIds(scene.propIds, ids.props);
   const addedCast = castNamedButMissing(page.intent, cast.kept, ids.castNames);
-  repairs += cast.dropped + props.dropped + addedCast.length;
+  counts.droppedCastId += cast.dropped;
+  counts.droppedPropId += props.dropped;
+  counts.addedCast += addedCast.length;
 
   const forceHero =
     page.template === 'cover' ||
     page.template === 'final' ||
     intentNames(page.intent, ids.heroNames);
-  const heroOnPage = forceHero && !scene.heroOnPage ? (repairs++, true) : scene.heroOnPage;
+  const heroOnPage =
+    forceHero && !scene.heroOnPage ? (counts.heroForced++, true) : scene.heroOnPage;
 
   return {
     page: {
@@ -86,7 +112,7 @@ const normalizePage = (page: PlanPage, ids: BibleIds): { page: PlanPage; repairs
         heroOnPage,
       },
     },
-    repairs,
+    repairKinds: counts,
   };
 };
 
@@ -115,11 +141,11 @@ export const normalizeVisualBible = (plan: StoryPlan): NormalizeResult => {
     heroNames: [plan.heroName, plan.visualBible.hero.name],
     castNames: Object.fromEntries(plan.visualBible.cast.map((c) => [c.id, c.name])),
   };
-  let repairs = 0;
+  let repairKinds = zeroCounts();
   const pages = plan.pages.map((page) => {
     const result = normalizePage(page, ids);
-    repairs += result.repairs;
+    repairKinds = addCounts(repairKinds, result.repairKinds);
     return result.page;
   });
-  return { plan: { ...plan, pages }, repairs };
+  return { plan: { ...plan, pages }, repairs: total(repairKinds), repairKinds };
 };

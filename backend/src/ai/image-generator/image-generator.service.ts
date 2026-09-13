@@ -7,14 +7,12 @@ import { type Story } from '../schemas';
 import { S3Service } from '../../s3/s3.service';
 import {
   GENERATION_MODEL,
-  STYLE_SUFFIXES,
   parseImageProvider,
   type ArtStyle,
   type ImageProviderName,
 } from '../ai.config';
 import { pickReferences } from './pick-references';
 import { buildIllustrationPrompt } from '../prompts/illustration.prompt';
-import { buildPagePrompt } from '../prompts/image-portrait.prompt';
 import type { ImageProvider } from './providers/image-provider.interface';
 import { OpenAiImageProvider } from './providers/openai-image.provider';
 import { GeminiImageProvider } from './providers/gemini-image.provider';
@@ -178,14 +176,18 @@ export class ImageGeneratorService {
     return this.provider.generatePortraitFromPhoto(input);
   }
 
-  // Assemble one page's final prompt + reference images. Visual Bible path (#348)
-  // when the story carries a bible + scene; otherwise the legacy path.
+  // Assemble one page's final prompt + reference images from the Visual Bible.
+  // The pre-#348 legacy path (no bible, free-text prompt) was removed in #378:
+  // production holds no book that can re-enter image generation without a bible
+  // (ready books never retry), so a missing bible is a bug, not a mode.
   private buildPageRequest(ctx: PageBuildContext): PageRequest {
     const { input, page } = ctx;
-    if (input.story.visualBible && page.scene) {
-      return this.biblePageRequest(ctx);
+    if (!input.story.visualBible || !page.scene) {
+      throw new Error(
+        `Book ${input.bookId}: story has no Visual Bible / scene on a page — regenerate the story (pre-#348 books cannot be re-rendered)`,
+      );
     }
-    return this.legacyPageRequest(ctx);
+    return this.biblePageRequest(ctx);
   }
 
   private biblePageRequest(ctx: PageBuildContext): PageRequest {
@@ -217,27 +219,6 @@ export class ImageGeneratorService {
       location: bible.locations.find((l) => l.id === scene.locationId)?.descriptor ?? null,
     };
     return { prompt, references: images, labels, judgeContext };
-  }
-
-  private legacyPageRequest(ctx: PageBuildContext): PageRequest {
-    const { input, page, portraitBytes } = ctx;
-    const judgeContext: ImageJudgeContext = {
-      action: page.illustrationPrompt,
-      heroDescriptor: input.characterDescriptor ?? input.story.characterProfile ?? null,
-      cast: [],
-    };
-    if (this.provider.usesReference) {
-      const inner = input.characterDescriptor
-        ? `${input.characterDescriptor}. ${page.illustrationPrompt}`
-        : page.illustrationPrompt;
-      const prompt = buildPagePrompt(inner, input.artStyle);
-      return portraitBytes
-        ? { prompt, references: [portraitBytes], labels: ['hero'], judgeContext }
-        : { prompt, references: [], labels: [], judgeContext };
-    }
-    const prefix = input.story.characterProfile ? `${input.story.characterProfile}. ` : '';
-    const prompt = `${prefix}${page.illustrationPrompt}${STYLE_SUFFIXES[input.artStyle]}`;
-    return { prompt, references: [], labels: [], judgeContext };
   }
 
   private async maybePortrait(
