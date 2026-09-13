@@ -12,10 +12,12 @@ import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
 import { PdfModule } from './pdf/pdf.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { validateEnv } from './config/env.schema';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    // Fail loud on a misconfigured deployment (#373) — see config/env.schema.ts.
+    ConfigModule.forRoot({ isGlobal: true, validate: validateEnv }),
     BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({

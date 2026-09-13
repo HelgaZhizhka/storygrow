@@ -56,8 +56,19 @@ export const STYLE_SUFFIXES: Record<ArtStyle, string> = {
     ', semi-realistic 3D render, soft cinematic lighting, detailed, child-friendly, no text in image',
 };
 
-export type ImageProviderName = 'gemini' | 'openai' | 'xai';
-export const DEFAULT_IMAGE_PROVIDER: ImageProviderName = 'gemini';
+export const IMAGE_PROVIDERS = ['xai', 'gemini', 'openai'] as const;
+export type ImageProviderName = (typeof IMAGE_PROVIDERS)[number];
+// xAI Grok is the production default (ADR-0007). The app needs a Gemini key
+// anyway (vision judge, photo descriptor), so "boots without an xAI key" was
+// never a real property; CI uses a dummy value.
+export const DEFAULT_IMAGE_PROVIDER: ImageProviderName = 'xai';
+
+/** Strict: an unknown value must fail at startup, never silently select another paid model (#373). */
+export const parseImageProvider = (raw: string | undefined): ImageProviderName => {
+  if (raw === undefined || raw === '') return DEFAULT_IMAGE_PROVIDER;
+  if ((IMAGE_PROVIDERS as readonly string[]).includes(raw)) return raw as ImageProviderName;
+  throw new Error(`IMAGE_PROVIDER must be one of ${IMAGE_PROVIDERS.join(' | ')}, got "${raw}"`);
+};
 
 // Resolves to the GA id gemini-2.5-flash-preview-image. If it 404s, set that
 // explicit id here. Gemini takes no `size`, only an aspect ratio.

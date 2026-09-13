@@ -18,7 +18,10 @@ import { ImageJudgeService, type JudgePageInput } from './image-judge.service';
 import type { ImageEvalRow, ImageEvalSink } from './image-eval.sink';
 
 const config = (env: Record<string, string>): ConfigService =>
-  ({ get: (k: string) => env[k] }) as unknown as ConfigService;
+  ({
+    get: (k: string) => env[k],
+    getOrThrow: (k: string) => env[k] ?? 'test-key',
+  }) as unknown as ConfigService;
 
 const sink = (): ImageEvalSink & { rows: ImageEvalRow[] } => {
   const rows: ImageEvalRow[] = [];
@@ -72,16 +75,24 @@ const verdictObject = (over: Record<string, unknown> = {}) => ({
 describe('ImageJudgeService', () => {
   beforeEach(() => mockGenerateObject.mockReset());
 
-  it('is on by default, reads the flag and retries from config', () => {
-    const defaults = new ImageJudgeService(config({}), sink());
-    expect(defaults.enabled).toBe(true);
-    expect(defaults.maxRetries).toBe(1);
-    const off = new ImageJudgeService(
-      config({ IMAGE_EVAL: 'off', IMAGE_EVAL_MAX_RETRIES: '2' }),
-      sink(),
+  it('reads the re-render kill switch from config (string or number), default 1', () => {
+    expect(new ImageJudgeService(config({}), sink()).maxRetries).toBe(1);
+    expect(new ImageJudgeService(config({ IMAGE_EVAL_MAX_RETRIES: '2' }), sink()).maxRetries).toBe(
+      2,
     );
-    expect(off.enabled).toBe(false);
-    expect(off.maxRetries).toBe(2);
+    expect(
+      new ImageJudgeService(config({ IMAGE_EVAL_MAX_RETRIES: 0 as never }), sink()).maxRetries,
+    ).toBe(0);
+  });
+
+  it('requires the Gemini key at construction (no silent empty key)', () => {
+    const strict = {
+      get: () => undefined,
+      getOrThrow: () => {
+        throw new Error('Missing GOOGLE_GENERATIVE_AI_API_KEY');
+      },
+    } as unknown as ConfigService;
+    expect(() => new ImageJudgeService(strict, sink())).toThrow(/GOOGLE_GENERATIVE_AI_API_KEY/);
   });
 
   it('fails on preflight without calling the model and records the row', async () => {

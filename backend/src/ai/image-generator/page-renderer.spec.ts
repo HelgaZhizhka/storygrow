@@ -26,13 +26,12 @@ const s3 = { uploadObject } as unknown as S3Service;
 const textModel = {} as LanguageModel;
 
 const judgeStub = (
-  enabled: boolean,
   maxRetries: number,
   verdicts: Array<{ passed: boolean; failures: string[] }>,
 ): ImageJudgeService & { judge: jest.Mock } => {
   const judge = jest.fn();
   verdicts.forEach((v) => judge.mockResolvedValueOnce(v));
-  return { enabled, maxRetries, judge } as unknown as ImageJudgeService & { judge: jest.Mock };
+  return { maxRetries, judge } as unknown as ImageJudgeService & { judge: jest.Mock };
 };
 
 const opts = (over: Partial<RenderPageOpts> = {}): RenderPageOpts => ({
@@ -49,11 +48,11 @@ const opts = (over: Partial<RenderPageOpts> = {}): RenderPageOpts => ({
 describe('PageRenderer', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('renders once and uploads when the judge is off', async () => {
+  it('renders once and uploads when the page carries no judge context', async () => {
     const p = provider();
     p.generatePage.mockResolvedValue(new Uint8Array([1]));
-    const r = new PageRenderer({ provider: p, s3, textModel, judge: judgeStub(false, 1, []) });
-    const out = await r.render(opts());
+    const r = new PageRenderer({ provider: p, s3, textModel, judge: judgeStub(1, []) });
+    const out = await r.render(opts({ judgeContext: undefined }));
     expect(out).toMatchObject({ key: 'books/b1/page-3.png', attempts: 1 });
     expect(p.generatePage).toHaveBeenCalledTimes(1);
   });
@@ -63,7 +62,7 @@ describe('PageRenderer', () => {
     p.generatePage
       .mockResolvedValueOnce(new Uint8Array([1]))
       .mockResolvedValueOnce(new Uint8Array([2]));
-    const judge = judgeStub(true, 1, [
+    const judge = judgeStub(1, [
       { passed: false, failures: ['sceneMatch'] },
       { passed: true, failures: [] },
     ]);
@@ -79,7 +78,7 @@ describe('PageRenderer', () => {
     p.generatePage
       .mockResolvedValueOnce(new Uint8Array([1]))
       .mockResolvedValueOnce(new Uint8Array([2]));
-    const judge = judgeStub(true, 1, [
+    const judge = judgeStub(1, [
       { passed: false, failures: ['sceneMatch'] },
       { passed: false, failures: ['sceneMatch', 'artefact:textInImage'] },
     ]);
@@ -94,7 +93,7 @@ describe('PageRenderer', () => {
   it('treats a judge annotation (blocked → identity-only) as a pass, not a failure (#369)', async () => {
     const p = provider();
     p.generatePage.mockResolvedValue(new Uint8Array([1]));
-    const judge = judgeStub(true, 1, [
+    const judge = judgeStub(1, [
       { passed: true, failures: ['judge:blocked:PROHIBITED_CONTENT:identity-only'] },
     ]);
     const out = await new PageRenderer({ provider: p, s3, textModel, judge }).render(opts());
@@ -105,7 +104,7 @@ describe('PageRenderer', () => {
   it('does not judge a page without a judge context', async () => {
     const p = provider();
     p.generatePage.mockResolvedValue(new Uint8Array([1]));
-    const judge = judgeStub(true, 1, []);
+    const judge = judgeStub(1, []);
     await new PageRenderer({ provider: p, s3, textModel, judge }).render(
       opts({ judgeContext: undefined }),
     );

@@ -331,6 +331,26 @@ model Subscription {
 
 ---
 
+## Configuration
+
+Environment is validated **once at startup** by `ConfigModule.forRoot({ validate })` with the Zod
+schema in `backend/src/config/env.schema.ts` (#373). A misconfigured deployment fails loud with every
+problem listed — it never silently picks another paid model or runs with a feature quietly off
+(that is how the image judge stayed off in production after #362, see #364).
+
+The rule for what belongs in env:
+
+- **Secrets and topology** (`DATABASE_URL`, API keys, S3, OAuth, Stripe) — always env.
+- **Documented kill switches with a reason** — env, with the reason next to the variable in
+  `.env.example` (`IMAGE_EVAL_MAX_RETRIES=0` = "judge and record, never re-render", for a
+  miscalibrated vision model; `EVAL_MAX_RETRIES` for the text loop).
+- **Experiments** are explicit options on a service input (or a harness flag), never env.
+- **After an ADR** a flag becomes a constant in the same PR (reference sheets and the judge are
+  simply on; the cascade experiment was deleted, #372).
+
+Unknown `IMAGE_PROVIDER` values are rejected; the default is `xai`. `backend/.env.example` and
+`docs/deploy-railway.md` are the two places that must list the same variables.
+
 ## Observability
 
 - **LangFuse** runs locally (`docker compose up langfuse`).

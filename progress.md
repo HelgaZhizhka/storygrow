@@ -1415,3 +1415,17 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Harness smoke after the change: `eval:images --run=after-372 --max-pages=1` on one fixture through the real Grok path (see below).
 
 **Blockers:** none.
+
+---
+
+## 2026-09-13 — fix(ai): judge as a required dependency, fail-loud env validation, AiModule compile test, check:book (#373, review A3+A4+A5)
+
+**Done:**
+- `ImageJudgeService` is a **required** dependency of the image generator (no `@Optional` left in `src/ai`); its Gemini key is read with `getOrThrow`. A new spec compiles the **real `AiModule`** with Prisma/S3 replaced and asserts the judge resolves — the guard that would have caught #364 — and asserts an unknown `IMAGE_PROVIDER` refuses to boot.
+- Env validated once at startup (`backend/src/config/env.schema.ts`, Zod, `ConfigModule.forRoot({ validate })`): required keys listed all at once, `IMAGE_PROVIDER` strict enum defaulting to **`xai`** (CI verify job gets a dummy `XAI_API_KEY`), `XAI_API_KEY` required when xai, `IMAGE_EVAL_MAX_RETRIES` coerced and bounded 0–3.
+- Flags deleted: `IMAGE_REFERENCE_SHEETS` (sheets always on), `IMAGE_EVAL` (judge always on). The one lever left is `IMAGE_EVAL_MAX_RETRIES` — 0 = judge every page and write rows, never buy a re-render.
+- `pnpm --filter backend check:book --book=<id>`: the last line of the manual DoD — asserts from the DB that every page has ImageEval rows numbered 1..n and every row carries a verdict; prints per-page outcomes so a bad page is diagnosable without LangFuse.
+- Docs: `ARCHITECTURE.md` gained a **Configuration** section with the env rule (secrets/topology/documented kill switches; experiments never env; a flag becomes a constant after its ADR); `deploy-railway.md` now lists the image variables; `CLAUDE.md`, `.env.example`, `CONTEXT.md` updated.
+- 246 backend AI/config/script tests green; `./init.sh` green; real local boot checked (see below).
+
+**Blockers:** none.

@@ -3,6 +3,7 @@ import {
   type ArtStyle,
   IMAGE_SIZE_TO_ASPECT_RATIO,
   DEFAULT_IMAGE_PROVIDER,
+  parseImageProvider,
   GEMINI_IMAGE_MODEL,
   GEMINI_VISION_MODEL,
 } from './ai.config';
@@ -29,7 +30,7 @@ describe('image config', () => {
   });
 
   it('defaults to the gemini provider', () => {
-    expect(DEFAULT_IMAGE_PROVIDER).toBe('gemini');
+    expect(DEFAULT_IMAGE_PROVIDER).toBe('xai');
   });
 
   it('targets the gemini flash image model', () => {
@@ -41,5 +42,18 @@ describe('GEMINI_VISION_MODEL (#359)', () => {
   it('is not the retired gemini-2.5-flash (404 on the current Google project)', () => {
     expect(GEMINI_VISION_MODEL).not.toBe('gemini-2.5-flash');
     expect(GEMINI_VISION_MODEL).toBe('gemini-3.6-flash');
+  });
+});
+
+describe('parseImageProvider (#373)', () => {
+  it('defaults to xai and accepts the three known providers', () => {
+    expect(parseImageProvider(undefined)).toBe('xai');
+    expect(parseImageProvider('')).toBe('xai');
+    expect(parseImageProvider('gemini')).toBe('gemini');
+    expect(parseImageProvider('openai')).toBe('openai');
+  });
+
+  it('throws on an unknown value instead of silently selecting another model', () => {
+    expect(() => parseImageProvider('gemni')).toThrow(/IMAGE_PROVIDER/);
   });
 });
