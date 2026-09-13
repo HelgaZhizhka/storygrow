@@ -1,0 +1,155 @@
+{
+  "title": "Алиса и таинственное исчезновение кораблика",
+  "characterProfile": "6-year-old girl, light skin, brown curly hair, wearing red dress, blue sneakers, wears a yellow watch",
+  "discussionQuestions": [
+    "1. Почему Алиса не сказала маме правду сначала?",
+    "2. Что произошло с корабликом, когда Алиса солгала?",
+    "3. Как Алиса чувствовала себя, когда её друзья её не поняли?",
+    "4. Что Алиса сделала, чтобы исправить свою ошибку?",
+    "5. Почему важно быть честным с друзьями?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и таинственное исчезновение кораблика",
+      "illustrationPrompt": "The child holding up a toy boat to two friends, smiling; simple centered composition.",
+      "scene": {
+        "locationId": "park",
+        "castIds": ["petya", "katya"],
+        "propIds": ["toy-ship"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Жил-был день, и Алиса шмыг — в гостиной звякнуло: «Ой, горшок!» Осколки — как лужицы. «Это не я… сам упал», — шепнула Алиса и спрятала взгляд. «Ну-ну, аккуратней», — сказала Мама, а Алиса промолчала.",
+      "title": null,
+      "illustrationPrompt": "The child near scattered pot shards, eyes lowered; the mom nearby with a gentle, questioning look; open space at top.",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["mama"],
+        "propIds": ["flower-pot"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "На площадке Петя подбежал: «Алиса, давай кораблик поплывёт!» Алиса переминалась: «Э-э… он исчез. Сам взял да уплыл». «Как исчез?» — удивился Петя. «Вот так вот», — буркнула Алиса.",
+      "title": null,
+      "illustrationPrompt": "The child hides the toy boat behind her back; the boy friend reaches out with open hands, asking; left-weighted framing.",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["petya"],
+        "propIds": ["toy-ship"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Петя переглянулся с Катей: «Кораблики сами не уплывают». «Пойдём в салочки», — сказала Катя и дотронулась до Пети. Побежали ребята, смех кругами, а Алиса осталась в стороне и только шепнула: «Подождите…»",
+      "title": null,
+      "illustrationPrompt": "The boy and girl friends start to run off to play tag together; the child stands aside, reaching out a hand; airy space above.",
+      "scene": {
+        "locationId": "park",
+        "castIds": ["petya", "katya"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Алиса села на качели, ногой чертила полоску в песке. «Не хочу больше прятаться», — сказала она себе вполголоса и глубоко вздохнула. «Скажу всё как есть. И про горшок, и про кораблик».",
+      "title": null,
+      "illustrationPrompt": "The child sits on a swing, tracing a line with her foot, looking thoughtful; focus on left side.",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["ball"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса встала перед Мамой: «Я разбила горшок… Простишь?» — сказала и всё-всё рассказала. Потом набралась духу и шепнула в окно двору: «Петя, Катя, простите, кораблик никуда не исчез — это я выдумала».",
+      "title": null,
+      "illustrationPrompt": "The child stands before the mom, speaking earnestly; then the child leans toward a window calling to friends; action clustered near bottom.",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["mama"],
+        "propIds": ["flower-pot"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "В парке Мама обняла Алису: «Прощаю, моя хорошая». Петя с Катей улыбнулись: «Играй с нами! И кораблик берём». Алиса кивнула и засмеялась. Важно говорить правду, даже когда это сложно.",
+      "title": null,
+      "illustrationPrompt": "The mom hugs the child; the boy and girl friends smile and beckon the child to join their game; everyone together; calm centered composition.",
+      "scene": {
+        "locationId": "park",
+        "castIds": ["mama", "petya", "katya"],
+        "propIds": ["toy-ship"],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "6-year-old girl, light skin, brown curly hair, wearing red dress, blue sneakers, wears a yellow watch"
+    },
+    "cast": [
+      {
+        "id": "mama",
+        "name": "Мама",
+        "role": "мама Алисы",
+        "descriptor": "adult woman, light skin, blonde tied back hair, wearing green blouse and blue jeans, wears glasses."
+      },
+      {
+        "id": "petya",
+        "name": "Петя",
+        "role": "друг Алисы",
+        "descriptor": "6-year-old boy, tan skin, black short hair, wearing striped t-shirt and shorts, wears a red cap."
+      },
+      {
+        "id": "katya",
+        "name": "Катя",
+        "role": "подруга Алисы",
+        "descriptor": "6-year-old girl, light skin, blonde in pigtails, wearing pink dress, has freckles."
+      }
+    ],
+    "locations": [
+      {
+        "id": "living-room",
+        "name": "гостиная",
+        "descriptor": "one cozy orange couch, wooden floor, a round rug"
+      },
+      {
+        "id": "park",
+        "name": "парк",
+        "descriptor": "one tall slide, grassy area, bright flowers everywhere"
+      },
+      {
+        "id": "playground",
+        "name": "детская площадка",
+        "descriptor": "one large sandbox, surrounded by trees"
+      }
+    ],
+    "props": [
+      {
+        "id": "toy-ship",
+        "descriptor": "a small blue toy ship, made of plastic"
+      },
+      {
+        "id": "flower-pot",
+        "descriptor": "a ceramic blue flower pot"
+      },
+      {
+        "id": "ball",
+        "descriptor": "a colorful bouncy ball"
+      }
+    ],
+    "atmosphere": "Sunny spring day, bright and cheerful colors."
+  }
+}

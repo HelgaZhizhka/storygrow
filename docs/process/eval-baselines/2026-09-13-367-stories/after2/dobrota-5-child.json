@@ -1,0 +1,143 @@
+{
+  "title": "Алиса и волшебная коробка на краю песочницы",
+  "discussionQuestions": [
+    "1. Что интересного Алиса нашла в коробке?",
+    "2. Почему Алиса сначала решила оставить коробку себе?",
+    "3. Что заставило Алису передумать?",
+    "4. Как Алиса помогла своему другу?",
+    "5. Как ты можешь показать доброту окружающим?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и волшебная коробка на краю песочницы",
+      "illustrationPrompt": "The child kneels by a closed box near a bench, eyes wide, one hand reaching toward the lid; three-quarter view.",
+      "scene": {
+        "locationId": "park-bench",
+        "castIds": [],
+        "propIds": ["magic-box"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса подошла к песочнице и остановилась рядом. Ваня сидел тихо и водил пальцем по песку. «У Вани нет сегодня игрушек… как же его развеселить?» — подумала Алиса.",
+      "title": null,
+      "illustrationPrompt": "The child stands at the edge, hands clasped, watching the friend sit and trace lines in the sand; the child shows concern; medium shot.",
+      "scene": {
+        "locationId": "sandbox",
+        "castIds": ["vanya"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "На скамейке стояла коробка. Алиса наклонилась, коснулась крышки и прошептала: «Какая же ты красивая!» «Может, оставить себе?» — шепнула Алиса и сжала коробку в руках.",
+      "title": null,
+      "illustrationPrompt": "The child leans toward the box on the bench, fingertips on the lid, gazing at it longingly; close-up on hands and face.",
+      "scene": {
+        "locationId": "park-bench",
+        "castIds": [],
+        "propIds": ["magic-box"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса вернулась к песочнице. Ваня молчал и глядел в песок. «Поделиться с Ваней или нет? А вдруг он обрадуется… а вдруг мне станет жалко?» — думала Алиса.",
+      "title": null,
+      "illustrationPrompt": "At the sandbox, the child takes a half-step toward the friend, then hesitates; the friend looks down at the sand; slight space between them.",
+      "scene": {
+        "locationId": "sandbox",
+        "castIds": ["vanya"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса подошла к Ване с коробкой. «Ваня, давай откроем её вдвоём?» — сказала Алиса и протянула коробку. «Правда можно?» — поднял Ваня глаза, и Алиса кивнула.",
+      "title": null,
+      "illustrationPrompt": "The child offers the box to the friend; both lean in; the child's arms extended, the friend looking up in surprise; centered composition.",
+      "scene": {
+        "locationId": "sandbox",
+        "castIds": ["vanya"],
+        "propIds": ["magic-box"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Ваня бережно приподнял крышку, и глаза у него блеснули. «Игрушки!» — выдохнул он и широко улыбнулся. Алиса захлопала в ладоши: «Вот это находка! Давай вместе играть!»",
+      "title": null,
+      "illustrationPrompt": "The friend opens the box, delighted; the child claps; contents hinted inside, not detailed; close on faces and the lifted lid.",
+      "scene": {
+        "locationId": "sandbox",
+        "castIds": ["vanya"],
+        "propIds": ["magic-box"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Ваня смеётся и не выпускает коробку, улыбка так и пляшет. Алиса смотрит — и улыбка у неё тоже ширится. Радость Вани будто перескакивает к Алисе и согревает её.",
+      "title": null,
+      "illustrationPrompt": "Both laugh together beside the open box; the child places a hand on chest, joy mirrored; simple, warm framing.",
+      "scene": {
+        "locationId": "sandbox",
+        "castIds": ["vanya"],
+        "propIds": ["magic-box"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "— Доброта — это когда мы помогаем другому чувствовать себя лучше, — сказала Алиса.",
+      "title": null,
+      "illustrationPrompt": "Both side by side with the open box between them, smiling softly; calm, centered composition.",
+      "scene": {
+        "locationId": "sandbox",
+        "castIds": ["vanya"],
+        "propIds": ["magic-box"],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "5-year-old girl, light skin, curly brown hair, wearing green dress, red shoes, red shoes",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "5-year-old girl, light skin, curly brown hair, wearing green dress, red shoes, red shoes"
+    },
+    "cast": [
+      {
+        "id": "vanya",
+        "name": "Ваня",
+        "role": "друг",
+        "descriptor": "5-year-old boy, fair skin, straight blonde hair, wearing blue t-shirt, denim shorts, green backpack"
+      }
+    ],
+    "locations": [
+      {
+        "id": "park-bench",
+        "name": "скамейка в парке",
+        "descriptor": "wooden bench with carved armrests, surrounded by colorful flowers"
+      },
+      {
+        "id": "sandbox",
+        "name": "песочница",
+        "descriptor": "sandy pit, yellow buckets, surrounded by grass"
+      }
+    ],
+    "props": [
+      {
+        "id": "magic-box",
+        "name": "коробка",
+        "descriptor": "small wooden box with star patterns"
+      }
+    ],
+    "atmosphere": "warm autumn afternoon, bright colors, cheerful mood"
+  }
+}

@@ -80,10 +80,15 @@ const baseStorySchema = baseProseSchema.extend({
  * `generateObject` (cover-title cap + page-count bounds per band). Emits NO
  * bible/scene.
  */
-export const buildProseSchema = (ageBand: AgeBand): typeof baseProseSchema => {
+// The hero's look is set in code from the Plan (#363/#367); the Prose model
+// neither sees nor echoes it.
+const proseOutputSchema = baseProseSchema.omit({ characterProfile: true });
+export type ProseOutput = z.infer<typeof proseOutputSchema>;
+
+export const buildProseSchema = (ageBand: AgeBand): typeof proseOutputSchema => {
   const coverTitleMax = PAGE_TEMPLATES.cover.maxChars[ageBand].title ?? 60;
   const { min, max } = PAGE_COUNT_BY_BAND[ageBand];
-  return baseProseSchema.extend({
+  return proseOutputSchema.extend({
     pages: z
       .array(ProsePageSchema.extend({ title: z.string().min(1).max(coverTitleMax).nullable() }))
       .min(min)

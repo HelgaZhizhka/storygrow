@@ -1,0 +1,143 @@
+{
+  "title": "Алиса и таинственное исчезновение куклы",
+  "discussionQuestions": [
+    "1. Что Алиса сделала с игрушкой вначале?",
+    "2. Почему игрушке было одиноко под кроватью?",
+    "3. Как Алиса почувствовала себя, когда не нашла свою игрушку?",
+    "4. Что она сделала, чтобы исправить ситуацию?",
+    "5. Как ты заботишься о своих вещах?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и таинственное исчезновение куклы",
+      "illustrationPrompt": "the child sits on the floor playing with a doll, smiling; gentle, centered composition",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": ["doll"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Играли Алиса с Машей, да наигрались. «Потом возьмём», — сказала Алиса, и вдвоём — шмыг! — куклу под кровать. Побежали хохоча, а кукла молча осталась там.",
+      "title": null,
+      "illustrationPrompt": "the child and a friend casually slide a doll under the bed, then dash off laughing; low view to show under-bed space",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": ["masha"],
+        "propIds": ["doll"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Потом играла Алиса одна. «Иду-у!» — крикнула она на зов, да только куклу снова — раз! — под кровать. «Потом доиграем», — сказала Алиса и выбежала.",
+      "title": null,
+      "illustrationPrompt": "the child tosses the doll under the bed while hurrying away; dynamic motion, doll mid-drop",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": ["doll"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Утром Алиса заглянула под кровать. «Ку-куда ж ты делась?» — шепчет и рукой шарит, а куклы нет, хоть слушай тишину. Вздохнула Алиса: хотела взять на площадку, да не нашла.",
+      "title": null,
+      "illustrationPrompt": "the child on knees, reaching under the bed, searching with puzzled face; empty space under bed visible",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "На площадке Алиса ходит туда-сюда. «Эх, кукла, как бы мы сейчас играли», — шепчет Алиса и опускает плечи. Без куклы не так весело — пусто рядом и скучно.",
+      "title": null,
+      "illustrationPrompt": "the child stands alone on the playground, looking down, hands together; wide space around for a lonely feel",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Вернулась Алиса домой и стала искать по углам. «Кукла-а, отзовись!» — зовёт, заглянула под кровать — ой! Вот ты где. Алиса протянула руку и бережно вытянула куклу наружу.",
+      "title": null,
+      "illustrationPrompt": "the child lies or crouches to peek under the bed, spotting the doll and reaching to pull it out; relieved expression",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": ["doll"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Алиса усадила куклу рядом и аккуратно расправила складочки на платьице. «Прости, что бросала», — сказала Алиса. Теперь она будет хранить куклу бережно и не бросать.",
+      "title": null,
+      "illustrationPrompt": "the child gently tidies the doll—straightening dress and arms; calm, careful hands; intimate framing",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": ["doll"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "На площадке Алиса играет с Машей и держит куклу осторожно: посадит рядом, подаст бережно, попросит по очереди. «Береги и ты», — шепчет Алиса подруге. Бережно относиться к своим вещам и вещам других.",
+      "title": null,
+      "illustrationPrompt": "the child and a friend play together; the child carefully sets the doll down for shared play; both smiling; centered composition",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["masha"],
+        "propIds": ["doll"],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "6-year-old girl, light skin, curly brown hair, wearing green dress with red polka dots, wears glasses",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "6-year-old girl, light skin, curly brown hair, wearing green dress with red polka dots, wears glasses"
+    },
+    "cast": [
+      {
+        "id": "masha",
+        "name": "Маша",
+        "role": "подруга Алисы",
+        "descriptor": "6-year-old girl, olive skin, straight black bob hair, wearing yellow t-shirt and blue jeans, wears a headband"
+      }
+    ],
+    "locations": [
+      {
+        "id": "bedroom",
+        "name": "спальня",
+        "descriptor": "one bed with a wooden frame, pale pink walls, a small shelf with books"
+      },
+      {
+        "id": "playground",
+        "name": "детская площадка",
+        "descriptor": "one wooden slide with bright colors, surrounded by green grass"
+      }
+    ],
+    "props": [
+      {
+        "id": "doll",
+        "name": "кукла",
+        "descriptor": "a rag doll with a blue dress and yarn hair"
+      }
+    ],
+    "atmosphere": "A sunny autumn day with a cozy warm palette."
+  }
+}

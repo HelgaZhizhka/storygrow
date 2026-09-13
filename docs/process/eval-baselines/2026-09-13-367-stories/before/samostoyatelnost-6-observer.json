@@ -1,0 +1,134 @@
+{
+  "title": "Аня и упрямый фиолетовый",
+  "characterProfile": "6-year-old girl, light skin, long brown hair, wearing green dress, pink shoes",
+  "discussionQuestions": [
+    "1. Что решила сделать Аня самостоятельно?",
+    "2. Почему фиолетовая краска оказалась трудной задачей?",
+    "3. Как Аня справлялась с трудностями?",
+    "4. Что помогло Ане в итоге справиться самой?",
+    "5. А что ты уже умеешь делать самостоятельно?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Аня и упрямый фиолетовый",
+      "illustrationPrompt": "the child at a table with mom, holding a brush eagerly; mom smiles encouragingly; centered framing",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": ["mom"],
+        "propIds": ["paint-set", "canvas"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "На палитре у Ани все цвета слушаются, да только фиолетовый никак. То слишком синий выйдет, то — розовый. «Помочь?» — шепнула Мама. «Хочу сама понять», — ответила Аня и снова взялась за кисть.",
+      "title": null,
+      "illustrationPrompt": "the child frowns at a stubborn paint spot on the palette, brush poised; mom nearby, offering gentle support; focus on hands and palette",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": ["mom"],
+        "propIds": ["paint-set", "canvas"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Аня уже раскрыла рот: «Ма-ам…» — и тут же прикусила губу. «Нет, попробую сама, как большая!» — шепнула Аня себе и аккуратно поставила баночку ближе, чтоб не плескать.",
+      "title": null,
+      "illustrationPrompt": "the child starts to call to mom then stops, lips pressed, determined grip on brush; mom watching from the side; open space above",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": ["mom"],
+        "propIds": ["paint-set", "canvas"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Тут Аня вспомнила, как Мама мешает краски: сперва каплю синей, потом чуть-чуть красной. «Кругом да к серединке», — повторила Аня и стала вести кистью медленно и ровно.",
+      "title": null,
+      "illustrationPrompt": "the child moves the brush in small circles on the palette, recalling mom’s steps; mom in background nodding; left-focused composition",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": ["mom"],
+        "propIds": ["paint-set", "canvas"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Раз-два — и на палитре у Ани тонкая дорожка вдруг посинела, порозовела, а потом засияла ровным фиолетовым. «Получилось!» — выдохнула Аня и нарисовала смелую фиолетовую тень на своём рисунке.",
+      "title": null,
+      "illustrationPrompt": "the child gently swirls red and blue into a rich purple on the palette, eyes bright; close-up on the swirling paint",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": ["paint-set", "canvas"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "С листом в руках Аня вышла к Маме: «Смотри, я сама нашла фиолетовый!» Мама улыбнулась и бережно провела пальцем над рисунком. Аня расправила плечи и ещё раз показала лучший уголок.",
+      "title": null,
+      "illustrationPrompt": "the child holds up a drawing proudly toward mom; mom claps and beams; low angle to emphasize the raised artwork",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["mom"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Аня устроилась рядом с Мамой и долго смотрела на свой рисунок: теперь можно и дальше учиться. Уверенность приходит с практикой и настойчивостью.",
+      "title": null,
+      "illustrationPrompt": "the child and mom sit together, the drawing displayed between them, sharing a warm hug; centered composition",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["mom"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "visualBible": {
+    "hero": {
+      "name": "Аня",
+      "descriptor": "6-year-old girl, light skin, long brown hair, wearing green dress, pink shoes"
+    },
+    "cast": [
+      {
+        "id": "mom",
+        "name": "Мама",
+        "role": "мама",
+        "descriptor": "adult woman, light skin, short blonde hair, wearing blue shirt and jeans, glasses"
+      }
+    ],
+    "locations": [
+      {
+        "id": "kitchen",
+        "name": "кухня",
+        "descriptor": "one large wooden table, colorful paints, bright lights"
+      },
+      {
+        "id": "living-room",
+        "name": "гостиная",
+        "descriptor": "one cozy blue couch, books and toys scattered around"
+      }
+    ],
+    "props": [
+      {
+        "id": "paint-set",
+        "descriptor": "colorful paint set with brushes"
+      },
+      {
+        "id": "canvas",
+        "descriptor": "small white canvas on easel"
+      }
+    ],
+    "atmosphere": "Sunny afternoon, warm and inviting with vibrant colors."
+  }
+}

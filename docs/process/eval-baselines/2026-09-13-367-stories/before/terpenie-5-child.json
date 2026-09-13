@@ -1,0 +1,146 @@
+{
+  "title": "Алиса и тающий шарик на вокзале",
+  "characterProfile": "5-year-old girl, fair skin, short brown hair, wearing yellow dress, red shoes, red shoes",
+  "discussionQuestions": [
+    "1. Как Алиса ждала поезд с бабушкой?",
+    "2. Почему Алиса начала беспокоиться возле парка?",
+    "3. Что случилось, когда Алиса не выдержала ждать?",
+    "4. Как Алиса почувствовала себя, когда её оставили без мороженого?",
+    "5. Как Алиса исправила ситуацию и что она поняла в конце?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и тающий шарик на вокзале",
+      "illustrationPrompt": "The child holds grandmother’s hand, both looking into the distance, waiting together; wide shot.",
+      "scene": {
+        "locationId": "train-station",
+        "castIds": ["babushka"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Ждут-стоят Алиса с Бабушкой. «Ну когда же поезд? Он точно не забыл про нас?» — шепчет Алиса и подпрыгивает на носочках. «Тихонечко, солнышко, всё успеем», — улыбается Бабушка.",
+      "title": null,
+      "illustrationPrompt": "The child fidgets on tiptoes, asking grandmother when the train will come; grandmother smiles; medium shot.",
+      "scene": {
+        "locationId": "train-station",
+        "castIds": ["babushka"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Минутка прошла, а Алиса уже вертится. «Я быстро гляну, что там за качели!» — сказала Алиса и стрелой сорвалась с места, цок-цок туфельками, забыв про «подожди рядом».",
+      "title": null,
+      "illustrationPrompt": "The child suddenly dashes off running, leaving the waiting spot behind; dynamic diagonal motion; no other characters.",
+      "scene": {
+        "locationId": "park",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса вернулась — а рельсы звенят да хвостик поезда вдали машет. Бабушка держит вафельку с шариком. «Ой, Алиса, я тебе взяла, да поезд-то ушёл… Где ж ты бегала?»",
+      "title": null,
+      "illustrationPrompt": "The child returns out of breath; grandmother holds an ice cream cone; a train is already pulling away in the far distance; over-the-shoulder view of the child.",
+      "scene": {
+        "locationId": "train-station",
+        "castIds": ["babushka"],
+        "propIds": ["ice-cream"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса опустила плечи и тихо: «Я всё пропустила… и поезд, и первый вкусный кусочек». Шарик уже коварно потёк по пальцам Бабушки. «Эх», — сказала Алиса, — «надо было рядом сидеть».",
+      "title": null,
+      "illustrationPrompt": "Close shot: the child droops while looking at ice cream melting over grandmother’s hand; quiet moment; two-shot.",
+      "scene": {
+        "locationId": "train-station",
+        "castIds": ["babushka"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "«Бабушка, давай… помаленьку… снова купим? А я буду ждать рядышком, честно-честно», — сказала Алиса и крепко взяла Бабушку за руку. «Ну что ж, попробуем», — кивнула Бабушка.",
+      "title": null,
+      "illustrationPrompt": "The child gently takes grandmother’s hand, suggesting to buy another ice cream; both standing; hopeful expressions; two-shot.",
+      "scene": {
+        "locationId": "train-station",
+        "castIds": ["babushka"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Сели Алиса с Бабушкой на скамейку и лижут по шарику — не спеша, в одну сторону. «Раз, два, три — вместе смотреть и вместе ждать», — придумывает счёт Алиса и щурится в тёплый солнечный день.",
+      "title": null,
+      "illustrationPrompt": "The child and grandmother sit together sharing ice cream, relaxed, looking toward warm light; centered composition.",
+      "scene": {
+        "locationId": "train-station",
+        "castIds": ["babushka"],
+        "propIds": ["ice-cream"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса узнаёт, что терпение и спокойствие помогают сделать ожидание приятным.",
+      "title": null,
+      "illustrationPrompt": "The child and grandmother wait calmly together; the child counts on fingers; simple centered framing, serene mood.",
+      "scene": {
+        "locationId": "train-station",
+        "castIds": ["babushka"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "5-year-old girl, fair skin, short brown hair, wearing yellow dress, red shoes, red shoes"
+    },
+    "cast": [
+      {
+        "id": "babushka",
+        "name": "Бабушка",
+        "role": "бабушка Алисы",
+        "descriptor": "elderly woman, fair skin, gray, curly hair, wearing blue cardigan, floral skirt, round glasses"
+      }
+    ],
+    "locations": [
+      {
+        "id": "train-station",
+        "name": "Железнодорожная станция",
+        "descriptor": "one wooden bench, green, surrounded by flowers"
+      },
+      {
+        "id": "park",
+        "name": "Парк",
+        "descriptor": "one large slide, colorful, with grass and trees"
+      }
+    ],
+    "props": [
+      {
+        "id": "ice-cream",
+        "descriptor": "ice cream cone with chocolate"
+      },
+      {
+        "id": "ticket",
+        "descriptor": "train ticket, red and white"
+      }
+    ],
+    "atmosphere": "summer day, bright and cheerful mood"
+  }
+}

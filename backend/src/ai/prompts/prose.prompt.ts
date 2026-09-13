@@ -30,8 +30,7 @@ Hard rules:
 1. Follow the plan EXACTLY: same number of pages, same order, same template per
    page, same beat. Do not add, drop, merge, or reorder pages.
 2. Use the plan's heroName on EVERY page — never rename the hero.
-3. Keep the plan's title and characterProfile verbatim. characterProfile and all
-   discussionQuestions are carried over from the plan unchanged.
+3. Keep the plan's title verbatim; carry all discussionQuestions over unchanged.
 4. Each page's "text" renders that page's intent as a FULL, warm read-aloud
    moment — 2–3 flowing sentences that USE MOST of the page's character budget
    (aim for roughly three-quarters of the limit). Do NOT clip the intent into one
@@ -47,9 +46,16 @@ Hard rules:
    Bible and added downstream. Refer to the hero as "the child" (she/he), NEVER by
    name — a name inside an image prompt gets drawn as a sign in the picture; the
    name belongs to the Russian text only. No text/letters in the image. Keep it brief.
+7. THE WORLD IS FIXED. Each page lists what is «в кадре» — the place, the
+   characters and the objects the illustration will show. Unfold the intent with
+   dialogue, gesture and feeling, NEVER with new objects, food, animals, weather
+   or scenery: if the frame says «трава», there is no песок; if it lists no ball,
+   nobody throws one. What the text names, the picture must be able to show.
 
 THE VOICE — match this register (warm Сутеев read-aloud):
-  • Warm narrator ("Жил-был…"), folk rhythm and inversion, gentle humour.
+  • Warm narrator voice, folk rhythm and inversion, gentle humour. A folk-tale
+    opening, if you use one, is about the HERO («Жила-была девочка Алиса…»),
+    never about a day, a yard or a slide («Жил-был день…» is not Russian).
   • Natural dialogue carries much of the story ("…", — сказал он).
   • Show feeling through ACTION and SPEECH, not narrator labels (write the moment,
     not "он испугался").
@@ -60,21 +66,25 @@ THE VOICE — match this register (warm Сутеев read-aloud):
 `.trim();
 };
 
-const renderPlanPages = (plan: StoryPlan, ageBand: AgeBand): string => {
-  const locName = (id: string): string =>
-    plan.visualBible.locations.find((l) => l.id === id)?.name ?? id;
-  const castName = (id: string): string =>
-    plan.visualBible.cast.find((c) => c.id === id)?.name ?? id;
-  return plan.pages
+// Russian names only: the English descriptors are for the illustrator, and a
+// descriptor shown to Prose would either leak English or invite word-painting.
+const inFrame = (plan: StoryPlan, scene: StoryPlan['pages'][number]['scene']): string => {
+  const bible = plan.visualBible;
+  const place = bible.locations.find((l) => l.id === scene.locationId)?.name ?? scene.locationId;
+  const cast = scene.castIds.map((id) => bible.cast.find((c) => c.id === id)?.name ?? id);
+  const props = scene.propIds.map((id) => bible.props.find((x) => x.id === id)?.name ?? id);
+  const people = [scene.heroOnPage ? plan.heroName : null, ...cast].filter(Boolean);
+  return [place, ...people, ...props].join(', ');
+};
+
+const renderPlanPages = (plan: StoryPlan, ageBand: AgeBand): string =>
+  plan.pages
     .map((p, i) => {
       const cap = PAGE_TEMPLATES[p.template].maxChars[ageBand].text;
       const capStr = cap !== undefined ? `, text max ${cap} chars` : ', title only — no body text';
-      const withCast = p.scene.castIds.map(castName);
-      const castStr = withCast.length > 0 ? ` · with: ${withCast.join(', ')}` : '';
-      return `  Page ${i + 1} [${p.template}] (${p.beat}) @${locName(p.scene.locationId)}${castStr}${capStr}: ${p.intent}`;
+      return `  Page ${i + 1} [${p.template}] (${p.beat}${capStr}) в кадре: ${inFrame(plan, p.scene)}: ${p.intent}`;
     })
     .join('\n');
-};
 
 /** Cast roster so the prose uses the bible's names consistently (empty if none). */
 const renderCastRoster = (plan: StoryPlan): string => {
@@ -82,6 +92,11 @@ const renderCastRoster = (plan: StoryPlan): string => {
   const lines = plan.visualBible.cast.map((c) => `  • ${c.name} — ${c.role}`).join('\n');
   return `Characters besides the hero (use these exact names):\n${lines}\n\n`;
 };
+
+// Gender explicitly, because the hero's look is no longer shown to Prose (#367):
+// appearance is image-only, but она/он must not drift.
+const heroGender = (gender?: string): string =>
+  gender === 'female' ? ' — девочка (она)' : gender === 'male' ? ' — мальчик (он)' : '';
 
 /** buildProsePrompt — the user-turn for the Prose phase. */
 export const buildProsePrompt = (plan: StoryPlan, opts: BuildStoryPromptOptions): string => {
@@ -91,8 +106,7 @@ export const buildProsePrompt = (plan: StoryPlan, opts: BuildStoryPromptOptions)
 Write the final Russian read-aloud text for this approved plan.
 
 Title: ${plan.title}
-Hero name (use on every page): ${plan.heroName}
-characterProfile (keep verbatim): ${plan.characterProfile}
+Hero (use this name on every page): ${plan.heroName}${heroGender(opts.gender)}
 Lesson (final page only): ${plan.lesson}
 
 ${renderCastRoster(plan)}Pages to render (follow exactly):

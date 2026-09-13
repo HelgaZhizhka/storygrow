@@ -79,6 +79,14 @@ GUARDRAIL criteria (safety / structure gates):
 CRAFT criterion (the quality signal — judge it strictly):
 ${registerMatchCriterion(ageBand)}
 
+INFORMATIONAL criterion (reported, not gated):
+8. pictureConsistency — the text names only what the illustrations can show. The
+   story's fixed world (places, characters, objects) is listed in the prompt when
+   known; score LOW (≤4) if the prose brings in objects, food, animals, weather or
+   scenery that are not in that world (e.g. «песок брызнул» when the world has
+   only «трава»), HIGH (8–10) when every concrete thing mentioned is in the world.
+   If no world is listed, score 7.
+
 TARGET REGISTER — gold exemplars (match this VOICE, never the plot/names/setting):
 """
 ${referenceBlock}
@@ -98,12 +106,22 @@ const formatPages = (story: Story): string =>
     })
     .join('\n');
 
+/** The fixed world the pictures show, for pictureConsistency (#367); empty when the story has no bible. */
+const formatWorld = (story: Story): string => {
+  const bible = story.visualBible;
+  if (!bible) return '';
+  const locations = bible.locations.map((l) => `${l.name} — ${l.descriptor}`).join('; ');
+  const cast = bible.cast.map((c) => c.name).join(', ') || 'none';
+  const props = bible.props.map((p) => p.name ?? p.descriptor).join(', ') || 'none';
+  return `\nWorld fixed by the illustrations (the text may only name what is here):\n  places: ${locations}\n  characters besides the hero: ${cast}\n  objects: ${props}\n`;
+};
+
 export const buildJudgePrompt = (story: Story, childAge: number, learningGoal: string): string => {
   const questions = story.discussionQuestions.map((q, i) => `  ${i + 1}. ${q}`).join('\n');
   return `Story title: "${story.title}"
 Child age: ${childAge}
 Learning goal: ${learningGoal}
-
+${formatWorld(story)}
 Pages:
 ${formatPages(story)}
 

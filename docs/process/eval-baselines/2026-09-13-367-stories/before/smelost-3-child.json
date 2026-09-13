@@ -1,0 +1,130 @@
+{
+  "title": "Алиса и волшебный ночник",
+  "characterProfile": "3-year-old girl, fair skin, short brown curls, wearing red dress with yellow polka dots, blue shoes, blue shoes",
+  "discussionQuestions": [
+    "1. Что испугало Алису?",
+    "2. Какие слова повторяла Алиса?",
+    "3. Что значит быть смелым?",
+    "4. Как Алиса справилась со страхом?",
+    "5. Когда ты был смелым, как Алиса?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и волшебный ночник",
+      "illustrationPrompt": "the child holds Mom's hand, looking toward darkness; Mom kneels, reassuring smile; medium shot",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["mama"],
+        "propIds": ["teddy-bear"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Жила-была Алиса у двери и глядит. Там темно, как в коробочке. «Ой-ой…» — шепчет Алиса.",
+      "title": null,
+      "illustrationPrompt": "the child peers into darkness, body slightly back, wide eyes; side view",
+      "scene": {
+        "locationId": "bedroom-dark",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса тише мышки. «Я могу, я могу», — шепчет Алиса и ставит одну ножку вперёд. Чуть-чуть.",
+      "title": null,
+      "illustrationPrompt": "the child whispers to self, edging one foot forward; close on foot and face; low angle",
+      "scene": {
+        "locationId": "bedroom-dark",
+        "castIds": [],
+        "propIds": ["teddy-bear"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "«Я могу, я могу», — повторяет Алиса и делает ещё один шажок. Сердце тук-тук, а шаг идёт.",
+      "title": null,
+      "illustrationPrompt": "the child repeats to self, makes another small step; determined face; profile view",
+      "scene": {
+        "locationId": "bedroom-dark",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Вот кроватка — ура! Алиса тянется, щёлк, и загорается ночник. Улыбка у Алисы сама.",
+      "title": null,
+      "illustrationPrompt": "the child reaches the bed and clicks a small lamp on; happy grin; focus on hand switching",
+      "scene": {
+        "locationId": "bedroom-dark",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Светло вокруг. Алиса огляделась и говорит уверенно: «Я могу, я могу!» И правда — может.",
+      "title": null,
+      "illustrationPrompt": "the child gazes around at the light, proud stance; arms slightly out; center framing",
+      "scene": {
+        "locationId": "bedroom-dark",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса говорит Маме: «Мне было страшно, а я пошла». Вот и смелость — делать, хоть боишься.",
+      "title": null,
+      "illustrationPrompt": "the child speaks to Mom proudly; Mom kneels to hug; warm close two-shot",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["mama"],
+        "propIds": ["teddy-bear"],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "3-year-old girl, fair skin, short brown curls, wearing red dress with yellow polka dots, blue shoes, blue shoes"
+    },
+    "cast": [
+      {
+        "id": "mama",
+        "name": "Мама",
+        "role": "мама Алисы",
+        "descriptor": "adult woman, fair skin, long black hair, wearing green sweater, jeans, glasses"
+      }
+    ],
+    "locations": [
+      {
+        "id": "living-room",
+        "name": "гостиная",
+        "descriptor": "one blue sofa, wooden floor, white walls"
+      },
+      {
+        "id": "bedroom-dark",
+        "name": "темная комната",
+        "descriptor": "one cozy bed, light switch, dim light from a nightlight"
+      }
+    ],
+    "props": [
+      {
+        "id": "teddy-bear",
+        "descriptor": "one fluffy teddy bear"
+      }
+    ],
+    "atmosphere": "Calm evening, soft lighting, warm and cozy mood."
+  }
+}

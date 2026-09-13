@@ -1,0 +1,143 @@
+{
+  "title": "Алиса и таинственное исчезновение мячика",
+  "discussionQuestions": [
+    "1. Какой мячик потеряла Алиса?",
+    "2. Почему Алисе было грустно?",
+    "3. Почему Алиса думала, что не найдёт мячик?",
+    "4. Кто помог Алисе найти мячик?",
+    "5. Как ты можешь помочь другу, если он что-то потерял?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и таинственное исчезновение мячика",
+      "illustrationPrompt": "the child joyfully holding a ball mid-bounce; big smile; centered composition",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["bouncy-ball"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса подбросит мячик — и сама вслед подпрыгнет. «Смотри, как высоко!» — смеётся Алиса, ловит красный кругляш. На площадке у Алисы всё ладится, лишь бы прыгать да играть.",
+      "title": null,
+      "illustrationPrompt": "the child jumps high while tossing the ball up, laughing; ball in the air; upward motion; wide shot",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["bouncy-ball"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Только вдруг — скок! — и будто исчез он. «Эй, ты где?» — зовёт Алиса и оглядывается по площадке. Алиса присела, ладонью водит, заглядывает в каждый уголок.",
+      "title": null,
+      "illustrationPrompt": "the child searches around, crouching and peering at the ground, one hand shading eyes; medium shot",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса остановилась и шепчет: «Наверно, уже не найду…» Плечи опустила, носом шмыг — и тихо сидит сбоку на площадке. «Ищи? Не ищи?» — думает Алиса и глядит в землю.",
+      "title": null,
+      "illustrationPrompt": "the child sits with slumped shoulders, chin in hands, gazing down; close, off-center to left",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Тут Алиса решила: «Позову Машу!» Алиса подбежала к подруге: «Маша, поможешь мне поискать?» Маша кивнула: «Конечно!» — и они договорились искать вместе.",
+      "title": null,
+      "illustrationPrompt": "the child asks a friend for help; the child gestures with open palms; the friend nods; two-shot, eye level",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["masha"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Ищут-ищут — и вдруг Алиса и Маша разом вскрикнули: «Вот он!» Мячик откатился в сторонку, ждёт. «Ура!» — смеётся Алиса, а Маша подбрасывает его и хлопает в ладоши.",
+      "title": null,
+      "illustrationPrompt": "the child and friend spot the ball together; both lean toward it; excited faces; one points; triangular composition",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["masha"],
+        "propIds": ["bouncy-ball"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Дома Алиса шепчет Маше: «Теперь давай всегда вместе!» Алиса говорит: «Выбирай, во что играть, поделимся», — и терпеливо ждёт свою очередь. Им вдвоём тепло и весело.",
+      "title": null,
+      "illustrationPrompt": "the child and friend sit together, smiling, taking turns in an imaginary game; hands extended; cozy two-shot",
+      "scene": {
+        "locationId": "home",
+        "castIds": ["masha"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "«Дружба — это заботиться друг о друге и делиться радостью», — говорит Алиса.",
+      "title": null,
+      "illustrationPrompt": "the child smiles softly with a calm, thoughtful expression; hands over heart; simple centered portrait",
+      "scene": {
+        "locationId": "home",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "5-year-old girl, light skin, brown curly hair, wearing blue dress, red shoes, curly hair",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "5-year-old girl, light skin, brown curly hair, wearing blue dress, red shoes, curly hair"
+    },
+    "cast": [
+      {
+        "id": "masha",
+        "name": "Маша",
+        "role": "подруга",
+        "descriptor": "5-year-old girl, medium skin, blonde straight hair, wearing yellow t-shirt, green shorts, smiling face"
+      }
+    ],
+    "locations": [
+      {
+        "id": "playground",
+        "name": "игровая площадка",
+        "descriptor": "a small slide, sandpit with red sand, surrounded by benches and trees"
+      },
+      {
+        "id": "home",
+        "name": "дом",
+        "descriptor": "a cozy living room with soft rugs and a window with blue curtains"
+      }
+    ],
+    "props": [
+      {
+        "id": "bouncy-ball",
+        "name": "мячик",
+        "descriptor": "red bouncy ball with white stars"
+      }
+    ],
+    "atmosphere": "Warm spring day with bright sunshine and clear skies."
+  }
+}

@@ -92,12 +92,19 @@ export const LocationSchema = z.object({
 });
 export type Location = z.infer<typeof LocationSchema>;
 
-export const PropSchema = z.object({ id: bibleId, descriptor });
+/** Prop as the PLAN emits it: the Russian name is what Prose may mention (#367). */
+export const PlanPropSchema = z.object({
+  id: bibleId,
+  /** Russian name used in the story text (e.g. "красный мячик"). */
+  name: z.string().min(1),
+  descriptor,
+});
+/** Prop as the STORY persists it; `name` is optional so pre-#367 stories still validate. */
+export const PropSchema = z.object({ id: bibleId, name: z.string().min(1).optional(), descriptor });
 export type Prop = z.infer<typeof PropSchema>;
 
 const bibleBase = {
   locations: z.array(LocationSchema).min(1).max(MAX_LOCATIONS),
-  props: z.array(PropSchema).max(MAX_PROPS),
   /** One English line fixed for the whole book: season, light, palette mood. */
   atmosphere: descriptor,
 };
@@ -106,6 +113,7 @@ const bibleBase = {
 export const PlanVisualBibleSchema = z.object({
   hero: z.object({ name: z.string().min(1), appearance: AppearanceSchema }),
   cast: z.array(PlanCastMemberSchema).max(MAX_CAST),
+  props: z.array(PlanPropSchema).max(MAX_PROPS),
   ...bibleBase,
 });
 export type PlanVisualBible = z.infer<typeof PlanVisualBibleSchema>;
@@ -114,6 +122,7 @@ export type PlanVisualBible = z.infer<typeof PlanVisualBibleSchema>;
 export const VisualBibleSchema = z.object({
   hero: z.object({ name: z.string().min(1), descriptor }),
   cast: z.array(CastMemberSchema).max(MAX_CAST),
+  props: z.array(PropSchema).max(MAX_PROPS),
   ...bibleBase,
 });
 export type VisualBible = z.infer<typeof VisualBibleSchema>;

@@ -77,7 +77,7 @@ describe('buildProseSystemPrompt — Visual Bible / action rules (#348)', () => 
 });
 
 describe('buildProsePrompt — scene context (#348)', () => {
-  it('renders the location and cast on each page and a cast roster', () => {
+  it('lists what is in frame on each page — place, hero, cast, props (#367) — and a cast roster', () => {
     const withCast: StoryPlan = {
       ...plan,
       visualBible: {
@@ -91,16 +91,35 @@ describe('buildProsePrompt — scene context (#348)', () => {
           },
         ],
         locations: [{ id: 'home', name: 'двор', descriptor: 'a yard' }],
+        props: [{ id: 'ball', name: 'красный мячик', descriptor: 'a red ball' }],
       },
       pages: plan.pages.map((p) => ({
         ...p,
-        scene: sceneFixture({ locationId: 'home', castIds: ['brother'] }),
+        scene: sceneFixture({ locationId: 'home', castIds: ['brother'], propIds: ['ball'] }),
       })),
     };
     const out = buildProsePrompt(withCast, opts3to4);
-    expect(out).toContain('@двор');
-    expect(out).toContain('with: братик');
+    expect(out).toContain('в кадре: двор, Катя, братик, красный мячик');
+    expect(out).toContain('use these exact names');
     expect(out).toContain('братик — младший брат');
+    // English descriptors never reach Prose
+    expect(out).not.toContain('a red ball');
+    expect(out).not.toContain('a yard');
+  });
+
+  it('never shows the hero look to Prose; passes name and gender explicitly (#367)', () => {
+    const out = buildProsePrompt(plan, { ...opts3to4, gender: 'female' });
+    expect(out).not.toContain('characterProfile');
+    expect(out).not.toContain(plan.characterProfile);
+    expect(out).toContain(`Hero (use this name on every page): ${plan.heroName} — девочка (она)`);
+    expect(buildProsePrompt(plan, { ...opts3to4, gender: 'male' })).toContain('— мальчик (он)');
+    expect(buildProsePrompt(plan, { ...opts3to4, gender: undefined })).not.toContain('девочка');
+  });
+
+  it('states the fixed-world rule in the system prompt (#367)', () => {
+    const sys = buildProseSystemPrompt('5-6');
+    expect(sys).toContain('THE WORLD IS FIXED');
+    expect(sys).toContain('NEVER with new objects');
   });
 });
 

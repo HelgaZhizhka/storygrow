@@ -1,0 +1,130 @@
+{
+  "title": "Алиса и заколдованный шарик",
+  "characterProfile": "5-year-old girl, light skin, curly brown hair, wearing striped dress, pink shoes, blue headband",
+  "discussionQuestions": [
+    "1. 1. Как Алиса выглядела, когда злилась?",
+    "2. 2. Что произошло с её воздушным шариком?",
+    "3. 3. Как Алиса почувствовала себя после того, как крикнула?",
+    "4. 4. Что она сделала, чтобы всё исправить?",
+    "5. 5. Как ты успокаиваешься, когда злишься?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и заколдованный шарик",
+      "illustrationPrompt": "the child running with a balloon on a string, smiling; a hint of a frown starting; dynamic pose; centered composition",
+      "scene": {
+        "locationId": "park",
+        "castIds": [],
+        "propIds": ["balloon"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Играла Алиса с шариком, да он раз — и за ветку. «Почему он не слушается?!» — выкрикнула Алиса и на Маму: «Сними сейчас же!» Голос у Алисы стал громкий-прегромкий, будто труба.",
+      "title": null,
+      "illustrationPrompt": "the child shouting up at a snagged balloon above, arm pointing; the mother kneels beside, one calming hand raised; slight upward angle",
+      "scene": {
+        "locationId": "park",
+        "castIds": ["mama"],
+        "propIds": ["balloon"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "«Бах!» — от резкого крика Алисы шарик дрогнул и лопнул. Стоит Алиса, держит в ладошке мятую резинку и моргает. «Ой… мой шарик», — прошептала Алиса и спрятала подбородок в плечи.",
+      "title": null,
+      "illustrationPrompt": "the child freezes as the balloon bursts; small torn pieces in the child’s hand; the mother nearby, surprised; close-up moment",
+      "scene": {
+        "locationId": "park",
+        "castIds": ["mama"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса опустила глаза и носом шмыг — пусто без хлопка и шума. «Я накричала…» — тихо сказала Алиса и потёрла пальцами нитку. Мама присела рядом; Алиса кивнула: «Не так надо было».",
+      "title": null,
+      "illustrationPrompt": "the child looking down, shoulders slumped, holding limp balloon pieces; the mother at the child’s level, gentle presence; medium shot",
+      "scene": {
+        "locationId": "park",
+        "castIds": ["mama"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Дома Алиса достала карандаши: шур-шур — и на листе появился новый шарик и сердце. «Это тебе, Мама… прости, что кричала», — сказала Алиса и протянула рисунок. «Я буду говорить тише».",
+      "title": null,
+      "illustrationPrompt": "the child at a table drawing a balloon and a heart; the mother nearby watching kindly; over-the-shoulder view",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["mama"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Мама прижала Алису к себе: «Спасибо за рисунок и за правду». Алиса уткнулась в плечо и глубоко выдохнула. «Когда злюсь, скажу словами», — шепнула Алиса, а Мама кивнула.",
+      "title": null,
+      "illustrationPrompt": "the mother hugging the child; the child exhaling, holding the drawing; warm close-up, centered",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["mama"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Выражай злость без крика и ущерба себе и другим. Алиса это запомнит.",
+      "title": null,
+      "illustrationPrompt": "the child and the mother sitting together calmly, the child nodding; simple centered composition",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["mama"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "5-year-old girl, light skin, curly brown hair, wearing striped dress, pink shoes, blue headband"
+    },
+    "cast": [
+      {
+        "id": "mama",
+        "name": "Мама",
+        "role": "мама Алисы",
+        "descriptor": "adult woman, light skin, long black hair, wearing blue blouse, white skirt, glasses"
+      }
+    ],
+    "locations": [
+      {
+        "id": "living-room",
+        "name": "гостиная",
+        "descriptor": "one comfortable sofa, green cushions, surrounded by bookshelves"
+      },
+      {
+        "id": "park",
+        "name": "парк",
+        "descriptor": "one tall oak tree, yellow leaves, surrounded by benches"
+      }
+    ],
+    "props": [
+      {
+        "id": "balloon",
+        "descriptor": "red balloon with a string"
+      }
+    ],
+    "atmosphere": "Autumn day with warm sunlight, calming tones."
+  }
+}

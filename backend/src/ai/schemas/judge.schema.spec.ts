@@ -9,6 +9,7 @@ describe('JudgeScoreSchema', () => {
     length: 8,
     earnedResolution: 7,
     registerMatch: 6,
+    pictureConsistency: 7,
   };
 
   it('requires the registerMatch craft criterion', () => {

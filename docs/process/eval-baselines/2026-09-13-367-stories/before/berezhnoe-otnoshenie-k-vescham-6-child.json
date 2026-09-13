@@ -1,0 +1,129 @@
+{
+  "title": "Алиса и пропажа куклы на скамейке",
+  "characterProfile": "6-year-old girl, light skin, light brown curly hair, wearing red dress with white stripes, wears blue sneakers",
+  "discussionQuestions": [
+    "1. Как Алиса играла с куклой в парке?",
+    "2. Почему кукла потерялась?",
+    "3. Что чувствовала Алиса, когда не нашла куклу?",
+    "4. Как Алиса исправила свою ошибку?",
+    "5. Что нового узнала Алиса о бережливости?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и пропажа куклы на скамейке",
+      "illustrationPrompt": "the child and Masha playing with a doll together; both smiling; the child holds the doll up; joyful pose; centered composition",
+      "scene": {
+        "locationId": "park-bench",
+        "castIds": ["mascha"],
+        "propIds": ["doll"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Жил-был денёк, и Алиса с Машей играли в дочки-матери. «Побежали на горку!» — сказала Алиса и торопком оставила куклу на скамейке. «Потом возьмём», — махнула она рукой и умчалась.",
+      "title": null,
+      "illustrationPrompt": "the child sets a doll on a bench and runs off to play; Masha follows, glancing back; the child calling out; top-weighted composition",
+      "scene": {
+        "locationId": "park-bench",
+        "castIds": ["mascha"],
+        "propIds": ["doll"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Вернулись они к скамейке, а куклы — нет. «Маша, она же тут сидела!» — выдохнула Алиса и заглянула на сиденье и под спинку: пусто.",
+      "title": null,
+      "illustrationPrompt": "the child and Masha by the bench; the child looks at the empty spot, hands slightly raised; Masha leans in; left-weighted composition",
+      "scene": {
+        "locationId": "park-bench",
+        "castIds": ["mascha"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Села Алиса на край скамейки, руки на коленях притихли. «Я сама её бросила…» — прошептала Алиса, уткнувшись в ладони. Маша рядом посидела молча.",
+      "title": null,
+      "illustrationPrompt": "the child sits slumped on the bench, hands together; Masha sits close, supportive; scene anchored along the bottom edge",
+      "scene": {
+        "locationId": "park-bench",
+        "castIds": ["mascha"],
+        "propIds": ["book"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса и Маша принялись искать: заглянули под кусты, за урну, под лавку. «Кис-кис, кукла, отзовись!» — шепнула Алиса и осторожно подняла опавший лист. «Не сдаёмся», — кивнула Маша, обходя вокруг скамейки.",
+      "title": null,
+      "illustrationPrompt": "the child and Masha search under bushes and around the bench; the child lifts leaves, Masha kneels to peek; top-weighted composition",
+      "scene": {
+        "locationId": "park-bench",
+        "castIds": ["mascha"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "«Вот она!» — воскликнула Маша: кукла выглянула из-под лавки. Алиса бережно прижала находку. «Ура, нашлась!» — смеётся Алиса и благодарит Машу, хлопая в ладоши.",
+      "title": null,
+      "illustrationPrompt": "the child and Masha notice the doll partly under the bench; Masha points; the child hugs the doll; left-weighted framing",
+      "scene": {
+        "locationId": "park-bench",
+        "castIds": ["mascha"],
+        "propIds": ["doll"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса садится на скамейку и укутывает куклу, гладит её ладонью: «Теперь я тебя не оставлю». Важно бережно относиться к вещам и уважать чужие.",
+      "title": null,
+      "illustrationPrompt": "the child sits with the doll on her lap, stroking it carefully; Masha nearby smiling; calm centered closing shot",
+      "scene": {
+        "locationId": "park-bench",
+        "castIds": [],
+        "propIds": ["doll"],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "6-year-old girl, light skin, light brown curly hair, wearing red dress with white stripes, wears blue sneakers"
+    },
+    "cast": [
+      {
+        "id": "mascha",
+        "name": "Маша",
+        "role": "подруга Алисы",
+        "descriptor": "6-year-old girl, tan skin, dark brown straight hair, wearing green t-shirt and jeans, wears a pink hat"
+      }
+    ],
+    "locations": [
+      {
+        "id": "park-bench",
+        "name": "парк",
+        "descriptor": "a wooden bench surrounded by green bushes and flowers"
+      }
+    ],
+    "props": [
+      {
+        "id": "doll",
+        "descriptor": "a small dressed-up doll with a blue dress"
+      },
+      {
+        "id": "book",
+        "descriptor": "a colourful picture book lying on the bench"
+      }
+    ],
+    "atmosphere": "A sunny spring afternoon with a warm and playful palette."
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "title": "Алиса и игрушка для Насти",
+  "discussionQuestions": [
+    "1. Какого цвета платье у Алисы?",
+    "2. Почему Алиса решила помочь Насте?",
+    "3. Что Алиса повторяла, когда помогала?",
+    "4. Как изменилось настроение Насти?",
+    "5. Как ты можешь помочь младшим детям?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и игрушка для Насти",
+      "illustrationPrompt": "The child and little sister with a single toy between them, smiling at each other; centered framing.",
+      "scene": {
+        "locationId": "playroom",
+        "castIds": ["nastya"],
+        "propIds": ["toy"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Жила-была Алиса. Играет Алиса с игрушкой, а крошечная Настя смотрит и шепчет: «Дашь?»",
+      "title": null,
+      "illustrationPrompt": "The child plays with a toy; little sister watches closely beside; the child mid-motion, glancing back; simple centered view.",
+      "scene": {
+        "locationId": "playroom",
+        "castIds": ["nastya"],
+        "propIds": ["toy"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Настя тянется высоко: игрушка наверху. «Алиса…» — зовёт она, ладошку тянет, да не дотянется.",
+      "title": null,
+      "illustrationPrompt": "Little sister stretches upward toward a toy placed high above, fingers just short; mouth open calling; toy near top edge.",
+      "scene": {
+        "locationId": "playroom",
+        "castIds": ["nastya"],
+        "propIds": ["toy"],
+        "heroOnPage": false
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса пришла: «Достать? Не достать?» — повторяет. «Подставлю ладошку? Попробуем?» — говорит Алиса.",
+      "title": null,
+      "illustrationPrompt": "The child beside little sister, hand to chin as if pondering; little sister reaching up; toy visible high; slight diagonal composition.",
+      "scene": {
+        "locationId": "playroom",
+        "castIds": ["nastya"],
+        "propIds": ["toy"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Тянется Алиса выше — хоп! — достала игрушку. «Держи, Настя», — сказала Алиса, подала в ладошки.",
+      "title": null,
+      "illustrationPrompt": "The child reaches up and takes the toy, then hands it to little sister; little sister’s cupped hands ready; warm eye contact.",
+      "scene": {
+        "locationId": "playroom",
+        "castIds": ["nastya"],
+        "propIds": ["toy"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Теперь играют вдвоём. Алиса снова шутит: «Достать? Не достать?» — и с Настей дотрагивается до игрушки.",
+      "title": null,
+      "illustrationPrompt": "Both play together with the toy; the child animated, echoing a playful question gesture; both touching the toy.",
+      "scene": {
+        "locationId": "playroom",
+        "castIds": ["nastya"],
+        "propIds": ["toy"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса и Настя прижались щёчками. Помогать младшим — приятно и важно.",
+      "title": null,
+      "illustrationPrompt": "The child and little sister cuddle happily with the toy between them; close, cozy framing.",
+      "scene": {
+        "locationId": "playroom",
+        "castIds": ["nastya"],
+        "propIds": ["toy"],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "3-year-old girl, light skin, short curly brown hair, wearing yellow dress with blue pockets, wearing sneakers",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "3-year-old girl, light skin, short curly brown hair, wearing yellow dress with blue pockets, wearing sneakers"
+    },
+    "cast": [
+      {
+        "id": "nastya",
+        "name": "Настя",
+        "role": "маленькая сестра",
+        "descriptor": "2-year-old girl, light skin, short blonde hair, wearing red romper with white dots, wearing a sunhat"
+      }
+    ],
+    "locations": [
+      {
+        "id": "playroom",
+        "name": "игровая комната",
+        "descriptor": "colorful rug, a wooden toy shelf, sunlit window"
+      }
+    ],
+    "props": [
+      {
+        "id": "toy",
+        "name": "игрушка",
+        "descriptor": "soft plush bunny, gray with a pink nose"
+      }
+    ],
+    "atmosphere": "Warm afternoon, cozy playroom with bright colors."
+  }
+}

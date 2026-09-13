@@ -1,0 +1,142 @@
+{
+  "title": "Алиса и спрятанное жёлтое пятно",
+  "discussionQuestions": [
+    "1. Почему Алиса сначала не сказала, что произошло с краской?",
+    "2. Как Алиса почувствовала себя, когда её мама расстроилась?",
+    "3. Что Алиса решила сделать для исправления ситуации?",
+    "4. Как поступила мама, когда Алиса сказала правду?",
+    "5. Почему важно рассказать правду сразу, даже если это сложно?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и спрятанное жёлтое пятно",
+      "illustrationPrompt": "In the living room, the child painting; yellow paint spilled; the mother nearby; the child glancing at the spill; centered composition.",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["mama"],
+        "propIds": ["paint"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса огляделась, шепнула: «Тсс…». Она придвинула баночку с краской так, чтобы жёлтое пятно спряталось под ней. «Пусть стоит тут, — сказала Алиса, — мама и не заметит».",
+      "title": null,
+      "illustrationPrompt": "The child slides the paint jar to cover a yellow spill, glancing toward the mother; top-weighted composition.",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["mama"],
+        "propIds": ["paint"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Мама огляделась по гостиной: «Куда подевалась жёлтая краска?» Она нахмурилась и позвала: «Алиса, не видела её? Совсем потерялась, что ли?»",
+      "title": null,
+      "illustrationPrompt": "The mother in the living room, looking for the yellow paint; noticing an empty spot; concerned expression; bottom composition.",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["mama"],
+        "propIds": [],
+        "heroOnPage": false
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Алиса в саду слышала, как мама волнуется, и опустила глаза. «Эх, Вася, я знаю, где краска… и это я», — прошептала Алиса. «Пойду скажу маме правду», — решила она.",
+      "title": null,
+      "illustrationPrompt": "In the garden, the child with a friend and the mother; the child looking down, deciding to confess; left-weighted composition.",
+      "scene": {
+        "locationId": "garden",
+        "castIds": ["vasya", "mama"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "«Мама, можно я скажу?» — подошла Алиса. «Я пролила жёлтую краску и спрятала пятно под баночкой, вот тут». «Прости меня, мама», — сказала Алиса и показала место.",
+      "title": null,
+      "illustrationPrompt": "In the living room, the child tells the mother about the spill, pointing to the paint jar hiding a yellow stain; top composition focusing on their faces.",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["mama"],
+        "propIds": ["paint"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Мама обняла и сказала: «Спасибо, Алиса, что сказала правду». Они вместе убрали краску — быстро и ладно. А потом сели рядом и нарисовали новый рисунок — солнечный и весёлый.",
+      "title": null,
+      "illustrationPrompt": "In the living room, the mother and the child clean the spill together; a fresh drawing nearby; relaxed smiles; bottom composition.",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["mama"],
+        "propIds": ["drawing"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса прижалась к маме, и в гостиной стало тихо-хорошо. Говори правду — и решение найдётся.",
+      "title": null,
+      "illustrationPrompt": "In the living room, the mother and the child together, calm and close; a quiet end moment; centered composition.",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["mama"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "6-year-old girl, light skin, curly brown hair, wearing blue dress, loves painting",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "6-year-old girl, light skin, curly brown hair, wearing blue dress, loves painting"
+    },
+    "cast": [
+      {
+        "id": "mama",
+        "name": "мама",
+        "role": "мама Алисы",
+        "descriptor": "adult woman, light skin, straight black hair, wearing green sweater, wears glasses"
+      },
+      {
+        "id": "vasya",
+        "name": "Вася",
+        "role": "друг Алисы",
+        "descriptor": "6-year-old boy, light skin, short blonde hair, wearing red t-shirt, energetic"
+      }
+    ],
+    "locations": [
+      {
+        "id": "living-room",
+        "name": "гостиная",
+        "descriptor": "one cozy sofa, light blue walls, a large window"
+      },
+      {
+        "id": "garden",
+        "name": "сад",
+        "descriptor": "one tall tree, surrounded by colorful flowers"
+      }
+    ],
+    "props": [
+      {
+        "id": "paint",
+        "name": "краска",
+        "descriptor": "small, round paint pot, yellow"
+      },
+      {
+        "id": "drawing",
+        "name": "рисунок",
+        "descriptor": "large drawing paper, with colorful swirls"
+      }
+    ],
+    "atmosphere": "A warm autumn afternoon with soft, golden light."
+  }
+}

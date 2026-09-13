@@ -1,0 +1,158 @@
+{
+  "title": "Маша и волшебная коробка с секретами",
+  "characterProfile": "6-year-old girl, fair skin, blonde curly hair, wearing blue dress with red pockets, wearing a yellow headband",
+  "discussionQuestions": [
+    "1. Почему Маша не хотела делиться?",
+    "2. Что произошло, когда Маша спрятала коробку?",
+    "3. Как Маша себя почувствовала, когда никто не играл с ней?",
+    "4. Что Маша сделала, чтобы исправить ситуацию?",
+    "5. Что ты любишь делиться с друзьями?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Маша и волшебная коробка с секретами",
+      "illustrationPrompt": "the child opens a magical box, she smiles in surprise; a teddy bear sits beside; centered composition on the box",
+      "scene": {
+        "locationId": "home",
+        "castIds": [],
+        "propIds": ["toy-box"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Жила-была Маша; открыла крышку — а там чудеса: машинки гудят, кубики звенят, наклейки шуршат. «Ох, всё моё!» — шепнула Маша и усадила Тедди рядом сторожить её сокровище.",
+      "title": null,
+      "illustrationPrompt": "the child examines toys from the box, she leans in happily; the teddy bear sits \"guarding\" the box; top-weighted composition",
+      "scene": {
+        "locationId": "home",
+        "castIds": [],
+        "propIds": ["toy-box"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Маша пришла на площадку, прижала коробку к себе, спрятала за спину. Дима и Алиса: «Покажешь?» — «Потом, потом, это секрет!» — сказала Маша и села поодаль, накрыв крышкой.",
+      "title": null,
+      "illustrationPrompt": "the child hugs the box behind her back while Dima and Alisa reach curiously; she turns slightly away; clear gap between them",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["dima", "alisa"],
+        "propIds": ["toy-box"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Дима пожал плечами, Алиса кивнула: «Пойдём строить крепость!» И ушли они вместе, бегут, смеются, зовут друг друга, кубики делят пополам. А Маша осталась с коробкой одна-одинёшенька в песке.",
+      "title": null,
+      "illustrationPrompt": "Dima and Alisa walk off together starting a game with blocks; the child stays seated with the closed box in her lap; wide spacing to show separation",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["dima", "alisa"],
+        "propIds": [],
+        "heroOnPage": false
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Маша присела на качелю, обняла коробку, да будто пусто внутри звенит. «Эй…» — позвала тихо, да никто не ответил. Игрушки шуршат, а играть не с кем — ни весело, ни смешно.",
+      "title": null,
+      "illustrationPrompt": "the child sits alone holding the box close, shoulders droop; her gaze follows the others playing off to the side; medium close-up",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["toy-box"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Маша набралась смелости, подбежала к Диме и Алисе: «Хотите вместе? У меня тут куклы, машинки и наклейки», — сказала Маша и открыла крышку пошире. «Давайте придумаем игру!»",
+      "title": null,
+      "illustrationPrompt": "the child steps up to Dima and Alisa, opening the box toward them; she smiles bravely; they look surprised and pleased; left-weighted framing",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["dima", "alisa"],
+        "propIds": ["toy-box"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Дима улыбнулся, Алиса захлопала в ладоши: «Ух ты!» Они расселись рядом, делят фигурки, строят дорогу и дом. Маша смеётся, катит машинку Диме, а Алисе клеит звёздочки.",
+      "title": null,
+      "illustrationPrompt": "the child, Dima, and Alisa kneel together sharing toys; the child passes a car to Dima and stickers to Alisa; tight friendly cluster",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["dima", "alisa"],
+        "propIds": ["toy-box"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "«Как здорово вместе», — сказала Маша и кивнула Диме с Алисой. Они договорились играть по очереди и смеяться поровну. Делиться — значит радовать себя и других.",
+      "title": null,
+      "illustrationPrompt": "the child, Dima, and Alisa side-hug with shared toys spread before them; the child beams; simple centered scene",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["dima", "alisa"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "visualBible": {
+    "hero": {
+      "name": "Маша",
+      "descriptor": "6-year-old girl, fair skin, blonde curly hair, wearing blue dress with red pockets, wearing a yellow headband"
+    },
+    "cast": [
+      {
+        "id": "dima",
+        "name": "Дима",
+        "role": "друг Маши",
+        "descriptor": "6-year-old boy, tan skin, brown short hair, wearing green t-shirt and jeans, wears glasses"
+      },
+      {
+        "id": "alisa",
+        "name": "Алиса",
+        "role": "подруга Маши",
+        "descriptor": "6-year-old girl, olive skin, black in braids, wearing pink shirt and shorts, has a small bracelet on"
+      },
+      {
+        "id": "teddy",
+        "name": "Тедди",
+        "role": "плюшевый медведь Маши",
+        "descriptor": "teddy bear, brown fur, curly fur, wearing no clothes, has a ribbon around the neck"
+      }
+    ],
+    "locations": [
+      {
+        "id": "playground",
+        "name": "площадка",
+        "descriptor": "one slide of bright red plastic, surrounded by green bushes"
+      },
+      {
+        "id": "home",
+        "name": "дом Маши",
+        "descriptor": "a cozy living room with a soft sofa and colorful rug"
+      }
+    ],
+    "props": [
+      {
+        "id": "toy-box",
+        "descriptor": "a colorful toy box with a lid covered in stars"
+      },
+      {
+        "id": "cookies",
+        "descriptor": "a plate of homemade cookies"
+      }
+    ],
+    "atmosphere": "Spring with warm sunlight creating a joyful mood."
+  }
+}

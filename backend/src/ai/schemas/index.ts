@@ -5,7 +5,7 @@ export {
   buildStorySchema,
   buildProseSchema,
 } from './story.schema';
-export type { Story, Page } from './story.schema';
+export type { Story, Page, ProseOutput } from './story.schema';
 
 export { StoryPlanSchema, PlanPageSchema, buildStoryPlanSchema } from './story-plan.schema';
 export type { StoryPlan, PlanPage } from './story-plan.schema';
@@ -28,6 +28,7 @@ export {
   PlanCastMemberSchema,
   LocationSchema,
   PropSchema,
+  PlanPropSchema,
   renderAppearance,
   toStoryBible,
 } from './visual-bible.schema';

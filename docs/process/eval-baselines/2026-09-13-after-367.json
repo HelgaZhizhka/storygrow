@@ -1,0 +1,378 @@
+{
+  "generatedAt": "2026-09-13T11:21:54.310Z",
+  "model": "default",
+  "results": [
+    {
+      "goal": "Смелость",
+      "age": 6,
+      "mode": "child",
+      "arcType": "virtue",
+      "title": "Алиса и блестящие колёса",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 8,
+        "safetyForChildren": 8,
+        "length": 9,
+        "earnedResolution": 8,
+        "registerMatch": 8,
+        "pictureConsistency": 10
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 167,
+      "maxChars": 185,
+      "durationMs": 86460,
+      "error": null
+    },
+    {
+      "goal": "Доброта",
+      "age": 5,
+      "mode": "child",
+      "arcType": "virtue",
+      "title": "Алиса и жужжащая капелька на цветке",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 8,
+        "safetyForChildren": 8,
+        "length": 9,
+        "earnedResolution": 8,
+        "registerMatch": 8,
+        "pictureConsistency": 9
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 141,
+      "maxChars": 171,
+      "durationMs": 63751,
+      "error": null
+    },
+    {
+      "goal": "Самостоятельность",
+      "age": 6,
+      "mode": "observer",
+      "arcType": "virtue",
+      "title": "Полина и волшебные пуговицы пальто",
+      "passed": true,
+      "registerMatch": 9,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 10,
+        "safetyForChildren": 10,
+        "length": 10,
+        "earnedResolution": 9,
+        "registerMatch": 9,
+        "pictureConsistency": 10
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 160,
+      "maxChars": 177,
+      "durationMs": 71446,
+      "error": null
+    },
+    {
+      "goal": "Дружба",
+      "age": 5,
+      "mode": "child",
+      "arcType": "virtue",
+      "title": "Алиса и ушко кролика: приключение с Машей",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 8,
+        "safetyForChildren": 10,
+        "length": 9,
+        "earnedResolution": 8,
+        "registerMatch": 8,
+        "pictureConsistency": 9
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 150,
+      "maxChars": 188,
+      "durationMs": 87143,
+      "error": null
+    },
+    {
+      "goal": "Любопытство и любовь к знаниям",
+      "age": 6,
+      "mode": "child",
+      "arcType": "virtue",
+      "title": "Алиса и тайна пятнистого листа",
+      "passed": true,
+      "registerMatch": 9,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 8,
+        "safetyForChildren": 10,
+        "length": 8,
+        "earnedResolution": 9,
+        "registerMatch": 9,
+        "pictureConsistency": 10
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 173,
+      "maxChars": 191,
+      "durationMs": 127691,
+      "error": null
+    },
+    {
+      "goal": "Честность",
+      "age": 6,
+      "mode": "child",
+      "arcType": "flaw",
+      "title": "Алиса и волшебные зефирные ушки",
+      "passed": true,
+      "registerMatch": 7,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 8,
+        "safetyForChildren": 10,
+        "length": 9,
+        "earnedResolution": 8,
+        "registerMatch": 7,
+        "pictureConsistency": 9
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 146,
+      "maxChars": 168,
+      "durationMs": 127489,
+      "error": null
+    },
+    {
+      "goal": "Управление гневом",
+      "age": 5,
+      "mode": "child",
+      "arcType": "flaw",
+      "title": "Алиса и лопнувший шарик злости",
+      "passed": true,
+      "registerMatch": 7,
+      "scores": {
+        "ageAppropriateVocab": 8,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 8,
+        "safetyForChildren": 10,
+        "length": 9,
+        "earnedResolution": 8,
+        "registerMatch": 7,
+        "pictureConsistency": 9
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 160,
+      "maxChars": 175,
+      "durationMs": 68906,
+      "error": null
+    },
+    {
+      "goal": "Делиться с другими",
+      "age": 6,
+      "mode": "observer",
+      "arcType": "flaw",
+      "title": "«Даня и мячик, который стал общим»",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 8,
+        "safetyForChildren": 10,
+        "length": 9,
+        "earnedResolution": 9,
+        "registerMatch": 8,
+        "pictureConsistency": 9
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 168,
+      "maxChars": 199,
+      "durationMs": 109463,
+      "error": null
+    },
+    {
+      "goal": "Терпение",
+      "age": 5,
+      "mode": "child",
+      "arcType": "flaw",
+      "title": "Алиса и молчаливая открытка-песенка",
+      "passed": true,
+      "registerMatch": 9,
+      "scores": {
+        "ageAppropriateVocab": 9,
+        "hasMoralLesson": 10,
+        "structureCompleteness": 9,
+        "safetyForChildren": 10,
+        "length": 8,
+        "earnedResolution": 9,
+        "registerMatch": 9,
+        "pictureConsistency": 10
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 166,
+      "maxChars": 194,
+      "durationMs": 91694,
+      "error": null
+    },
+    {
+      "goal": "Бережное отношение к вещам",
+      "age": 6,
+      "mode": "child",
+      "arcType": "flaw",
+      "title": "Алиса и потерянная игрушечная машинка",
+      "passed": false,
+      "registerMatch": 6,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 8,
+        "structureCompleteness": 9,
+        "safetyForChildren": 10,
+        "length": 8,
+        "earnedResolution": 7,
+        "registerMatch": 6,
+        "pictureConsistency": 9
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 164,
+      "maxChars": 192,
+      "durationMs": 75306,
+      "error": null
+    },
+    {
+      "goal": "Смелость",
+      "age": 3,
+      "mode": "child",
+      "arcType": "virtue",
+      "title": "Алиса и шаги в тёмный коридор",
+      "passed": true,
+      "registerMatch": 9,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 8,
+        "structureCompleteness": 8,
+        "safetyForChildren": 10,
+        "length": 10,
+        "earnedResolution": 6,
+        "registerMatch": 9,
+        "pictureConsistency": 10
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 95,
+      "maxChars": 109,
+      "durationMs": 104267,
+      "error": null
+    },
+    {
+      "goal": "Доброта",
+      "age": 4,
+      "mode": "observer",
+      "arcType": "virtue",
+      "title": "Маша и тайна в коробке",
+      "passed": true,
+      "registerMatch": 9,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 8,
+        "safetyForChildren": 10,
+        "length": 10,
+        "earnedResolution": 8,
+        "registerMatch": 9,
+        "pictureConsistency": 9
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 85,
+      "maxChars": 99,
+      "durationMs": 78490,
+      "error": null
+    },
+    {
+      "goal": "Забота о младших",
+      "age": 3,
+      "mode": "child",
+      "arcType": "virtue",
+      "title": "Алиса и волшебное одеяльце",
+      "passed": true,
+      "registerMatch": 8,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 9,
+        "structureCompleteness": 9,
+        "safetyForChildren": 10,
+        "length": 10,
+        "earnedResolution": 8,
+        "registerMatch": 8,
+        "pictureConsistency": 10
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 84,
+      "maxChars": 93,
+      "durationMs": 89498,
+      "error": null
+    },
+    {
+      "goal": "Самостоятельность",
+      "age": 4,
+      "mode": "child",
+      "arcType": "virtue",
+      "title": "Алиса и танцующая башня",
+      "passed": true,
+      "registerMatch": 9,
+      "scores": {
+        "ageAppropriateVocab": 10,
+        "hasMoralLesson": 8,
+        "structureCompleteness": 9,
+        "safetyForChildren": 10,
+        "length": 9,
+        "earnedResolution": 8,
+        "registerMatch": 9,
+        "pictureConsistency": 10
+      },
+      "structuralErrorCount": 0,
+      "avgChars": 92,
+      "maxChars": 109,
+      "durationMs": 101842,
+      "error": null
+    }
+  ],
+  "summary": {
+    "completed": 14,
+    "failed": 0,
+    "passRate": 0.9285714285714286,
+    "criteria": {
+      "ageAppropriateVocab": {
+        "mean": 9.785714285714286,
+        "min": 8
+      },
+      "hasMoralLesson": {
+        "mean": 8.857142857142858,
+        "min": 8
+      },
+      "structureCompleteness": {
+        "mean": 8.428571428571429,
+        "min": 8
+      },
+      "safetyForChildren": {
+        "mean": 9.714285714285714,
+        "min": 8
+      },
+      "length": {
+        "mean": 9.071428571428571,
+        "min": 8
+      },
+      "earnedResolution": {
+        "mean": 8.071428571428571,
+        "min": 6
+      },
+      "registerMatch": {
+        "mean": 8.142857142857142,
+        "min": 6
+      }
+    },
+    "totalDurationMs": 1283446
+  }
+}

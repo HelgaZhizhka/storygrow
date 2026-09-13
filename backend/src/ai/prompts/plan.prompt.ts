@@ -64,7 +64,12 @@ Hard rules:
      brother, mum, a kitten). Each gets an id, the Russian name used in the
      story, a short Russian role, and the same structured appearance (for an
      animal: fur colour as skin, fur pattern as hair, "no clothes" as outfit).
-   • props (0–4): key objects, id + English descriptor.
+   • props (0–4): key objects — id, the Russian name used in the story, and an
+     English descriptor.
+   • COHERENCE: every object, place or weather a page intent mentions must exist
+     in that page's location or props — the pictures show ONLY the bible, and
+     the Prose phase may only write what is in frame. Add the prop or drop the
+     mention; never leave an intent that names something the world lacks.
    • atmosphere: one English line — season, light, palette mood.
    All descriptors are ENGLISH, concrete and PHYSICAL, and are reused VERBATIM on
    every page, so nothing drifts. Then give EACH page a scene: which

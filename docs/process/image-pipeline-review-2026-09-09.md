@@ -235,7 +235,7 @@ independent of B and can run in parallel.
 | A3 part 2 + A4 + A5: judge required, fail-loud config, `AiModule` test, `check:book` | #373 | done |
 | C1: idempotent `images_failed` retry (pulled forward into wave A) | #374 | done |
 | A6 + A7: OpenAI image provider, simplifier | #375 | open, deferred |
-| B1 + B7 + B9: Prose contract (in frame list, no hero look, judge sees bible) | #367 | open — next |
+| B1 + B7 + B9: Prose contract (in frame list, no hero look, judge sees bible) + the misleading «Жил-был…» hint fixed | #367 | done — measured neutral-to-positive (see progress 2026-09-13); ornate similes remain a register topic for B8 / exemplar work |
 | B10: structured Location with size, `proportionsNatural` | #366 | open |
 | B3 + B5 + B6: one hero-appearance source, photo path | #376 | open |
 | B8: post-Prose illustrator brief | #377 | deferred until #367 is measured |

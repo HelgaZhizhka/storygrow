@@ -1,0 +1,118 @@
+{
+  "title": "Алиса и весёлый хрусталь",
+  "characterProfile": "4-year-old girl, fair skin, curly brown hair, wearing red and white striped dress, wearing blue sneakers",
+  "discussionQuestions": [
+    "1. Что Алиса увидела на кухне?",
+    "2. Почему стаканчик показался тяжёлым?",
+    "3. Как Алиса старалась поднять стаканчик?",
+    "4. Что произошло, когда Алиса повторила попытку?",
+    "5. Как ты можешь помочь себе, если что-то не получается с первого раза?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и весёлый хрусталь",
+      "illustrationPrompt": "The child gazes at a crystal glass, curious smile; centered composition.",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Жил-был день на кухне. Алиса видит на столе хрустальный стакан. «Ах, какой он!» — говорит Алиса.",
+      "title": null,
+      "illustrationPrompt": "The child notices a crystal glass nearby, leaning closer with wonder; top focus on glass.",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": ["glass"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса тянет ручки к стакану. «Подниму!» — говорит Алиса. Но он тяжёлый, не шелохнётся.",
+      "title": null,
+      "illustrationPrompt": "The child tries to lift the glass with both hands, straining; the glass stays put.",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": ["glass"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса берётся обеими руками. «Сильнее!» — говорит Алиса себе и вдыхает носом. Стаканчик будто ждёт.",
+      "title": null,
+      "illustrationPrompt": "The child grips the glass, takes a deep breath, self-encouraging; focus on hands and face.",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": ["glass"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса не сдаётся и снова берёт. «Сильнее!» — повторяет Алиса, щёчки надуло. Пальчики крепко держат.",
+      "title": null,
+      "illustrationPrompt": "The child tries again, silently repeating to self, cheeks puffed, fingers tighten; low angle on hands.",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": ["glass"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Стаканчик дрогнул и поплыл вверх. «Получилось!» — смеётся Алиса и ставит его рядышком. Хлоп-хлоп ладошки!",
+      "title": null,
+      "illustrationPrompt": "The child raises the glass off the surface, delighted smile; subtle upward motion indicated.",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": ["glass"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса снова поднимает стаканчик, уверенно улыбаясь. Уверенность приходит с практикой.",
+      "title": null,
+      "illustrationPrompt": "The child lifts the glass again with steady hands, confident smile; close-up on hands and face.",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": ["glass"],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "4-year-old girl, fair skin, curly brown hair, wearing red and white striped dress, wearing blue sneakers"
+    },
+    "cast": [],
+    "locations": [
+      {
+        "id": "kitchen",
+        "name": "кухня",
+        "descriptor": "one wooden table with a bright tablecloth and a glass cabinet, surrounded by warm light"
+      }
+    ],
+    "props": [
+      {
+        "id": "glass",
+        "descriptor": "a small crystal glass, transparent and shiny"
+      }
+    ],
+    "atmosphere": "Late summer afternoon, soft and warm light."
+  }
+}
