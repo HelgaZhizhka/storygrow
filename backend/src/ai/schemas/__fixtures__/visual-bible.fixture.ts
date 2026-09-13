@@ -6,8 +6,6 @@ export const sceneFixture = (over: Partial<Scene> = {}): Scene => ({
   castIds: [],
   propIds: [],
   heroOnPage: true,
-  timeOfDay: 'day',
-  framing: 'medium',
   ...over,
 });
 

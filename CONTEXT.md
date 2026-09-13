@@ -98,7 +98,7 @@ The book's visual world (#348), decided ONCE in the **Plan** phase and merged in
 **Avoid:** "style guide" (that is `Art Style`), "storyboard" — the bible is the fixed CAST/PLACES/PROPS, not the page layout.
 
 ### Scene
-One page's selection from the [Visual Bible] (`Story.pages[].scene`, #348): `locationId`, `castIds`, `propIds`, `heroOnPage`, `timeOfDay`, `framing`. It says WHO and WHERE for the page (appearance/place come from the bible); the page's `illustrationPrompt` says only the ACTION. `heroOnPage` drives the "hero appears exactly once" lock and which references are passed. Optional on the Story so pre-#348 books and Fast Flow stories still parse.
+One page's selection from the [Visual Bible] (`Story.pages[].scene`, #348): `locationId`, `castIds`, `propIds`, `heroOnPage` (`timeOfDay`/`framing` were dropped in #372 — nothing consumed them and a per-page time of day contradicts one sheet per location). It says WHO and WHERE for the page (appearance/place come from the bible); the page's `illustrationPrompt` says only the ACTION. `heroOnPage` drives the "hero appears exactly once" lock and which references are passed. Optional on the Story so pre-#348 books and Fast Flow stories still parse.
 
 **Avoid:** "shot list" — a Scene is one page's bible selection, not a camera plan.
 

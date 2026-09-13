@@ -34,7 +34,8 @@ of by taste.
    location, within the model budget). Grok's edit endpoint accepts **up to 5**
    input images via the `images` array (probed; the docs' single `image` field
    had misled us into a budget of 1), so the budget is 5 there and 3 on Gemini
-   Flash. Cascade stays a flag-gated experiment.
+   Flash. The cascade experiment was removed from the code in #372 (2026-09-13);
+   its evidence stays in this ADR.
 5. **Correctness for unforeseen objects is handled by a judge + per-page retry**
    (`ImageEval`, #358), not by per-object prompt rules. Shipped and on by
    default since 2026-09-06 (calibration: 0 false fails / 65 good pages, 10/13

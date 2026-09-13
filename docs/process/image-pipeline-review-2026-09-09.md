@@ -1,6 +1,6 @@
 # Image pipeline — independent architecture review (2026-09-09)
 
-**Status:** recorded, not yet acted on. Decisions are proposals with risk and order; nothing here changed code.
+**Status:** recorded; being acted on wave by wave. Every deferred item is a GitHub issue under the label `review-2026-09` (tracking table at the end).
 
 ## How it was produced
 
@@ -224,3 +224,23 @@ independent of B and can run in parallel.
 - The OpenAI **text** models stay; only the OpenAI **image** provider is a deletion candidate.
 - B8 is deferred until B7 + B9 have been measured.
 - LangFuse in production is a separate hosting/cost decision.
+
+## Tracking (2026-09-13)
+
+| Items | Issue | State |
+|---|---|---|
+| Wave 0: record the review, correct the calibration | #368 | done (#370) |
+| A3 part 1: judge rows on every outcome, safety-block fallback, recalibration | #369 | done (#371) |
+| A1 + A8: cascade, `timeOfDay`/`framing`, Pro leftovers, harness variants, spikes | #372 | done |
+| A3 part 2 + A4 + A5: judge required, fail-loud config, `AiModule` test, `check:book` | #373 | open |
+| C1: idempotent `images_failed` retry (pulled forward into wave A) | #374 | open |
+| A6 + A7: OpenAI image provider, simplifier | #375 | open, deferred |
+| B1 + B7 + B9: Prose contract (in frame list, no hero look, judge sees bible) | #367 | open — next |
+| B10: structured Location with size, `proportionsNatural` | #366 | open |
+| B3 + B5 + B6: one hero-appearance source, photo path | #376 | open |
+| B8: post-Prose illustrator brief | #377 | deferred until #367 is measured |
+| A2 + B2 + B4: page count by Plan, `.describe()`, repairs by kind | #378 | open |
+| C2 + C4: ImageEval dashboard, provenance, cost | #379 | open |
+| C3: limits linter, S3 key layout | #380 | open |
+| D1: consolidated image-pipeline document | #381 | last |
+| LangFuse in production | #382 | owner decision |

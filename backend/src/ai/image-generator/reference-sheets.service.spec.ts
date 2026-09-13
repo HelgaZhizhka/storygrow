@@ -21,6 +21,7 @@ const makeMocks = () => ({
 
 const providerFrom = (mocks: ReturnType<typeof makeMocks>): ImageProvider => ({
   usesReference: true,
+  maxReferences: 3,
   modelLabel: 'gemini-2.5-flash-image',
   generatePortraitFromPhoto: jest.fn(),
   generatePage: jest.fn(),

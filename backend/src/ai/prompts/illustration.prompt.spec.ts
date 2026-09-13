@@ -17,12 +17,10 @@ const baseInput = {
     castIds: ['brother'],
     propIds: ['ball'],
     heroOnPage: true,
-    framing: 'wide' as const,
   }),
   action: 'Alisa helps her brother climb the ladder',
   heroDescriptor: bible.hero.descriptor,
   artStyle: 'watercolor' as const,
-  labels: [] as string[],
 };
 
 describe('buildIllustrationPrompt (lean shape)', () => {
@@ -43,12 +41,8 @@ describe('buildIllustrationPrompt (lean shape)', () => {
     expect(out).not.toContain('a red ball');
   });
 
-  it('never mentions reference images, even when references are passed', () => {
-    const out = buildIllustrationPrompt({
-      ...baseInput,
-      labels: ['hero', 'cast:brother', 'location'],
-    });
-    expect(out).not.toMatch(/reference image/i);
+  it('never mentions reference images', () => {
+    expect(buildIllustrationPrompt(baseInput)).not.toMatch(/reference image/i);
   });
 
   it('includes cast, setting and atmosphere from the bible', () => {
@@ -80,13 +74,6 @@ describe('buildIllustrationPrompt (lean shape)', () => {
     expect(out).not.toMatch(/wide shot|medium shot|close-up/i);
     expect(out).not.toContain('No text or letters');
     expect(out).not.toContain('beyond those described');
-  });
-
-  it('adds the continuity line only for the cascade (prev) reference', () => {
-    expect(buildIllustrationPrompt(baseInput)).not.toContain('previous scene');
-    expect(buildIllustrationPrompt({ ...baseInput, labels: ['prev', 'hero'] })).toContain(
-      'previous scene',
-    );
   });
 
   it('truncates an over-long action', () => {

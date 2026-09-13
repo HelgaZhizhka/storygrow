@@ -69,8 +69,8 @@ Hard rules:
    All descriptors are ENGLISH, concrete and PHYSICAL, and are reused VERBATIM on
    every page, so nothing drifts. Then give EACH page a scene: which
    location (locationId), which cast are present (castIds), which props (propIds),
-   whether the hero is on the page (heroOnPage — true on cover and final),
-   timeOfDay and framing. Do NOT describe actions in the bible — the page intent
+   whether the hero is on the page (heroOnPage — true on cover and final).
+   Do NOT describe actions in the bible — the page intent
    already carries what happens.
 `.trim();
 

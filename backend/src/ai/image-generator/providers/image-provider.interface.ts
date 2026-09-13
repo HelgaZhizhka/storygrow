@@ -29,6 +29,8 @@ export interface PageInput {
 export interface ImageProvider {
   readonly usesReference: boolean;
   readonly modelLabel: string;
+  /** How many input reference images one page request may carry (0 = none). */
+  readonly maxReferences: number;
   generatePortrait(input: PortraitInput): Promise<Uint8Array>;
   // Stylise a real uploaded photo into a recognisable character portrait (#128).
   generatePortraitFromPhoto(input: PhotoPortraitInput): Promise<Uint8Array>;

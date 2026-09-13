@@ -68,12 +68,13 @@ describe('GeminiImageProvider', () => {
     expect(arg.prompt.text).toContain('round face, blue eyes');
   });
 
-  it('uses an overridden model id for label and the SDK call', async () => {
+  it('always uses the configured Flash image model (no per-env override, #372)', async () => {
     mockGenerateImage.mockResolvedValue({ image: { uint8Array: bytes } });
-    const provider = new GeminiImageProvider('key', 'gemini-3-pro-image');
-    expect(provider.modelLabel).toBe('gemini-3-pro-image');
+    const provider = new GeminiImageProvider('key');
+    expect(provider.modelLabel).toBe('gemini-2.5-flash-image');
+    expect(provider.maxReferences).toBe(3);
     await provider.generatePortrait({ characterProfile: 'a girl', artStyle: 'watercolor' });
-    expect(mockImage).toHaveBeenCalledWith('gemini-3-pro-image');
+    expect(mockImage).toHaveBeenCalledWith('gemini-2.5-flash-image');
   });
 
   it('maps a NoImageGeneratedError to a refusal', async () => {

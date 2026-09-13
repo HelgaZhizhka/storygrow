@@ -136,16 +136,11 @@ export const toStoryBible = (plan: PlanVisualBible, heroDescriptor: string): Vis
   atmosphere: plan.atmosphere,
 });
 
-export const TIME_OF_DAY = ['morning', 'day', 'evening', 'night'] as const;
-export const FRAMING = ['wide', 'medium', 'close'] as const;
-
 /** One page's selection from the bible. */
 export const SceneSchema = z.object({
   locationId: bibleId,
   castIds: z.array(bibleId).max(MAX_CAST),
   propIds: z.array(bibleId).max(MAX_PROPS),
   heroOnPage: z.boolean(),
-  timeOfDay: z.enum(TIME_OF_DAY),
-  framing: z.enum(FRAMING),
 });
 export type Scene = z.infer<typeof SceneSchema>;

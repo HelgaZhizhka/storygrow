@@ -31,7 +31,7 @@ export const PlanPageSchema = z.object({
    * For the cover page, describe the scene the title sits on.
    */
   intent: z.string().min(1),
-  /** This page's selection from the Visual Bible (#348): place, cast, framing. */
+  /** This page's selection from the Visual Bible (#348): place, cast, props, hero. */
   scene: SceneSchema,
 });
 

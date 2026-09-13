@@ -9,6 +9,7 @@ const OPENAI_MAX_RETRIES = 1;
 export class OpenAiImageProvider implements ImageProvider {
   readonly usesReference = false;
   readonly modelLabel = IMAGE_MODEL;
+  readonly maxReferences = 0;
 
   generatePortrait(): Promise<Uint8Array> {
     return Promise.reject(new Error('OpenAiImageProvider does not generate portraits'));

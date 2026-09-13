@@ -28,8 +28,6 @@ export {
   PlanCastMemberSchema,
   LocationSchema,
   PropSchema,
-  TIME_OF_DAY,
-  FRAMING,
   renderAppearance,
   toStoryBible,
 } from './visual-bible.schema';

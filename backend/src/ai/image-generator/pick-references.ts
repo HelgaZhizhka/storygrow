@@ -1,10 +1,9 @@
 import type { Scene } from '../schemas';
 
 /**
- * Reference labels align 1:1 with the picked images by index, so the prompt
- * assembler can say "(as in reference image k)" for the right entry.
+ * Reference labels align 1:1 with the picked images by index; the judge uses
+ * them to caption each reference and the page span records them.
  *   'hero'        → the hero portrait
- *   'prev'        → the previous page's illustration (cascade)
  *   `cast:${id}`  → a cast member's portrait sheet
  *   'location'    → the location establishing sheet
  */
@@ -13,8 +12,6 @@ export type RefLabel = string;
 export interface ReferenceSources {
   /** Hero portrait bytes — pass only when the hero is on the page and a portrait exists. */
   heroPortrait?: Uint8Array;
-  /** The previous page's rendered image (cascade experiment) — carries objects/setting forward. */
-  previousPage?: Uint8Array;
   /** Cast id → portrait sheet bytes (PR2). */
   castSheets?: Record<string, Uint8Array | undefined>;
   /** Establishing sheet for the page's location (PR2). */
@@ -28,10 +25,9 @@ export interface PickedReferences {
 
 /**
  * pickReferences (#348) — choose the input reference images for one page within
- * the model's reference budget. Priority: previous page → hero → cast (in scene
- * order) → location. The previous page ranks first because it already carries
- * the hero in-scene, so a tight (1-image) budget keeps cascade continuity; faces
- * then outrank the location sheet. Whatever does not fit is carried by text only. Pure function.
+ * the provider's reference budget (Grok 5, Gemini Flash 3). Priority: hero →
+ * cast (in scene order) → location — faces outrank the location sheet. Whatever
+ * does not fit is carried by text only. Pure function.
  */
 export const pickReferences = (opts: {
   scene: Scene;
@@ -49,10 +45,6 @@ export const pickReferences = (opts: {
     }
   };
 
-  // Previous page first: it already contains the hero in-scene, so when the
-  // reference budget is tight (e.g. Grok's single-image edit) the cascade
-  // continuity is the most informative single reference.
-  push(sources.previousPage, 'prev');
   if (scene.heroOnPage) push(sources.heroPortrait, 'hero');
   for (const id of scene.castIds) push(sources.castSheets?.[id], `cast:${id}`);
   push(sources.locationSheet, 'location');

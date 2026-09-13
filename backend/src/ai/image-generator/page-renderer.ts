@@ -18,7 +18,6 @@ export interface RenderPageOpts {
   references: Uint8Array[];
   labels: string[];
   template: Story['pages'][number]['template'];
-  variant: string;
   /** What the judge checks the picture against; omitted → no judging. */
   judgeContext?: ImageJudgeContext;
 }
@@ -62,7 +61,6 @@ export class PageRenderer {
           bookId: opts.bookId,
           pageNumber: opts.pageNumber,
           references: opts.labels,
-          variant: opts.variant,
         },
       });
       const { best, attempts } = await this.renderJudged(opts, slot.imageSize);

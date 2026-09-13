@@ -11,7 +11,6 @@
 import { readdirSync, readFileSync, writeFileSync, existsSync, statSync } from 'node:fs';
 import sharp from 'sharp';
 import { join } from 'node:path';
-import { IMAGE_VARIANTS } from './lib/eval-images-lib';
 
 const flag = (name: string): string | undefined =>
   process.argv.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
@@ -90,9 +89,10 @@ const renderFixture = async (
 const main = async (): Promise<void> => {
   const root = flag('root') ?? 'output/eval-images';
   const out = flag('out') ?? join(root, 'comparison.html');
-  const variants = IMAGE_VARIANTS.filter((v) => existsSync(join(root, v)));
+  // One column per run folder present under the root (eval:images --run=<label>).
+  const variants = dirs(root).filter((d) => dirs(join(root, d)).length > 0);
   if (variants.length === 0) {
-    console.error(`No variant folders under ${root}. Run eval:images first.`);
+    console.error(`No run folders under ${root}. Run eval:images --run=<label> first.`);
     process.exit(1);
   }
   const fixtures = [...new Set(variants.flatMap((v) => dirs(join(root, v))))].sort();
@@ -111,13 +111,11 @@ const main = async (): Promise<void> => {
   .rubric { background: #f6f6f6; padding: 12px 20px; border-radius: 8px; }
 </style>
 <h1>Visual Bible image comparison</h1>
-<p>Variants: ${variants.map(esc).join(', ')} · fixtures: ${fixtures.length}</p>
-<div class="rubric"><b>Score each fixture × variant (1–5):</b>${rubric}</div>
+<p>Runs: ${variants.map(esc).join(', ')} · fixtures: ${fixtures.length}</p>
+<div class="rubric"><b>Score each fixture × run (1–5):</b>${rubric}</div>
 ${sections}`;
   writeFileSync(out, html);
-  console.log(
-    `Comparison written: ${out} (${variants.length} variants, ${fixtures.length} fixtures)`,
-  );
+  console.log(`Comparison written: ${out} (${variants.length} runs, ${fixtures.length} fixtures)`);
 };
 
 main().catch((e: unknown) => {
