@@ -4,6 +4,8 @@ export interface ImageEvalRow {
   bookId: string;
   pageNumber: number;
   attempt: number;
+  /** Generation run of the book (a retry after images_failed is a new run, #374). */
+  run: number;
   /** The judge's boolean criteria; `{}` when only the preflight ran. */
   scores: ImageJudgeResult | Record<string, never>;
   passed: boolean;

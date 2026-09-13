@@ -18,6 +18,8 @@ export interface RenderPageOpts {
   references: Uint8Array[];
   labels: string[];
   template: Story['pages'][number]['template'];
+  /** Generation run of the book (#374); ImageEval attempts are numbered per run. */
+  run: number;
   /** What the judge checks the picture against; omitted → no judging. */
   judgeContext?: ImageJudgeContext;
 }
@@ -104,6 +106,7 @@ export class PageRenderer {
       bookId: opts.bookId,
       pageNumber: opts.pageNumber,
       attempt,
+      run: opts.run,
       image: bytes,
       imageSize,
       context: opts.judgeContext!,

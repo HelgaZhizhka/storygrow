@@ -7,6 +7,7 @@ import { ReferenceSheetsService } from './reference-sheets.service';
 import { ImageGenerationError } from './errors';
 import { visualBibleFixture } from '../schemas/__fixtures__/visual-bible.fixture';
 import type { ImageProvider } from './providers/image-provider.interface';
+import type { S3Service } from '../../s3/s3.service';
 
 const bible = visualBibleFixture({
   cast: [{ id: 'brother', name: 'братик', role: 'брат', descriptor: 'toddler boy' }],
@@ -82,5 +83,24 @@ describe('ReferenceSheetsService', () => {
         provider: providerFrom(mocks),
       }),
     ).rejects.toThrow('network');
+  });
+});
+
+describe('ReferenceSheetsService.load (#374)', () => {
+  it('reloads location and cast sheets from S3 by their keys and ignores foreign keys', async () => {
+    const getObjectBytes = jest.fn((key: string) => Promise.resolve(new Uint8Array([key.length])));
+    const s3 = { uploadObject: jest.fn(), getObjectBytes } as unknown as S3Service;
+    const set = await new ReferenceSheetsService(s3).load([
+      'books/b/ref-location-home.png',
+      'books/b/ref-cast-brother.png',
+      'books/b/portrait.png',
+    ]);
+    expect(Object.keys(set.locationSheets)).toEqual(['home']);
+    expect(Object.keys(set.castSheets)).toEqual(['brother']);
+    expect(set.keys.sort()).toEqual([
+      'books/b/ref-cast-brother.png',
+      'books/b/ref-location-home.png',
+    ]);
+    expect(getObjectBytes).toHaveBeenCalledTimes(2);
   });
 });

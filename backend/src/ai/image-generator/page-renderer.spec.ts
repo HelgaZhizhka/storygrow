@@ -41,6 +41,7 @@ const opts = (over: Partial<RenderPageOpts> = {}): RenderPageOpts => ({
   references: [],
   labels: [],
   template: 'image-top',
+  run: 1,
   judgeContext: { action: 'a', cast: [] },
   ...over,
 });

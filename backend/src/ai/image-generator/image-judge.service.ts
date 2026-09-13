@@ -26,6 +26,8 @@ export interface JudgePageInput {
   bookId: string;
   pageNumber: number;
   attempt: number;
+  /** Generation run of the book (#374). */
+  run: number;
   image: Uint8Array;
   imageSize: ImageSize;
   context: ImageJudgeContext;
@@ -168,6 +170,7 @@ export class ImageJudgeService {
       bookId: input.bookId,
       pageNumber: input.pageNumber,
       attempt: input.attempt,
+      run: input.run,
       scores,
       passed: verdict.passed,
       failures: verdict.failures,

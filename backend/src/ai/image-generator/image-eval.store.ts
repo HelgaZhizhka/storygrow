@@ -13,6 +13,7 @@ export class PrismaImageEvalStore implements ImageEvalSink {
         bookId: row.bookId,
         pageNumber: row.pageNumber,
         attempt: row.attempt,
+        run: row.run,
         scores: row.scores,
         passed: row.passed,
         failures: row.failures,

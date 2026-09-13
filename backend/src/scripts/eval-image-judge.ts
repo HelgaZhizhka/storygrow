@@ -71,6 +71,7 @@ const judgeEntry = async (
     bookId: `calib-${entry.id}`,
     pageNumber: 1,
     attempt: 1,
+    run: 1,
     image: readFileSync(resolve(base, entry.image)),
     imageSize: entry.imageSize,
     context: entry.context,

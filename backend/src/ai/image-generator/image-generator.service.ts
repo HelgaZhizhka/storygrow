@@ -32,6 +32,19 @@ export interface ImageGenInput {
   // portrait), plus the named-feature descriptor folded into every page prompt.
   approvedPortraitKey?: string | null;
   characterDescriptor?: string | null;
+  /** Generation run of the book: 1 on first generation, +1 per retry (#374). Default 1. */
+  run?: number;
+  /**
+   * Artefacts of an earlier run of the SAME story to reuse instead of buying
+   * again (#374): the portrait and the reference sheets. The caller passes them
+   * only when the story was not regenerated.
+   */
+  reuse?: { portraitKey: string | null; referenceImageKeys: string[] };
+  /** Called as soon as portrait + sheets exist, so a crash mid-pages does not lose them. */
+  onArtefacts?: (artefacts: {
+    characterPortraitKey: string | null;
+    referenceImageKeys: string[];
+  }) => Promise<void>;
 }
 
 export interface ImageGenResult {
@@ -98,6 +111,10 @@ export class ImageGeneratorService {
 
       const portrait = await this.maybePortrait(input);
       const sheets = await this.maybeSheets(input);
+      await input.onArtefacts?.({
+        characterPortraitKey: portrait?.key ?? null,
+        referenceImageKeys: sheets?.keys ?? [],
+      });
       const imageKeys = await this.generatePages(input, portrait?.bytes, sheets);
 
       span.update({ output: { count: imageKeys.length, portrait: portrait?.key ?? null } });
@@ -125,6 +142,7 @@ export class ImageGeneratorService {
           bookId: input.bookId,
           pageNumber: i + 1,
           template: page.template,
+          run: input.run ?? 1,
         });
         return key;
       }),
@@ -137,6 +155,8 @@ export class ImageGeneratorService {
   private async maybeSheets(input: ImageGenInput): Promise<SheetSet | null> {
     const bible = input.story.visualBible;
     if (!this.provider.usesReference || !bible) return null;
+    const reusable = input.reuse?.referenceImageKeys ?? [];
+    if (reusable.length > 0) return this.referenceSheets.load(reusable);
     return this.referenceSheets.generate({
       bookId: input.bookId,
       bible,
@@ -223,10 +243,12 @@ export class ImageGeneratorService {
   private async maybePortrait(
     input: ImageGenInput,
   ): Promise<{ key: string; bytes: Uint8Array } | null> {
-    // Photo flow: reuse the parent-approved portrait; do not generate one.
-    if (input.approvedPortraitKey) {
-      const bytes = await this.s3.getObjectBytes(input.approvedPortraitKey);
-      return { key: input.approvedPortraitKey, bytes };
+    // Photo flow: reuse the parent-approved portrait; a retry of the same story
+    // (#374) reuses the portrait of the earlier run. Neither generates one.
+    const existing = input.approvedPortraitKey ?? input.reuse?.portraitKey;
+    if (existing) {
+      const bytes = await this.s3.getObjectBytes(existing);
+      return { key: existing, bytes };
     }
     const { characterProfile } = input.story;
     if (!this.provider.usesReference || !characterProfile) return null;
