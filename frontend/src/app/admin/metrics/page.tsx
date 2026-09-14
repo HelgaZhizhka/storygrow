@@ -14,6 +14,18 @@ interface Metrics {
   recentEvalCount: number;
 }
 
+interface ImageMetrics {
+  windowDays: number;
+  attempts: number;
+  pages: number;
+  firstAttemptPassRate: number | null;
+  reRenders: number;
+  blocked: number;
+  unavailable: number;
+  topFailures: Array<{ criterion: string; count: number }>;
+  costByModel: Array<{ model: string; pages: number; artefacts: number; usd: number }>;
+}
+
 const CRITERION_LABELS: Record<string, string> = {
   ageAppropriateVocab: 'Vocabulary',
   hasMoralLesson: 'Moral lesson',
@@ -26,15 +38,15 @@ const CRITERION_LABELS: Record<string, string> = {
 
 export default function AdminMetricsPage(): React.ReactElement {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const [images, setImages] = useState<ImageMetrics | null>(null);
   const [error, setError] = useState<ApiError | null>(null);
 
   useEffect(() => {
-    api
-      .get<Metrics>('/admin/metrics')
-      .then(setMetrics)
-      .catch((err: unknown) => {
-        setError(err instanceof ApiError ? err : new ApiError(0, 'Unknown error'));
-      });
+    const fail = (err: unknown): void => {
+      setError(err instanceof ApiError ? err : new ApiError(0, 'Unknown error'));
+    };
+    api.get<Metrics>('/admin/metrics').then(setMetrics).catch(fail);
+    api.get<ImageMetrics>('/admin/metrics/images').then(setImages).catch(fail);
   }, []);
 
   if (error) {
@@ -103,7 +115,64 @@ export default function AdminMetricsPage(): React.ReactElement {
           ))}
         </div>
       </div>
+
+      {images && <ImagesSection images={images} />}
     </main>
+  );
+}
+
+// Image pipeline (#379): outcomes of the vision judge and cost per provider,
+// derived from ImageEval rows — a bad page is diagnosable without LangFuse.
+function ImagesSection({ images }: { images: ImageMetrics }): React.ReactElement {
+  const passRate =
+    images.firstAttemptPassRate === null
+      ? '—'
+      : `${(images.firstAttemptPassRate * 100).toFixed(0)}%`;
+  return (
+    <div className="mb-8 rounded-lg border border-zinc-200 p-6 dark:border-zinc-700">
+      <h2 className="mb-4 text-base font-medium text-zinc-900 dark:text-zinc-50">
+        Images, last {images.windowDays} days — {images.pages} pages, {images.attempts} renders
+      </h2>
+      <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <StatCard label="Passed 1st attempt" value={passRate} />
+        <StatCard label="Re-renders" value={images.reRenders} />
+        <StatCard label="Judge blocked" value={images.blocked} />
+        <StatCard label="Judge unavailable" value={images.unavailable} />
+      </div>
+      {images.topFailures.length > 0 && (
+        <ul className="mb-6 text-sm text-zinc-600 dark:text-zinc-400">
+          {images.topFailures.map((f) => (
+            <li key={f.criterion} className="flex justify-between">
+              <span>{f.criterion}</span>
+              <span>{f.count}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <table className="w-full text-sm">
+        <thead className="text-left text-xs text-zinc-500">
+          <tr>
+            <th className="py-1">Model</th>
+            <th className="py-1 text-right">Pages</th>
+            <th className="py-1 text-right">Portraits + sheets</th>
+            <th className="py-1 text-right">USD</th>
+          </tr>
+        </thead>
+        <tbody>
+          {images.costByModel.map((c) => (
+            <tr key={c.model} className="border-t border-zinc-100 dark:border-zinc-800">
+              <td className="py-1">{c.model}</td>
+              <td className="py-1 text-right">{c.pages}</td>
+              <td className="py-1 text-right">{c.artefacts}</td>
+              <td className="py-1 text-right">${c.usd.toFixed(2)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="mt-2 text-xs text-zinc-400">
+        Cost from the per-image prices in ai.config; the vision judge is not included.
+      </p>
+    </div>
   );
 }
 

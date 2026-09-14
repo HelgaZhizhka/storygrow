@@ -18,6 +18,9 @@ export class PrismaImageEvalStore implements ImageEvalSink {
         passed: row.passed,
         failures: row.failures,
         reasoning: row.reasoning,
+        model: row.model,
+        prompt: row.prompt,
+        labels: row.labels,
       },
     });
   }

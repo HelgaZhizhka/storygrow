@@ -5,6 +5,7 @@ import { AdminGuard } from '../auth/guards/admin.guard';
 import { PrismaService } from '../prisma/prisma.service';
 import { JudgeScoreSchema } from '../ai/schemas/judge.schema';
 import type { JudgeScores } from '../ai/schemas/judge.schema';
+import { computeImageMetrics } from './image-metrics';
 
 const booksQuerySchema = z.object({
   status: z.string().optional(),
@@ -51,6 +52,32 @@ export class AdminBooksController {
         },
       },
     });
+  }
+
+  /** Image pipeline outcomes and cost per provider over the window (#379). */
+  @Get('metrics/images')
+  async getImageMetrics() {
+    const since = new Date(Date.now() - WINDOW_DAYS * 24 * 60 * 60 * 1000);
+    const [rows, books] = await Promise.all([
+      this.prisma.imageEval.findMany({
+        where: { judgedAt: { gte: since } },
+        select: {
+          bookId: true,
+          run: true,
+          pageNumber: true,
+          attempt: true,
+          passed: true,
+          failures: true,
+          model: true,
+          labels: true,
+        },
+      }),
+      this.prisma.book.findMany({
+        where: { createdAt: { gte: since } },
+        select: { imageModel: true, characterPortraitKey: true, referenceImageKeys: true },
+      }),
+    ]);
+    return computeImageMetrics({ rows, books, windowDays: WINDOW_DAYS });
   }
 
   @Get('metrics')

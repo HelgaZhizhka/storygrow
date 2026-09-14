@@ -36,17 +36,33 @@ describe('AdminMetricsPage', () => {
     });
   });
 
-  it('renders metrics on success', async () => {
-    vi.mocked(api.get).mockResolvedValue({
-      windowDays: 7,
-      totalBooks: 10,
-      readyBooks: 8,
-      passedFirstAttempt: 6,
-      passRate: 0.8,
-      meanFinalScore: 8.5,
-      meanCriterionScores: { registerMatch: 8.5, earnedResolution: 9 },
-      recentEvalCount: 12,
-    });
+  it('renders text and image metrics on success', async () => {
+    vi.mocked(api.get).mockImplementation((path: string) =>
+      Promise.resolve(
+        path === '/admin/metrics/images'
+          ? {
+              windowDays: 7,
+              attempts: 9,
+              pages: 8,
+              firstAttemptPassRate: 0.875,
+              reRenders: 1,
+              blocked: 1,
+              unavailable: 0,
+              topFailures: [{ criterion: 'proportionsNatural', count: 2 }],
+              costByModel: [{ model: 'grok-imagine-image-2.0', pages: 9, artefacts: 3, usd: 0.6 }],
+            }
+          : {
+              windowDays: 7,
+              totalBooks: 10,
+              readyBooks: 8,
+              passedFirstAttempt: 6,
+              passRate: 0.8,
+              meanFinalScore: 8.5,
+              meanCriterionScores: { registerMatch: 8.5, earnedResolution: 9 },
+              recentEvalCount: 12,
+            },
+      ),
+    );
 
     render(<AdminMetricsPage />);
 
@@ -55,5 +71,11 @@ describe('AdminMetricsPage', () => {
     });
     expect(screen.getByText('Register match')).toBeInTheDocument();
     expect(screen.getByText('Earned resolution')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('grok-imagine-image-2.0')).toBeInTheDocument();
+    });
+    expect(screen.getByText('88%')).toBeInTheDocument();
+    expect(screen.getByText('proportionsNatural')).toBeInTheDocument();
+    expect(screen.getByText('$0.60')).toBeInTheDocument();
   });
 });

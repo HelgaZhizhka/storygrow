@@ -1548,3 +1548,17 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Behaviour unchanged: 459 backend tests pass (68 suites); `./init.sh` green.
 
 **Blockers:** none.
+
+## 2026-09-14 — feat(admin): ImageEval provenance and cost per provider on /admin, per-page SSE progress (#379, review C2+C4)
+
+**Why:** a failed page could only be explained with LangFuse (off in production, #382): the judge row said *what* failed, not *what was rendered from what*. Image spend per provider was a guess, and the parent's progress screen sat at 60% for the whole image phase.
+
+**Done:**
+- **Provenance on every `ImageEval` row and the page span:** the image model, the exact page prompt and the reference labels the page was rendered from (`ImageEval.model/prompt/labels`, migration `20260914100000`). The judge receives them as `provenance` from the page renderer; the book stores the model that rendered its portrait and sheets (`Book.imageModel`, set with the artefacts).
+- **Cost per provider, derived at read time:** `IMAGE_COST_USD` in `ai.config` (ADR-0007 measurements: Grok $0.04 + $0.01 per reference, Gemini Flash image $0.039; the vision judge is not priced) × page renders with their reference count + portraits/sheets without. Rows and books from before #379 are listed as «unknown» rather than priced with a guess.
+- **`/admin/metrics/images`** (`computeImageMetrics`, pure and unit-tested): pages and renders in the window, first-attempt pass rate, re-renders, judge blocked / unavailable, top failing criteria, cost by model. The admin metrics page shows it under the text metrics.
+- **Per-page SSE progress:** `ImageGeneratorService` calls `onPage` after each render; the processor moves progress from 60 to 85 with «Иллюстрация N из M» (marked «перерисована» when the judge bought a re-render).
+- `check:book` prints the model. 463 backend tests + 4 new (metrics, provenance, callbacks, SSE); frontend admin page test covers the images section; `./init.sh` green.
+- **Real books** through the local API (two, observer + child): every `ImageEval` row carries `grok-imagine-image-2.0`, the full page prompt and `{hero,location}`; `Book.imageModel` set; judge 8/8 and 7/7 first attempt; `check:book` OK. The SSE stream showed «Иллюстрация 1 из 7» … «7 из 7» at 64→85%. `/admin/metrics/images` as admin: 64 pages / 72 renders in the window, first-attempt pass 87.5%, 8 re-renders, 5 judge blocks, top failure `artefact:wrongSurface`; Grok $0.56 for the one book with provenance, 64 pre-#379 pages listed as unknown.
+
+**Blockers:** none.

@@ -88,6 +88,23 @@ export const XAI_IMAGE_MODEL = 'grok-imagine-image-2.0';
 // 3.6-flash is verified live with generateObject + image input.
 export const GEMINI_VISION_MODEL = 'gemini-3.6-flash';
 
+/**
+ * USD per generated image (#379), from the ADR-0007 measurements (2026-09-04):
+ * Grok ~$0.04 per image + $0.01 per input reference; Gemini Flash image ~$0.039.
+ * The vision judge (Gemini) is not priced here. Update when the vendors change
+ * prices; the admin dashboard derives cost from these at read time.
+ */
+export const IMAGE_COST_USD: Record<string, { perImage: number; perReference: number }> = {
+  [XAI_IMAGE_MODEL]: { perImage: 0.04, perReference: 0.01 },
+  [GEMINI_IMAGE_MODEL]: { perImage: 0.039, perReference: 0 },
+};
+
+export const imageCostUsd = (model: string, referenceCount: number): number => {
+  const price = IMAGE_COST_USD[model];
+  if (!price) return 0;
+  return price.perImage + price.perReference * referenceCount;
+};
+
 export const IMAGE_SIZE_TO_ASPECT_RATIO: Record<ImageSize, '1:1' | '2:3' | '3:2'> = {
   '1024x1024': '1:1',
   '1024x1536': '2:3',

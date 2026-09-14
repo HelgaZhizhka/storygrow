@@ -34,6 +34,8 @@ export interface JudgePageInput {
   /** The references the page was generated from, aligned with `labels` (pickReferences). */
   references: ReadonlyArray<Uint8Array>;
   labels: ReadonlyArray<string>;
+  /** What rendered the page (#379): stored on the row so a bad page is diagnosable from the DB. */
+  provenance: { model: string; prompt: string };
 }
 
 type JudgeContent = Array<
@@ -174,6 +176,9 @@ export class ImageJudgeService {
       passed: verdict.passed,
       failures: verdict.failures,
       reasoning: row.reasoning,
+      model: input.provenance.model,
+      prompt: input.provenance.prompt,
+      labels: [...input.labels],
     });
   }
 }
