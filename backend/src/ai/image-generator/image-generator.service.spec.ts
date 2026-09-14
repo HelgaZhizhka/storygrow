@@ -209,6 +209,30 @@ describe('ImageGeneratorService', () => {
     });
   });
 
+  describe('progress callbacks (#379)', () => {
+    it('reports each rendered page and the model that rendered the artefacts', async () => {
+      const service = await makeService('gemini');
+      mockGenerateImage.mockResolvedValue({ image: { uint8Array: new Uint8Array([1]) } });
+      mockS3.uploadObject.mockResolvedValue(undefined);
+      const onPage = jest.fn().mockResolvedValue(undefined);
+      const onArtefacts = jest.fn().mockResolvedValue(undefined);
+
+      await service.generate({
+        story: makeStory({ pageCount: 2 }),
+        bookId: 'book-p',
+        artStyle: 'watercolor',
+        onPage,
+        onArtefacts,
+      });
+
+      expect(onArtefacts).toHaveBeenCalledWith(
+        expect.objectContaining({ imageModel: 'gemini-2.5-flash-image' }),
+      );
+      expect(onPage).toHaveBeenCalledTimes(2);
+      expect(onPage).toHaveBeenCalledWith(expect.objectContaining({ done: 2, total: 2 }));
+    });
+  });
+
   describe('Visual Bible path (#348)', () => {
     it('assembles the hero-lock + location prompt and passes the portrait as reference 1', async () => {
       const service = await makeService('gemini');

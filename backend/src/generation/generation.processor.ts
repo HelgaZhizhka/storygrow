@@ -4,7 +4,10 @@ import { type Job } from 'bullmq';
 import { BookStatus } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { StoryOrchestratorService } from '../ai/story-generator/story-orchestrator.service';
-import { ImageGeneratorService } from '../ai/image-generator/image-generator.service';
+import {
+  ImageGeneratorService,
+  type ImageGenInput,
+} from '../ai/image-generator/image-generator.service';
 import { BookImageService } from '../books/book-image.service';
 import { BookProgressService } from '../books/book-progress.service';
 import { PdfRenderService } from '../pdf/pdf-render.service';
@@ -28,6 +31,12 @@ interface BookWithRelations {
   child: { name: string; age: number; gender: string | null; appearance: string | null };
   learningGoal: { title: string; description: string; arcType: 'virtue' | 'flaw' };
 }
+
+type ImageArtefacts =
+  NonNullable<ImageGenInput['onArtefacts']> extends (a: infer A) => unknown ? A : never;
+
+// Progress percent reserved for the page renders: from the story done (60) to the PDF (85).
+const IMAGES_PROGRESS = { start: 60, span: 25 };
 
 // lockDuration: 6–8 pages × ~10 s Puppeteer render ≈ 60–80 s upper bound; 90 s gives headroom.
 @Processor(GENERATION_QUEUE, { lockDuration: 90_000 })
@@ -125,10 +134,26 @@ export class GenerationProcessor extends WorkerHost {
       reuse: storyReused
         ? { portraitKey: book.characterPortraitKey, referenceImageKeys: book.referenceImageKeys }
         : undefined,
-      onArtefacts: (artefacts) => this.persistArtefacts(bookId, artefacts),
+      ...this.imageCallbacks(ctx.job),
     });
     await this.prisma.book.update({ where: { id: bookId }, data: generated });
     return generated.imageKeys;
+  }
+
+  // Portrait + sheets are persisted the moment they exist (#374); each rendered
+  // page moves the SSE progress between the story (60) and the PDF (85) (#379).
+  private imageCallbacks(job: Job<GenerateBookPayload>) {
+    const { bookId } = job.data;
+    return {
+      onArtefacts: (artefacts: ImageArtefacts) => this.persistArtefacts(bookId, artefacts),
+      onPage: (page: { done: number; total: number; pageNumber: number; attempts: number }) =>
+        this.advance(
+          job,
+          IMAGES_PROGRESS.start + Math.round((IMAGES_PROGRESS.span * page.done) / page.total),
+          `Иллюстрация ${page.done} из ${page.total}` +
+            (page.attempts > 1 ? ' (перерисована)' : ''),
+        ),
+    };
   }
 
   private async finish(job: Job<GenerateBookPayload>, story: Story, imageKeys: string[]) {
@@ -188,10 +213,7 @@ export class GenerationProcessor extends WorkerHost {
 
   // Persist the portrait and sheet keys the moment they exist, so a crash in the
   // page phase leaves them on the Book for the next run to reuse (#374).
-  private async persistArtefacts(
-    bookId: string,
-    artefacts: { characterPortraitKey: string | null; referenceImageKeys: string[] },
-  ): Promise<void> {
+  private async persistArtefacts(bookId: string, artefacts: ImageArtefacts): Promise<void> {
     await this.prisma.book.update({ where: { id: bookId }, data: artefacts });
   }
 

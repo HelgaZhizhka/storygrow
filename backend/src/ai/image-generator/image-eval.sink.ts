@@ -11,6 +11,10 @@ export interface ImageEvalRow {
   passed: boolean;
   failures: string[];
   reasoning: string | null;
+  /** Provenance (#379): what rendered the page and from what. */
+  model: string;
+  prompt: string;
+  labels: string[];
 }
 
 /**

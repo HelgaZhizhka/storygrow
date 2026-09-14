@@ -81,6 +81,8 @@ const judgeEntry = async (
     context: entry.context,
     references: refs.map((r) => readFileSync(resolve(base, r.path))),
     labels: refs.map((r) => r.label),
+    // Calibration pages come from files, not a render: no model, no prompt to record.
+    provenance: { model: 'calibration', prompt: '' },
   });
   const row = sink.rows.find((r) => r.bookId === `calib-${entry.id}`);
   return {

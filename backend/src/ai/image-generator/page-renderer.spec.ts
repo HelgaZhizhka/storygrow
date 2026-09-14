@@ -98,6 +98,16 @@ describe('PageRenderer', () => {
     expect(p.generatePage).toHaveBeenCalledTimes(1);
   });
 
+  it('hands the judge the model and the exact prompt as provenance (#379)', async () => {
+    const p = provider();
+    p.generatePage.mockResolvedValue(new Uint8Array([1]));
+    const judge = judgeStub(1, [{ passed: true, failures: [] }]);
+    await new PageRenderer({ provider: p, s3, judge }).render(opts({ prompt: 'a fox in a yard' }));
+    expect(judge.judge).toHaveBeenCalledWith(
+      expect.objectContaining({ provenance: { model: 'test', prompt: 'a fox in a yard' } }),
+    );
+  });
+
   it('does not judge a page without a judge context', async () => {
     const p = provider();
     p.generatePage.mockResolvedValue(new Uint8Array([1]));
