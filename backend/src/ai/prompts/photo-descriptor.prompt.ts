@@ -26,6 +26,13 @@ Rules for descriptor:
 
 Also set ageYears to the child's apparent age in years (a number), or null if you
 cannot tell.
+
+Also fill appearance — the SAME child in ENGLISH, structured, for the pages of
+the book: skin (skin tone), hair (colour + style), outfit (the clothes worn in
+this photo, WITH colours — the book keeps them), detail (one always-visible
+detail: glasses, a bow, freckles; otherwise a small neutral one), kind (any
+value — replaced by the system). If hasChildFace is false, fill every field with
+the word "none".
 `.trim();
 
 export const PHOTO_DESCRIPTOR_TASK = "Read this photo and return the child's face descriptor.";

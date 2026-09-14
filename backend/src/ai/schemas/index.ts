@@ -33,6 +33,8 @@ export {
   OBJECT_SIZES,
   renderLocation,
   renderAppearance,
+  impliedNounsAdded,
+  heroKind,
   toStoryBible,
 } from './visual-bible.schema';
 export type {

@@ -1,4 +1,4 @@
-import { ensureHeroGender, normalizeVisualBible } from './visual-bible.normalizer';
+import { normalizeVisualBible } from './visual-bible.normalizer';
 import type { StoryPlan } from '../schemas';
 import {
   planVisualBibleFixture,
@@ -48,7 +48,7 @@ describe('normalizeVisualBible', () => {
   });
 
   it('drops unknown and duplicate cast/prop ids', () => {
-    const { plan, repairs } = normalizeVisualBible(
+    const { plan, repairs, repairKinds } = normalizeVisualBible(
       planWith([
         {
           template: 'image-top',
@@ -65,6 +65,12 @@ describe('normalizeVisualBible', () => {
     expect(plan.pages[0].scene.castIds).toEqual(['brother']);
     expect(plan.pages[0].scene.propIds).toEqual(['ball']);
     expect(repairs).toBe(3); // ghost + duplicate brother + sword
+    expect(repairKinds).toMatchObject({
+      droppedCastId: 2,
+      droppedPropId: 1,
+      danglingLocation: 0,
+      heroForced: 0,
+    });
   });
 
   it('forces heroOnPage on cover and final pages', () => {
@@ -134,34 +140,5 @@ describe('normalizeVisualBible', () => {
       ]),
     );
     expect(repairs).toBe(0);
-  });
-});
-
-describe('ensureHeroGender (#360)', () => {
-  it('replaces a genderless kind with the known gender', () => {
-    expect(ensureHeroGender(appearanceFixture({ kind: '3-year-old child' }), 'female').kind).toBe(
-      '3-year-old girl',
-    );
-    expect(ensureHeroGender(appearanceFixture({ kind: 'lively toddler' }), 'male').kind).toBe(
-      'lively boy',
-    );
-  });
-
-  it('appends the gender when there is no word to replace', () => {
-    expect(ensureHeroGender(appearanceFixture({ kind: '6 years old' }), 'female').kind).toBe(
-      '6 years old, a girl',
-    );
-  });
-
-  it('leaves an already gendered kind and unknown/other genders alone', () => {
-    expect(ensureHeroGender(appearanceFixture({ kind: '5-year-old boy' }), 'female').kind).toBe(
-      '5-year-old boy',
-    );
-    expect(ensureHeroGender(appearanceFixture({ kind: '5-year-old child' }), 'other').kind).toBe(
-      '5-year-old child',
-    );
-    expect(ensureHeroGender(appearanceFixture({ kind: '5-year-old child' })).kind).toBe(
-      '5-year-old child',
-    );
   });
 });

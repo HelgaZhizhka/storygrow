@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { startActiveObservation } from '@langfuse/tracing';
 import { ConfigService } from '@nestjs/config';
 import { generateObject } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
@@ -12,8 +13,12 @@ import {
   renderAppearance,
   toStoryBible,
   type ProseOutput,
+  AppearanceSchema,
+  heroKind,
+  type Appearance,
+  impliedNounsAdded,
 } from '../schemas';
-import { ensureHeroGender, normalizeVisualBible } from '../validators';
+import { normalizeVisualBible } from '../validators';
 import { ageToAgeBand, type AgeBand } from '../../pdf/page-templates/page-templates.config';
 import { PLAN_SYSTEM_PROMPT, buildPlanPrompt } from '../prompts/plan.prompt';
 import { buildProseSystemPrompt, buildProsePrompt } from '../prompts/prose.prompt';
@@ -26,7 +31,6 @@ import type { StorySeeds } from '../prompts/story-generator.prompt';
 import { createTelemetry } from '../telemetry';
 import { PLAN_MODEL, PROSE_MODEL, GENERATION_MODEL } from '../ai.config';
 
-const CharacterProfileSchema = z.object({ characterProfile: z.string() });
 const TitleSchema = z.object({ title: z.string() });
 const TITLE_MAX_ATTEMPTS = 3;
 
@@ -67,15 +71,17 @@ export class StoryGeneratorService {
   async generateStory(input: GenerateStoryInput): Promise<Story> {
     const ageBand = ageToAgeBand(input.childAge);
     const plan = await this.generatePlan(input);
-    // The hero's look never comes from the model's free-text characterProfile
-    // (#360): it is rendered from the structured appearance (no name, no prose)
-    // or, in child mode with a parent-given appearance, derived in an isolated
-    // step so a hair-bow can't become plot. Prose carries it forward verbatim.
-    const heroLook = ensureHeroGender(plan.visualBible.hero.appearance, input.gender);
-    plan.characterProfile =
-      input.protagonistMode === 'child' && input.appearance
-        ? await this.deriveCharacterProfile(input)
-        : renderAppearance(heroLook);
+    // ONE source for the hero's look (#376): a structured Appearance resolved
+    // here, written back into the bible and rendered into characterProfile, so
+    // the portrait, every page prompt and the judge read the same words.
+    const appearance = await this.resolveHeroAppearance(plan, input);
+    plan.visualBible.hero.appearance = appearance;
+    plan.characterProfile = renderAppearance(appearance);
+    // Canary (#378): nouns the renderer had to add because the model dropped
+    // them; should fall to zero now that the schema fields carry descriptions.
+    const implied = impliedNounsAdded(appearance);
+    if (implied > 0)
+      this.logger.log(`Book ${input.bookId}: renderAppearance added ${implied} implied noun(s)`);
     const prose = await this.generateProse(plan, input, ageBand);
     // Merge the Visual Bible + per-page scenes into the persisted Story in code
     // (#348) — the prose model is never asked to reproduce them.
@@ -130,10 +136,24 @@ export class StoryGeneratorService {
     };
   }
 
-  private async deriveCharacterProfile(input: GenerateStoryInput): Promise<string> {
+  // Child mode: the parent's description (when given) wins over the Plan's
+  // invented look, and `kind` comes from age + gender the input already knows.
+  // Observer mode: the Plan invented the hero, its look stands as is.
+  private async resolveHeroAppearance(
+    plan: StoryPlan,
+    input: GenerateStoryInput,
+  ): Promise<Appearance> {
+    if (input.protagonistMode !== 'child') return plan.visualBible.hero.appearance;
+    const base = input.appearance
+      ? await this.deriveAppearance(input)
+      : plan.visualBible.hero.appearance;
+    return { ...base, kind: heroKind(input.childAge, input.gender) };
+  }
+
+  private async deriveAppearance(input: GenerateStoryInput): Promise<Appearance> {
     const { object } = await generateObject({
       model: this.openai(GENERATION_MODEL),
-      schema: CharacterProfileSchema,
+      schema: AppearanceSchema,
       system: CHARACTER_PROFILE_SYSTEM,
       prompt: buildCharacterProfilePrompt(input.appearance ?? '', input.childAge, input.gender),
       experimental_telemetry: createTelemetry('character-profile', {
@@ -141,7 +161,7 @@ export class StoryGeneratorService {
         bookId: input.bookId,
       }),
     });
-    return object.characterProfile;
+    return object;
   }
 
   private async generatePlan(input: GenerateStoryInput): Promise<StoryPlan> {
@@ -156,9 +176,17 @@ export class StoryGeneratorService {
         bookId: input.bookId,
       }),
     });
-    const { plan, repairs } = normalizeVisualBible(object);
+    const { plan, repairs, repairKinds } = normalizeVisualBible(object);
+    // Measured by kind (#378): each kind is a contract gap in the Plan output
+    // worth closing at the schema, not papering over silently.
+    await startActiveObservation('story-plan.normalize', (span) => {
+      span.update({ metadata: { bookId: input.bookId }, output: { repairs, ...repairKinds } });
+      return Promise.resolve();
+    });
     if (repairs > 0) {
-      this.logger.warn(`Book ${input.bookId}: Visual Bible repaired (${repairs} fixes)`);
+      this.logger.warn(
+        `Book ${input.bookId}: Visual Bible repaired (${repairs}): ${JSON.stringify(repairKinds)}`,
+      );
     }
     return plan;
   }
@@ -171,15 +199,20 @@ export class StoryGeneratorService {
    * plan (Prose follows the plan exactly); a missing scene stays undefined.
    */
   private mergeVisualBible(story: ProseOutput, plan: StoryPlan, bookId: string): Story {
-    if (story.pages.length !== plan.pages.length) {
-      // Prose is instructed to follow the plan exactly; if it drifted, scenes
-      // align by index and any trailing page falls back to the legacy prompt.
-      this.logger.warn(
-        `Book ${bookId}: prose emitted ${story.pages.length} pages, plan has ${plan.pages.length}; scenes align by index`,
-      );
-    }
     const visualBible = toStoryBible(plan.visualBible, plan.characterProfile);
-    const pages = story.pages.map((page, i) => ({ ...page, scene: plan.pages[i]?.scene }));
+    // The schema fixes the page count to the plan's (#378); a page whose
+    // template differs from the plan gets NO scene, and the structural check
+    // turns that into a regeneration with feedback instead of a silent misfit.
+    const pages = story.pages.map((page, i) => {
+      const planned = plan.pages[i];
+      if (planned.template !== page.template) {
+        this.logger.warn(
+          `Book ${bookId}: page ${i + 1} template ${page.template} differs from the plan's ${planned.template}`,
+        );
+        return page;
+      }
+      return { ...page, scene: planned.scene };
+    });
     // The hero look is the plan's (rendered / derived) profile, set in code —
     // never the prose model's copy of it (#360).
     return { ...story, characterProfile: plan.characterProfile, visualBible, pages };
@@ -192,7 +225,7 @@ export class StoryGeneratorService {
   ): Promise<ProseOutput> {
     const { object } = await generateObject({
       model: this.openai(input.model ?? PROSE_MODEL),
-      schema: buildProseSchema(ageBand),
+      schema: buildProseSchema(ageBand, plan.pages.length),
       system: buildProseSystemPrompt(ageBand),
       prompt: buildProsePrompt(plan, input),
       experimental_telemetry: createTelemetry('story-prose', {

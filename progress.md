@@ -1486,3 +1486,51 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - 254 backend tests, `./init.sh` green; `CONTEXT.md` (Visual Bible, Image Eval) and the review tracking updated.
 
 **Blockers:** none.
+
+---
+
+## 2026-09-13 — feat(ai): one source for the hero appearance in every mode; photo path gets structured English fields (#376, review B3+B5+B6)
+
+**Why:** up to six appearance strings per book, and in the real launch flow (parent describes the child) the hero's look was free text from gpt-4o-mini with no required fields — no skin tone, exactly the omission class #360 closed for cast. Photo mode fed a Russian face line into the page prompt and the judge.
+
+**Done:**
+- **One `Appearance` resolved once after the Plan** (`resolveHeroAppearance`), written back into the bible and rendered into `characterProfile`: the portrait, every page's hero line and the judge context are the same words in every mode (asserted in tests for child-with-description, child-without, observer).
+- **`kind` from age + gender in code** (`heroKind`); `ensureHeroGender` (which derived from model text what the input already knew) deleted.
+- **Parent description → the same `AppearanceSchema`** via `generateObject` (was free text): skin tone always present, outfit always with colours, `detail` keeps EVERY distinctive thing the parent wrote. Found in the real book: the parent wrote «круглые очки … веснушки» and the first prompt kept only the freckles — fixed the instruction; a three-description probe now returns "round glasses, freckles".
+- **Photo mode:** the vision call also returns a structured English `appearance` (skin, hair, the outfit worn in the photo, one detail), stored in `Book.characterAppearance` (migration `20260913170000`); the processor renders it with `kind` from the child's age + gender for the pages and the judge, while the Russian face line stays for the portrait step and parent editing. Books uploaded before #376 fall back to the Russian line.
+- **Real book** (local stack, child mode with a parent description): «Вера и мягкая игрушка дружбы» — profile «5-year-old girl, light skin, shoulder-length curly red hair, wearing a green dress with white polka dots, freckles»; portrait and all 7 pages match it (red curls, polka-dot dress, freckles); judge 7/7 first attempt; `check:book` OK. Photo mode covered by unit tests (no photo available locally).
+- 321 backend tests, `./init.sh` green; `CONTEXT.md` (Photo Character, Character Profile), review tracking updated.
+
+**Blockers:** none.
+
+## 2026-09-13 — refactor(ai): Plan owns the page count, model-facing schemas describe their fields, normalizer repairs counted by kind (#378, review A2+B2+B4)
+
+**Why:** three things were true of the same seam. Prose could return a different number of pages than the Plan decided and `mergeVisualBible` matched pages by index, so a dropped or added page silently attached the wrong scene. The Plan prompt explained field meanings in prose while the schema — the only thing the model must satisfy — was undocumented. And the normalizer reported "N repairs" with no way to tell a dangling location from a hero forced onto a page, so a noisy Plan could not be measured.
+
+**Done:**
+- **Prose schema built per call** (`buildProseSchema(ageBand, pageCount)`): `pages` is `.length(plan.pages.length)`; the model cannot hand back fewer or more pages. `mergeVisualBible` attaches a scene only when the page's template equals the plan's; a mismatch leaves the page without a scene and `validateBookPlan(..., { expectScenes })` fails it with a plain reason («does not follow the plan (template changed)»), sending the story into the normal regeneration loop instead of rendering it with someone else's scene.
+- **`.describe()` on every model-facing field** in story-plan, visual-bible, story (prose), judge, image-judge and photo-descriptor schemas; Plan rule 10 shrunk to the decisions only (what to decide, not what each field means).
+- **Repairs by kind:** `normalizeVisualBible` returns `repairKinds` (`danglingLocation`, `droppedCastId`, `droppedPropId`, `addedCast`, `heroForced`); logged and put on a `story-plan.normalize` LangFuse span so the Plan's noise is a number per kind, not a total.
+- **Legacy no-bible image path deleted.** Prod count before deleting: 18 ready books, all pre-#348 without a Visual Bible; a ready book never re-enters image generation, so nothing can hit the path. A story without a bible or a page without a scene now fails loud («regenerate the story»).
+- **Real book** through the local API (observer mode, goal «делиться»): «Маша и спрятанная коробка печенья» — Prose returned exactly the plan's 6 pages, every page kept its template and got its scene; normalizer 0 repairs (no warn line, span written); judge: p1 blocked by Gemini safety twice (identity-only verdict recorded both times, passed on attempt 2), p2 failed `proportionsNatural` twice (table not «twice the child's height» — kept after the retry budget, both rows recorded), p3–p6 passed first attempt; `check:book` OK.
+- **Found, not fixed here (text track, #390):** the Plan declared an empty cast while the story is about sharing with a brother; Prose then wrote the brother onto pages 4–6 («Маша с братом рассмеялись») and the pictures show the girl alone. Rule 7 forbids Prose inventing cast, but nothing checks it — a candidate for the text-judge or a structural check once the grilling session decides.
+- 289 ai/generation/admin tests pass; `./init.sh` green; `CONTEXT.md` (Visual Bible) and the review tracking updated.
+
+**Blockers:** none.
+
+## 2026-09-13 — docs(ai): safety-boundary research → ADR-0004 v2 draft (phase 0b of the Suteev refactor)
+
+**Done:**
+- Research summary in `docs/process/2026-09-safety-boundary-research.md`: 11 personalised-book products (none publishes a forbidden-list; samples are uniformly soft), regulators (BBFC U, Ofcom 1.13, PBS, ACMA, 436-ФЗ ст. 5/7/8, Apple/Google/PEGI, CSM), psychology (Bandura, Richert & Smith 2011, Walker 2015, Cantor, Пропп, Выготский, Запорожец, Чуковский, Смирнова), and the Russian canon (21 works; wolves/foxes/bears are the 2–4 kindergarten list under 0+).
+- ADR-0004 amendment v2 (status Proposed, v1 kept): risk axis = imitable act by the hero, not scary element; 10-row «Допустимо / Недопустимо» table with per-row sources; proposed rule 7 (`plan.prompt.ts`) and criterion 4 (`judge.prompt.ts`) text, NOT applied; 4 eval cases with a fairy-tale antagonist via `seeds.motifs` + one negative probe.
+
+**Decisions:**
+- Keep every v1 hard ban that is a concrete act (unknown real animal, stranger, fire, water, heights, going off alone) — absolute for the named hero regardless of outcome.
+- New in v2: no blow by the hero (imitable even in cartoon), no on-page harm / grotesque antagonist, no realistic disaster (6+ per 436-ФЗ), stricter fairy-tale markers at 3–4.
+- Companion-pays-for-disobedience («Цыплёнок и Утёнок») documented but NOT enabled — owner's call.
+
+**Next:**
+- Owner reviews the table and both prompt texts; then a PR applies rule 7 + criterion 4 + `story-generator.prompt.ts` line 43, rewrites `CONTEXT.md` → Safe Conflict, adds `seeds` to `EvalCase`, and runs the 4 new cases as the regression baseline.
+
+**Blockers:**
+- none (branch `issue/safety-boundary-v2-research`, no PR by request)

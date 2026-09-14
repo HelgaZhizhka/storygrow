@@ -190,3 +190,20 @@ describe('validateBookPlan', () => {
     });
   });
 });
+
+describe('validateBookPlan — plan scenes (#378)', () => {
+  const pages = [
+    { template: 'cover', text: null, title: 'T', illustrationPrompt: 'a', scene: undefined },
+    { template: 'final', text: 'x', title: null, illustrationPrompt: 'b', scene: undefined },
+  ] as unknown as Parameters<typeof validateBookPlan>[0];
+
+  it('flags a page without a scene when the story was written against a plan', () => {
+    const r = validateBookPlan(pages, 6, { expectScenes: true });
+    expect(r.passed).toBe(false);
+    expect(r.errors.some((e) => e.includes('does not follow the plan'))).toBe(true);
+  });
+
+  it('ignores scenes when the story has no plan (Fast Flow, pre-#348 rows)', () => {
+    expect(validateBookPlan(pages, 6).errors.some((e) => e.includes('plan'))).toBe(false);
+  });
+});

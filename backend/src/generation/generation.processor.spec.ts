@@ -45,6 +45,7 @@ const mockBook = {
   protagonistMode: 'child' as const,
   artStyle: 'watercolor' as const,
   characterPortraitKey: null as string | null,
+  characterAppearance: null as unknown,
   referenceImageKeys: [] as string[],
   child: { name: 'Маша', age: 6, gender: 'female', appearance: 'brown hair' },
   learningGoal: { title: 'дружба', description: 'научиться дружить' },
@@ -152,7 +153,7 @@ describe('GenerationProcessor', () => {
         bookId: 'book-1',
         artStyle: 'watercolor',
         approvedPortraitKey: null,
-        characterDescriptor: undefined,
+        characterDescriptor: null,
         run: 1,
         reuse: undefined,
       }),
@@ -297,7 +298,7 @@ describe('GenerationProcessor', () => {
         bookId: 'book-1',
         artStyle: 'watercolor',
         approvedPortraitKey: null,
-        characterDescriptor: undefined,
+        characterDescriptor: null,
         run: 1,
         reuse: { portraitKey: null, referenceImageKeys: [] },
       }),
@@ -394,5 +395,58 @@ describe('GenerationProcessor', () => {
     expect(mockOrchestrator.generate).not.toHaveBeenCalled();
     expect(mockImageGen.generate).not.toHaveBeenCalled();
     expect(mockBookImage.signKeys).toHaveBeenCalledWith(savedKeys);
+  });
+
+  describe('photo mode hero look (#376)', () => {
+    const photoBook = {
+      ...mockBook,
+      storyJson: mockStory,
+      imageKeys: [],
+      characterDescriptor: 'Овальное лицо, светлая кожа, большие серые глаза',
+      characterPortraitKey: 'books/book-1/portrait.png',
+    };
+    const finish = () => {
+      mockPrisma.book.update.mockResolvedValue({});
+      mockImageGen.generate.mockResolvedValueOnce({
+        imageKeys: ['k1'],
+        characterPortraitKey: 'books/book-1/portrait.png',
+        referenceImageKeys: [],
+      });
+      mockBookImage.signKeys.mockResolvedValueOnce(['u1']);
+      mockPdfRender.render.mockResolvedValueOnce('books/book-1/book.pdf');
+    };
+
+    it('passes the English structured look (kind from age + gender) to the image pipeline', async () => {
+      mockPrisma.book.findUnique.mockResolvedValueOnce({
+        ...photoBook,
+        characterAppearance: {
+          kind: 'x',
+          skin: 'light skin',
+          hair: 'blond hair',
+          outfit: 'a red hoodie',
+          detail: 'freckles',
+        },
+      });
+      finish();
+      await processor.process(makeJob({ bookId: 'book-1', userId: 'user-1' }));
+      expect(mockImageGen.generate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          approvedPortraitKey: 'books/book-1/portrait.png',
+          characterDescriptor:
+            '6-year-old girl, light skin, blond hair, wearing a red hoodie, freckles',
+        }),
+      );
+    });
+
+    it('falls back to the Russian face line for books uploaded before #376', async () => {
+      mockPrisma.book.findUnique.mockResolvedValueOnce({ ...photoBook, characterAppearance: null });
+      finish();
+      await processor.process(makeJob({ bookId: 'book-1', userId: 'user-1' }));
+      expect(mockImageGen.generate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          characterDescriptor: 'Овальное лицо, светлая кожа, большие серые глаза',
+        }),
+      );
+    });
   });
 });

@@ -237,9 +237,9 @@ independent of B and can run in parallel.
 | A6 + A7: OpenAI image provider, simplifier | #375 | open, deferred |
 | B1 + B7 + B9: Prose contract (in frame list, no hero look, judge sees bible) + the misleading «Жил-был…» hint fixed | #367 | done — measured neutral-to-positive (see progress 2026-09-13); ornate similes remain a register topic for B8 / exemplar work |
 | B10: structured Location with size, `proportionsNatural` | #366 | done |
-| B3 + B5 + B6: one hero-appearance source, photo path | #376 | open |
+| B3 + B5 + B6: one hero-appearance source, photo path | #376 | done |
 | B8: post-Prose illustrator brief | #377 | deferred until #367 is measured |
-| A2 + B2 + B4: page count by Plan, `.describe()`, repairs by kind | #378 | open |
+| A2 + B2 + B4: page count by Plan, `.describe()`, repairs by kind | #378 | done (legacy path removed after a prod count: 18 ready books without a bible, none can re-enter image generation) |
 | C2 + C4: ImageEval dashboard, provenance, cost | #379 | open |
 | C3: limits linter, S3 key layout | #380 | open |
 | D1: consolidated image-pipeline document | #381 | last |

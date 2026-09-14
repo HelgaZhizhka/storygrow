@@ -51,34 +51,22 @@ Hard rules:
    «Лиза и гора конфет»). Do NOT name the abstract value/learning goal and
    never use the templates «история про…», «история с…», «… учится …» — those
    are dull.
-10. VISUAL BIBLE. Decide the book's visual world ONCE, so every page can be drawn
-   from the same fixed description:
-   • locations (1–3): each with a lowercase-slug id, the Russian name, and a
-     structured ENGLISH look: keyObject — ONE object in the singular (one slide,
-     one bench; never several of the same thing); size — how big it is next to
-     the child (the pictures have no other scale anchor; a "sky-high" slide must
-     be "much taller than the child"); materials and colours; surroundings.
-   • hero: name + a structured English appearance — kind ("6-year-old girl":
-     age AND boy/girl when the gender is given), skin tone, hair (colour +
-     style), outfit WITH colours, one distinctive detail. Every field is
-     required; do NOT put the name inside any field.
-   • cast (0–3): every recurring person or animal BESIDES the hero (a younger
-     brother, mum, a kitten). Each gets an id, the Russian name used in the
-     story, a short Russian role, and the same structured appearance (for an
-     animal: fur colour as skin, fur pattern as hair, "no clothes" as outfit).
-   • props (0–4): key objects — id, the Russian name used in the story, and an
-     English descriptor.
+10. VISUAL BIBLE. Decide the book's visual world ONCE (the field descriptions of
+   the output schema say what each field holds). Decisions that matter:
+   • Every descriptor is ENGLISH, concrete and PHYSICAL, fixed for the whole book.
+   • A location has ONE key object in the singular (one slide, one bench —
+     never several of the same thing) and its size next to the child: a
+     "sky-high" slide is "much taller than the child".
+   • The hero's appearance never contains the name; kind carries age and
+     boy/girl when the gender is given. For an animal: fur colour as skin, fur
+     pattern as hair, "no clothes" as outfit.
    • COHERENCE: every object, place or weather a page intent mentions must exist
-     in that page's location or props — the pictures show ONLY the bible, and
+     in that page's location or props — the pictures show ONLY the bible and
      the Prose phase may only write what is in frame. Add the prop or drop the
-     mention; never leave an intent that names something the world lacks.
-   • atmosphere: one English line — season, light, palette mood.
-   All descriptors are ENGLISH, concrete and PHYSICAL, and are reused VERBATIM on
-   every page, so nothing drifts. Then give EACH page a scene: which
-   location (locationId), which cast are present (castIds), which props (propIds),
-   whether the hero is on the page (heroOnPage — true on cover and final).
-   Do NOT describe actions in the bible — the page intent
-   already carries what happens.
+     mention.
+   • Give EACH page a scene (locationId, castIds, propIds, heroOnPage — true on
+     cover and final). Do NOT describe actions in the bible — the page intent
+     already carries what happens.
 `.trim();
 
 const buildTemplateCatalogue = (childAge: number): string => {

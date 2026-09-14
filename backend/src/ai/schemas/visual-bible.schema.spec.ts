@@ -1,4 +1,4 @@
-import { renderAppearance, renderLocation, toStoryBible } from './visual-bible.schema';
+import { heroKind, renderAppearance, renderLocation, toStoryBible } from './visual-bible.schema';
 import {
   appearanceFixture,
   locationFixture,
@@ -74,5 +74,14 @@ describe('renderLocation (#366)', () => {
       name: 'дом',
       descriptor: renderLocation(plan.locations[0]),
     });
+  });
+});
+
+describe('heroKind (#376)', () => {
+  it('builds the kind from age and gender, falling back to child', () => {
+    expect(heroKind(5, 'female')).toBe('5-year-old girl');
+    expect(heroKind(6, 'male')).toBe('6-year-old boy');
+    expect(heroKind(4, 'other')).toBe('4-year-old child');
+    expect(heroKind(3)).toBe('3-year-old child');
   });
 });

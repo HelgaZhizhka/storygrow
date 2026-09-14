@@ -74,6 +74,10 @@ model Book {
   // photoConsent gates generation on explicit parental consent.
   childPhotoKey         String?
   characterDescriptor   String?
+  // English structured Appearance from the same vision call (#376): what the
+  // pages and the judge use in photo mode; the Russian face line above stays
+  // for the portrait step and parent editing.
+  characterAppearance   Json?
   photoConsent          Boolean      @default(false)
   protagonistMode ProtagonistMode @default(child)
   artStyle        ArtStyle        @default(watercolor)
