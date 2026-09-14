@@ -1570,3 +1570,11 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Divergences fixed: `docs/ARCHITECTURE.md` pipeline box still named `IMAGE_REFERENCE_SHEETS=off` / `IMAGE_EVAL=off` (both flags gone) and "Gemini reference portrait"; ADR-0006 amended (Grok is the default image provider for the photo portrait too); ADR-0007 decision 4 and its operational note no longer describe a flag; the 2026-09-03 spec and the calibration report carry a point-in-time banner pointing at the new document; a stale `IMAGE_EVAL=on` comment in `eval-images.ts`.
 
 **Blockers:** none. The image review cycle (#368 → #381) is complete; owner decisions remain #382 (LangFuse in prod), #377 (illustrator brief, text track), #392 (style previews on gpt-image-1).
+
+## 2026-09-14 — chore(scripts): render style previews on Grok, matching the book pipeline (#392, previews)
+
+**Why:** the five art-style thumbnails a parent picks from (`frontend/public/styles/*.png`) were generated with `gpt-image-1`; books are rendered by Grok since ADR-0007, so the sample promised a look the book would not deliver.
+
+**Done:** `gen-style-previews.ts` renders the previews through `XaiImageProvider` (same `STYLE_SUFFIXES`, `generatePage` with no references); the five PNGs regenerated on Grok and reviewed side by side. The previews are static files served by the app — no model runs at preview time. `./init.sh` green.
+
+**Not in this PR (still #392):** fast-flow illustration seeds (`seed-fast-illustrations.ts`) still call `gpt-image-1`; `IMAGE_MODEL`/`IMAGE_QUALITY` survive for it.
