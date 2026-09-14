@@ -1,10 +1,10 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { generateObject } from 'ai';
-import { createGoogleGenerativeAI, type GoogleGenerativeAIProvider } from '@ai-sdk/google';
+import { generateObject, type LanguageModel } from 'ai';
 import { startActiveObservation } from '@langfuse/tracing';
 import type { ImageSize } from '../../pdf/page-templates/page-templates.config';
-import { GEMINI_VISION_MODEL, IMAGE_EVAL_MAX_RETRIES_DEFAULT } from '../ai.config';
+import { IMAGE_EVAL_MAX_RETRIES_DEFAULT } from '../ai.config';
+import { createXaiVisionModel } from '../xai-vision';
 import {
   ImageJudgeSchema,
   imageVerdict,
@@ -55,7 +55,7 @@ type JudgeContent = Array<
 @Injectable()
 export class ImageJudgeService {
   private readonly logger = new Logger(ImageJudgeService.name);
-  private readonly google: GoogleGenerativeAIProvider;
+  private readonly model: LanguageModel;
   /** Kill switch from IMAGE_EVAL_MAX_RETRIES: 0 = judge and write rows, never buy a re-render. */
   readonly maxRetries: number;
 
@@ -63,9 +63,10 @@ export class ImageJudgeService {
     config: ConfigService,
     @Inject(IMAGE_EVAL_SINK) private readonly sink: ImageEvalSink,
   ) {
-    this.google = createGoogleGenerativeAI({
-      apiKey: config.getOrThrow<string>('GOOGLE_GENERATIVE_AI_API_KEY'),
-    });
+    // Grok-4 vision (#397 step 2): Gemini's content filter blocked benign child
+    // pages and periodically blinded the judge; Grok reads them. Recalibrated on
+    // the durable 52-page set (see docs/process/image-judge-calibration-2026-09-06.md).
+    this.model = createXaiVisionModel(config.getOrThrow<string>('XAI_API_KEY'));
     // ConfigModule's validate hook already coerces this to a number in the app;
     // scripts hand in raw env strings, so accept both.
     const raw = Number(config.get<string | number>('IMAGE_EVAL_MAX_RETRIES') ?? NaN);
@@ -94,7 +95,8 @@ export class ImageJudgeService {
     const full = await this.ask(input, 'full');
     if (full.ok) return this.record(input, full.result, []);
     // A safety block on the task text (#369): retry without the action, so the
-    // picture is still checked for identity, cast, location and artefacts.
+    // picture is still checked for identity, cast, location and artefacts. Grok
+    // rarely blocks (unlike Gemini, #397), so this fallback is mostly dormant now.
     const fallback = full.blockReason ? await this.ask(input, 'identity') : null;
     if (fallback?.ok) {
       return this.record(input, fallback.result, [
@@ -111,7 +113,7 @@ export class ImageJudgeService {
   private async ask(input: JudgePageInput, mode: JudgeTaskMode): Promise<AskResult> {
     try {
       const { object } = await generateObject({
-        model: this.google(GEMINI_VISION_MODEL),
+        model: this.model,
         schema: ImageJudgeSchema,
         system: IMAGE_JUDGE_SYSTEM,
         messages: [{ role: 'user', content: this.buildContent(input, mode) }],

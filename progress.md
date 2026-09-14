@@ -1584,3 +1584,25 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Not in this step:** the image judge (#397 step 2, needs recalibration) and the Gemini image fallback + `GOOGLE_GENERATIVE_AI_API_KEY` requirement (step 3) still use Gemini; the key stays required until then.
 
 **Blockers:** none.
+
+## 2026-09-14 — feat(ai): image judge on Grok-4 vision, recalibrated (#397, step 2)
+
+**Why:** Gemini's content filter blocked benign child pages (the reason the v4 `identity-only` fallback exists) and blocked the photo descriptor outright (#397 step 1). Grok already renders every image, so moving the judge to Grok-4 removes Gemini from the vision path.
+
+**Done:**
+- `ImageJudgeService` uses Grok-4 via the shared `createXaiVisionModel` (xAI's OpenAI-compatible API through `@ai-sdk/openai`, `generateObject` + the same `ImageJudgeSchema` unchanged, no new dependency).
+- **Recalibrated on the durable 52-page set** (`eval:image-judge`), compared to Gemini v5:
+
+  | | Grok-4 (v6) | Gemini (v5) |
+  |---|---|---|
+  | Bad pages caught | 3/3 | 3/3 |
+  | False fails on good pages | 4/49 (8%) | 1/49 (2%) |
+  | Pages left unjudged (safety block) | 0 | historically the blind spot |
+
+  Recall unchanged; Grok judged all 52 with **no content-filter blocks**, closing Gemini's real failure mode. The 4 extra false fails are the same defensible over-strictness on one split-location story (`smelost-3`, bright room + dark closet); confirmed by eye, the `pass` labels stand. A false fail costs one re-render, never a blocked book (soft gate). **Decision: accept Grok-4, no prompt tuning to chase the four** (chasing the judge with rules is what this pipeline avoids). Report: `backend/output/calibration/report-2026-09-14-grok.md`.
+- **Real book** through the local API on the Grok judge (observer, storybook): 8 pages, judge wrote 9 rows, caught a real defect on p3 (`heroOnce,sceneMatch` — hero drawn twice), the re-render fixed it (p3 a2 PASS), no content-filter blocks; `check:book` OK.
+- 60 image-generator/photo tests pass; `./init.sh` green. Docs: calibration v6 section, CONTEXT (Image Eval).
+
+**Not in this step:** the Gemini image *fallback* provider and the unconditional `GOOGLE_GENERATIVE_AI_API_KEY` requirement (#397 step 3).
+
+**Blockers:** none.
