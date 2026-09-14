@@ -1584,6 +1584,13 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Not in this step:** the image judge (#397 step 2, needs recalibration) and the Gemini image fallback + `GOOGLE_GENERATIVE_AI_API_KEY` requirement (step 3) still use Gemini; the key stays required until then.
 
 **Blockers:** none.
+## 2026-09-14 — chore(scripts): render style previews on Grok, matching the book pipeline (#392, previews)
+
+**Why:** the five art-style thumbnails a parent picks from (`frontend/public/styles/*.png`) were generated with `gpt-image-1`; books are rendered by Grok since ADR-0007, so the sample promised a look the book would not deliver.
+
+**Done:** `gen-style-previews.ts` renders the previews through `XaiImageProvider` (same `STYLE_SUFFIXES`, `generatePage` with no references); the five PNGs regenerated on Grok and reviewed side by side. The previews are static files served by the app — no model runs at preview time. `./init.sh` green.
+
+**Not in this PR (still #392):** fast-flow illustration seeds (`seed-fast-illustrations.ts`) still call `gpt-image-1`; `IMAGE_MODEL`/`IMAGE_QUALITY` survive for it.
 
 ## 2026-09-14 — feat(ai): image judge on Grok-4 vision, recalibrated (#397, step 2)
 
