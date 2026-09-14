@@ -28,7 +28,6 @@ storygrow/
 │   │   │   ├── rag/                    # vocabulary-rag.service + age-grade map
 │   │   │   └── validators/             # book-plan validator
 │   │   ├── generation/         # BullMQ producer + processor + stale-book sweeper
-│   │   ├── fast-flow/          # synchronous fast-flow generation (templates)
 │   │   ├── pdf/                # Puppeteer renderer
 │   │   ├── s3/                 # S3/MinIO module
 │   │   ├── billing/            # Stripe checkout + webhooks + Customer Portal (#273)
@@ -265,7 +264,7 @@ model Book {
   imageKeys           String[]    // S3 keys for page illustrations
   characterPortraitKey String?    // S3 key of the hero reference portrait (bookKeys)
   pdfKey              String?     // S3 key for the rendered PDF
-  pages           BookPage[]  // populated by fast flow
+  pages           BookPage[]  // legacy fast-flow books (mode removed #402); the pipeline uses storyJson
   evals           StoryEval[]
   createdAt       DateTime    @default(now())
 }

@@ -97,10 +97,9 @@ export class AdminBooksController {
       }),
     ]);
 
-    // Fast Flow writes a placeholder StoryEval (finalScore: 0, judgeScores: {},
-    // "no quality evaluation") so its books still count as generations -- but
-    // these are not LLM-judged and must not dilute the AI-quality metrics below
-    // (a batch of Fast Flow books would otherwise drag meanFinalScore toward 0).
+    // Legacy Fast Flow books (mode removed #402) wrote a placeholder StoryEval
+    // (finalScore: 0, judgeScores: {}, "no quality evaluation"); such rows still
+    // exist in the DB and must not dilute the AI-quality metrics below.
     const realRecentEvals = recentEvals.filter(isRealJudgeEval);
     return {
       windowDays: WINDOW_DAYS,
@@ -115,7 +114,7 @@ export class AdminBooksController {
   }
 }
 
-/** True for a real LLM-judge evaluation, false for Fast Flow's placeholder row. */
+/** True for a real LLM-judge evaluation, false for a legacy Fast Flow placeholder row (#402). */
 function isRealJudgeEval(evalRow: { judgeScores: unknown }): boolean {
   return (
     typeof evalRow.judgeScores === 'object' &&

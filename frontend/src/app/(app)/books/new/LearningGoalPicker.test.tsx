@@ -17,7 +17,6 @@ function Harness({ childAge }: { childAge?: number }): React.ReactElement {
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      mode: 'custom',
       protagonistMode: 'child',
       artStyle: 'watercolor',
       learningGoalId: '',

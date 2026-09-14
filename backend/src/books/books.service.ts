@@ -31,7 +31,6 @@ interface CreateCustomLearningGoalDto {
 interface CreateBookDto {
   childId: string;
   learningGoalId: string;
-  mode: 'fast' | 'custom';
   protagonistMode: 'child' | 'observer';
   artStyle: 'watercolor' | 'cartoon' | 'storybook' | 'pixel' | 'realistic';
   interests: string[];
@@ -259,54 +258,7 @@ export class BooksService {
       }),
     );
 
-    return { ...book, mode: dto.mode };
-  }
-
-  /**
-   * Reserves a book slot for the fast-flow generation path (#280): fast flow
-   * previously created its Book row only after an LLM call completed, with no
-   * atomic quota re-check at that point — a much larger TOCTOU window than
-   * #154 closed for the custom flow. Reserving here, before generation starts,
-   * closes it the same way; FastFlowService updates this row instead of
-   * creating its own.
-   */
-  async reserveFastFlowBook(
-    userId: string,
-    childId: string,
-    learningGoalId: string,
-  ): Promise<{ id: string }> {
-    // Independent checks against unrelated tables — run concurrently, same reasoning
-    // as computeQuota's Promise.all below.
-    await Promise.all([
-      this.assertChildOwned(userId, childId),
-      this.assertFastFlowTemplateExists(learningGoalId),
-    ]);
-
-    return this.withQuotaLock(userId, (tx) =>
-      tx.book.create({
-        data: { userId, childId, learningGoalId, title: '', status: 'generating' },
-        select: { id: true },
-      }),
-    );
-  }
-
-  /**
-   * Book.learningGoalId is a required FK — validate it before reserving, or an
-   * invalid id surfaces as a raw FK-violation 500 instead of a clean 404 (#280).
-   * FastFlowService.loadContext re-fetches the child and template right after this —
-   * a genuine duplicate query on every fast-flow request, considered and rejected as
-   * a fix: eliminating it means BooksService returning fast-flow-specific data
-   * (Template.illustrationTags) it otherwise has no reason to know about. Left as an
-   * accepted cost of keeping that module boundary clean, not an oversight.
-   */
-  private async assertFastFlowTemplateExists(learningGoalId: string): Promise<void> {
-    const template = await this.prisma.template.findFirst({
-      where: { learningGoalId },
-      select: { id: true },
-    });
-    if (!template) {
-      throw new NotFoundException(`No template for learning goal ${learningGoalId}`);
-    }
+    return book;
   }
 
   listBooks(userId: string) {

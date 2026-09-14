@@ -29,7 +29,6 @@ export const schema = z
     learningGoalId: z.string().min(1, 'Выберите цель обучения'),
     customGoalText: z.string().optional(),
     customGoalArcType: z.enum(['virtue', 'flaw']).optional(),
-    mode: z.enum(['fast', 'custom']),
     protagonistMode: z.enum(['child', 'observer']),
     artStyle: z.enum(['watercolor', 'cartoon', 'storybook', 'pixel', 'realistic']),
     interests: z.string().optional(),

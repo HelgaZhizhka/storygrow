@@ -15,7 +15,6 @@ import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { JwtPayload } from '../auth/auth.service';
-import { FastFlowService } from '../fast-flow/fast-flow.service';
 import { BookImageService } from './book-image.service';
 import { BooksService, type QuotaInfo } from './books.service';
 
@@ -39,7 +38,6 @@ const seedList = z.array(z.string().trim().min(1).max(60)).max(6).default([]);
 const createBookSchema = z.object({
   childId: z.string().min(1),
   learningGoalId: z.string().min(1),
-  mode: z.enum(['fast', 'custom']),
   protagonistMode: z.enum(['child', 'observer']).default('child'),
   artStyle: z
     .enum(['watercolor', 'cartoon', 'storybook', 'pixel', 'realistic'])
@@ -55,7 +53,6 @@ export class BooksController {
   constructor(
     private readonly books: BooksService,
     private readonly bookImage: BookImageService,
-    private readonly fastFlow: FastFlowService,
   ) {}
 
   @Get('children')
@@ -92,23 +89,6 @@ export class BooksController {
   @HttpCode(HttpStatus.CREATED)
   async createBook(@CurrentUser() user: JwtPayload, @Body() body: unknown) {
     const dto = createBookSchema.parse(body);
-
-    if (dto.mode === 'fast') {
-      // Reserved atomically (quota check + insert, #280) before generation starts,
-      // so FastFlowService never creates its own book row.
-      const { id: bookId } = await this.books.reserveFastFlowBook(
-        user.sub,
-        dto.childId,
-        dto.learningGoalId,
-      );
-      return this.fastFlow.generate({
-        bookId,
-        userId: user.sub,
-        childId: dto.childId,
-        learningGoalId: dto.learningGoalId,
-      });
-    }
-
     return this.books.createBook(user.sub, dto);
   }
 

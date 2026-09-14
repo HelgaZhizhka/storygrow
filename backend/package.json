@@ -21,8 +21,6 @@
     "db:hnsw-index": "dotenv -e .env -- prisma db execute --file prisma/sql/hnsw-index.sql",
     "seed:vocabulary": "dotenv -e .env -- tsx src/scripts/seed-vocabulary.ts",
     "seed:learning-goals": "dotenv -e .env -- tsx src/scripts/seed-learning-goals.ts",
-    "seed:templates": "dotenv -e .env -- tsx src/scripts/seed-fast-flow-templates.ts",
-    "seed:illustrations": "dotenv -e .env -- tsx src/scripts/seed-fast-illustrations.ts",
     "eval:text": "dotenv -e .env -- tsx src/scripts/eval-text.ts",
     "eval:batch": "dotenv -e .env -- tsx src/scripts/eval-batch.ts",
     "postinstall": "prisma generate",
