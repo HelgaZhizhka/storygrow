@@ -4,8 +4,6 @@ import {
   IMAGE_SIZE_TO_ASPECT_RATIO,
   DEFAULT_IMAGE_PROVIDER,
   parseImageProvider,
-  GEMINI_IMAGE_MODEL,
-  GEMINI_VISION_MODEL,
 } from './ai.config';
 
 describe('STYLE_SUFFIXES', () => {
@@ -32,24 +30,13 @@ describe('image config', () => {
   it('defaults to the xai provider', () => {
     expect(DEFAULT_IMAGE_PROVIDER).toBe('xai');
   });
-
-  it('targets the gemini flash image model', () => {
-    expect(GEMINI_IMAGE_MODEL).toBe('gemini-2.5-flash-image');
-  });
-});
-
-describe('GEMINI_VISION_MODEL (#359)', () => {
-  it('is not the retired gemini-2.5-flash (404 on the current Google project)', () => {
-    expect(GEMINI_VISION_MODEL).not.toBe('gemini-2.5-flash');
-    expect(GEMINI_VISION_MODEL).toBe('gemini-3.6-flash');
-  });
 });
 
 describe('parseImageProvider (#373)', () => {
-  it('defaults to xai and accepts the two reference-capable providers', () => {
+  it('defaults to xai, the only image provider (#397 removed the Gemini fallback)', () => {
     expect(parseImageProvider(undefined)).toBe('xai');
     expect(parseImageProvider('')).toBe('xai');
-    expect(parseImageProvider('gemini')).toBe('gemini');
+    expect(() => parseImageProvider('gemini')).toThrow(/IMAGE_PROVIDER/);
   });
 
   it('no longer knows the OpenAI image provider (#375: it took no references)', () => {

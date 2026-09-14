@@ -24,8 +24,9 @@ of by taste.
    style suffix. No standalone props line, no framing phrase, no negatives, no
    "as in reference image k" mentions (`illustration.prompt.ts`).
 3. **Default image model: xAI Grok Imagine 2.0** (`IMAGE_PROVIDER=xai`,
-   `XAI_API_KEY`). Gemini `gemini-2.5-flash-image` stays the fallback behind the
-   same flag. OpenAI `gpt-image-1` was kept as legacy until #375 removed it: it
+   `XAI_API_KEY`). Gemini `gemini-2.5-flash-image` was the fallback until #397
+   removed it — xAI is now the only image provider (and, since #397, the vision
+   model for the judge and photo descriptor too), so no Google key is needed. OpenAI `gpt-image-1` was kept as legacy until #375 removed it: it
    took no references, so no portrait, no sheets, no photo — a silent quality
    regression, not a fallback. The code default is `xai` since #373 (the app
    needs a Gemini key anyway, so "boots without an xAI key" was never real).

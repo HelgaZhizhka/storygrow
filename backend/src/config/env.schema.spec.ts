@@ -4,7 +4,6 @@ const base = {
   DATABASE_URL: 'postgresql://x',
   REDIS_URL: 'redis://x',
   OPENAI_API_KEY: 'sk',
-  GOOGLE_GENERATIVE_AI_API_KEY: 'g',
   XAI_API_KEY: 'x',
 };
 
@@ -19,11 +18,9 @@ describe('validateEnv (#373)', () => {
     expect(() => validateEnv({ ...base, IMAGE_PROVIDER: 'gemni' })).toThrow(/IMAGE_PROVIDER/);
   });
 
-  it('requires the xAI key only when xAI is the provider', () => {
+  it('requires the xAI key — it is the only image provider (#397)', () => {
     expect(() => validateEnv({ ...base, XAI_API_KEY: undefined })).toThrow(/XAI_API_KEY/);
-    expect(
-      validateEnv({ ...base, XAI_API_KEY: undefined, IMAGE_PROVIDER: 'gemini' }).IMAGE_PROVIDER,
-    ).toBe('gemini');
+    expect(() => validateEnv({ ...base, IMAGE_PROVIDER: 'gemini' })).toThrow(/IMAGE_PROVIDER/);
   });
 
   it('coerces and bounds the judge retry kill switch', () => {

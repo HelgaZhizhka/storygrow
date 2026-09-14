@@ -45,9 +45,10 @@ Where it lives: `backend/src/ai/image-generator/` (providers, `reference-sheets.
 `CONTEXT.md` (Visual Bible, Scene, Reference Sheet, Image Eval, Character Appearance).
 
 **Configuration** (all validated at startup, `backend/src/config/env.schema.ts`): `IMAGE_PROVIDER`
-(`xai` default, `gemini` fallback; anything else fails the boot), `XAI_API_KEY`,
-`GOOGLE_GENERATIVE_AI_API_KEY` (always required: judge, photo descriptor),
-`IMAGE_EVAL_MAX_RETRIES` (the only kill switch: 0 = judge and record, never re-render). There are
+(only `xai` since #397 removed the Gemini fallback; anything else fails the boot),
+`XAI_API_KEY`, `IMAGE_EVAL_MAX_RETRIES` (the only kill switch: 0 = judge and record,
+never re-render). No Google key: Grok does the images and the vision (judge, photo
+descriptor) since #397. There are
 no other image flags; every finished experiment is a constant or is gone.
 
 **Reading a bad page without LangFuse:** `pnpm --filter backend check:book --book=<id>` lists every

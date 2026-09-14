@@ -19,7 +19,6 @@ const env = {
   DATABASE_URL: 'postgresql://test',
   REDIS_URL: 'redis://test',
   OPENAI_API_KEY: 'sk-test',
-  GOOGLE_GENERATIVE_AI_API_KEY: 'g-test',
   XAI_API_KEY: 'x-test',
   IMAGE_EVAL_MAX_RETRIES: '0',
 };

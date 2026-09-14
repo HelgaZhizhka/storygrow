@@ -88,14 +88,14 @@ describe('ImageJudgeService', () => {
     ).toBe(0);
   });
 
-  it('requires the Gemini key at construction (no silent empty key)', () => {
+  it('requires the xAI key at construction (no silent empty key)', () => {
     const strict = {
       get: () => undefined,
       getOrThrow: () => {
-        throw new Error('Missing GOOGLE_GENERATIVE_AI_API_KEY');
+        throw new Error('Missing XAI_API_KEY');
       },
     } as unknown as ConfigService;
-    expect(() => new ImageJudgeService(strict, sink())).toThrow(/GOOGLE_GENERATIVE_AI_API_KEY/);
+    expect(() => new ImageJudgeService(strict, sink())).toThrow(/XAI_API_KEY/);
   });
 
   it('fails on preflight without calling the model and records the row', async () => {

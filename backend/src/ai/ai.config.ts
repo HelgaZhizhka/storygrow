@@ -59,7 +59,7 @@ export const STYLE_SUFFIXES: Record<ArtStyle, string> = {
     ', semi-realistic 3D render, soft cinematic lighting, detailed, child-friendly, no text in image',
 };
 
-export const IMAGE_PROVIDERS = ['xai', 'gemini'] as const;
+export const IMAGE_PROVIDERS = ['xai'] as const;
 export type ImageProviderName = (typeof IMAGE_PROVIDERS)[number];
 // xAI Grok is the production default (ADR-0007). The app needs a Gemini key
 // anyway (vision judge, photo descriptor), so "boots without an xAI key" was
@@ -70,23 +70,17 @@ export const DEFAULT_IMAGE_PROVIDER: ImageProviderName = 'xai';
 export const parseImageProvider = (raw: string | undefined): ImageProviderName => {
   if (raw === undefined || raw === '') return DEFAULT_IMAGE_PROVIDER;
   if ((IMAGE_PROVIDERS as readonly string[]).includes(raw)) return raw as ImageProviderName;
-  throw new Error(`IMAGE_PROVIDER must be one of ${IMAGE_PROVIDERS.join(' | ')}, got "${raw}"`);
+  throw new Error(
+    `IMAGE_PROVIDER must be "xai" (the Gemini fallback was removed in #397), got "${raw}"`,
+  );
 };
 
 // Resolves to the GA id gemini-2.5-flash-preview-image. If it 404s, set that
 // explicit id here. Gemini takes no `size`, only an aspect ratio.
-export const GEMINI_IMAGE_MODEL = 'gemini-2.5-flash-image';
 
 // xAI Grok image model (ADR-0007 default) — its edit endpoint accepts up to 5
 // reference images via the `images` array (probed 2026-09-05).
 export const XAI_IMAGE_MODEL = 'grok-imagine-image-2.0';
-
-// Text/vision model for reading a child photo into a feature descriptor (#128).
-// An image-OUT model (GEMINI_IMAGE_MODEL) can't return structured text, so the
-// descriptor step uses a normal multimodal text model. `gemini-2.5-flash` returns
-// 404 "no longer available to new users" on the current Google project (#359);
-// 3.6-flash is verified live with generateObject + image input.
-export const GEMINI_VISION_MODEL = 'gemini-3.6-flash';
 
 // xAI vision (#397): Grok reads a child's photo where Gemini's content filter
 // blocks it (measured 4/4 on a real photo, 2026-09-14). xAI's chat API is
@@ -103,7 +97,6 @@ export const XAI_VISION_MODEL = 'grok-4';
  */
 export const IMAGE_COST_USD: Record<string, { perImage: number; perReference: number }> = {
   [XAI_IMAGE_MODEL]: { perImage: 0.04, perReference: 0.01 },
-  [GEMINI_IMAGE_MODEL]: { perImage: 0.039, perReference: 0 },
 };
 
 export const imageCostUsd = (model: string, referenceCount: number): number => {

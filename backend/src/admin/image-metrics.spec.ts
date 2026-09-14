@@ -1,5 +1,5 @@
 import { computeImageMetrics, type ImageEvalRowLite } from './image-metrics';
-import { XAI_IMAGE_MODEL, GEMINI_IMAGE_MODEL } from '../ai/ai.config';
+import { XAI_IMAGE_MODEL } from '../ai/ai.config';
 
 const row = (over: Partial<ImageEvalRowLite>): ImageEvalRowLite => ({
   bookId: 'b1',
@@ -31,19 +31,16 @@ describe('computeImageMetrics (#379)', () => {
     ]);
   });
 
-  it('prices page renders with their references and artefacts without, per model', () => {
+  it('prices page renders with their references and artefacts (portrait + sheets) without', () => {
     const rows = [
-      row({ labels: ['hero', 'location:home'] }), // 0.04 + 2 × 0.01
-      row({ pageNumber: 2, model: GEMINI_IMAGE_MODEL, labels: ['hero'] }), // 0.039
+      row({ labels: ['hero', 'location:home'] }), // 0.04 + 2 × 0.01 = 0.06
+      row({ pageNumber: 2, labels: ['hero'] }), // 0.04 + 1 × 0.01 = 0.05
     ];
     const books = [
-      { imageModel: XAI_IMAGE_MODEL, characterPortraitKey: 'p', referenceImageKeys: ['a', 'b'] },
+      { imageModel: XAI_IMAGE_MODEL, characterPortraitKey: 'p', referenceImageKeys: ['a', 'b'] }, // 3 × 0.04 = 0.12
     ];
     const m = computeImageMetrics({ rows, books, windowDays: 7 });
-    expect(m.costByModel).toEqual([
-      { model: XAI_IMAGE_MODEL, pages: 1, artefacts: 3, usd: 0.18 },
-      { model: GEMINI_IMAGE_MODEL, pages: 1, artefacts: 0, usd: 0.04 },
-    ]);
+    expect(m.costByModel).toEqual([{ model: XAI_IMAGE_MODEL, pages: 2, artefacts: 3, usd: 0.23 }]);
   });
 
   it('lists rows and books from before #379 as unknown instead of guessing a price', () => {
