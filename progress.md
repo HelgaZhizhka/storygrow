@@ -1570,3 +1570,17 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Divergences fixed: `docs/ARCHITECTURE.md` pipeline box still named `IMAGE_REFERENCE_SHEETS=off` / `IMAGE_EVAL=off` (both flags gone) and "Gemini reference portrait"; ADR-0006 amended (Grok is the default image provider for the photo portrait too); ADR-0007 decision 4 and its operational note no longer describe a flag; the 2026-09-03 spec and the calibration report carry a point-in-time banner pointing at the new document; a stale `IMAGE_EVAL=on` comment in `eval-images.ts`.
 
 **Blockers:** none. The image review cycle (#368 → #381) is complete; owner decisions remain #382 (LangFuse in prod), #377 (illustrator brief, text track), #392 (style previews on gpt-image-1).
+
+## 2026-09-14 — feat(ai): photo descriptor on Grok-4 vision — Gemini's filter blocked child photos (#397, step 1)
+
+**Why:** Gemini's non-configurable content filter blocked the photo-descriptor vision call on benign child imagery — the product's whole domain. Measured on a real child photo: `describePhoto` blocked **4/4** (`finish_reason: content-filter`), which in the real flow is a 503 on photo upload. Grok-4 read the same photo with no block and returned the exact structured descriptor.
+
+**Done:**
+- `PhotoDescriptorService` uses Grok-4 vision via `createXaiVisionModel` (`createOpenAI` with xAI's OpenAI-compatible `baseURL`, already-installed `@ai-sdk/openai`) — `generateObject` + the same Zod schema, no new dependency (hard constraint 9 holds).
+- `XAI_BASE_URL`, `XAI_VISION_MODEL = 'grok-4'` and the reusable `src/ai/xai-vision.ts` factory (the image judge will reuse it in step 2).
+- **Real API flow verified:** `POST /books/:id/photo` on the previously-blocked photo returned a descriptor (no 503); `POST /books/:id/portrait` built the Grok portrait. Live service test 3/3. 50 photo/books tests pass; `./init.sh` green.
+- Docs: CONTEXT (Photo Character), ADR-0006 (photo now goes to xAI for the descriptor too — owner privacy note).
+
+**Not in this step:** the image judge (#397 step 2, needs recalibration) and the Gemini image fallback + `GOOGLE_GENERATIVE_AI_API_KEY` requirement (step 3) still use Gemini; the key stays required until then.
+
+**Blockers:** none.
