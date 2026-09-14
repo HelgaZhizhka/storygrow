@@ -86,7 +86,7 @@ export class ImageJudgeService {
     const preflight = preflightImage(input.image, input.imageSize);
     if (preflight.length > 0) {
       const verdict = { passed: false, failures: preflight };
-      await this.persist(input, verdict, {}, null);
+      await this.persist(input, verdict, { scores: {}, reasoning: null });
       return verdict;
     }
     const full = await this.ask(input, 'full');
@@ -102,7 +102,7 @@ export class ImageJudgeService {
     const reason = fallback?.blockReason ?? full.blockReason;
     const failures = [reason ? `judge:blocked:${reason}` : 'judge:unavailable'];
     this.logger.warn(`Judge gave no verdict for page ${input.pageNumber}: ${failures[0]}`);
-    await this.persist(input, { passed: true, failures }, {}, full.error);
+    await this.persist(input, { passed: true, failures }, { scores: {}, reasoning: full.error });
     return { passed: true, failures };
   }
 
@@ -134,7 +134,7 @@ export class ImageJudgeService {
   ): Promise<ImageVerdict> {
     const verdict = imageVerdict(result);
     const annotated = { passed: verdict.passed, failures: [...verdict.failures, ...notes] };
-    await this.persist(input, annotated, result, result.reasoning);
+    await this.persist(input, annotated, { scores: result, reasoning: result.reasoning });
     return annotated;
   }
 
@@ -163,18 +163,17 @@ export class ImageJudgeService {
   private async persist(
     input: JudgePageInput,
     verdict: ImageVerdict,
-    scores: ImageEvalRowScores,
-    reasoning: string | null,
+    row: { scores: ImageEvalRowScores; reasoning: string | null },
   ): Promise<void> {
     await this.sink.record({
       bookId: input.bookId,
       pageNumber: input.pageNumber,
       attempt: input.attempt,
       run: input.run,
-      scores,
+      scores: row.scores,
       passed: verdict.passed,
       failures: verdict.failures,
-      reasoning,
+      reasoning: row.reasoning,
     });
   }
 }

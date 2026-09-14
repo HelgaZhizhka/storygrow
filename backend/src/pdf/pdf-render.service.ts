@@ -9,6 +9,7 @@ import {
   type TemplateName,
 } from './page-templates/page-templates.config';
 import { S3Service } from '../s3/s3.service';
+import { bookKeys } from '../s3/book-keys';
 
 const TEMPLATES_DIR = join(__dirname, 'page-templates');
 const A5_WIDTH_PX = 874;
@@ -49,7 +50,7 @@ export class PdfRenderService implements OnModuleInit {
     const html = this.buildDocument(input);
     const pdf = await this.renderToBuffer(html);
 
-    const key = `books/${input.bookId}/book.pdf`;
+    const key = bookKeys(input.bookId).pdf;
     await this.s3.uploadObject({ key, body: pdf, contentType: 'application/pdf' });
     this.logger.log(`Rendered PDF for book ${input.bookId} (${pdf.length} bytes)`);
     return key;

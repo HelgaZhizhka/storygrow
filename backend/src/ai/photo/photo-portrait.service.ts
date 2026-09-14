@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { startActiveObservation } from '@langfuse/tracing';
 import { PrismaService } from '../../prisma/prisma.service';
 import { S3Service } from '../../s3/s3.service';
+import { bookKeys } from '../../s3/book-keys';
 import { ImageGeneratorService } from '../image-generator/image-generator.service';
 
 export interface PortraitResult {
@@ -21,14 +22,7 @@ export class PhotoPortraitService {
   // Safe to call again to regenerate — the raw photo survives until the book's
   // async generation starts (deletion lives in the books flow, spec decision 5).
   async buildPortrait(bookId: string): Promise<PortraitResult> {
-    const book = await this.prisma.book.findUniqueOrThrow({
-      where: { id: bookId },
-      select: { childPhotoKey: true, characterDescriptor: true, artStyle: true },
-    });
-    const { childPhotoKey, characterDescriptor, artStyle } = book;
-    if (!childPhotoKey || !characterDescriptor) {
-      throw new Error('Book has no uploaded photo/descriptor to build a portrait from');
-    }
+    const { childPhotoKey, characterDescriptor, artStyle } = await this.loadPhotoBook(bookId);
     return startActiveObservation('photo.portrait', async (span) => {
       span.update({ input: { bookId }, metadata: { bookId } });
       const photo = await this.s3.getObjectBytes(childPhotoKey);
@@ -37,7 +31,7 @@ export class PhotoPortraitService {
         descriptor: characterDescriptor,
         artStyle,
       });
-      const portraitKey = `books/${bookId}/portrait.png`;
+      const portraitKey = bookKeys(bookId).portrait;
       await this.s3.uploadObject({
         key: portraitKey,
         body: Buffer.from(portrait),
@@ -50,5 +44,17 @@ export class PhotoPortraitService {
       span.update({ output: { portraitKey } });
       return { portraitKey, descriptor: characterDescriptor };
     });
+  }
+
+  private async loadPhotoBook(bookId: string) {
+    const book = await this.prisma.book.findUniqueOrThrow({
+      where: { id: bookId },
+      select: { childPhotoKey: true, characterDescriptor: true, artStyle: true },
+    });
+    const { childPhotoKey, characterDescriptor } = book;
+    if (!childPhotoKey || !characterDescriptor) {
+      throw new Error('Book has no uploaded photo/descriptor to build a portrait from');
+    }
+    return { ...book, childPhotoKey, characterDescriptor };
   }
 }

@@ -21,12 +21,16 @@ interface FastFlowBook {
   pdfKey: string;
 }
 
+interface PostOptions {
+  accessToken: string | null;
+  data: unknown;
+  extraHeaders?: Record<string, string>;
+}
+
 async function apiPost<T>(
   request: APIRequestContext,
   path: string,
-  accessToken: string | null,
-  data: unknown,
-  extraHeaders?: Record<string, string>,
+  { accessToken, data, extraHeaders }: PostOptions,
 ): Promise<T> {
   const res = await request.post(`${API_URL}${path}`, {
     data,
@@ -55,19 +59,15 @@ test('logs in, creates a fast-flow book, and the finished book page shows a PDF 
   page,
   request,
 }) => {
-  const { accessToken } = await apiPost<TestLoginResponse>(
-    request,
-    '/auth/test-login',
-    null,
-    {},
-    {
-      'x-e2e-secret': process.env.E2E_TEST_SECRET ?? '',
-    },
-  );
+  const { accessToken } = await apiPost<TestLoginResponse>(request, '/auth/test-login', {
+    accessToken: null,
+    data: {},
+    extraHeaders: { 'x-e2e-secret': process.env.E2E_TEST_SECRET ?? '' },
+  });
 
-  const child = await apiPost<Child>(request, '/children', accessToken, {
-    name: 'E2E Тест',
-    age: 5,
+  const child = await apiPost<Child>(request, '/children', {
+    accessToken,
+    data: { name: 'E2E Тест', age: 5 },
   });
 
   const goals = await apiGet<LearningGoal[]>(
@@ -81,10 +81,9 @@ test('logs in, creates a fast-flow book, and the finished book page shows a PDF 
     'seeded "Делиться с другими" learning goal (has a fast-flow Template) not found',
   ).toBeDefined();
 
-  const book = await apiPost<FastFlowBook>(request, '/books', accessToken, {
-    childId: child.id,
-    learningGoalId: goal!.id,
-    mode: 'fast',
+  const book = await apiPost<FastFlowBook>(request, '/books', {
+    accessToken,
+    data: { childId: child.id, learningGoalId: goal!.id, mode: 'fast' },
   });
   expect(book.pdfKey).toBeTruthy();
 

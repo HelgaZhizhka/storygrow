@@ -33,4 +33,12 @@ export default tseslint.config(
       'prettier/prettier': ['error', { endOfLine: 'lf' }],
     },
   },
+  {
+    // The per-function limit is about logic. A prompt builder's body is the
+    // prompt text; a test suite's body is its cases; an eval/seed script's
+    // main is a sequence of steps that is run, not unit-tested. File size and
+    // parameter count still apply everywhere (#380).
+    files: ['src/ai/prompts/**/*.ts', 'src/scripts/**/*.ts', '**/*.spec.ts', 'test/**/*.ts'],
+    rules: { 'max-lines-per-function': 'off' },
+  },
 );

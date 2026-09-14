@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { startActiveObservation } from '@langfuse/tracing';
 import { type Story } from '../schemas';
 import { S3Service } from '../../s3/s3.service';
+import { bookKeys } from '../../s3/book-keys';
 import { parseImageProvider, type ArtStyle, type ImageProviderName } from '../ai.config';
 import { pickReferences } from './pick-references';
 import { buildIllustrationPrompt } from '../prompts/illustration.prompt';
@@ -69,6 +70,7 @@ export class ImageGeneratorService {
   // The judge is a REQUIRED dependency (#373): the first real run after #362
   // had it silently off because it was declared optional. Scripts construct it
   // with an in-memory sink; nothing runs the image pipeline without a judge.
+  // eslint-disable-next-line max-params -- NestJS injects dependencies through the constructor; there is no object-parameter form
   constructor(
     private readonly s3: S3Service,
     config: ConfigService,
@@ -221,7 +223,7 @@ export class ImageGeneratorService {
         characterProfile,
         artStyle: input.artStyle,
       });
-      const key = `books/${input.bookId}/portrait.png`;
+      const key = bookKeys(input.bookId).portrait;
       await this.s3.uploadObject({ key, body: Buffer.from(bytes), contentType: 'image/png' });
       span.update({ output: { key } });
       return { key, bytes };

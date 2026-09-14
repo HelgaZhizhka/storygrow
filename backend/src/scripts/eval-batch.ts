@@ -76,11 +76,15 @@ const flagValue = (name: string): string | undefined => {
   return flag?.slice(`--${name}=`.length);
 };
 
+interface RunOptions {
+  model: string | undefined;
+  storiesOut?: string;
+}
+
 const runOne = async (
   services: EvalServices,
   evalCase: EvalCase,
-  model: string | undefined,
-  storiesOut?: string,
+  { model, storiesOut }: RunOptions,
 ): Promise<EvalRunResult> => {
   const started = Date.now();
   try {
@@ -141,9 +145,7 @@ const runOne = async (
 const runPool = async (
   services: EvalServices,
   cases: readonly EvalCase[],
-  model: string | undefined,
-  concurrency: number,
-  storiesOut?: string,
+  { concurrency, ...run }: RunOptions & { concurrency: number },
 ): Promise<EvalRunResult[]> => {
   const results: EvalRunResult[] = new Array<EvalRunResult>(cases.length);
   let next = 0;
@@ -152,7 +154,7 @@ const runPool = async (
       const index = next++;
       const c = cases[index];
       console.log(`▸ [${index + 1}/${cases.length}] ${c.goal} (age ${c.age}, ${c.mode})…`);
-      results[index] = await runOne(services, c, model, storiesOut);
+      results[index] = await runOne(services, c, run);
       const r = results[index];
       console.log(
         r.error !== null
@@ -186,7 +188,7 @@ const main = async (): Promise<void> => {
 
   const services = await createEvalServices();
   const started = Date.now();
-  const results = await runPool(services, cases, model, concurrency, storiesOut);
+  const results = await runPool(services, cases, { model, concurrency, storiesOut });
   const summary = summarize(results);
 
   console.log('\n' + formatResultsTable(results));

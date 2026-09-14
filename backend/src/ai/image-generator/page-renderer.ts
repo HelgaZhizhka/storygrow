@@ -3,6 +3,7 @@ import type { Story } from '../schemas';
 import { PAGE_TEMPLATES } from '../../pdf/page-templates/page-templates.config';
 import type { ImageSize } from '../../pdf/page-templates/page-templates.config';
 import { S3Service } from '../../s3/s3.service';
+import { bookKeys } from '../../s3/book-keys';
 import { ImageContentPolicyError, ImageGenerationError } from './errors';
 import type { ImageProvider } from './providers/image-provider.interface';
 import type { ImageJudgeService } from './image-judge.service';
@@ -64,7 +65,7 @@ export class PageRenderer {
         },
       });
       const { best, attempts } = await this.renderJudged(opts, slot.imageSize);
-      const key = `books/${opts.bookId}/page-${opts.pageNumber}.png`;
+      const key = bookKeys(opts.bookId).page(opts.pageNumber);
       await this.deps.s3.uploadObject({
         key,
         body: Buffer.from(best.bytes),
@@ -86,7 +87,7 @@ export class PageRenderer {
     while (attempt < maxAttempts) {
       attempt++;
       const bytes = await this.renderOnce(opts, imageSize);
-      const failures = judging ? await this.judgeAttempt(opts, imageSize, bytes, attempt) : [];
+      const failures = judging ? await this.judgeAttempt(opts, imageSize, { bytes, attempt }) : [];
       const current = { bytes, failures };
       if (!best || current.failures.length < best.failures.length) best = current;
       if (failures.length === 0) break;
@@ -97,15 +98,14 @@ export class PageRenderer {
   private async judgeAttempt(
     opts: RenderPageOpts,
     imageSize: ImageSize,
-    bytes: Uint8Array,
-    attempt: number,
+    sample: { bytes: Uint8Array; attempt: number },
   ): Promise<string[]> {
     const verdict = await this.deps.judge.judge({
       bookId: opts.bookId,
       pageNumber: opts.pageNumber,
-      attempt,
+      attempt: sample.attempt,
       run: opts.run,
-      image: bytes,
+      image: sample.bytes,
       imageSize,
       context: opts.judgeContext!,
       references: opts.references,

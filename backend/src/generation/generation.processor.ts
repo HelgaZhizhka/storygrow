@@ -34,6 +34,7 @@ interface BookWithRelations {
 export class GenerationProcessor extends WorkerHost {
   private readonly logger = new Logger(GenerationProcessor.name);
 
+  // eslint-disable-next-line max-params -- NestJS injects dependencies through the constructor; there is no object-parameter form
   constructor(
     private readonly prisma: PrismaService,
     private readonly orchestrator: StoryOrchestratorService,
@@ -57,130 +58,102 @@ export class GenerationProcessor extends WorkerHost {
       await job.updateProgress(10);
 
       const book = await this.fetchBook(bookId, userId);
-      this.bookProgress.emit(bookId, {
-        type: 'progress',
-        progress: 20,
-        message: 'Получение данных…',
-      });
-      await job.updateProgress(20);
+      await this.advance(job, 20, 'Получение данных…');
 
-      // On retry: skip orchestrator if story was already generated and saved
-      let story: Story;
-      const storyReused = book.storyJson != null;
-      if (book.storyJson) {
-        this.logger.log(`Book ${bookId}: reusing saved storyJson (retry path)`);
-        story = book.storyJson;
-        this.bookProgress.emit(bookId, {
-          type: 'progress',
-          progress: 60,
-          message: 'История уже сгенерирована — повторяем иллюстрации',
-        });
-        await job.updateProgress(60);
-      } else {
-        const storyResult = await this.orchestrator.generate({
-          bookId,
-          childName: book.child.name,
-          childAge: book.child.age,
-          gender: book.child.gender ?? undefined,
-          appearance: book.child.appearance ?? undefined,
-          protagonistMode: book.protagonistMode,
-          topic: book.learningGoal.title,
-          learningGoal: book.learningGoal.description,
-          arcType: book.learningGoal.arcType,
-          seeds: {
-            interests: book.interests,
-            motifs: book.motifs,
-            favoriteWords: book.favoriteWords,
-          },
-        });
-        story = storyResult.story;
-        this.bookProgress.emit(bookId, {
-          type: 'progress',
-          progress: 60,
-          message: `История сгенерирована (попытка ${storyResult.attempts})`,
-        });
-        await job.updateProgress(60);
-        await this.prisma.book.update({
-          where: { id: bookId },
-          data: { storyJson: story, title: story.title },
-        });
-      }
+      const { story, reused: storyReused } = await this.ensureStory(job, book);
+      const imageKeys = await this.ensureImages({ job, book, story, storyReused });
+      await this.advance(job, 85, 'Иллюстрации готовы');
 
-      // On retry: skip image-gen if images are already stored
-      let imageKeys: string[];
-      if (book.imageKeys.length > 0) {
-        this.logger.log(
-          `Book ${bookId}: reusing ${book.imageKeys.length} saved image keys (retry path)`,
-        );
-        imageKeys = book.imageKeys;
-      } else {
-        // Photo flow (#128) is discriminated by a stored descriptor (set only when
-        // a photo was uploaded); characterPortraitKey alone can also be a retry
-        // artefact of the synthetic path, so it is not a safe discriminator.
-        const isPhotoFlow = Boolean(book.characterDescriptor);
-        const generated = await this.imageGenerator.generate({
-          story,
-          bookId,
-          artStyle: book.artStyle,
-          approvedPortraitKey: isPhotoFlow ? book.characterPortraitKey : null,
-          characterDescriptor: isPhotoFlow ? heroLookFromPhoto(book) : null,
-          run: await this.nextImageRun(bookId),
-          // Same story as the failed run → its portrait and sheets are still
-          // valid: reuse them instead of buying them again (#374).
-          reuse: storyReused
-            ? {
-                portraitKey: book.characterPortraitKey,
-                referenceImageKeys: book.referenceImageKeys,
-              }
-            : undefined,
-          onArtefacts: (artefacts) => this.persistArtefacts(bookId, artefacts),
-        });
-        imageKeys = generated.imageKeys;
-        await this.prisma.book.update({
-          where: { id: bookId },
-          data: {
-            imageKeys,
-            characterPortraitKey: generated.characterPortraitKey,
-            referenceImageKeys: generated.referenceImageKeys,
-          },
-        });
-      }
-      this.bookProgress.emit(bookId, {
-        type: 'progress',
-        progress: 85,
-        message: 'Иллюстрации готовы',
-      });
-      await job.updateProgress(85);
-
-      const illustrationUrls = await this.bookImage.signKeys(imageKeys);
-      const pdfKey = await this.pdfRender.render({
-        bookId,
-        story,
-        illustrationUrls,
-      });
-      await job.updateProgress(95);
-
-      await this.prisma.book.update({
-        where: { id: bookId },
-        data: { pdfKey, status: BookStatus.ready },
-      });
-      await job.updateProgress(100);
-      this.bookProgress.emit(bookId, { type: 'ready', progress: 100, message: 'Книга готова!' });
-
+      await this.finish(job, story, imageKeys);
       this.logger.log(`Book ${bookId} ready`);
     } catch (err: unknown) {
       this.logger.error(`Job ${job.id} failed for book ${bookId}`, err);
-      if (generatingSet) {
-        const book = await this.prisma.book.findUnique({
-          where: { id: bookId },
-          select: { storyJson: true },
-        });
-        const failStatus = book?.storyJson != null ? BookStatus.images_failed : BookStatus.failed;
-        await this.setStatus(bookId, failStatus);
-        this.bookProgress.emit(bookId, { type: 'failed', message: 'Ошибка генерации' });
-      }
+      if (generatingSet) await this.markFailed(bookId);
       throw err;
     }
+  }
+
+  /** Emit one progress step to the SSE stream and the BullMQ job. */
+  private async advance(job: Job<GenerateBookPayload>, progress: number, message: string) {
+    this.bookProgress.emit(job.data.bookId, { type: 'progress', progress, message });
+    await job.updateProgress(progress);
+  }
+
+  // On retry: skip the orchestrator when the story was already generated and saved.
+  private async ensureStory(
+    job: Job<GenerateBookPayload>,
+    book: BookWithRelations,
+  ): Promise<{ story: Story; reused: boolean }> {
+    const { bookId } = job.data;
+    if (book.storyJson) {
+      this.logger.log(`Book ${bookId}: reusing saved storyJson (retry path)`);
+      await this.advance(job, 60, 'История уже сгенерирована — повторяем иллюстрации');
+      return { story: book.storyJson, reused: true };
+    }
+    const result = await this.orchestrator.generate(storyOptions(book));
+    await this.advance(job, 60, `История сгенерирована (попытка ${result.attempts})`);
+    await this.prisma.book.update({
+      where: { id: bookId },
+      data: { storyJson: result.story, title: result.story.title },
+    });
+    return { story: result.story, reused: false };
+  }
+
+  // On retry: skip image generation when the images are already stored.
+  private async ensureImages(ctx: {
+    job: Job<GenerateBookPayload>;
+    book: BookWithRelations;
+    story: Story;
+    storyReused: boolean;
+  }): Promise<string[]> {
+    const { book, story, storyReused } = ctx;
+    const { bookId } = ctx.job.data;
+    if (book.imageKeys.length > 0) {
+      this.logger.log(
+        `Book ${bookId}: reusing ${book.imageKeys.length} saved image keys (retry path)`,
+      );
+      return book.imageKeys;
+    }
+    const generated = await this.imageGenerator.generate({
+      story,
+      bookId,
+      artStyle: book.artStyle,
+      ...photoFlowInputs(book),
+      run: await this.nextImageRun(bookId),
+      // Same story as the failed run → its portrait and sheets are still
+      // valid: reuse them instead of buying them again (#374).
+      reuse: storyReused
+        ? { portraitKey: book.characterPortraitKey, referenceImageKeys: book.referenceImageKeys }
+        : undefined,
+      onArtefacts: (artefacts) => this.persistArtefacts(bookId, artefacts),
+    });
+    await this.prisma.book.update({ where: { id: bookId }, data: generated });
+    return generated.imageKeys;
+  }
+
+  private async finish(job: Job<GenerateBookPayload>, story: Story, imageKeys: string[]) {
+    const { bookId } = job.data;
+    const illustrationUrls = await this.bookImage.signKeys(imageKeys);
+    const pdfKey = await this.pdfRender.render({ bookId, story, illustrationUrls });
+    await job.updateProgress(95);
+    await this.prisma.book.update({
+      where: { id: bookId },
+      data: { pdfKey, status: BookStatus.ready },
+    });
+    await job.updateProgress(100);
+    this.bookProgress.emit(bookId, { type: 'ready', progress: 100, message: 'Книга готова!' });
+  }
+
+  // A failure after the story was saved is `images_failed` (retryable without
+  // paying for the text again); before that it is a plain `failed`.
+  private async markFailed(bookId: string): Promise<void> {
+    const book = await this.prisma.book.findUnique({
+      where: { id: bookId },
+      select: { storyJson: true },
+    });
+    const failStatus = book?.storyJson != null ? BookStatus.images_failed : BookStatus.failed;
+    await this.setStatus(bookId, failStatus);
+    this.bookProgress.emit(bookId, { type: 'failed', message: 'Ошибка генерации' });
   }
 
   private async fetchBook(bookId: string, userId: string): Promise<BookWithRelations> {
@@ -241,4 +214,28 @@ const heroLookFromPhoto = (book: BookWithRelations): string | null => {
     ...parsed.data,
     kind: heroKind(book.child.age, book.child.gender ?? undefined),
   });
+};
+
+const storyOptions = (book: BookWithRelations) => ({
+  bookId: book.id,
+  childName: book.child.name,
+  childAge: book.child.age,
+  gender: book.child.gender ?? undefined,
+  appearance: book.child.appearance ?? undefined,
+  protagonistMode: book.protagonistMode,
+  topic: book.learningGoal.title,
+  learningGoal: book.learningGoal.description,
+  arcType: book.learningGoal.arcType,
+  seeds: { interests: book.interests, motifs: book.motifs, favoriteWords: book.favoriteWords },
+});
+
+// Photo flow (#128) is discriminated by a stored descriptor (set only when a
+// photo was uploaded); characterPortraitKey alone can also be a retry artefact
+// of the synthetic path, so it is not a safe discriminator.
+const photoFlowInputs = (book: BookWithRelations) => {
+  const isPhotoFlow = Boolean(book.characterDescriptor);
+  return {
+    approvedPortraitKey: isPhotoFlow ? book.characterPortraitKey : null,
+    characterDescriptor: isPhotoFlow ? heroLookFromPhoto(book) : null,
+  };
 };

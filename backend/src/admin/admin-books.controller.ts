@@ -75,21 +75,14 @@ export class AdminBooksController {
     // these are not LLM-judged and must not dilute the AI-quality metrics below
     // (a batch of Fast Flow books would otherwise drag meanFinalScore toward 0).
     const realRecentEvals = recentEvals.filter(isRealJudgeEval);
-    const meanCriterionScores = computeMeanCriterionScores(realRecentEvals);
-    const passedEvals = realRecentEvals.filter((e) => e.passed);
-    const meanFinalScore =
-      passedEvals.length > 0
-        ? passedEvals.reduce((sum, e) => sum + e.finalScore, 0) / passedEvals.length
-        : null;
-
     return {
       windowDays: WINDOW_DAYS,
       totalBooks,
       readyBooks,
       passedFirstAttempt: firstAttemptEvals.filter(isRealJudgeEval).length,
       passRate: totalBooks > 0 ? readyBooks / totalBooks : 0,
-      meanFinalScore: meanFinalScore !== null ? Math.round(meanFinalScore * 100) / 100 : null,
-      meanCriterionScores,
+      meanFinalScore: meanPassedFinalScore(realRecentEvals),
+      meanCriterionScores: computeMeanCriterionScores(realRecentEvals),
       recentEvalCount: realRecentEvals.length,
     };
   }
@@ -134,3 +127,11 @@ function computeMeanCriterionScores(
     }),
   );
 }
+
+/** Mean finalScore over the passed evals, rounded to 2 decimals; null when none passed. */
+const meanPassedFinalScore = (evals: Array<{ passed: boolean; finalScore: number }>) => {
+  const passed = evals.filter((e) => e.passed);
+  if (passed.length === 0) return null;
+  const mean = passed.reduce((sum, e) => sum + e.finalScore, 0) / passed.length;
+  return Math.round(mean * 100) / 100;
+};

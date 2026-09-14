@@ -47,9 +47,20 @@ export class VocabularyRagService {
       }),
     });
 
-    const vectorLiteral = Prisma.raw(`'[${embedding.join(',')}]'::vector`);
+    const rows = await this.nearestWords(embedding, gradeLevel, topK);
+    if (rows.length === 0) {
+      this.logger.warn(
+        `VocabularyRagService: no results for gradeLevel=${gradeLevel}. ` +
+          'Run seed:vocabulary to populate VocabularyEntry.',
+      );
+    }
 
-    const rows = await this.prisma.$queryRaw<VocabularyRow[]>(
+    return rows.map((r) => r.word);
+  }
+
+  private nearestWords(embedding: number[], gradeLevel: number, topK: number) {
+    const vectorLiteral = Prisma.raw(`'[${embedding.join(',')}]'::vector`);
+    return this.prisma.$queryRaw<VocabularyRow[]>(
       Prisma.sql`
         SELECT word
         FROM   "VocabularyEntry"
@@ -59,15 +70,6 @@ export class VocabularyRagService {
         LIMIT  ${topK}
       `,
     );
-
-    if (rows.length === 0) {
-      this.logger.warn(
-        `VocabularyRagService: no results for gradeLevel=${gradeLevel}. ` +
-          'Run seed:vocabulary to populate VocabularyEntry.',
-      );
-    }
-
-    return rows.map((r) => r.word);
   }
 
   async listByGrade(gradeLevel: number): Promise<string[]> {

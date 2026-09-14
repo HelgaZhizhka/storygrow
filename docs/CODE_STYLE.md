@@ -19,8 +19,8 @@ This list complements (does not replace) the **Hard Constraints** in [../CLAUDE.
 ## ✅ Functions
 
 - One responsibility per function.
-- Usually ≤ 30 lines; if longer, there must be a clear reason.
-- ≤ 3 parameters (or use an object-parameter).
+- ≤ 30 logic lines (blank and comment lines do not count) — enforced by ESLint `max-lines-per-function` (#380). Not enforced where a body is not logic: prompt builders (`backend/src/ai/prompts`), test suites, eval/seed CLI mains (`backend/src/scripts`), React components (`*.tsx`).
+- ≤ 3 parameters (or use an object-parameter) — enforced by ESLint `max-params`. The only allowed exemptions are framework signatures (NestJS DI constructors, Nest route handlers whose parameters are decorated request parts, passport callbacks), each with an inline `eslint-disable-next-line max-params -- <reason>`.
 - No hidden side effects (or they are obvious from the name).
 - Early return to reduce nesting.
 - One return type per function.
@@ -34,7 +34,7 @@ This list complements (does not replace) the **Hard Constraints** in [../CLAUDE.
 - Simple over clever (KISS).
 - No speculative abstractions (YAGNI).
 - Braces mandatory for every `if`/`else`/`for` block.
-- File size ≤ 400 lines.
+- File size ≤ 400 lines (raw, as `wc -l` counts) — enforced by ESLint `max-lines` everywhere, tests included.
 
 ## ✅ SOLID
 

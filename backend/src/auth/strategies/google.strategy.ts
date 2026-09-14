@@ -18,6 +18,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     });
   }
 
+  // eslint-disable-next-line max-params -- passport-google-oauth20 fixes this callback signature
   async validate(
     _accessToken: string,
     _refreshToken: string,

@@ -37,6 +37,7 @@ interface LoopContext {
 
 @Injectable()
 export class StoryOrchestratorService {
+  // eslint-disable-next-line max-params -- NestJS injects dependencies through the constructor; there is no object-parameter form
   constructor(
     private readonly generator: StoryGeneratorService,
     private readonly evaluator: StoryEvaluatorService,
