@@ -2,6 +2,9 @@
 
 **Issue:** #348
 **Date:** 2026-09-03
+**Point-in-time:** this is the design as proposed; the shipped pipeline differs (e.g.
+`DESCRIPTOR_MAX_CHARS` is 320 since #360, `timeOfDay`/`framing` were removed in #372, sheets
+have no flag). The current state is `docs/process/image-pipeline-evolution.md`.
 **Depends on:** ADR-0005 (Plan → Prose decomposition), #174 (reference-portrait
 pipeline, Gemini), #128 (photo character), ADR-0006 (photo privacy)
 **Context:** `docs/defense/storygrow-launch-plan.md` §7 (local, not committed)

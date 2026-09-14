@@ -29,8 +29,9 @@ of by taste.
    took no references, so no portrait, no sheets, no photo — a silent quality
    regression, not a fallback. The code default is `xai` since #373 (the app
    needs a Gemini key anyway, so "boots without an xAI key" was never real).
-4. **Reference sheets (#355) are ON by default** (`IMAGE_REFERENCE_SHEETS=on`,
-   amended 2026-09-05): one stylised portrait per cast member and one
+4. **Reference sheets (#355) are always on** (flag `IMAGE_REFERENCE_SHEETS`
+   introduced 2026-09-05, removed with the other finished-experiment flags in
+   #372): one stylised portrait per cast member and one
    establishing shot per location, generated once per book and passed as
    references next to the hero portrait (`pickReferences`: hero → cast →
    location, within the model budget). Grok's edit endpoint accepts **up to 5**
@@ -88,8 +89,8 @@ of by taste.
 - `IMAGE_PROVIDER=xai` + `XAI_API_KEY` must be set in Railway (`storygrow-api`)
   and locally; `.env.example` and `CLAUDE.md` updated. Gemini key remains
   required for the photo descriptor (vision) and as image fallback.
-- Sheets are on unless `IMAGE_REFERENCE_SHEETS=off`; a book costs ~3 extra
-  images plus $0.01 per reference per page on Grok.
+- Sheets are always on (no flag since #372); a book costs ~3 extra images plus
+  $0.01 per reference per page on Grok.
 - Open: the hero descriptor in the image prompt is the prose `characterProfile`
   (starts with the hero's name, prose phrasing, cut at 160 chars) — it should be
   a visual-only descriptor; and the Plan should be required to give every cast

@@ -73,7 +73,7 @@ interface FixtureResult {
   referenceImageKeys: string[];
   durationMs: number;
   error: string | null;
-  /** Judge verdicts for this fixture (IMAGE_EVAL=on), one per page per attempt. */
+  /** Judge verdicts for this fixture (judge always on), one per page per attempt. */
   evals: ImageEvalRow[];
 }
 
