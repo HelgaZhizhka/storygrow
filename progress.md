@@ -1629,3 +1629,16 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Result:** Gemini is out of StoryGrow. One paid image+vision provider (xAI Grok) and OpenAI for text. #397 complete.
 
 **Blockers:** none.
+
+## 2026-09-14 — refactor: remove the fast-flow generation mode (#402)
+
+**Why:** the synchronous, template-based fast-flow path is no longer needed — every book goes through the full Plan → Prose → Grok pipeline. Owner directive.
+
+**Done:**
+- **Backend:** deleted `src/fast-flow/` (module, service, prompts, pick-illustration, placeholder substitution, tag taxonomy, template-content schema + specs); removed the `mode === 'fast'` branch, `reserveFastFlowBook` and `assertFastFlowTemplateExists`, the `FastFlowModule` import, and the two seed scripts. `IMAGE_MODEL`/`IMAGE_QUALITY` (gpt-image-1, only the fast seed still used them) are gone — this closes the remainder of #392. Dropped the dead `seed:templates`/`seed:illustrations` package scripts.
+- **Frontend:** removed the fast/custom mode selector on the create-book screen; every book is the full pipeline (create → generate → progress, or the photo step first). Deleted the mode-branching submit-logic test.
+- **DB (owner decision):** the `Template` and `FastIllustration` tables are **left orphaned** — no destructive migration; they can be dropped separately later. Book history is unaffected; older fast-flow books keep their `BookPage` rows and the book view still prefers them.
+- Docs: CONTEXT (Fast Flow marked removed, glossary), ARCHITECTURE (tree, Book comment), the admin placeholder-eval comment now notes it guards legacy rows.
+- 427 backend tests + 52 frontend tests pass; `./init.sh` green.
+
+**Blockers:** none.

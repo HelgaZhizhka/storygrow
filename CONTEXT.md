@@ -59,10 +59,8 @@ Since #367 the judge also sees the story's fixed world (places, characters, prop
 
 **Avoid:** "quality check", "evaluation log".
 
-### Fast Flow
-Synchronous generation path (~5 seconds): pick a pre-authored `Template`, fill placeholders with child's name / age / chosen `LearningGoal`, pick pre-rendered illustrations by tags, return PDF directly. **No AI calls.** Defined by course requirements.
-
-**Avoid:** "template flow" (acceptable informally, but "fast flow" is the term in code paths and docs).
+### Fast Flow (removed)
+A synchronous, template-based generation path (pre-authored `Template`, pre-rendered illustrations by tag, no AI) existed until 2026-09-14, when it was removed (#402) — every book now goes through the full [Custom Flow]. The `Template` and `FastIllustration` tables were left in the schema, orphaned, rather than dropped by a destructive migration.
 
 ### Custom Flow
 Asynchronous generation path (3-10 min): full AI pipeline via BullMQ job, all phases owned by `StoryGeneratorService` — **Plan** → **Prose** → **Title** (derived from the finished story, not the abstract plan — see [Story Plan]) → `StoryEvaluator` (with regeneration loop) → `ImageGenerator` (Gemini 2.5 Flash Image per page with a reference portrait for character consistency, and a [Visual Bible] fixing locations/cast/props so the whole book renders from one description — #348; gpt-image-1 fallback) → `PDFRenderer` (Puppeteer). Progress streamed to frontend via SSE. (Pre-ADR-0005 this began with a `VocabularyRag` stage and a single mega-call; both are superseded. The ADR-0005 "Read-Aloud Edit" phase was never built — Plan+Prose alone met the quality bar.)
@@ -204,8 +202,8 @@ Quick-reference for pairs that are tempting to use interchangeably. When in doub
 | `Story` vs `Story Structure` vs `StorySchema` | Content instance vs the pedagogical structure (setup/conflict/lesson/resolution) vs the Zod schema enforcing it | "Story" for content; "Story Structure" / "Pedagogical Schema" in prose; `StorySchema` only in code |
 | `StoryEval` vs `Judge Score` vs `Final Score` | DB row holding all scores for one attempt vs one criterion's 0-10 number vs the accept/regenerate decision | `StoryEval` for the row; "judge score" for a criterion; "final score" for the craft-gated decision (post-ADR-0005: guardrails must clear AND craft ≥ threshold, not a mean) |
 | `Judge Score` vs `Eval Threshold` | The produced score (output) vs the cutoff for acceptance (config) | Don't say "judge threshold" |
-| `Fast Flow` vs `Custom Flow` | Synchronous template-fill (no AI) vs async full AI pipeline | Never "AI flow" or "slow flow" |
-| `Template` vs `StorySchema` | Pre-authored fast-flow story shell with placeholders vs Zod runtime/type schema for custom flow | `Template` is a DB row; `StorySchema` is code |
+| `StorySchema` | Zod runtime/type schema for the generation pipeline | not a DB row. (`Template`, the removed fast-flow shell, is an orphaned table since #402) |
+<!-- torySchema` is code |
 | `Learning Goal` vs `Topic` / `Theme` | Pedagogical objective (admin-managed catalogue) vs descriptive label | Always `LearningGoal`; avoid "topic" / "theme" |
 | `Discussion Question` vs "quiz" | Open-ended parent-child prompt on PDF last page vs interactive quiz | We do NOT do quizzes — only `DiscussionQuestion` |
 | `Vocabulary Entry` vs "lexicon entry" / "word record" | RAG-indexed word with grade level and embedding | Always `VocabularyEntry` |

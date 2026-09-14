@@ -40,11 +40,6 @@ export const GUARDRAIL_FLOOR_DEFAULT = 6;
 // sample) at most this many times. Rows are written for EVERY attempt.
 export const IMAGE_EVAL_MAX_RETRIES_DEFAULT = 1;
 
-// OpenAI gpt-image-1 is NOT a book-pipeline provider any more (#375: it took no
-// references, so no portrait, no sheets, no photo). Only the one-off seed
-// scripts (fast-flow illustrations, style previews) still call it directly.
-export const IMAGE_MODEL = 'gpt-image-1';
-export const IMAGE_QUALITY = 'medium';
 export type ArtStyle = 'watercolor' | 'cartoon' | 'storybook' | 'pixel' | 'realistic';
 
 export const STYLE_SUFFIXES: Record<ArtStyle, string> = {

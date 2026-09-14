@@ -154,7 +154,7 @@ export default function BookPage(): React.ReactElement {
 
   const latestEval = book.evals[0];
 
-  // Prefer DB pages (fast-flow), fall back to storyJson pages (custom flow)
+  // Prefer DB pages (older fast-flow books), fall back to storyJson pages (the pipeline)
   const pages: Array<{ num: number; text: string; imageUrl: string | null }> =
     book.pages.length > 0
       ? book.pages.map((p) => ({ num: p.pageNumber, text: p.text, imageUrl: p.imageUrl }))
