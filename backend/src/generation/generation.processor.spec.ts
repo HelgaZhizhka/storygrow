@@ -19,6 +19,7 @@ import {
   makeJob,
   mockBook,
   mockBookImage,
+  mockBookProgress,
   mockImageGen,
   mockOrchestrator,
   mockPdfRender,
@@ -319,5 +320,39 @@ describe('GenerationProcessor', () => {
     expect(mockOrchestrator.generate).not.toHaveBeenCalled();
     expect(mockImageGen.generate).not.toHaveBeenCalled();
     expect(mockBookImage.signKeys).toHaveBeenCalledWith(savedKeys);
+  });
+
+  it('emits per-page progress between the story and the PDF (#379)', async () => {
+    mockPrisma.book.findUnique.mockResolvedValueOnce({ ...mockBook, storyJson: mockStory });
+    mockPrisma.book.update.mockResolvedValue({});
+    mockImageGen.generate.mockImplementationOnce(
+      async (input: {
+        onPage?: (p: {
+          done: number;
+          total: number;
+          pageNumber: number;
+          attempts: number;
+        }) => Promise<void>;
+      }) => {
+        await input.onPage?.({ done: 1, total: 2, pageNumber: 1, attempts: 1 });
+        await input.onPage?.({ done: 2, total: 2, pageNumber: 2, attempts: 2 });
+        return { imageKeys: ['k1', 'k2'], characterPortraitKey: null, referenceImageKeys: [] };
+      },
+    );
+    mockBookImage.signKeys.mockResolvedValueOnce(['u1', 'u2']);
+    mockPdfRender.render.mockResolvedValueOnce('books/book-1/book.pdf');
+
+    await processor.process(makeJob({ bookId: 'book-1', userId: 'user-1' }));
+
+    expect(mockBookProgress.emit).toHaveBeenCalledWith('book-1', {
+      type: 'progress',
+      progress: 73,
+      message: 'Иллюстрация 1 из 2',
+    });
+    expect(mockBookProgress.emit).toHaveBeenCalledWith('book-1', {
+      type: 'progress',
+      progress: 85,
+      message: 'Иллюстрация 2 из 2 (перерисована)',
+    });
   });
 });

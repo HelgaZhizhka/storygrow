@@ -62,6 +62,8 @@ export class PageRenderer {
           bookId: opts.bookId,
           pageNumber: opts.pageNumber,
           references: opts.labels,
+          model: this.deps.provider.modelLabel,
+          prompt: opts.prompt,
         },
       });
       const { best, attempts } = await this.renderJudged(opts, slot.imageSize);
@@ -110,6 +112,7 @@ export class PageRenderer {
       context: opts.judgeContext!,
       references: opts.references,
       labels: opts.labels,
+      provenance: { model: this.deps.provider.modelLabel, prompt: opts.prompt },
     });
     return verdict.passed ? [] : verdict.failures.filter((f) => !f.startsWith('judge:'));
   }

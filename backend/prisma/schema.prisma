@@ -66,6 +66,8 @@ model Book {
   // S3 keys of generated Visual Bible reference sheets (#348, PR 2): location
   // establishing shots and cast portraits. Empty unless IMAGE_REFERENCE_SHEETS=on.
   referenceImageKeys    String[]     @default([])
+  /** Image model that rendered the portrait and sheets (#379); set with the artefacts, null before. */
+  imageModel            String?
   pdfKey                String?
   // Photo-character likeness (#128, child mode). childPhotoKey is the TRANSIENT
   // private S3 key of the raw upload — nulled the moment the stylised portrait is
@@ -151,6 +153,10 @@ model ImageEval {
   passed     Boolean  @default(false)
   failures   String[] @default([])
   reasoning  String?
+  /** Provenance (#379): the image model, the exact page prompt and the reference labels the page was rendered from — a bad page is diagnosable from this row alone. Null on rows written before #379. */
+  model      String?
+  prompt     String?
+  labels     String[] @default([])
   judgedAt   DateTime @default(now())
 
   @@index([bookId])

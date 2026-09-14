@@ -67,7 +67,7 @@ const main = async (): Promise<void> => {
     const latestRun = Math.max(1, ...book.imageEvals.map((r) => r.run));
     const rows = book.imageEvals.filter((r) => r.run === latestRun);
     console.log(
-      `book ${book.id} status=${book.status} pages=${pageCount} images=${book.imageKeys.length} ImageEval rows=${book.imageEvals.length} (run ${latestRun}: ${rows.length})`,
+      `book ${book.id} status=${book.status} pages=${pageCount} images=${book.imageKeys.length} model=${book.imageModel ?? '?'} ImageEval rows=${book.imageEvals.length} (run ${latestRun}: ${rows.length})`,
     );
     for (const r of rows) {
       console.log(

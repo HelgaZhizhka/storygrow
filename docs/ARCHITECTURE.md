@@ -16,7 +16,7 @@ storygrow/
 │   │   ├── health.controller.ts
 │   │   ├── auth/               # Google OAuth, JWT guards; POST /auth/test-login (double-gated OAuth bypass for e2e, #155)
 │   │   ├── books/              # Book CRUD + status; SSE progress (progress.controller)
-│   │   ├── admin/              # admin dashboard: books + learning-goal mgmt, eval metrics
+│   │   ├── admin/              # admin dashboard: books + learning-goal mgmt, text-eval metrics, image-eval metrics + cost (#379)
 │   │   ├── ai/
 │   │   │   ├── ai.module.ts
 │   │   │   ├── ai.config.ts            # models, STYLE_SUFFIXES, thresholds

@@ -35,6 +35,15 @@ export interface ImageGenInput {
   onArtefacts?: (artefacts: {
     characterPortraitKey: string | null;
     referenceImageKeys: string[];
+    /** The model that rendered them (#379), for cost per provider. */
+    imageModel: string;
+  }) => Promise<void>;
+  /** Called after each page is rendered (#379): per-page progress for the SSE stream. */
+  onPage?: (page: {
+    done: number;
+    total: number;
+    pageNumber: number;
+    attempts: number;
   }) => Promise<void>;
 }
 
@@ -101,6 +110,7 @@ export class ImageGeneratorService {
       await input.onArtefacts?.({
         characterPortraitKey: portrait?.key ?? null,
         referenceImageKeys: sheets?.keys ?? [],
+        imageModel: this.provider.modelLabel,
       });
       const imageKeys = await this.generatePages(input, portrait?.bytes, sheets);
 
@@ -121,16 +131,20 @@ export class ImageGeneratorService {
     portraitBytes: Uint8Array | undefined,
     sheets: SheetSet | null,
   ): Promise<string[]> {
+    const total = input.story.pages.length;
+    let done = 0;
     return Promise.all(
       input.story.pages.map(async (page, i) => {
         const req = this.buildPageRequest({ input, page, portraitBytes, sheets });
-        const { key } = await this.pages.render({
+        const { key, attempts } = await this.pages.render({
           ...req,
           bookId: input.bookId,
           pageNumber: i + 1,
           template: page.template,
           run: input.run ?? 1,
         });
+        done++;
+        await input.onPage?.({ done, total, pageNumber: i + 1, attempts });
         return key;
       }),
     );

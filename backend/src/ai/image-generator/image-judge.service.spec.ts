@@ -47,6 +47,7 @@ const input = (over: Partial<JudgePageInput> = {}): JudgePageInput => ({
   pageNumber: 2,
   attempt: 1,
   run: 1,
+  provenance: { model: 'test-model', prompt: 'a girl on a slide' },
   image: png(1536, 1024),
   imageSize: '1536x1024',
   context: {
