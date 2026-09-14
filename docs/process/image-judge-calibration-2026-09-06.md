@@ -119,6 +119,34 @@ Acceptance for the new criterion is the real book generated after the change (se
 2026-09-13, #366): the Plan emitted «slide, much taller than the child», the establishing sheet
 drew a tall tower, and the child is in proportion on all seven pages (judge 7/7 first attempt).
 
+## v6 — 2026-09-14 (#397 step 2): judge moved to Grok-4 vision
+
+**Why the model changed.** Gemini's non-configurable content filter blocked benign child pages —
+the reason the v4 `identity-only` fallback exists — and blocked the photo descriptor outright
+(4/4 on a real photo, #397). Grok already renders every image; moving the judge to Grok-4 removes
+Gemini from the pipeline. Same durable 52-page set, same criteria; only the vision model changed
+(`createXaiVisionModel`, xAI's OpenAI-compatible API, `generateObject` unchanged).
+
+| Run | Judged | Bad caught | False fails on good pages | Unjudged (blocked) |
+|---|---|---|---|---|
+| v5 (Gemini 3.6 Flash) | 52 | 3/3 | 1/49 (2%) | 0 (1 via identity-only) |
+| **v6 (Grok-4)** | **52** | **3/3** | **4/49 (8%)** | **0** |
+
+**Read of the trade.** Recall — the property that matters for a soft gate — is unchanged at 3/3.
+Grok judged all 52 pages with **no content-filter blocks at all**: the v4 blind spot (pages Gemini
+refused to judge) is gone, and the `identity-only` fallback is now dormant. The cost is a higher
+false-fail rate, but all four extra fails are the **same defensible over-strictness on one story**
+(`smelost-3-child`, "open the dark closet"): its location is split — the child stands in a bright
+room and opens a door onto a dark closet — so pages showing the approach (p3 sceneMatch; p5, p7
+locationConsistency; p4 sceneMatch) read as mismatches against the closet location reference even
+though a reader keeps them. Confirmed by eye (p5: reaching for the closed door; p7: door open, dark
+closet visible behind it). The `pass` labels stand; the judge is strict, not wrong. A false fail
+costs one re-render, never a blocked book (soft gate).
+
+**Decision:** accept Grok-4. No prompt tuning to chase the four fails — they are defensible and
+concentrated, and chasing the judge with rules is what this pipeline avoids. Report:
+`backend/output/calibration/report-2026-09-14-grok.md`.
+
 ## Per-item verdicts (v3)
 
 | id | expected | judge | failures | reasoning |

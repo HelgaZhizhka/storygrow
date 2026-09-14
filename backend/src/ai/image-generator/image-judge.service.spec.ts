@@ -2,8 +2,9 @@ const mockGenerateObject = jest.fn();
 jest.mock('ai', () => ({
   generateObject: (...args: unknown[]): unknown => mockGenerateObject(...args),
 }));
-jest.mock('@ai-sdk/google', () => ({
-  createGoogleGenerativeAI: () => (id: string) => ({ id }),
+// Grok-4 via @ai-sdk/openai's createOpenAI + a custom baseURL (#397 step 2).
+jest.mock('@ai-sdk/openai', () => ({
+  createOpenAI: () => (id: string) => ({ id }),
 }));
 jest.mock('@langfuse/tracing', () => ({
   startActiveObservation: async <T>(
