@@ -20,7 +20,11 @@ rather than blocking the feature entirely (its previous "post-defense" status).
 
 **Model / provider.** Provider stays **Google Gemini** (same posture as the rest
 of the pipeline). Default `gemini-2.5-flash-image`; `gemini-3-pro-image` opt-in
-via `GEMINI_IMAGE_MODEL`. **Alibaba Qwen was rejected** — competitive on image
+via `GEMINI_IMAGE_MODEL`. *Amended 2026-09-14: since ADR-0007 the default image
+provider is xAI Grok (`IMAGE_PROVIDER=xai`) for every image including the photo
+portrait; the Pro override was removed in #372. The comparison below was Google
+versus Alibaba; xAI as the provider that receives the child's photo has not
+been assessed here and is an open owner decision.* **Alibaba Qwen was rejected** — competitive on image
 quality but it would send a minor's biometric image cross-border to Alibaba
 Cloud (Singapore), a materially worse legal posture than Google, unjustified by
 the (small) quality delta.

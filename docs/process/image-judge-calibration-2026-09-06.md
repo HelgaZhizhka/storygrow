@@ -1,5 +1,8 @@
 # Image judge calibration — 2026-09-06 (#358)
 
+> **Point-in-time record** with dated amendments (v4, v5). The current judge and its numbers are
+> summarised in `docs/process/image-pipeline-evolution.md` §3.
+
 > **Correction (2026-09-11, #368):** the v3 table below counted six `judge:unavailable` rows as
 > PASS, so "0 false fails on 65 good pages" was measured on **59**. Re-running those six pages
 > reproduces the failure deterministically: Gemini blocks the request with

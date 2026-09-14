@@ -164,8 +164,8 @@ storygrow/
          │        reference sheets as references (≤5), │
          │        each prompt assembled from the       │
          │        Visual Bible + page Scene (#348);    │
-         │        sheets unless IMAGE_REFERENCE_SHEETS=off│
-         │      → ImageJudge per page (unless IMAGE_EVAL=off):│
+         │        sheets always on (no flag since #372)  │
+         │      → ImageJudge per page (always on, #373): │
          │        preflight + vision verdict → ImageEval│
          │        row per attempt; failing page        │
          │        re-rendered ≤ IMAGE_EVAL_MAX_RETRIES  │
@@ -263,7 +263,7 @@ model Book {
   favoriteWords   String[]    // "
   storyJson           Json?       // full Story payload (custom flow)
   imageKeys           String[]    // S3 keys for page illustrations
-  characterPortraitKey String?    // S3 key of the Gemini reference portrait
+  characterPortraitKey String?    // S3 key of the hero reference portrait (bookKeys)
   pdfKey              String?     // S3 key for the rendered PDF
   pages           BookPage[]  // populated by fast flow
   evals           StoryEval[]
@@ -348,7 +348,7 @@ The rule for what belongs in env:
 - **After an ADR** a flag becomes a constant in the same PR (reference sheets and the judge are
   simply on; the cascade experiment was deleted, #372).
 
-Unknown `IMAGE_PROVIDER` values are rejected; the default is `xai`. `backend/.env.example` and
+Unknown `IMAGE_PROVIDER` values are rejected; the default is `xai`. How the image pipeline works end to end, what was tried and what it costs: `docs/process/image-pipeline-evolution.md`. `backend/.env.example` and
 `docs/deploy-railway.md` are the two places that must list the same variables.
 
 ## Observability

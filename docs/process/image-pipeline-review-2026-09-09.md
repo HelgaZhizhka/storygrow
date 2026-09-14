@@ -242,5 +242,5 @@ independent of B and can run in parallel.
 | A2 + B2 + B4: page count by Plan, `.describe()`, repairs by kind | #378 | done (legacy path removed after a prod count: 18 ready books without a bible, none can re-enter image generation) |
 | C2 + C4: ImageEval dashboard, provenance, cost | #379 | done (model + prompt + reference labels on every ImageEval row and the page span; `Book.imageModel`; cost per model derived from `IMAGE_COST_USD` on `/admin/metrics/images`; per-page SSE progress) |
 | C3: limits linter, S3 key layout | #380 | done (max-lines 400 raw / max-lines-per-function 30 / max-params 3 in the shared ESLint base; `bookKeys` is the one S3 layout) |
-| D1: consolidated image-pipeline document | #381 | last |
+| D1: consolidated image-pipeline document | #381 | done (`docs/process/image-pipeline-evolution.md`; divergences fixed: ARCHITECTURE flags and portrait comment, ADR-0006/0007 amendments, spec and calibration marked point-in-time) |
 | LangFuse in production | #382 | owner decision |

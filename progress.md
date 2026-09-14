@@ -1562,3 +1562,11 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - **Real books** through the local API (two, observer + child): every `ImageEval` row carries `grok-imagine-image-2.0`, the full page prompt and `{hero,location}`; `Book.imageModel` set; judge 8/8 and 7/7 first attempt; `check:book` OK. The SSE stream showed «Иллюстрация 1 из 7» … «7 из 7» at 64→85%. `/admin/metrics/images` as admin: 64 pages / 72 renders in the window, first-attempt pass 87.5%, 8 re-renders, 5 judge blocks, top failure `artefact:wrongSurface`; Grok $0.56 for the one book with provenance, 64 pre-#379 pages listed as unknown.
 
 **Blockers:** none.
+## 2026-09-14 — docs: consolidated image-pipeline document; doc/code divergences fixed (#381, review D1)
+
+**Done:**
+- `docs/process/image-pipeline-evolution.md`: how a book gets its pictures today (one diagram, where the code lives, the three env values that exist), the timeline 2026-08-28 → 09-14 with what each step changed and its evidence, the numbers (calibration v4/v5, local production-path runs: 9 books, 79 renders, 89% first-attempt pass, top failures), cost per book from `IMAGE_COST_USD` (≈ $0.54 for a 7-page Grok book) and an order-of-magnitude total for the cycle ($25–40 on images, < $2 on the judge — vendor consoles are the source of truth), open limits, and a where-to-look table.
+- **Stated plainly:** nothing of the new pipeline has run in production yet — Railway holds 18 pre-#348 books and 0 `ImageEval` rows; every verification was a real book through the local API. The first production book is the owner's call.
+- Divergences fixed: `docs/ARCHITECTURE.md` pipeline box still named `IMAGE_REFERENCE_SHEETS=off` / `IMAGE_EVAL=off` (both flags gone) and "Gemini reference portrait"; ADR-0006 amended (Grok is the default image provider for the photo portrait too); ADR-0007 decision 4 and its operational note no longer describe a flag; the 2026-09-03 spec and the calibration report carry a point-in-time banner pointing at the new document; a stale `IMAGE_EVAL=on` comment in `eval-images.ts`.
+
+**Blockers:** none. The image review cycle (#368 → #381) is complete; owner decisions remain #382 (LangFuse in prod), #377 (illustrator brief, text track), #392 (style previews on gpt-image-1).
