@@ -2,22 +2,6 @@ jest.mock('../../generated/prisma/client', () => ({
   PrismaClient: class {},
 }));
 
-const mockGenerateImage = jest.fn();
-
-jest.mock('ai', () => ({
-  generateImage: (...args: unknown[]): unknown => mockGenerateImage(...args),
-  NoImageGeneratedError: class NoImageGeneratedError extends Error {
-    static isInstance(e: unknown): boolean {
-      return e instanceof Error && e.constructor.name === 'NoImageGeneratedError';
-    }
-  },
-}));
-
-const mockGoogleImage = jest.fn((id: string) => ({ id }));
-jest.mock('@ai-sdk/google', () => ({
-  createGoogleGenerativeAI: () => ({ image: (id: string) => mockGoogleImage(id) }),
-}));
-
 jest.mock('@langfuse/tracing', () => ({
   startActiveObservation: async <T>(
     _name: string,
@@ -36,7 +20,40 @@ import { ReferenceSheetsService } from './reference-sheets.service';
 import { ImageJudgeService } from './image-judge.service';
 import { S3Service } from '../../s3/s3.service';
 import type { Story } from '../schemas';
+import { XAI_IMAGE_MODEL } from '../ai.config';
 import { visualBibleFixture, sceneFixture } from '../schemas/__fixtures__/visual-bible.fixture';
+
+// xAI is the only image provider (#397): every image is a REST call to
+// api.x.ai — text-to-image via /images/generations (no `images` in the body)
+// and a multi-reference edit via /images/edits (an `images` array). The tests
+// drive it through a mocked global fetch and read the request bodies.
+const EDIT_URL = 'https://api.x.ai/v1/images/edits';
+
+interface XaiCall {
+  url: string;
+  body: { prompt: string; images?: Array<{ url: string }> };
+}
+
+const fetchMock = jest.fn();
+
+const asXaiCalls = (): XaiCall[] =>
+  fetchMock.mock.calls.map(([url, init]) => ({
+    url: url as string,
+    body: JSON.parse((init as { body: string }).body) as XaiCall['body'],
+  }));
+
+/** The page renders (the edit endpoint), in call order. */
+const pageCalls = (): XaiCall[] => asXaiCalls().filter((c) => c.url === EDIT_URL);
+
+beforeEach(() => {
+  fetchMock.mockReset();
+  // Every xAI image call returns one PNG (base64), the shape XaiImageProvider parses.
+  fetchMock.mockResolvedValue({
+    ok: true,
+    json: () => Promise.resolve({ data: [{ b64_json: Buffer.from([1]).toString('base64') }] }),
+  });
+  global.fetch = fetchMock;
+});
 
 const mockS3 = {
   uploadObject: jest.fn(),
@@ -44,11 +61,8 @@ const mockS3 = {
   getObjectBytes: jest.fn(),
 };
 
-const makeMockConfig = (imageProvider: string) => ({
-  get: jest.fn((key: string) => {
-    if (key === 'IMAGE_PROVIDER') return imageProvider;
-    return undefined;
-  }),
+const makeMockConfig = () => ({
+  get: jest.fn((key: string) => (key === 'IMAGE_PROVIDER' ? 'xai' : undefined)),
   getOrThrow: jest.fn(() => 'test-key'),
 });
 
@@ -87,32 +101,33 @@ const passThroughJudge = () => ({
   judge: jest.fn().mockResolvedValue({ passed: true, failures: [] }),
 });
 
-const makeService = async (imageProvider = 'gemini'): Promise<ImageGeneratorService> => {
+const makeService = async (): Promise<ImageGeneratorService> => {
   const module = await Test.createTestingModule({
     providers: [
       ImageGeneratorService,
       ReferenceSheetsService,
       { provide: ImageJudgeService, useValue: passThroughJudge() },
       { provide: S3Service, useValue: mockS3 },
-      { provide: ConfigService, useValue: makeMockConfig(imageProvider) },
+      { provide: ConfigService, useValue: makeMockConfig() },
     ],
   }).compile();
   return module.get(ImageGeneratorService);
 };
 
-describe('ImageGeneratorService', () => {
+describe('ImageGeneratorService (xAI Grok — the only provider, #397)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockS3.uploadObject.mockResolvedValue(undefined);
   });
 
-  describe('page images (every provider takes references, #375)', () => {
+  describe('page images', () => {
     it('generates one image per page and uploads each with image/png and a deterministic key', async () => {
       const service = await makeService();
-      mockGenerateImage.mockResolvedValue({ image: { uint8Array: new Uint8Array([1]) } });
-      mockS3.uploadObject.mockResolvedValue(undefined);
-
-      const story = makeStory({ pageCount: 2 });
-      const result = await service.generate({ story, bookId: 'book-xyz', artStyle: 'watercolor' });
+      const result = await service.generate({
+        story: makeStory({ pageCount: 2 }),
+        bookId: 'book-xyz',
+        artStyle: 'watercolor',
+      });
 
       expect(result.imageKeys).toEqual(['books/book-xyz/page-1.png', 'books/book-xyz/page-2.png']);
       for (const key of result.imageKeys) {
@@ -124,23 +139,25 @@ describe('ImageGeneratorService', () => {
 
     it('propagates a provider error as-is (no simplify-and-retry)', async () => {
       const service = await makeService();
-      mockGenerateImage.mockRejectedValueOnce(new Error('network timeout'));
-
-      const story = makeStory({ pageCount: 1 });
+      fetchMock.mockRejectedValueOnce(new Error('network timeout'));
       await expect(
-        service.generate({ story, bookId: 'b', artStyle: 'watercolor' }),
+        service.generate({
+          story: makeStory({ pageCount: 1 }),
+          bookId: 'b',
+          artStyle: 'watercolor',
+        }),
       ).rejects.toThrow('network timeout');
     });
   });
 
-  describe('Gemini provider', () => {
+  describe('portrait + sheets', () => {
     it('generates a portrait then one image per page and returns the portrait key', async () => {
-      const service = await makeService('gemini');
-      mockGenerateImage.mockResolvedValue({ image: { uint8Array: new Uint8Array([1]) } });
-      mockS3.uploadObject.mockResolvedValue(undefined);
-
-      const story = makeStory({ characterProfile: 'a girl with red curls', pageCount: 2 });
-      const result = await service.generate({ story, bookId: 'book-1', artStyle: 'watercolor' });
+      const service = await makeService();
+      const result = await service.generate({
+        story: makeStory({ characterProfile: 'a girl with red curls', pageCount: 2 }),
+        bookId: 'book-1',
+        artStyle: 'watercolor',
+      });
 
       expect(result.imageKeys).toHaveLength(2);
       expect(result.characterPortraitKey).toBe('books/book-1/portrait.png');
@@ -148,11 +165,8 @@ describe('ImageGeneratorService', () => {
       expect(mockS3.uploadObject).toHaveBeenCalledTimes(4);
     });
 
-    it('skips portrait when characterProfile is empty', async () => {
-      const service = await makeService('gemini');
-      mockGenerateImage.mockResolvedValue({ image: { uint8Array: new Uint8Array([1]) } });
-      mockS3.uploadObject.mockResolvedValue(undefined);
-
+    it('skips the portrait when characterProfile is empty', async () => {
+      const service = await makeService();
       const story: Story = {
         title: 'No Profile',
         characterProfile: '',
@@ -176,14 +190,11 @@ describe('ImageGeneratorService', () => {
     });
 
     it('photo flow: loads the approved portrait, generates no portrait, folds descriptor into pages', async () => {
-      const service = await makeService('gemini');
-      mockGenerateImage.mockResolvedValue({ image: { uint8Array: new Uint8Array([1]) } });
-      mockS3.uploadObject.mockResolvedValue(undefined);
+      const service = await makeService();
       mockS3.getObjectBytes.mockResolvedValue(new Uint8Array([5, 5]));
 
-      const story = makeStory({ characterProfile: 'a girl', pageCount: 2 });
       const result = await service.generate({
-        story,
+        story: makeStory({ characterProfile: 'a girl', pageCount: 2 }),
         bookId: 'book-9',
         artStyle: 'watercolor',
         approvedPortraitKey: 'books/book-9/portrait.png',
@@ -195,25 +206,16 @@ describe('ImageGeneratorService', () => {
       expect(result.characterPortraitKey).toBe('books/book-9/portrait.png');
       // 1 location sheet + 2 page images are uploaded (no portrait upload).
       expect(mockS3.uploadObject).toHaveBeenCalledTimes(3);
-      // Descriptor is folded into each page prompt (the provider wraps it further).
-      // page calls only — the location sheet is a peopleless establishing shot
-      const pageCalls = (
-        mockGenerateImage.mock.calls as Array<[{ prompt: string | { text?: string } }]>
-      ).filter(
-        (call): call is [{ prompt: { text?: string } }] => typeof call[0].prompt === 'object',
-      );
-      expect(pageCalls).toHaveLength(2);
-      expect(pageCalls.every(([arg]) => arg.prompt.text?.includes('round face, blue eyes.'))).toBe(
-        true,
-      );
+      // The descriptor is folded into each page prompt.
+      const pages = pageCalls();
+      expect(pages).toHaveLength(2);
+      expect(pages.every((c) => c.body.prompt.includes('round face, blue eyes.'))).toBe(true);
     });
   });
 
   describe('progress callbacks (#379)', () => {
     it('reports each rendered page and the model that rendered the artefacts', async () => {
-      const service = await makeService('gemini');
-      mockGenerateImage.mockResolvedValue({ image: { uint8Array: new Uint8Array([1]) } });
-      mockS3.uploadObject.mockResolvedValue(undefined);
+      const service = await makeService();
       const onPage = jest.fn().mockResolvedValue(undefined);
       const onArtefacts = jest.fn().mockResolvedValue(undefined);
 
@@ -226,7 +228,7 @@ describe('ImageGeneratorService', () => {
       });
 
       expect(onArtefacts).toHaveBeenCalledWith(
-        expect.objectContaining({ imageModel: 'gemini-2.5-flash-image' }),
+        expect.objectContaining({ imageModel: XAI_IMAGE_MODEL }),
       );
       expect(onPage).toHaveBeenCalledTimes(2);
       expect(onPage).toHaveBeenCalledWith(expect.objectContaining({ done: 2, total: 2 }));
@@ -235,10 +237,7 @@ describe('ImageGeneratorService', () => {
 
   describe('Visual Bible path (#348)', () => {
     it('assembles the hero-lock + location prompt and passes the portrait as reference 1', async () => {
-      const service = await makeService('gemini');
-      mockGenerateImage.mockResolvedValue({ image: { uint8Array: new Uint8Array([1]) } });
-      mockS3.uploadObject.mockResolvedValue(undefined);
-
+      const service = await makeService();
       const result = await service.generate({
         story: makeBibleStory(),
         bookId: 'book-b',
@@ -246,25 +245,17 @@ describe('ImageGeneratorService', () => {
       });
 
       expect(result.imageKeys).toHaveLength(2);
-      // page calls are the ones whose prompt is an object { text, images }
-      const pageCalls = mockGenerateImage.mock.calls
-        .map(([arg]) => arg as { prompt: unknown })
-        .filter((a) => typeof a.prompt === 'object') as Array<{
-        prompt: { text: string; images: Uint8Array[] };
-      }>;
-      expect(pageCalls).toHaveLength(2);
-      for (const call of pageCalls) {
-        expect(call.prompt.text).toContain('appears exactly once');
-        expect(call.prompt.text).toContain('a green slide in a yard');
-        expect(call.prompt.images).toHaveLength(2); // the hero portrait + the location sheet (sheets always on)
+      const pages = pageCalls();
+      expect(pages).toHaveLength(2);
+      for (const c of pages) {
+        expect(c.body.prompt).toContain('appears exactly once');
+        expect(c.body.prompt).toContain('a green slide in a yard');
+        expect(c.body.images).toHaveLength(2); // hero portrait + location sheet (sheets always on)
       }
     });
 
     it('generates location + cast sheets and passes them as page references', async () => {
-      const service = await makeService('gemini');
-      mockGenerateImage.mockResolvedValue({ image: { uint8Array: new Uint8Array([2]) } });
-      mockS3.uploadObject.mockResolvedValue(undefined);
-
+      const service = await makeService();
       const base = makeBibleStory();
       const story: Story = {
         ...base,
@@ -282,22 +273,15 @@ describe('ImageGeneratorService', () => {
 
       const result = await service.generate({ story, bookId: 'book-on', artStyle: 'watercolor' });
 
-      // Two sheets generated (one location + one cast) and their keys returned.
       expect(result.referenceImageKeys).toEqual(
         expect.arrayContaining([
           'books/book-on/ref-location-home.png',
           'books/book-on/ref-cast-brother.png',
         ]),
       );
-      // Each page cites all three references (hero, cast, location) and passes 3 images.
-      const pageCalls = mockGenerateImage.mock.calls
-        .map(([arg]) => arg as { prompt: unknown })
-        .filter((a) => typeof a.prompt === 'object') as Array<{
-        prompt: { text: string; images: Uint8Array[] };
-      }>;
-      for (const call of pageCalls) {
-        expect(call.prompt.images).toHaveLength(3);
-        expect(call.prompt.text).toContain('братик — toddler boy');
+      for (const c of pageCalls()) {
+        expect(c.body.images).toHaveLength(3); // hero + cast + location
+        expect(c.body.prompt).toContain('братик — toddler boy');
       }
     });
   });
@@ -305,8 +289,6 @@ describe('ImageGeneratorService', () => {
 
 describe('ImageJudgeService wiring (DI)', () => {
   it('receives the judge through Nest DI and judges bible pages', async () => {
-    mockGoogleImage.mockClear();
-    mockGenerateImage.mockResolvedValue({ image: { uint8Array: new Uint8Array([1]) } });
     const judge = {
       maxRetries: 0,
       judge: jest.fn().mockResolvedValue({ passed: true, failures: [] }),
@@ -317,7 +299,7 @@ describe('ImageJudgeService wiring (DI)', () => {
         ReferenceSheetsService,
         { provide: ImageJudgeService, useValue: judge },
         { provide: S3Service, useValue: mockS3 },
-        { provide: ConfigService, useValue: makeMockConfig('gemini') },
+        { provide: ConfigService, useValue: makeMockConfig() },
       ],
     }).compile();
     const service = module.get(ImageGeneratorService);
@@ -333,7 +315,7 @@ describe('ImageJudgeService wiring (DI)', () => {
 
 describe('no Visual Bible (#378)', () => {
   it('fails loud instead of falling back to the removed legacy prompt', async () => {
-    const service = await makeService('gemini');
+    const service = await makeService();
     const { visualBible: _omit, ...legacy } = makeStory({ pageCount: 1 });
     void _omit;
     await expect(

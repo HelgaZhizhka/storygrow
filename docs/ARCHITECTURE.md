@@ -24,7 +24,7 @@ storygrow/
 │   │   │   ├── prompts/                # prompt constants + Gold Exemplars
 │   │   │   ├── schemas/                # Zod schemas (story.schema, judge.schema)
 │   │   │   ├── story-generator/        # orchestrator + generator + evaluator services
-│   │   │   ├── image-generator/        # providers (xAI Grok default, Gemini fallback) + portrait/sheets + page renderer + judge
+│   │   │   ├── image-generator/        # xAI Grok (only provider, #397) + portrait/sheets + page renderer + Grok-4 judge
 │   │   │   ├── rag/                    # vocabulary-rag.service + age-grade map
 │   │   │   └── validators/             # book-plan validator
 │   │   ├── generation/         # BullMQ producer + processor + stale-book sweeper
@@ -159,7 +159,7 @@ storygrow/
          │ 3. ImageGenerator.generate(story)         │
          │      → portrait from characterProfile,     │
          │        then Grok Imagine 2.0 per page (ADR-0007;│
-         │        Gemini Flash fallback via IMAGE_PROVIDER)│
+         │        (xAI Grok is the only provider, #397)     │
          │        WITH the portrait + cast/location    │
          │        reference sheets as references (≤5), │
          │        each prompt assembled from the       │

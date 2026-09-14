@@ -8,7 +8,6 @@ import { parseImageProvider, type ArtStyle, type ImageProviderName } from '../ai
 import { pickReferences } from './pick-references';
 import { buildIllustrationPrompt } from '../prompts/illustration.prompt';
 import type { ImageProvider } from './providers/image-provider.interface';
-import { GeminiImageProvider } from './providers/gemini-image.provider';
 import { XaiImageProvider } from './providers/xai-image.provider';
 import { ReferenceSheetsService, type SheetSet } from './reference-sheets.service';
 import { ImageJudgeService } from './image-judge.service';
@@ -249,7 +248,5 @@ const buildProvider = (name: ImageProviderName, config: ConfigService): ImagePro
   switch (name) {
     case 'xai':
       return new XaiImageProvider(config.getOrThrow<string>('XAI_API_KEY'));
-    case 'gemini':
-      return new GeminiImageProvider(config.getOrThrow<string>('GOOGLE_GENERATIVE_AI_API_KEY'));
   }
 };

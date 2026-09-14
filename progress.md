@@ -1613,3 +1613,19 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Not in this step:** the Gemini image *fallback* provider and the unconditional `GOOGLE_GENERATIVE_AI_API_KEY` requirement (#397 step 3).
 
 **Blockers:** none.
+
+## 2026-09-14 — refactor(ai): remove Gemini entirely — one image+vision provider, no Google key (#397, step 3)
+
+**Why:** after steps 1–2 the photo descriptor and the image judge run on Grok-4; the only remaining Gemini user was the image *fallback* provider (`IMAGE_PROVIDER=gemini`). Removing it lets the whole Google AI dependency go.
+
+**Done:**
+- Deleted `GeminiImageProvider` (+ spec); `IMAGE_PROVIDERS = ['xai']` — `parseImageProvider` now throws on `gemini` like any unknown value; `buildProvider` has one case.
+- Dropped `GEMINI_IMAGE_MODEL`, `GEMINI_VISION_MODEL` and the Gemini cost-table entry from `ai.config`.
+- `env.schema`: `GOOGLE_GENERATIVE_AI_API_KEY` no longer required (nothing reads it); `XAI_API_KEY` is unconditionally required; the conditional refine is gone.
+- **Removed the `@ai-sdk/google` dependency** from `backend/package.json`.
+- `image-generator.service.spec` rewritten to drive the xAI provider through a mocked global `fetch` (Grok's images go over REST — the multi-reference `/images/edits` endpoint isn't expressible through the AI-SDK image interface, unlike the vision path which uses the SDK via xAI's OpenAI-compatible chat API).
+- 458 backend tests pass; `./init.sh` green. Docs: CLAUDE.md (tech stack, env), both `.env.example`, `docs/deploy-railway.md`, `docs/ARCHITECTURE.md`, ADR-0006/0007, `image-pipeline-evolution.md`. The Google **OAuth** keys (sign-in) are untouched.
+
+**Result:** Gemini is out of StoryGrow. One paid image+vision provider (xAI Grok) and OpenAI for text. #397 complete.
+
+**Blockers:** none.

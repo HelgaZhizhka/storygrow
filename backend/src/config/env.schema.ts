@@ -17,10 +17,10 @@ export const EnvSchema = z
     DATABASE_URL: z.string().min(1),
     REDIS_URL: z.string().min(1),
     OPENAI_API_KEY: z.string().min(1),
-    /** Gemini is always needed: the vision judge and the photo descriptor use it. */
-    GOOGLE_GENERATIVE_AI_API_KEY: z.string().min(1),
+    // xAI is the only image provider (#397 removed the Gemini fallback); Grok also
+    // does the vision (judge, photo descriptor), so no Google key is needed at all.
     IMAGE_PROVIDER: z.enum(IMAGE_PROVIDERS).default('xai'),
-    XAI_API_KEY: z.string().optional(),
+    XAI_API_KEY: z.string().min(1),
     /** Kill switch: 0 = judge every page and write rows, never buy a re-render. */
     IMAGE_EVAL_MAX_RETRIES: z.coerce
       .number()
@@ -29,16 +29,7 @@ export const EnvSchema = z
       .max(3)
       .default(IMAGE_EVAL_MAX_RETRIES_DEFAULT),
   })
-  .passthrough()
-  .superRefine((env, ctx) => {
-    if (env.IMAGE_PROVIDER === 'xai' && !env.XAI_API_KEY) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['XAI_API_KEY'],
-        message: 'XAI_API_KEY is required when IMAGE_PROVIDER=xai (the default)',
-      });
-    }
-  });
+  .passthrough();
 
 export type Env = z.infer<typeof EnvSchema>;
 
