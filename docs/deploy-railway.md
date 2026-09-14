@@ -75,7 +75,7 @@ OPENAI_API_KEY=sk-proj-...            # must have gpt-5 access
 
 # Images (ADR-0007) — env is validated at startup (backend/src/config/env.schema.ts):
 # an unknown IMAGE_PROVIDER or a missing key fails the boot instead of picking another model
-IMAGE_PROVIDER=xai                    # default; 'gemini' = fallback, 'openai' = legacy
+IMAGE_PROVIDER=xai                    # default; 'gemini' = fallback (the OpenAI image provider was deleted in #375)
 XAI_API_KEY=xai-...                   # required for xai
 GOOGLE_GENERATIVE_AI_API_KEY=AQ...    # always required: vision judge + photo descriptor (+ gemini fallback)
 IMAGE_EVAL_MAX_RETRIES=1              # judge kill switch: 0 = judge and record, never re-render

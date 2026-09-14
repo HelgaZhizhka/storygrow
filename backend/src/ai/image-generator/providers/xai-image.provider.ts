@@ -23,7 +23,6 @@ type AspectRatio = '1:1' | '2:3' | '3:2';
  * the REST API with global fetch — no new dependency.
  */
 export class XaiImageProvider implements ImageProvider {
-  readonly usesReference = true;
   readonly modelLabel = XAI_IMAGE_MODEL;
   /** Probed 2026-09-05: 8 images → "supports at most 5 input image(s)". */
   readonly maxReferences = 5;

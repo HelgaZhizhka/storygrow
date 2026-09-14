@@ -24,7 +24,7 @@ storygrow/
 │   │   │   ├── prompts/                # prompt constants + Gold Exemplars
 │   │   │   ├── schemas/                # Zod schemas (story.schema, judge.schema)
 │   │   │   ├── story-generator/        # orchestrator + generator + evaluator services
-│   │   │   ├── image-generator/        # providers (Gemini default, gpt-image-1) + portrait stage + simplifier
+│   │   │   ├── image-generator/        # providers (xAI Grok default, Gemini fallback) + portrait/sheets + page renderer + judge
 │   │   │   ├── rag/                    # vocabulary-rag.service + age-grade map
 │   │   │   └── validators/             # book-plan validator
 │   │   ├── generation/         # BullMQ producer + processor + stale-book sweeper

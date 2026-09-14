@@ -26,8 +26,12 @@ export interface PageInput {
   references: Uint8Array[];
 }
 
+/**
+ * Every provider takes reference images (#375): the hero portrait, cast and
+ * location sheets are the product's continuity mechanism (ADR-0007), so a
+ * provider that ignored them was a silent quality regression, not a fallback.
+ */
 export interface ImageProvider {
-  readonly usesReference: boolean;
   readonly modelLabel: string;
   /** How many input reference images one page request may carry (0 = none). */
   readonly maxReferences: number;
@@ -35,6 +39,6 @@ export interface ImageProvider {
   // Stylise a real uploaded photo into a recognisable character portrait (#128).
   generatePortraitFromPhoto(input: PhotoPortraitInput): Promise<Uint8Array>;
   generatePage(input: PageInput): Promise<Uint8Array>;
-  // Establishing sheet for a location (#348, PR 2). Gemini-only, like photo portraits.
+  // Establishing sheet for a location (#348, PR 2).
   generateLocationSheet(input: LocationSheetInput): Promise<Uint8Array>;
 }

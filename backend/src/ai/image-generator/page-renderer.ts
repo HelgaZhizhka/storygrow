@@ -1,12 +1,9 @@
 import { startActiveObservation } from '@langfuse/tracing';
-import type { LanguageModel } from 'ai';
 import type { Story } from '../schemas';
 import { PAGE_TEMPLATES } from '../../pdf/page-templates/page-templates.config';
 import type { ImageSize } from '../../pdf/page-templates/page-templates.config';
 import { S3Service } from '../../s3/s3.service';
 import { ImageContentPolicyError, ImageGenerationError } from './errors';
-import { simplifyIllustrationPrompt } from './prompt-simplifier';
-import { createTelemetry } from '../telemetry';
 import type { ImageProvider } from './providers/image-provider.interface';
 import type { ImageJudgeService } from './image-judge.service';
 import type { ImageJudgeContext } from '../prompts/image-judge.prompt';
@@ -37,10 +34,12 @@ interface Attempt {
 }
 
 /**
- * PageRenderer (#348/#358) — renders ONE page: provider call with the
- * content-policy simplify-and-retry, then the vision
- * verdict and a fresh re-render of that page only while it fails, up to
- * `judge.maxRetries`. The attempt with the fewest failures is uploaded — a page
+ * PageRenderer (#348/#358) — renders ONE page: the provider call, then the
+ * vision verdict and a fresh re-render of that page only while it fails, up to
+ * `judge.maxRetries`. A provider refusal (content policy) fails the page loud
+ * as ImageContentPolicyError with the prompt attached — the DALL-E-era
+ * simplifier that cut the prompt to 150 characters (losing hero and setting)
+ * was deleted in #375. The attempt with the fewest failures is uploaded — a page
  * that never passes still ships (soft gate) with every attempt on record, so
  * the dashboard shows it and no book is blocked by a judge false negative.
  */
@@ -49,7 +48,6 @@ export class PageRenderer {
     private readonly deps: {
       provider: ImageProvider;
       s3: S3Service;
-      textModel: LanguageModel;
       judge: ImageJudgeService;
     },
   ) {}
@@ -87,7 +85,7 @@ export class PageRenderer {
     let attempt = 0;
     while (attempt < maxAttempts) {
       attempt++;
-      const bytes = await this.withSimplifyRetry(opts, imageSize);
+      const bytes = await this.renderOnce(opts, imageSize);
       const failures = judging ? await this.judgeAttempt(opts, imageSize, bytes, attempt) : [];
       const current = { bytes, failures };
       if (!best || current.failures.length < best.failures.length) best = current;
@@ -116,29 +114,18 @@ export class PageRenderer {
     return verdict.passed ? [] : verdict.failures.filter((f) => !f.startsWith('judge:'));
   }
 
-  private async withSimplifyRetry(opts: RenderPageOpts, imageSize: ImageSize): Promise<Uint8Array> {
-    const gen = (prompt: string): Promise<Uint8Array> =>
-      this.deps.provider.generatePage({ prompt, imageSize, references: opts.references });
+  private async renderOnce(opts: RenderPageOpts, imageSize: ImageSize): Promise<Uint8Array> {
     try {
-      return await gen(opts.prompt);
+      return await this.deps.provider.generatePage({
+        prompt: opts.prompt,
+        imageSize,
+        references: opts.references,
+      });
     } catch (err: unknown) {
-      if (!(err instanceof ImageGenerationError) || !err.refused) throw err;
-      const simplified = await simplifyIllustrationPrompt(
-        opts.prompt,
-        this.deps.textModel,
-        createTelemetry('image-generation.simplify-prompt', {
-          bookId: opts.bookId,
-          pageNumber: opts.pageNumber,
-        }),
-      );
-      try {
-        return await gen(simplified);
-      } catch (retryErr: unknown) {
-        if (retryErr instanceof ImageGenerationError && retryErr.refused) {
-          throw new ImageContentPolicyError(opts.pageNumber, simplified, retryErr);
-        }
-        throw retryErr;
+      if (err instanceof ImageGenerationError && err.refused) {
+        throw new ImageContentPolicyError(opts.pageNumber, opts.prompt, err);
       }
+      throw err;
     }
   }
 }

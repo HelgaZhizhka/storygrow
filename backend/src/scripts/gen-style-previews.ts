@@ -1,7 +1,8 @@
 /**
- * One-off: generate a style-preview thumbnail for each art style, using the SAME
- * pipeline as real books (gpt-image-1 + STYLE_SUFFIXES). The preview therefore
- * shows exactly what that style produces. Saved to frontend/public/styles/.
+ * One-off: generate a style-preview thumbnail for each art style with gpt-image-1
+ * + STYLE_SUFFIXES. NOTE: books are rendered by Grok since ADR-0007 (#375 removed
+ * the OpenAI provider from the pipeline), so these previews no longer show the
+ * exact book look — see #392. Saved to frontend/public/styles/.
  *
  * Usage: pnpm --filter backend exec dotenv -e .env -- tsx src/scripts/gen-style-previews.ts
  */

@@ -4,16 +4,13 @@ jest.mock('@langfuse/tracing', () => ({
     fn: (span: { update: jest.Mock }) => Promise<T>,
   ): Promise<T> => fn({ update: jest.fn() }),
 }));
-jest.mock('../telemetry', () => ({ createTelemetry: jest.fn(() => ({ isEnabled: false })) }));
-
-import type { LanguageModel } from 'ai';
 import { PageRenderer, type RenderPageOpts } from './page-renderer';
+import { ImageContentPolicyError, ImageGenerationError } from './errors';
 import type { ImageJudgeService } from './image-judge.service';
 import type { ImageProvider } from './providers/image-provider.interface';
 import type { S3Service } from '../../s3/s3.service';
 
 const provider = (): ImageProvider & { generatePage: jest.Mock } => ({
-  usesReference: true,
   maxReferences: 3,
   modelLabel: 'test',
   generatePage: jest.fn(),
@@ -23,7 +20,6 @@ const provider = (): ImageProvider & { generatePage: jest.Mock } => ({
 });
 const uploadObject = jest.fn();
 const s3 = { uploadObject } as unknown as S3Service;
-const textModel = {} as LanguageModel;
 
 const judgeStub = (
   maxRetries: number,
@@ -52,7 +48,7 @@ describe('PageRenderer', () => {
   it('renders once and uploads when the page carries no judge context', async () => {
     const p = provider();
     p.generatePage.mockResolvedValue(new Uint8Array([1]));
-    const r = new PageRenderer({ provider: p, s3, textModel, judge: judgeStub(1, []) });
+    const r = new PageRenderer({ provider: p, s3, judge: judgeStub(1, []) });
     const out = await r.render(opts({ judgeContext: undefined }));
     expect(out).toMatchObject({ key: 'books/b1/page-3.png', attempts: 1 });
     expect(p.generatePage).toHaveBeenCalledTimes(1);
@@ -67,7 +63,7 @@ describe('PageRenderer', () => {
       { passed: false, failures: ['sceneMatch'] },
       { passed: true, failures: [] },
     ]);
-    const out = await new PageRenderer({ provider: p, s3, textModel, judge }).render(opts());
+    const out = await new PageRenderer({ provider: p, s3, judge }).render(opts());
     expect(out.attempts).toBe(2);
     expect(out.bytes).toEqual(new Uint8Array([2]));
     expect(judge.judge).toHaveBeenNthCalledWith(1, expect.objectContaining({ attempt: 1 }));
@@ -83,7 +79,7 @@ describe('PageRenderer', () => {
       { passed: false, failures: ['sceneMatch'] },
       { passed: false, failures: ['sceneMatch', 'artefact:textInImage'] },
     ]);
-    const out = await new PageRenderer({ provider: p, s3, textModel, judge }).render(opts());
+    const out = await new PageRenderer({ provider: p, s3, judge }).render(opts());
     expect(p.generatePage).toHaveBeenCalledTimes(2);
     expect(out.bytes).toEqual(new Uint8Array([1]));
     expect(uploadObject).toHaveBeenCalledWith(
@@ -97,7 +93,7 @@ describe('PageRenderer', () => {
     const judge = judgeStub(1, [
       { passed: true, failures: ['judge:blocked:PROHIBITED_CONTENT:identity-only'] },
     ]);
-    const out = await new PageRenderer({ provider: p, s3, textModel, judge }).render(opts());
+    const out = await new PageRenderer({ provider: p, s3, judge }).render(opts());
     expect(out.attempts).toBe(1);
     expect(p.generatePage).toHaveBeenCalledTimes(1);
   });
@@ -106,9 +102,27 @@ describe('PageRenderer', () => {
     const p = provider();
     p.generatePage.mockResolvedValue(new Uint8Array([1]));
     const judge = judgeStub(1, []);
-    await new PageRenderer({ provider: p, s3, textModel, judge }).render(
-      opts({ judgeContext: undefined }),
-    );
+    await new PageRenderer({ provider: p, s3, judge }).render(opts({ judgeContext: undefined }));
     expect(judge.judge).not.toHaveBeenCalled();
+  });
+
+  describe('provider refusal (#375: no simplifier, fail loud)', () => {
+    it('throws ImageContentPolicyError carrying the page and the prompt, without a second call', async () => {
+      const p = provider();
+      p.generatePage.mockRejectedValue(new ImageGenerationError('refused'));
+      const r = new PageRenderer({ provider: p, s3, judge: judgeStub(1, []) });
+      const err = await r.render(opts({ prompt: 'a girl hides a box' })).catch((e: unknown) => e);
+      expect(err).toBeInstanceOf(ImageContentPolicyError);
+      expect(err).toMatchObject({ pageNumber: 3, prompt: 'a girl hides a box' });
+      expect(p.generatePage).toHaveBeenCalledTimes(1);
+      expect(uploadObject).not.toHaveBeenCalled();
+    });
+
+    it('propagates a non-refusal provider error as-is', async () => {
+      const p = provider();
+      p.generatePage.mockRejectedValue(new Error('network timeout'));
+      const r = new PageRenderer({ provider: p, s3, judge: judgeStub(1, []) });
+      await expect(r.render(opts())).rejects.toThrow('network timeout');
+    });
   });
 });

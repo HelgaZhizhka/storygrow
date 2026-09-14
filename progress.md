@@ -1517,3 +1517,19 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - 289 ai/generation/admin tests pass; `./init.sh` green; `CONTEXT.md` (Visual Bible) and the review tracking updated.
 
 **Blockers:** none.
+
+## 2026-09-13 — refactor(ai): delete the OpenAI image provider, the usesReference dimension and the prompt simplifier (#375, review A6+A7)
+
+**Why:** `gpt-image-1` takes no reference images, so on that provider there was no portrait, no cast/location sheets and no photo likeness — the whole continuity mechanism of ADR-0007 silently off. Not a fallback, a quality regression behind an env value. The prompt simplifier was written for DALL-E's safety filter: on a refusal it cut the assembled prompt to 150 characters, dropping the hero and the setting, then rendered that — the only `generateText` in the codebase without a schema, and the only reason the image service held an OpenAI key.
+
+**Done:**
+- **Deleted** `OpenAiImageProvider` (+ spec), `prompt-simplifier.ts`, `image-prompt-simplifier.prompt.ts`; `IMAGE_PROVIDERS` is `xai | gemini`, `openai` now fails at startup like any unknown value.
+- **`usesReference` removed from the provider contract** — every provider takes references, so the four "if the provider takes references" branches in the image service are gone (sheets, portrait, photo portrait, hero reference).
+- **A refusal fails the page loud:** `PageRenderer` maps a provider refusal to `ImageContentPolicyError` with the page number and the full prompt attached; the book goes to `images_failed` and the idempotent retry (#374) applies. No re-render with a mutilated prompt.
+- **Measurement the review asked for** (count `simplify-prompt` spans on Grok in LangFuse) was not available: LangFuse is off in production (#382), no local instance holds Grok runs, and the Railway log window covers only the current deploy (79 lines, 0 refusals). Deleted on the structural argument above; the review tracking says so.
+- **Real book** through the local API on Grok after the deletion (child mode, cartoon): «Соня и кекс на двоих» — portrait + 3 reference sheets + 7 pages, judge 7/7 on the first attempt (p6 blocked by Gemini safety → identity-only verdict recorded), `check:book` OK. The Grok path is unchanged, as the review required for A6.
+- Refusal tests moved to `page-renderer.spec.ts`; the image-generator spec no longer mocks OpenAI or `generateText`. 281 ai/config/generation tests pass; `./init.sh` green.
+- Docs: `CLAUDE.md` (tech stack, env), both `.env.example`, `docs/deploy-railway.md`, `docs/ARCHITECTURE.md` tree, ADR-0007 amendment, review tracking.
+- **Found, filed as #392:** the style-preview and fast-flow seed scripts still call `gpt-image-1` directly, so the art-style thumbnails a parent picks from are not Grok renders; `IMAGE_MODEL`/`IMAGE_QUALITY` survive only for them. Owner decision (costs money, product-facing).
+
+**Blockers:** none.

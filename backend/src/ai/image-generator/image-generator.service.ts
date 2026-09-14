@@ -1,20 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { startActiveObservation } from '@langfuse/tracing';
-import { createOpenAI } from '@ai-sdk/openai';
-import type { LanguageModel } from 'ai';
 import { type Story } from '../schemas';
 import { S3Service } from '../../s3/s3.service';
-import {
-  GENERATION_MODEL,
-  parseImageProvider,
-  type ArtStyle,
-  type ImageProviderName,
-} from '../ai.config';
+import { parseImageProvider, type ArtStyle, type ImageProviderName } from '../ai.config';
 import { pickReferences } from './pick-references';
 import { buildIllustrationPrompt } from '../prompts/illustration.prompt';
 import type { ImageProvider } from './providers/image-provider.interface';
-import { OpenAiImageProvider } from './providers/openai-image.provider';
 import { GeminiImageProvider } from './providers/gemini-image.provider';
 import { XaiImageProvider } from './providers/xai-image.provider';
 import { ReferenceSheetsService, type SheetSet } from './reference-sheets.service';
@@ -71,7 +63,6 @@ interface PageRequest {
 @Injectable()
 export class ImageGeneratorService {
   private readonly logger = new Logger(ImageGeneratorService.name);
-  private readonly textModel: LanguageModel;
   private readonly provider: ImageProvider;
   private readonly pages: PageRenderer;
 
@@ -84,15 +75,11 @@ export class ImageGeneratorService {
     private readonly referenceSheets: ReferenceSheetsService,
     judge: ImageJudgeService,
   ) {
-    this.textModel = createOpenAI({ apiKey: config.getOrThrow<string>('OPENAI_API_KEY') })(
-      GENERATION_MODEL,
-    );
     const name = parseImageProvider(config.get<string>('IMAGE_PROVIDER'));
     this.provider = buildProvider(name, config);
     this.pages = new PageRenderer({
       provider: this.provider,
       s3,
-      textModel: this.textModel,
       judge,
     });
     this.logger.log(
@@ -148,11 +135,11 @@ export class ImageGeneratorService {
   }
 
   // Generate location + cast reference sheets once per book (#348, PR 2) — always
-  // on since ADR-0007's amendment (cast drifted without them); only for the
-  // bible path on a reference-capable provider. Returns null when not applicable.
+  // on since ADR-0007's amendment (cast drifted without them). Returns null
+  // when the story has no bible (a hard error later, in buildPageRequest).
   private async maybeSheets(input: ImageGenInput): Promise<SheetSet | null> {
     const bible = input.story.visualBible;
-    if (!this.provider.usesReference || !bible) return null;
+    if (!bible) return null;
     const reusable = input.reuse?.referenceImageKeys ?? [];
     if (reusable.length > 0) return this.referenceSheets.load(reusable);
     return this.referenceSheets.generate({
@@ -163,16 +150,13 @@ export class ImageGeneratorService {
     });
   }
 
-  // Photo → stylised portrait (#128, phase 1). Gemini-only (the photo path never
-  // selects OpenAI); a refusal surfaces as ImageGenerationError for the caller.
+  // Photo → stylised portrait (#128, phase 1); a refusal surfaces as
+  // ImageGenerationError for the caller.
   async generatePhotoPortrait(input: {
     photo: Uint8Array;
     descriptor: string;
     artStyle: ArtStyle;
   }): Promise<Uint8Array> {
-    if (!this.provider.usesReference) {
-      throw new Error('Photo portraits require the Gemini image provider');
-    }
     return this.provider.generatePortraitFromPhoto(input);
   }
 
@@ -194,11 +178,10 @@ export class ImageGeneratorService {
     const { input, page, portraitBytes, sheets } = ctx;
     const bible = input.story.visualBible!;
     const scene = page.scene!;
-    const heroPortrait = this.provider.usesReference ? portraitBytes : undefined;
     const { images, labels } = pickReferences({
       scene,
       sources: {
-        heroPortrait,
+        heroPortrait: portraitBytes,
         castSheets: sheets?.castSheets,
         locationSheet: sheets?.locationSheets[scene.locationId],
       },
@@ -232,7 +215,7 @@ export class ImageGeneratorService {
       return { key: existing, bytes };
     }
     const { characterProfile } = input.story;
-    if (!this.provider.usesReference || !characterProfile) return null;
+    if (!characterProfile) return null;
     return startActiveObservation('image-generation.portrait', async (span) => {
       const bytes = await this.provider.generatePortrait({
         characterProfile,
@@ -252,7 +235,5 @@ const buildProvider = (name: ImageProviderName, config: ConfigService): ImagePro
       return new XaiImageProvider(config.getOrThrow<string>('XAI_API_KEY'));
     case 'gemini':
       return new GeminiImageProvider(config.getOrThrow<string>('GOOGLE_GENERATIVE_AI_API_KEY'));
-    case 'openai':
-      return new OpenAiImageProvider();
   }
 };
