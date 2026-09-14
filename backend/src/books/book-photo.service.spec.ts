@@ -9,9 +9,9 @@ jest.mock('sharp', () => {
 });
 
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { BooksService } from './books.service';
+import { BookPhotoService } from './book-photo.service';
 import {
-  createBooksServiceForTest,
+  createBookPhotoServiceForTest,
   mockPrisma,
   mockS3,
   mockPhotoDescriptor,
@@ -21,11 +21,11 @@ import {
 const file = { buffer: Buffer.from([1, 2, 3]), mimetype: 'image/jpeg' };
 const pendingChildBook = { userId: 'user-1', protagonistMode: 'child', status: 'pending' };
 
-describe('BooksService photo character', () => {
-  let service: BooksService;
+describe('BookPhotoService (#128, split out in #380)', () => {
+  let service: BookPhotoService;
 
   beforeEach(async () => {
-    service = await createBooksServiceForTest();
+    service = await createBookPhotoServiceForTest();
   });
 
   describe('uploadChildPhoto', () => {
@@ -37,7 +37,7 @@ describe('BooksService photo character', () => {
         descriptor: 'round face, blue eyes',
       });
 
-      const result = await service.uploadChildPhoto('user-1', 'b1', file, true);
+      const result = await service.uploadChildPhoto('user-1', 'b1', { file, consent: true });
 
       expect(mockS3.uploadObject).toHaveBeenCalledWith(
         expect.objectContaining({ key: 'books/b1/upload', contentType: 'image/jpeg' }),
@@ -55,9 +55,9 @@ describe('BooksService photo character', () => {
 
     it('rejects without parental consent', async () => {
       mockPrisma.book.findUnique.mockResolvedValueOnce(pendingChildBook);
-      await expect(service.uploadChildPhoto('user-1', 'b1', file, false)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.uploadChildPhoto('user-1', 'b1', { file, consent: false }),
+      ).rejects.toThrow(BadRequestException);
       expect(mockS3.uploadObject).not.toHaveBeenCalled();
     });
 
@@ -68,9 +68,9 @@ describe('BooksService photo character', () => {
         ageYears: null,
         descriptor: '',
       });
-      await expect(service.uploadChildPhoto('user-1', 'b1', file, true)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.uploadChildPhoto('user-1', 'b1', { file, consent: true }),
+      ).rejects.toThrow(BadRequestException);
       expect(mockS3.uploadObject).not.toHaveBeenCalled();
       expect(mockPrisma.book.update).not.toHaveBeenCalled();
     });
@@ -78,15 +78,18 @@ describe('BooksService photo character', () => {
     it('rejects an unsupported mime type', async () => {
       mockPrisma.book.findUnique.mockResolvedValueOnce(pendingChildBook);
       await expect(
-        service.uploadChildPhoto('user-1', 'b1', { ...file, mimetype: 'image/gif' }, true),
+        service.uploadChildPhoto('user-1', 'b1', {
+          file: { ...file, mimetype: 'image/gif' },
+          consent: true,
+        }),
       ).rejects.toThrow(BadRequestException);
     });
 
     it('rejects a book owned by another user', async () => {
       mockPrisma.book.findUnique.mockResolvedValueOnce({ ...pendingChildBook, userId: 'other' });
-      await expect(service.uploadChildPhoto('user-1', 'b1', file, true)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.uploadChildPhoto('user-1', 'b1', { file, consent: true }),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('rejects once generation has started', async () => {
@@ -94,9 +97,9 @@ describe('BooksService photo character', () => {
         ...pendingChildBook,
         status: 'generating',
       });
-      await expect(service.uploadChildPhoto('user-1', 'b1', file, true)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.uploadChildPhoto('user-1', 'b1', { file, consent: true }),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 

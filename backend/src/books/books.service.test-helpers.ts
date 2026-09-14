@@ -11,6 +11,7 @@ jest.mock('../generated/prisma/client', () => ({
 
 import { Test } from '@nestjs/testing';
 import { BooksService } from './books.service';
+import { BookPhotoService } from './book-photo.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { S3Service } from '../s3/s3.service';
 import { LearningGoalSafetyService } from '../ai/learning-goal-safety/learning-goal-safety.service';
@@ -72,9 +73,22 @@ export async function createBooksServiceForTest(): Promise<BooksService> {
       { provide: PrismaService, useValue: mockPrisma },
       { provide: S3Service, useValue: mockS3 },
       { provide: LearningGoalSafetyService, useValue: mockLearningGoalSafety },
+    ],
+  }).compile();
+  return module.get(BooksService);
+}
+
+/** Same idea for the photo-character service split out in #380. */
+export async function createBookPhotoServiceForTest(): Promise<BookPhotoService> {
+  jest.clearAllMocks();
+  const module = await Test.createTestingModule({
+    providers: [
+      BookPhotoService,
+      { provide: PrismaService, useValue: mockPrisma },
+      { provide: S3Service, useValue: mockS3 },
       { provide: PhotoDescriptorService, useValue: mockPhotoDescriptor },
       { provide: PhotoPortraitService, useValue: mockPhotoPortrait },
     ],
   }).compile();
-  return module.get(BooksService);
+  return module.get(BookPhotoService);
 }

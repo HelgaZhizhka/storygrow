@@ -4,6 +4,7 @@ import type { VisualBible } from '../schemas';
 import type { ArtStyle } from '../ai.config';
 import { S3Service } from '../../s3/s3.service';
 import { ImageGenerationError } from './errors';
+import { bookKeys, parseSheetKey } from '../../s3/book-keys';
 import type { ImageProvider } from './providers/image-provider.interface';
 
 export interface SheetSet {
@@ -51,17 +52,17 @@ export class ReferenceSheetsService {
 
   /**
    * Reload the sheets of an earlier run of the same book from S3 (#374) instead
-   * of generating them again. Keys are the ones this service produced
-   * (`ref-location-<id>.png`, `ref-cast-<id>.png`); anything else is ignored.
+   * of generating them again. Keys are the ones this service produced (see
+   * `bookKeys`); anything else is ignored.
    */
   async load(keys: string[]): Promise<SheetSet> {
     const set: SheetSet = { castSheets: {}, locationSheets: {}, keys: [] };
     await Promise.all(
       keys.map(async (key) => {
-        const match = /ref-(location|cast)-(.+)\.png$/.exec(key);
-        if (!match) return;
+        const sheet = parseSheetKey(key);
+        if (!sheet) return;
         const bytes = await this.s3.getObjectBytes(key);
-        (match[1] === 'location' ? set.locationSheets : set.castSheets)[match[2]] = bytes;
+        (sheet.kind === 'location' ? set.locationSheets : set.castSheets)[sheet.id] = bytes;
         set.keys.push(key);
       }),
     );
@@ -80,7 +81,7 @@ export class ReferenceSheetsService {
         atmosphere: input.bible.atmosphere,
         artStyle: input.artStyle,
       });
-      const key = `books/${input.bookId}/ref-location-${loc.id}.png`;
+      const key = bookKeys(input.bookId).locationSheet(loc.id);
       await this.upload(key, bytes);
       set.locationSheets[loc.id] = bytes;
       set.keys.push(key);
@@ -97,7 +98,7 @@ export class ReferenceSheetsService {
         characterProfile: member.descriptor,
         artStyle: input.artStyle,
       });
-      const key = `books/${input.bookId}/ref-cast-${member.id}.png`;
+      const key = bookKeys(input.bookId).castSheet(member.id);
       await this.upload(key, bytes);
       set.castSheets[member.id] = bytes;
       set.keys.push(key);

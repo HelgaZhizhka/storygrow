@@ -19,11 +19,22 @@ export const validateBookPlan = (
   childAge: number,
   opts: { expectScenes?: boolean } = {},
 ): CheckResult => {
-  const errors: string[] = [];
+  if (pages.length === 0) {
+    return { passed: false, errors: ['Page list is empty'] };
+  }
   const ageBand = ageToAgeBand(childAge);
+  const errors = [
+    ...structureErrors(pages, opts),
+    ...pages.flatMap((page, index) => pageErrors(page, index, { childAge, ageBand })),
+  ];
 
-  // #378: a story written against a Plan must carry the plan's scene on every
-  // page; a page without one means Prose changed the template the plan fixed.
+  return { passed: errors.length === 0, errors };
+};
+
+// #378: a story written against a Plan must carry the plan's scene on every
+// page; a page without one means Prose changed the template the plan fixed.
+const structureErrors = (pages: Page[], opts: { expectScenes?: boolean }): string[] => {
+  const errors: string[] = [];
   if (opts.expectScenes) {
     pages.forEach((page, index) => {
       if (!page.scene)
@@ -32,51 +43,39 @@ export const validateBookPlan = (
         );
     });
   }
-
-  if (pages.length === 0) {
-    return { passed: false, errors: ['Page list is empty'] };
-  }
-
   if (pages[0].template !== 'cover') {
     errors.push(`First page must use the 'cover' template, got '${pages[0].template}'`);
   }
-
-  const lastIndex = pages.length - 1;
-  if (pages[lastIndex].template !== 'final') {
-    errors.push(`Last page must use the 'final' template, got '${pages[lastIndex].template}'`);
+  const last = pages[pages.length - 1];
+  if (last.template !== 'final') {
+    errors.push(`Last page must use the 'final' template, got '${last.template}'`);
   }
+  return errors;
+};
 
-  pages.forEach((page, index) => {
-    const config = PAGE_TEMPLATES[page.template];
-    if (!config) {
-      errors.push(`[page:${index}] Unknown template '${page.template}'`);
-      return;
-    }
-
-    if (!config.suitableFor.includes(childAge)) {
-      errors.push(
-        `[page:${index}] Template '${page.template}' is not suitable for age ${childAge} (suitable for ages: ${config.suitableFor.join(', ')})`,
-      );
-    }
-
-    const maxChars = config.maxChars[ageBand];
-
-    if (page.text != null && maxChars.text !== undefined) {
-      if (page.text.length > maxChars.text) {
-        errors.push(
-          `[page:${index}] Text is ${page.text.length} chars; template '${page.template}' allows ${maxChars.text}`,
-        );
-      }
-    }
-
-    if (page.title != null && maxChars.title !== undefined) {
-      if (page.title.length > maxChars.title) {
-        errors.push(
-          `[page:${index}] Title is ${page.title.length} chars; template '${page.template}' allows ${maxChars.title}`,
-        );
-      }
-    }
-  });
-
-  return { passed: errors.length === 0, errors };
+const pageErrors = (
+  page: Page,
+  index: number,
+  child: { childAge: number; ageBand: ReturnType<typeof ageToAgeBand> },
+): string[] => {
+  const config = PAGE_TEMPLATES[page.template];
+  if (!config) return [`[page:${index}] Unknown template '${page.template}'`];
+  const errors: string[] = [];
+  if (!config.suitableFor.includes(child.childAge)) {
+    errors.push(
+      `[page:${index}] Template '${page.template}' is not suitable for age ${child.childAge} (suitable for ages: ${config.suitableFor.join(', ')})`,
+    );
+  }
+  const maxChars = config.maxChars[child.ageBand];
+  if (page.text != null && maxChars.text !== undefined && page.text.length > maxChars.text) {
+    errors.push(
+      `[page:${index}] Text is ${page.text.length} chars; template '${page.template}' allows ${maxChars.text}`,
+    );
+  }
+  if (page.title != null && maxChars.title !== undefined && page.title.length > maxChars.title) {
+    errors.push(
+      `[page:${index}] Title is ${page.title.length} chars; template '${page.template}' allows ${maxChars.title}`,
+    );
+  }
+  return errors;
 };

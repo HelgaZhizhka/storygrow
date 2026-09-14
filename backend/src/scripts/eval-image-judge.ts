@@ -60,11 +60,15 @@ const config = {
   },
 } as unknown as ConfigService;
 
+interface JudgeContext {
+  judge: ImageJudgeService;
+  sink: MemorySink;
+  base: string;
+}
+
 const judgeEntry = async (
-  judge: ImageJudgeService,
-  sink: MemorySink,
+  { judge, sink, base }: JudgeContext,
   entry: ManifestEntry,
-  base: string,
 ): Promise<Outcome> => {
   const refs = entry.references ?? [];
   const verdict = await judge.judge({
@@ -133,7 +137,7 @@ const main = async (): Promise<void> => {
   const judge = new ImageJudgeService(config, sink);
   const outcomes: Outcome[] = [];
   for (const entry of entries) {
-    const o = await judgeEntry(judge, sink, entry, base);
+    const o = await judgeEntry({ judge, sink, base }, entry);
     outcomes.push(o);
     const verdict = o.unavailable ? 'ERROR' : o.passed ? 'pass' : 'FAIL';
     console.log(`${verdict}  (${o.expected})  ${o.id}  ${o.failures.join(',')}`);

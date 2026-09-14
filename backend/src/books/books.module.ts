@@ -7,12 +7,14 @@ import { BookImageService } from './book-image.service';
 import { BookProgressService } from './book-progress.service';
 import { BooksController } from './books.controller';
 import { BooksService } from './books.service';
+import { BookPhotoService } from './book-photo.service';
+import { BookPhotoController } from './book-photo.controller';
 import { ProgressController } from './progress.controller';
 
 @Module({
   imports: [S3Module, FastFlowModule, AuthModule, AiModule],
-  controllers: [BooksController, ProgressController],
-  providers: [BookImageService, BooksService, BookProgressService],
+  controllers: [BooksController, BookPhotoController, ProgressController],
+  providers: [BookImageService, BooksService, BookPhotoService, BookProgressService],
   exports: [BookImageService, BookProgressService],
 })
 export class BooksModule {}

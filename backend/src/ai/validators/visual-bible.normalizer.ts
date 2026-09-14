@@ -73,6 +73,25 @@ const cleanIds = (ids: string[], known: Set<string>): { kept: string[]; dropped:
   return { kept, dropped };
 };
 
+/** Drop ids the bible does not know; add cast the intent names but the scene forgot. */
+const repairIds = (
+  page: PlanPage,
+  ids: BibleIds,
+  counts: RepairCounts,
+): { castIds: string[]; propIds: string[] } => {
+  const cast = cleanIds(page.scene.castIds, ids.cast);
+  const props = cleanIds(page.scene.propIds, ids.props);
+  const addedCast = castNamedButMissing(page.intent, cast.kept, ids.castNames);
+  counts.droppedCastId += cast.dropped;
+  counts.droppedPropId += props.dropped;
+  counts.addedCast += addedCast.length;
+  return { castIds: [...cast.kept, ...addedCast], propIds: props.kept };
+};
+
+/** The hero must be on the cover, the final page, and any page whose intent names them. */
+const heroRequired = (page: PlanPage, heroNames: string[]): boolean =>
+  page.template === 'cover' || page.template === 'final' || intentNames(page.intent, heroNames);
+
 /** Repair one page's scene against the bible ids; returns the page + repair count. */
 const normalizePage = (
   page: PlanPage,
@@ -81,25 +100,13 @@ const normalizePage = (
   const scene: Scene = page.scene;
   const counts = zeroCounts();
 
-  let locationId = scene.locationId;
-  if (!ids.locations.has(locationId)) {
-    locationId = ids.fallbackLocation;
-    counts.danglingLocation++;
-  }
+  const locationId = ids.locations.has(scene.locationId)
+    ? scene.locationId
+    : (counts.danglingLocation++, ids.fallbackLocation);
+  const { castIds, propIds } = repairIds(page, ids, counts);
 
-  const cast = cleanIds(scene.castIds, ids.cast);
-  const props = cleanIds(scene.propIds, ids.props);
-  const addedCast = castNamedButMissing(page.intent, cast.kept, ids.castNames);
-  counts.droppedCastId += cast.dropped;
-  counts.droppedPropId += props.dropped;
-  counts.addedCast += addedCast.length;
-
-  const forceHero =
-    page.template === 'cover' ||
-    page.template === 'final' ||
-    intentNames(page.intent, ids.heroNames);
-  const heroOnPage =
-    forceHero && !scene.heroOnPage ? (counts.heroForced++, true) : scene.heroOnPage;
+  const heroOnPage = scene.heroOnPage || heroRequired(page, ids.heroNames);
+  if (heroOnPage && !scene.heroOnPage) counts.heroForced++;
 
   return {
     page: {
@@ -107,8 +114,8 @@ const normalizePage = (
       scene: {
         ...scene,
         locationId,
-        castIds: [...cast.kept, ...addedCast],
-        propIds: props.kept,
+        castIds,
+        propIds,
         heroOnPage,
       },
     },

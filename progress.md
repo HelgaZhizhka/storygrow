@@ -1533,3 +1533,18 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - **Found, filed as #392:** the style-preview and fast-flow seed scripts still call `gpt-image-1` directly, so the art-style thumbnails a parent picks from are not Grok renders; `IMAGE_MODEL`/`IMAGE_QUALITY` survive only for them. Owner decision (costs money, product-facing).
 
 **Blockers:** none.
+
+## 2026-09-14 — ci(repo): enforce the 400 / 30 / 3 limits with ESLint; one S3 key layout (#380, review C3)
+
+**Why:** hard constraints 12–14 were convention only. Measured before enforcing: backend 31 violations in source (19 functions over 30 logic lines, 12 functions over 3 params) plus one spec over 400 lines; frontend 23, all in `.tsx` components. The S3 layout `books/<id>/…` was hand-built in seven places and re-parsed with a regex in an eighth.
+
+**Done:**
+- **`limits` in the shared ESLint base** (`packages/eslint-config`): `max-lines` 400 (raw, what `wc -l` shows), `max-lines-per-function` 30 logic lines (blank and comment lines do not count), `max-params` 3. Per-package overrides, each with its reason in the config: the per-function rule is off where a body is not logic — prompt builders, test suites, eval/seed CLI mains, React components. File size and parameter count apply everywhere, tests included.
+- **Backend refactored to pass:** `GenerationProcessor.process` (123 lines) is now five steps (`ensureStory`, `ensureImages`, `finish`, `markFailed`, `advance`); `validateBookPlan` split into structure and per-page checks; normalizer, admin metrics, photo portrait, vocabulary retrieve, judge `persist`, page-renderer `judgeAttempt`, eval-batch and eval-image-judge helpers take object parameters. **`BooksService` (489 lines) split:** the photo-character flow moved to `BookPhotoService` + `BookPhotoController`; `BooksService` is back to three dependencies. The processor spec (452 lines) split around a shared fixture.
+- **Exemptions, all inline with a reason:** four NestJS DI constructors, one Nest route handler with four decorated request parts, one passport callback. `docs/CODE_STYLE.md` records the rule and the allowed exemptions.
+- **`bookKeys(bookId)`** in `backend/src/s3/book-keys.ts` is the single layout (upload, portrait, page, cast/location sheet, pdf) with `parseSheetKey` as its inverse; every producer and `ReferenceSheetsService.load` go through it.
+- Frontend: e2e `apiPost` takes an object; no component changed.
+- **Real book** through the local API on the refactored processor (child mode, storybook): «Соня и несъеденный пирог» — portrait, cast + location sheets, 8 pages and the PDF all under the `bookKeys` layout; judge 7/8 first attempt, p6 failed `proportionsNatural` twice and was kept with both rows recorded; `check:book` OK.
+- Behaviour unchanged: 459 backend tests pass (68 suites); `./init.sh` green.
+
+**Blockers:** none.
