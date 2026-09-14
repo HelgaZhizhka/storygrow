@@ -28,6 +28,16 @@ Each entry uses this template:
 
 ---
 
+## 2026-09-14 — chore(eval): prose metrics, eval sets and offline baseline (Suteev refactor, phase 0)
+
+- Spec: `docs/superpowers/specs/2026-09-13-suteev-register-refactor-design.md` — corpus analysis of 19 Suteev tales vs the 14-story eval batch, 8-phase plan, owner decisions recorded (per-goal exemplars, prompt review gates, flaw on companion by default, StyleProfile seam for future styles, no verse).
+- ADR-0004 v2 draft merged from `issue/safety-boundary-v2-research` (status Proposed; prompts not applied until owner review).
+- New `backend/src/scripts/lib/prose-metrics.ts`: deterministic per-story metrics (words, sentence length, dialogue share, hero-name density, «X? Не X?» tic, formula moral on final page, cast named, refrain lines, title stop-word) + batch diversity (repeated props/locations). Unit-tested.
+- `eval:batch` prints the metrics (dlg/name/tic columns + summary) and takes `--set=core|full|antagonist`; cases moved to `lib/eval-cases.ts` (full = all 20 goals + 5 fairy-tale-antagonist probes incl. the negative «незнакомая собака» probe).
+- New `eval:metrics --dir=<stories>` recomputes the same numbers offline over frozen story JSONs — no LLM, no DB.
+- Offline baseline on after2 (#367): `docs/process/eval-baselines/2026-09-14-prose-metrics-after2-367.json`.
+- Verified: `./init.sh` green (469 backend tests). Live `eval:batch --set=full` baseline still to be run by the owner (no API keys in the cloud session).
+
 ## 2026-06-26 — Priority reset + text-quality push (#188/#187 merged, #191 docs, RAG plan)
 
 **Done:**

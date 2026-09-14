@@ -11,15 +11,18 @@
  * "% of books passing on first attempt").
  *
  * Usage:
- *   pnpm --filter backend eval:batch [--only=<goal substring>] [--model=<id>]
- *                                    [--concurrency=N] [--out=path.json]
+ *   pnpm --filter backend eval:batch [--set=core|full|antagonist] [--only=<goal substring>]
+ *                                    [--model=<id>] [--concurrency=N] [--out=path.json]
+ *                                    [--stories-out=dir]
  * Examples:
- *   pnpm --filter backend eval:batch                       # full default set
+ *   pnpm --filter backend eval:batch                       # core set (14 runs)
+ *   pnpm --filter backend eval:batch --set=full            # all 20 goals + antagonist probes (28)
  *   pnpm --filter backend eval:batch --only=Честность      # one goal's combos
- *   pnpm --filter backend eval:batch --out=/tmp/before.json
+ *   pnpm --filter backend eval:batch --out=/tmp/before.json --stories-out=/tmp/stories
  *
- * Cost: ~$0.05–0.15 per run (gpt-5 prose dominates); the default 10-run set is
- * roughly $1. Traces land in LangFuse when LANGFUSE_* keys are set.
+ * Sets live in lib/eval-cases.ts. Cost: ~$0.05–0.15 per run (gpt-5 prose
+ * dominates); the core set is roughly $1, the full set ~$3. Traces land in
+ * LangFuse when LANGFUSE_* keys are set.
  */
 import '../instrument';
 import { shutdownTelemetry } from '../instrument';
@@ -27,49 +30,14 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { createEvalServices, runTextEval, type EvalServices } from './lib/eval-run';
 import { sanitizeId } from './lib/eval-images-lib';
+import { EVAL_SETS, evalCaseLabel, isEvalSetName, type EvalCase } from './lib/eval-cases';
+import { measureProse } from './lib/prose-metrics';
 import {
   summarize,
   formatResultsTable,
   formatSummary,
   type EvalRunResult,
 } from './lib/eval-aggregate';
-
-interface EvalCase {
-  goal: string;
-  age: number;
-  mode: 'child' | 'observer';
-}
-
-/**
- * The mini eval-set: both arcs, both protagonist modes, both flagship ages,
- * including goals with NO dedicated exemplar (Дружба, Любопытство…) so the
- * fallback-exemplar path is measured too.
- *
- * 3-4 cases (#262, after #196 shipped the band): virtue-only per ADR-0005 —
- * no flaw cases for this band. Covers both dedicated 3-4 exemplars (FEAR_3_4
- * via Смелость, KINDNESS_3_4 via Доброта/Забота о младших) plus one goal with
- * no 3-4 exemplar (Самостоятельность) to measure the 3-4 fallback-exemplar
- * path the same way the 5-6 set already does.
- */
-const DEFAULT_SET: readonly EvalCase[] = [
-  // virtue — 5-6
-  { goal: 'Смелость', age: 6, mode: 'child' },
-  { goal: 'Доброта', age: 5, mode: 'child' },
-  { goal: 'Самостоятельность', age: 6, mode: 'observer' },
-  { goal: 'Дружба', age: 5, mode: 'child' }, // fallback exemplar
-  { goal: 'Любопытство и любовь к знаниям', age: 6, mode: 'child' }, // fallback exemplar
-  // flaw — 5-6 (3-4 is virtue-only, ADR-0005)
-  { goal: 'Честность', age: 6, mode: 'child' },
-  { goal: 'Управление гневом', age: 5, mode: 'child' },
-  { goal: 'Делиться с другими', age: 6, mode: 'observer' },
-  { goal: 'Терпение', age: 5, mode: 'child' },
-  { goal: 'Бережное отношение к вещам', age: 6, mode: 'child' },
-  // virtue — 3-4 (#262)
-  { goal: 'Смелость', age: 3, mode: 'child' },
-  { goal: 'Доброта', age: 4, mode: 'observer' },
-  { goal: 'Забота о младших', age: 3, mode: 'child' },
-  { goal: 'Самостоятельность', age: 4, mode: 'child' }, // fallback exemplar
-];
 
 const flagValue = (name: string): string | undefined => {
   const flag = process.argv.find((a) => a.startsWith(`--${name}=`));
@@ -89,9 +57,10 @@ const runOne = async (
       age: evalCase.age,
       mode: evalCase.mode,
       model,
+      seeds: evalCase.seeds,
     });
     if (storiesOut) {
-      const name = sanitizeId(`${evalCase.goal}-${evalCase.age}-${evalCase.mode}`);
+      const name = sanitizeId(evalCaseLabel(evalCase));
       writeFileSync(join(storiesOut, `${name}.json`), JSON.stringify(story, null, 2));
     }
     return {
@@ -107,6 +76,7 @@ const runOne = async (
       avgChars,
       maxChars,
       durationMs: Date.now() - started,
+      metrics: measureProse(story, 'Алиса'),
       error: null,
     };
   } catch (e: unknown) {
@@ -132,6 +102,7 @@ const runOne = async (
       avgChars: 0,
       maxChars: 0,
       durationMs: Date.now() - started,
+      metrics: null,
       error: e instanceof Error ? e.message.slice(0, 120) : String(e).slice(0, 120),
     };
   }
@@ -173,15 +144,19 @@ const main = async (): Promise<void> => {
   const storiesOut = flagValue('stories-out');
   if (storiesOut) mkdirSync(storiesOut, { recursive: true });
 
-  const cases = only ? DEFAULT_SET.filter((c) => c.goal.toLowerCase().includes(only)) : DEFAULT_SET;
+  const setName = flagValue('set') ?? 'core';
+  if (!isEvalSetName(setName)) {
+    console.error(`Unknown --set=${setName}. Sets: ${Object.keys(EVAL_SETS).join(', ')}`);
+    process.exit(1);
+  }
+  const set = EVAL_SETS[setName];
+  const cases = only ? set.filter((c) => c.goal.toLowerCase().includes(only)) : set;
   if (cases.length === 0) {
-    console.error(
-      `No cases match --only=${only}. Goals: ${DEFAULT_SET.map((c) => c.goal).join(', ')}`,
-    );
+    console.error(`No cases match --only=${only}. Goals: ${set.map((c) => c.goal).join(', ')}`);
     process.exit(1);
   }
   console.log(
-    `Batch eval: ${cases.length} runs, concurrency ${concurrency}, model ${model ?? 'default'} (~$0.05–0.15/run)\n`,
+    `Batch eval [${setName}]: ${cases.length} runs, concurrency ${concurrency}, model ${model ?? 'default'} (~$0.05–0.15/run)\n`,
   );
 
   const services = await createEvalServices();
@@ -198,7 +173,13 @@ const main = async (): Promise<void> => {
     writeFileSync(
       out,
       JSON.stringify(
-        { generatedAt: new Date().toISOString(), model: model ?? 'default', results, summary },
+        {
+          generatedAt: new Date().toISOString(),
+          set: setName,
+          model: model ?? 'default',
+          results,
+          summary,
+        },
         null,
         2,
       ),

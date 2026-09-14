@@ -1,0 +1,282 @@
+{
+  "generatedAt": "2026-09-14T07:28:06.934Z",
+  "dir": "../docs/process/eval-baselines/2026-09-13-367-stories/after2",
+  "hero": "Алиса",
+  "rows": [
+    {
+      "file": "berezhnoe-otnoshenie-k-vescham-6-child",
+      "title": "Алиса и таинственное исчезновение куклы",
+      "metrics": {
+        "words": 194,
+        "sentences": 24,
+        "avgSentenceWords": 8.08,
+        "dialogueShare": 0.43,
+        "heroNamePerSentence": 0.63,
+        "questionTics": 0,
+        "moralFormulaOnFinal": false,
+        "castNamed": 1,
+        "castTotal": 1,
+        "refrainLines": 0,
+        "titleStopword": true
+      }
+    },
+    {
+      "file": "chestnost-6-child",
+      "title": "Алиса и спрятанное жёлтое пятно",
+      "metrics": {
+        "words": 147,
+        "sentences": 15,
+        "avgSentenceWords": 9.8,
+        "dialogueShare": 0.6,
+        "heroNamePerSentence": 0.6,
+        "questionTics": 0,
+        "moralFormulaOnFinal": false,
+        "castNamed": 2,
+        "castTotal": 2,
+        "refrainLines": 0,
+        "titleStopword": false
+      }
+    },
+    {
+      "file": "delitsya-s-drugimi-6-observer",
+      "title": "Ника и секрет волшебной коробки",
+      "metrics": {
+        "words": 173,
+        "sentences": 17,
+        "avgSentenceWords": 10.18,
+        "dialogueShare": 0.28,
+        "heroNamePerSentence": 0,
+        "questionTics": 0,
+        "moralFormulaOnFinal": true,
+        "castNamed": 2,
+        "castTotal": 2,
+        "refrainLines": 0,
+        "titleStopword": true
+      }
+    },
+    {
+      "file": "dobrota-4-observer",
+      "title": "Петя и колдовская бутылочка",
+      "metrics": {
+        "words": 97,
+        "sentences": 15,
+        "avgSentenceWords": 6.47,
+        "dialogueShare": 0.58,
+        "heroNamePerSentence": 0,
+        "questionTics": 1,
+        "moralFormulaOnFinal": true,
+        "castNamed": 1,
+        "castTotal": 1,
+        "refrainLines": 0,
+        "titleStopword": true
+      }
+    },
+    {
+      "file": "dobrota-5-child",
+      "title": "Алиса и волшебная коробка на краю песочницы",
+      "metrics": {
+        "words": 173,
+        "sentences": 18,
+        "avgSentenceWords": 9.61,
+        "dialogueShare": 0.54,
+        "heroNamePerSentence": 0.72,
+        "questionTics": 1,
+        "moralFormulaOnFinal": true,
+        "castNamed": 1,
+        "castTotal": 1,
+        "refrainLines": 0,
+        "titleStopword": true
+      }
+    },
+    {
+      "file": "druzhba-5-child",
+      "title": "Алиса и таинственное исчезновение мячика",
+      "metrics": {
+        "words": 173,
+        "sentences": 15,
+        "avgSentenceWords": 11.53,
+        "dialogueShare": 0.68,
+        "heroNamePerSentence": 0.93,
+        "questionTics": 1,
+        "moralFormulaOnFinal": true,
+        "castNamed": 1,
+        "castTotal": 1,
+        "refrainLines": 0,
+        "titleStopword": true
+      }
+    },
+    {
+      "file": "lyubopytstvo-i-lyubov-k-znaniyam-6-child",
+      "title": "Алиса и книга с бабочками",
+      "metrics": {
+        "words": 182,
+        "sentences": 19,
+        "avgSentenceWords": 9.58,
+        "dialogueShare": 0.54,
+        "heroNamePerSentence": 0.74,
+        "questionTics": 0,
+        "moralFormulaOnFinal": false,
+        "castNamed": 1,
+        "castTotal": 1,
+        "refrainLines": 0,
+        "titleStopword": false
+      }
+    },
+    {
+      "file": "samostoyatelnost-4-child",
+      "title": "Алиса и кресло высоченное",
+      "metrics": {
+        "words": 93,
+        "sentences": 16,
+        "avgSentenceWords": 5.81,
+        "dialogueShare": 0.35,
+        "heroNamePerSentence": 0.63,
+        "questionTics": 0,
+        "moralFormulaOnFinal": true,
+        "castNamed": 1,
+        "castTotal": 1,
+        "refrainLines": 0,
+        "titleStopword": false
+      }
+    },
+    {
+      "file": "samostoyatelnost-6-observer",
+      "title": "Катя и упрямый зонтик",
+      "metrics": {
+        "words": 167,
+        "sentences": 12,
+        "avgSentenceWords": 13.92,
+        "dialogueShare": 0.64,
+        "heroNamePerSentence": 0,
+        "questionTics": 0,
+        "moralFormulaOnFinal": true,
+        "castNamed": 1,
+        "castTotal": 1,
+        "refrainLines": 0,
+        "titleStopword": false
+      }
+    },
+    {
+      "file": "smelost-3-child",
+      "title": "Алиса и тёмный уголок",
+      "metrics": {
+        "words": 83,
+        "sentences": 16,
+        "avgSentenceWords": 5.19,
+        "dialogueShare": 0.35,
+        "heroNamePerSentence": 0.69,
+        "questionTics": 0,
+        "moralFormulaOnFinal": true,
+        "castNamed": 0,
+        "castTotal": 0,
+        "refrainLines": 1,
+        "titleStopword": false
+      }
+    },
+    {
+      "file": "smelost-6-child",
+      "title": "Алиса и Гигантская Горка",
+      "metrics": {
+        "words": 188,
+        "sentences": 18,
+        "avgSentenceWords": 10.44,
+        "dialogueShare": 0.56,
+        "heroNamePerSentence": 0.72,
+        "questionTics": 0,
+        "moralFormulaOnFinal": true,
+        "castNamed": 2,
+        "castTotal": 2,
+        "refrainLines": 0,
+        "titleStopword": false
+      }
+    },
+    {
+      "file": "terpenie-5-child",
+      "title": "Алиса и прыгучий пончик",
+      "metrics": {
+        "words": 169,
+        "sentences": 16,
+        "avgSentenceWords": 10.56,
+        "dialogueShare": 0.53,
+        "heroNamePerSentence": 0.69,
+        "questionTics": 0,
+        "moralFormulaOnFinal": true,
+        "castNamed": 2,
+        "castTotal": 2,
+        "refrainLines": 0,
+        "titleStopword": false
+      }
+    },
+    {
+      "file": "upravlenie-gnevom-5-child",
+      "title": "Алиса и приключение с капризным роботом",
+      "metrics": {
+        "words": 187,
+        "sentences": 18,
+        "avgSentenceWords": 10.39,
+        "dialogueShare": 0.49,
+        "heroNamePerSentence": 0.78,
+        "questionTics": 0,
+        "moralFormulaOnFinal": false,
+        "castNamed": 1,
+        "castTotal": 1,
+        "refrainLines": 0,
+        "titleStopword": true
+      }
+    },
+    {
+      "file": "zabota-o-mladshih-3-child",
+      "title": "Алиса и игрушка для Насти",
+      "metrics": {
+        "words": 83,
+        "sentences": 13,
+        "avgSentenceWords": 6.38,
+        "dialogueShare": 0.55,
+        "heroNamePerSentence": 0.77,
+        "questionTics": 2,
+        "moralFormulaOnFinal": true,
+        "castNamed": 1,
+        "castTotal": 1,
+        "refrainLines": 0,
+        "titleStopword": false
+      }
+    }
+  ],
+  "summary": {
+    "words": 150.64,
+    "dialogueShare": 0.51,
+    "heroNamePerSentence": 0.56,
+    "avgSentenceWords": 9.14,
+    "questionTicStories": 4,
+    "moralFormulaStories": 10,
+    "titleStopwordStories": 6,
+    "castNamedMean": 1.21,
+    "refrainStories": 1
+  },
+  "diversity": {
+    "repeatedProps": [
+      {
+        "name": "коробка",
+        "count": 2
+      }
+    ],
+    "repeatedLocations": [
+      {
+        "name": "площадка",
+        "count": 5
+      },
+      {
+        "name": "гостиная",
+        "count": 5
+      },
+      {
+        "name": "сад",
+        "count": 2
+      },
+      {
+        "name": "дом",
+        "count": 2
+      }
+    ]
+  }
+}

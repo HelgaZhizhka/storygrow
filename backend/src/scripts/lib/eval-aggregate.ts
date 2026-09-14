@@ -3,6 +3,12 @@
  * unit-tested; the LLM-calling side lives in eval-run.ts / eval-batch.ts.
  */
 import type { JudgeScores } from '../../ai/schemas';
+import {
+  formatMetricsSummary,
+  summarizeMetrics,
+  type MetricsSummary,
+  type ProseMetrics,
+} from './prose-metrics';
 
 export interface EvalRunResult {
   goal: string;
@@ -18,6 +24,8 @@ export interface EvalRunResult {
   avgChars: number;
   maxChars: number;
   durationMs: number;
+  /** Deterministic prose metrics (Suteev refactor phase 0); null when the run errored. */
+  metrics: ProseMetrics | null;
   /** Non-null when the run threw — such runs are excluded from score aggregates. */
   error: string | null;
 }
@@ -33,6 +41,8 @@ export interface BatchSummary {
   /** Share of completed runs that passed the evaluator (0 when none completed). */
   passRate: number;
   criteria: Record<keyof JudgeScores, CriterionStats>;
+  /** Means/counts of the prose metrics over completed runs. */
+  metrics: MetricsSummary;
   totalDurationMs: number;
 }
 
@@ -65,6 +75,9 @@ export const summarize = (results: readonly EvalRunResult[]): BatchSummary => {
     passRate:
       completed.length === 0 ? 0 : completed.filter((r) => r.passed).length / completed.length,
     criteria,
+    metrics: summarizeMetrics(
+      completed.map((r) => r.metrics).filter((m): m is ProseMetrics => m !== null),
+    ),
     totalDurationMs: results.reduce((a, r) => a + r.durationMs, 0),
   };
 };
@@ -73,13 +86,17 @@ const pad = (s: string, width: number): string =>
   s.padEnd(width).slice(0, Math.max(width, s.length));
 
 export const formatResultsTable = (results: readonly EvalRunResult[]): string => {
-  const header = `${pad('goal', 28)} ${pad('age', 3)} ${pad('mode', 8)} ${pad('arc', 6)} ${pad('result', 6)} ${pad('rm', 4)} ${pad('struct', 6)} ${pad('avg/max', 9)} ${pad('sec', 5)} title`;
+  const header = `${pad('goal', 28)} ${pad('age', 3)} ${pad('mode', 8)} ${pad('arc', 6)} ${pad('result', 6)} ${pad('rm', 4)} ${pad('struct', 6)} ${pad('avg/max', 9)} ${pad('dlg', 4)} ${pad('name', 4)} ${pad('tic', 3)} ${pad('sec', 5)} title`;
   const rows = results.map((r) => {
     if (r.error !== null) {
       return `${pad(r.goal, 28)} ${pad(String(r.age), 3)} ${pad(r.mode, 8)} ${pad(r.arcType, 6)} ERROR: ${r.error}`;
     }
     const result = r.passed ? 'PASS' : 'fail';
-    return `${pad(r.goal, 28)} ${pad(String(r.age), 3)} ${pad(r.mode, 8)} ${pad(r.arcType, 6)} ${pad(result, 6)} ${pad(String(r.registerMatch), 4)} ${pad(String(r.structuralErrorCount), 6)} ${pad(`${r.avgChars}/${r.maxChars}`, 9)} ${pad(String(Math.round(r.durationMs / 1000)), 5)} «${r.title}»`;
+    const m = r.metrics;
+    const dlg = m ? `${Math.round(m.dialogueShare * 100)}%` : '-';
+    const name = m ? String(m.heroNamePerSentence) : '-';
+    const tic = m ? String(m.questionTics) : '-';
+    return `${pad(r.goal, 28)} ${pad(String(r.age), 3)} ${pad(r.mode, 8)} ${pad(r.arcType, 6)} ${pad(result, 6)} ${pad(String(r.registerMatch), 4)} ${pad(String(r.structuralErrorCount), 6)} ${pad(`${r.avgChars}/${r.maxChars}`, 9)} ${pad(dlg, 4)} ${pad(name, 4)} ${pad(tic, 3)} ${pad(String(Math.round(r.durationMs / 1000)), 5)} «${r.title}»`;
   });
   return [header, '-'.repeat(header.length), ...rows].join('\n');
 };
@@ -97,5 +114,6 @@ export const formatSummary = (s: BatchSummary): string => {
       `${pad(key, 20)} ${stats.mean.toFixed(1).padStart(4)}  ${String(stats.min).padStart(4)}`,
     );
   }
+  lines.push('', formatMetricsSummary(s.metrics, s.completed));
   return lines.join('\n');
 };
