@@ -88,6 +88,13 @@ export const XAI_IMAGE_MODEL = 'grok-imagine-image-2.0';
 // 3.6-flash is verified live with generateObject + image input.
 export const GEMINI_VISION_MODEL = 'gemini-3.6-flash';
 
+// xAI vision (#397): Grok reads a child's photo where Gemini's content filter
+// blocks it (measured 4/4 on a real photo, 2026-09-14). xAI's chat API is
+// OpenAI-compatible, so we reach it through @ai-sdk/openai's createOpenAI with a
+// custom baseURL — no new dependency, generateObject + Zod unchanged.
+export const XAI_BASE_URL = 'https://api.x.ai/v1';
+export const XAI_VISION_MODEL = 'grok-4';
+
 /**
  * USD per generated image (#379), from the ADR-0007 measurements (2026-09-04):
  * Grok ~$0.04 per image + $0.01 per input reference; Gemini Flash image ~$0.039.

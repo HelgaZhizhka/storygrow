@@ -1,6 +1,7 @@
 jest.mock('ai', () => ({ generateObject: jest.fn() }));
-jest.mock('@ai-sdk/google', () => ({
-  createGoogleGenerativeAI: jest.fn(() => (model: string) => ({ model })),
+// Grok-4 via @ai-sdk/openai's createOpenAI + a custom baseURL (#397).
+jest.mock('@ai-sdk/openai', () => ({
+  createOpenAI: jest.fn(() => (model: string) => ({ model })),
 }));
 
 import { Test } from '@nestjs/testing';

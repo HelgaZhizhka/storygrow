@@ -24,7 +24,7 @@ via `GEMINI_IMAGE_MODEL`. *Amended 2026-09-14: since ADR-0007 the default image
 provider is xAI Grok (`IMAGE_PROVIDER=xai`) for every image including the photo
 portrait; the Pro override was removed in #372. The comparison below was Google
 versus Alibaba; xAI as the provider that receives the child's photo has not
-been assessed here and is an open owner decision.* **Alibaba Qwen was rejected** — competitive on image
+been assessed here and is an open owner decision. Update 2026-09-14 (#397): the photo **descriptor** (vision) moved from Gemini to Grok-4 because Gemini's content filter blocked benign child photos; the child's photo now leaves the EU to xAI (US) for that call as well. Lateral to the Google posture, but recorded here for the owner.* **Alibaba Qwen was rejected** — competitive on image
 quality but it would send a minor's biometric image cross-border to Alibaba
 Cloud (Singapore), a materially worse legal posture than Google, unjustified by
 the (small) quality delta.
