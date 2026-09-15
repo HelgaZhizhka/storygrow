@@ -1,7 +1,8 @@
 import {
+  SUTEEV,
   SUTEEV_STYLE_5_6,
   SUTEEV_STYLE_3_4,
-  voiceStyleForBand,
+  voiceOf,
   renderVoiceForProse,
   renderVoiceChecklist,
 } from './register';
@@ -20,9 +21,10 @@ describe('SUTEEV_STYLE device catalogue (#407)', () => {
     expect(SUTEEV_STYLE_3_4.devices.map((d) => d.key)).not.toContain('bodyFeeling');
   });
 
-  it('voiceStyleForBand picks the band', () => {
-    expect(voiceStyleForBand('3-4')).toBe(SUTEEV_STYLE_3_4);
-    expect(voiceStyleForBand('5-6')).toBe(SUTEEV_STYLE_5_6);
+  it('SUTEEV profile carries voice per band; voiceOf reads it (spec §8 seam)', () => {
+    expect(SUTEEV.id).toBe('suteev');
+    expect(voiceOf(SUTEEV, '3-4')).toBe(SUTEEV_STYLE_3_4);
+    expect(voiceOf(SUTEEV, '5-6')).toBe(SUTEEV_STYLE_5_6);
   });
 
   it('every microquote is an illustrative fragment (≤100 chars)', () => {

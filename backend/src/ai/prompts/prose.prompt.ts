@@ -6,7 +6,7 @@ import {
 import type { StoryPlan } from '../schemas';
 import type { BuildStoryPromptOptions } from './story-generator.prompt';
 import { pickExemplar } from './exemplars';
-import { renderVoiceForProse, voiceStyleForBand } from './register';
+import { renderVoiceForProse, voiceOf, SUTEEV, type StyleProfile } from './register';
 
 /**
  * buildProseSystemPrompt — the Prose phase (ADR-0005). Writes the FINAL Russian
@@ -17,10 +17,13 @@ import { renderVoiceForProse, voiceStyleForBand } from './register';
  * A function of AgeBand (not a static const) because the cover-title cap and
  * the "ages" claim in the opening line both vary per band (#196).
  */
-export const buildProseSystemPrompt = (ageBand: AgeBand): string => {
+export const buildProseSystemPrompt = (
+  ageBand: AgeBand,
+  profile: StyleProfile = SUTEEV,
+): string => {
   const ageLabel = ageBand === '3-4' ? '3–4' : '5–6';
   const coverMax = PAGE_TEMPLATES.cover.maxChars[ageBand].title ?? 60;
-  const style = voiceStyleForBand(ageBand);
+  const style = voiceOf(profile, ageBand);
   return `
 You are a beloved author of Russian read-aloud children's books (ages ${ageLabel}), in
 the tradition of В. Сутеев and the Russian folk tale.

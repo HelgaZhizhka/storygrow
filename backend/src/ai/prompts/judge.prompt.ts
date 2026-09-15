@@ -1,7 +1,7 @@
 import type { AgeBand } from '../../pdf/page-templates/page-templates.config';
 import type { Story } from '../schemas';
 import { getRegisterReferences } from './exemplars';
-import { renderVoiceChecklist, voiceStyleForBand } from './register';
+import { renderVoiceChecklist, voiceOf, SUTEEV, type StyleProfile } from './register';
 
 const TITLE_RULE = `The TITLE is part of the register — judge it against the exemplar
      titles (the «Название: …» line of each exemplar below). A good title names a
@@ -9,8 +9,8 @@ const TITLE_RULE = `The TITLE is part of the register — judge it against the e
      score at ≤6 if the title contains an invented/non-existent word, precious
      or surreal imagery, or names something that does not appear in the story.`;
 
-const registerMatchCriterion = (ageBand: AgeBand): string => {
-  const style = voiceStyleForBand(ageBand);
+const registerMatchCriterion = (ageBand: AgeBand, profile: StyleProfile): string => {
+  const style = voiceOf(profile, ageBand);
   const checklist = renderVoiceChecklist(style);
   const min = style.minDevicesForHigh;
   return ageBand === '3-4'
@@ -51,7 +51,10 @@ ${checklist}
  * definition of "too flat" both genuinely differ per band: repetition is a
  * defect at 5-6 but the deliberate target at 3-4.
  */
-export const buildJudgeSystemPrompt = (ageBand: AgeBand): string => {
+export const buildJudgeSystemPrompt = (
+  ageBand: AgeBand,
+  profile: StyleProfile = SUTEEV,
+): string => {
   const ageLabel = ageBand === '3-4' ? '3–4' : '5–6';
   const referenceBlock = getRegisterReferences(ageBand)
     .map((e, i) => `--- Эталон ${i + 1} ---\n${e.text}`)
@@ -80,7 +83,7 @@ GUARDRAIL criteria (safety / structure gates):
    hero is forgiven/rewarded instantly, or if it resolves by luck.
 
 CRAFT criterion (the quality signal — judge it strictly):
-${registerMatchCriterion(ageBand)}
+${registerMatchCriterion(ageBand, profile)}
 
 INFORMATIONAL criterion (reported, not gated):
 8. pictureConsistency — the text names only what the illustrations can show. The

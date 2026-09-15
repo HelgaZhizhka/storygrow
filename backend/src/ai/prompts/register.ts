@@ -15,9 +15,13 @@
  * `docs/superpowers/specs/2026-09-13-suteev-register-refactor-design.md`,
  * Appendix А). Our exemplars and generated text are our own.
  *
- * Structured as an object (not a bare string) so it can become `profile.voice`
- * when the StyleProfile seam lands with the story engines (spec §8, phase 4).
+ * Structured as an object (not a bare string) and exposed through a StyleProfile
+ * so a second style (Pushkin prose, …) is a new voice catalogue with no edit to
+ * Prose or the Judge — they receive the profile as a parameter (spec §8). The
+ * profile's future fields (world, engines, title, exemplarSet) land with the
+ * phases that consume them; today it carries only what has meaning — id + voice.
  */
+import type { AgeBand } from '../../pdf/page-templates/page-templates.config';
 
 export interface VoiceDevice {
   /** Stable id — the judge counts devices by this key; never reword loosely. */
@@ -130,8 +134,26 @@ export const SUTEEV_STYLE_3_4: VoiceStyle = {
   minDevicesForHigh: 2,
 };
 
-export const voiceStyleForBand = (ageBand: '3-4' | '5-6'): VoiceStyle =>
-  ageBand === '3-4' ? SUTEEV_STYLE_3_4 : SUTEEV_STYLE_5_6;
+/**
+ * A style the pipeline can write in. Today only `suteev` exists; a future style
+ * (e.g. Pushkin prose) is another StyleProfile. Prose/Judge receive the profile
+ * as a parameter, so adding one needs no edit to them (spec §8). `voice` is the
+ * only field with a consumer yet; `world`/`engines`/`title`/`exemplarSet` join
+ * it in the phases that introduce them.
+ */
+export interface StyleProfile {
+  readonly id: string;
+  readonly voice: Readonly<Record<AgeBand, VoiceStyle>>;
+}
+
+export const SUTEEV: StyleProfile = {
+  id: 'suteev',
+  voice: { '3-4': SUTEEV_STYLE_3_4, '5-6': SUTEEV_STYLE_5_6 },
+};
+
+/** The voice style for one age band of a profile. */
+export const voiceOf = (profile: StyleProfile, ageBand: AgeBand): VoiceStyle =>
+  profile.voice[ageBand];
 
 /** The device catalogue as writer instructions — bullets with cue + example. */
 export const renderVoiceForProse = (style: VoiceStyle): string =>
