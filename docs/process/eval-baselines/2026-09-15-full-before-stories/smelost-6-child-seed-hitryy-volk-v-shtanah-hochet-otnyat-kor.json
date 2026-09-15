@@ -1,0 +1,132 @@
+{
+  "title": "Алиса и волк в штанах",
+  "discussionQuestions": [
+    "Почему Алисе было важно отнести яблоки домой?",
+    "Как Алиса сначала отреагировала на волка в штанах?",
+    "Почему Алиса решила попробовать снова?",
+    "Что Алиса сделала, чтобы справиться со своим страхом?",
+    "Как ты поступаешь, когда чувствуешь страх?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и волк в штанах",
+      "illustrationPrompt": "the child holds a large basket with both hands, looking determined; centered composition",
+      "scene": {
+        "locationId": "garden",
+        "castIds": ["basket"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Вдруг прямо перед Алисой встал волк в штанах. «Я главный по яблокам, всё это — моё», — прошипел он. «Нет, волк, — сказала Алиса, — эти яблоки я несу домой».",
+      "title": null,
+      "illustrationPrompt": "the child takes a small step back; the wolf leans forward with a sly look, one paw extended toward the apples; a few apples between them; medium shot",
+      "scene": {
+        "locationId": "garden",
+        "castIds": ["wolf"],
+        "propIds": ["apples"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Алиса застыла: оставить корзину и бегом? Или перехитрить волка? «Думай, Алиса», — прошептала она и глянула на волка; тот уже ладони потирает.",
+      "title": null,
+      "illustrationPrompt": "the child hugs the basket close, pausing in thought; the wolf rubs his paws while watching; slight over-the-shoulder angle from behind the child",
+      "scene": {
+        "locationId": "garden",
+        "castIds": ["wolf", "basket"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса выпрямилась: «Страшно — а я всё равно скажу». И придумала: «Давай посчитаем яблоки вслух, чтобы понять, хватит ли всем», — тянет время Алиса и делает маленький шаг вперёд.",
+      "title": null,
+      "illustrationPrompt": "the child stands taller with one hand slightly raised as if proposing an idea; the wolf listens, gesturing as if counting toward the apples; the child takes a small step forward; two-shot",
+      "scene": {
+        "locationId": "garden",
+        "castIds": ["wolf"],
+        "propIds": ["apples"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса ровно встала рядом с волком и шагнула ещё ближе. «Эта корзина идёт домой. Я понесу её сама», — сказала Алиса. Волк моргнул и отступил на шаг.",
+      "title": null,
+      "illustrationPrompt": "the child stands close to the wolf, one hand firm on the basket handle; the wolf hesitates, weight shifted back; medium close-up",
+      "scene": {
+        "locationId": "garden",
+        "castIds": ["wolf", "basket"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Алиса взяла корзину обеими руками и спокойно пошла домой. «Дом ждёт», — сказала Алиса и прибавила шаг. Тяжело, да выходит: корзина ровно покачивается у неё в руках.",
+      "title": null,
+      "illustrationPrompt": "the child walks away carrying the basket with both hands; steady stride; back three-quarter view",
+      "scene": {
+        "locationId": "garden",
+        "castIds": ["basket"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "«Быть смелым — это действовать несмотря на страх», — сказала Алиса.",
+      "title": null,
+      "illustrationPrompt": "the child stands calm, one hand on chest, gentle smile; simple centered composition",
+      "scene": {
+        "locationId": "garden",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "6-year-old child, light skin, long wavy blonde hair, wearing a green dress, a red ribbon",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "6-year-old child, light skin, long wavy blonde hair, wearing a green dress, a red ribbon"
+    },
+    "cast": [
+      {
+        "id": "wolf",
+        "name": "волк",
+        "role": "хитрый волк",
+        "descriptor": "wolf, grey fur, fluffy fur, wearing pair of blue pants, glasses"
+      },
+      {
+        "id": "basket",
+        "name": "корзина",
+        "role": "корзина с яблоками",
+        "descriptor": "basket, brown woven material skin, - hair, wearing filled with red apples, a big handle"
+      }
+    ],
+    "locations": [
+      {
+        "id": "garden",
+        "name": "сад",
+        "descriptor": "a large apple tree, twice the child's height, twisted brown trunk, green leaves, surrounded by bright flowers, soft grass, a picket fence"
+      }
+    ],
+    "props": [
+      {
+        "id": "apples",
+        "name": "яблоки",
+        "descriptor": "bright red apples"
+      }
+    ],
+    "atmosphere": "Spring, sunny with bright colours, cheerful mood."
+  }
+}

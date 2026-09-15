@@ -1,0 +1,125 @@
+{
+  "title": "Петя и поделённый пирог",
+  "discussionQuestions": [
+    "1. Почему Петя сначала не хотел делиться пирогом?",
+    "2. Что почувствовал Петя, когда его оставили одного?",
+    "3. Как Петя изменился к концу истории?",
+    "4. Что сделал Петя, чтобы исправить свою ошибку?",
+    "5. А ты когда-нибудь делился чем-то с друзьями? Что это было?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Петя и поделённый пирог",
+      "illustrationPrompt": "the child and mom set a chocolate pie on the table; the child hugs the pie and shakes head no; mom smiles gently; pie centered in foreground",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": ["mama"],
+        "propIds": ["pie"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Петя пришёл на площадку и поставил рядом шоколадный пирог. «Сам съем, весь до крошки!» — прошептал Петя и, отвернувшись, заигрался один, будто ему совсем-совсем никто не нужен.",
+      "title": null,
+      "illustrationPrompt": "the child sits close to the pie, playing by themself and guarding it; arms folded, eyes on the pie; lots of empty space around",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["pie"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Подошёл Тим: «Петя, пойдём играть?» — «Мне одному лучше», — отмахнулся Петя. Тим пожал плечами и побежал играть без Пети.",
+      "title": null,
+      "illustrationPrompt": "the friend invites; the child turns away with a dismissive hand; the friend starts to run off to play, leaving the child behind; slight distance between them",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["friend"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Петя остался один с шоколадным пирогом. Посидел, посопел и шепнул: «Ну и что? Одному не весело, даже крошки не радуют». И тут Петя понял: пока жадничал, мимо прошёл самый весёлый миг.",
+      "title": null,
+      "illustrationPrompt": "the child sits alone beside the pie, shoulders drooped; the child looks at the pie then down; hands on knees; extra negative space",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["pie"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Петя выпрямился, вдохнул и решился. «Тим, угощайся пирогом! И давай вместе», — сказал Петя и аккуратно подвинул шоколадный пирог поближе, заглядывая другу в глаза.",
+      "title": null,
+      "illustrationPrompt": "the child pushes the pie toward the friend with an inviting gesture; hand open in offering; the friend steps closer, pleasantly surprised",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["friend"],
+        "propIds": ["pie"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Тим с Петей смеются и понемногу едят пирог, благодарят друг друга и болтают. Как же вкусно вместе! Делись радостью с друзьями, и она умножится.",
+      "title": null,
+      "illustrationPrompt": "the child and friend sit close, both reaching toward the pie and laughing together; close, centered composition",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["friend"],
+        "propIds": ["pie"],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "6-year-old boy, dark brown skin, short curly black hair, wearing green t-shirt, blue shorts, red sneakers, a blue cap",
+  "visualBible": {
+    "hero": {
+      "name": "Петя",
+      "descriptor": "6-year-old boy, dark brown skin, short curly black hair, wearing green t-shirt, blue shorts, red sneakers, a blue cap"
+    },
+    "cast": [
+      {
+        "id": "mama",
+        "name": "мама",
+        "role": "мама Пети",
+        "descriptor": "young woman, dark brown skin, long braided black hair, wearing yellow dress with floral patterns, a silver bracelet"
+      },
+      {
+        "id": "friend",
+        "name": "Тим",
+        "role": "друг Пети",
+        "descriptor": "6-year-old boy, light skin, straight blonde hair, wearing red t-shirt, black jeans, white sneakers, a green wristband"
+      }
+    ],
+    "locations": [
+      {
+        "id": "kitchen",
+        "name": "кухня",
+        "descriptor": "a large wooden table, about the child's height, oak wood, dark brown, surrounded by white walls, light blue cabinets, a sunny window"
+      },
+      {
+        "id": "playground",
+        "name": "площадка",
+        "descriptor": "a green climbing frame, twice the child's height, metal painted green, surrounded by soft brown sand, colorful benches, shade from trees"
+      }
+    ],
+    "props": [
+      {
+        "id": "pie",
+        "name": "шоколадный пирог",
+        "descriptor": "a large, round chocolate pie with whipped cream"
+      }
+    ],
+    "atmosphere": "Sunny summer day with a joyful and warm palette."
+  }
+}

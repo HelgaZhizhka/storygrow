@@ -1,0 +1,126 @@
+{
+  "title": "Алиса и секреты осеннего листа",
+  "discussionQuestions": [
+    "1. Что больше всего интересует Алису в природе?",
+    "2. Почему Алиса сначала задумалась, прежде чем задать вопрос?",
+    "3. Как ты думаешь, почему важно задавать вопросы?",
+    "4. Что Алиса узнала о листике в конце истории?",
+    "5. Какие вопросы ты любишь задавать взрослым?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и секреты осеннего листа",
+      "illustrationPrompt": "The child notices a bright leaf lying nearby, pauses mid-reach, eyes curious; composition: leaf large in foreground, the child behind.",
+      "scene": {
+        "locationId": "classroom",
+        "castIds": [],
+        "propIds": ["leaf"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса глянула на листик и шепнула: «Интересно… откуда ты такой?» Учительница рядом, а язык будто узелком. «Как спросить?» — думает Алиса и прячет готовые слова.",
+      "title": null,
+      "illustrationPrompt": "The child glances between the leaf and the teacher, mouth half-open but hesitant; teacher attentive; composition forms a triangle among child, leaf, and teacher.",
+      "scene": {
+        "locationId": "classroom",
+        "castIds": ["teacher"],
+        "propIds": ["leaf"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса подняла руку — и тут же опустила. «Сейчас спрошу! Нет… подожду ещё миг», — спорит она сама с собой, ловит взгляд учительницы и снова прячет глаза. Сердечко — прыг да скок.",
+      "title": null,
+      "illustrationPrompt": "The child raises a hand, then lowers it, eyes averted; teacher looks over calmly; composition catches the hand mid-motion.",
+      "scene": {
+        "locationId": "classroom",
+        "castIds": ["teacher"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Набралась Алиса храбрости — целую щепотку. «Можно спросить?» — говорит она и делает шаг вперёд, ещё один. Вот и учительница, вот и вопрос на самом краешке губ.",
+      "title": null,
+      "illustrationPrompt": "The child steps toward the teacher, leaning forward with a determined small smile, mouth about to speak; composition uses a diagonal from child to teacher.",
+      "scene": {
+        "locationId": "classroom",
+        "castIds": ["teacher"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "«В листьях живут разные краски», — говорит учительница. «Летом одна ведёт хоровод, а к осени просыпаются другие, потому и жёлтый, и красный, и рыжеватый — у каждой свой черёд». Алиса кивает.",
+      "title": null,
+      "illustrationPrompt": "Teacher explains with open hands; the child listens closely and nods; composition shows teacher’s gesture arcing toward the child.",
+      "scene": {
+        "locationId": "classroom",
+        "castIds": ["teacher"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса бережно крутит листик, глядит на него с обеих сторон и шепчет: «Какие у тебя краски!» Потом улыбается: «После уроков поищу ещё такие и сравню. Я теперь знаю, как смотреть».",
+      "title": null,
+      "illustrationPrompt": "The child examines the leaf closely, turning it in fingers, counting details with a fingertip; composition is a close-up on hands and leaf.",
+      "scene": {
+        "locationId": "classroom",
+        "castIds": [],
+        "propIds": ["leaf"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса поднимает листик повыше и говорит учительнице: «Спасибо!» Внутри — тихое «ура»: вопросы больше не прячутся. Любопытство помогает узнавать новое о мире.",
+      "title": null,
+      "illustrationPrompt": "The child holds up the leaf between them; both smile with shared delight; composition centers the leaf between their faces.",
+      "scene": {
+        "locationId": "classroom",
+        "castIds": ["teacher"],
+        "propIds": ["leaf"],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "6-year-old child, light skin, long wavy blonde hair, wearing a green dress, brown shoes, a red butterfly clip",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "6-year-old child, light skin, long wavy blonde hair, wearing a green dress, brown shoes, a red butterfly clip"
+    },
+    "cast": [
+      {
+        "id": "teacher",
+        "name": "учительница",
+        "role": "учительница",
+        "descriptor": "young woman, medium skin, short straight black hair, wearing a blue blouse, grey skirt, glasses"
+      }
+    ],
+    "locations": [
+      {
+        "id": "classroom",
+        "name": "классная комната",
+        "descriptor": "a green chalkboard with white chalk, much taller than the child, dark green board, white chalk, surrounded by wooden desks, colourful posters"
+      }
+    ],
+    "props": [
+      {
+        "id": "leaf",
+        "name": "листик",
+        "descriptor": "a bright yellow autumn leaf"
+      }
+    ],
+    "atmosphere": "A sunny autumn day with warm and inviting light."
+  }
+}

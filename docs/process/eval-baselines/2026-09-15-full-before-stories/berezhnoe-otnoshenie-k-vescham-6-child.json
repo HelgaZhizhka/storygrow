@@ -1,0 +1,131 @@
+{
+  "title": "Алиса и треснувшая волшебная кукла",
+  "discussionQuestions": [
+    "Что случилось с куклой Алисы?",
+    "Почему Алисе стало грустно, когда кукла сломалась?",
+    "Как Алиса решила исправить свою ошибку?",
+    "Что она почувствовала, когда починила куклу?",
+    "Как ты заботишься о своих вещах?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и треснувшая волшебная кукла",
+      "illustrationPrompt": "the child plays with the doll, holding it up happily; big smile; centered composition",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": ["doll"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Жила-была девочка Алиса. Вечером Алиса махнула рукой: «И так сойдёт», — и стала сгребать игрушки кое-как, не глядя, а любимую волшебную куклу сунула в самую серёдку кучи.",
+      "title": null,
+      "illustrationPrompt": "the child casually pushes the doll into a messy pile with a dismissive shrug; action near top of frame",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": ["doll"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Алиса торопится: «Потом разберу!» — сказала Алиса и, задевая руками, шлёп — кукла соскользнула. Алиса даже не остановилась, а взяла и бросила куклу прямо на пол.",
+      "title": null,
+      "illustrationPrompt": "the child tosses the doll onto the floor; the doll mid-air; the child looking away in a hurried motion",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": ["doll"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Послышалось «хрясь!» — кукла ударилась и разошлась на части. Алиса присела на пол, ладошки к щёкам: «Ой… моя кукла!» — выдохнула Алиса и смотрит на рассыпавшиеся детальки.",
+      "title": null,
+      "illustrationPrompt": "the doll hits and breaks into pieces; the child kneels, hands near face, wide eyes; focus on scattered parts near the bottom of the frame",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": ["doll"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Алиса шмыгнула носом и тихонько погладила куклу кончиком пальца. «Это я так спешила… это я бросила», — сказала Алиса сама себе и опустила глаза, боясь шевельнуть ещё хоть кусочек.",
+      "title": null,
+      "illustrationPrompt": "the child gently touches the broken doll with a fingertip, head lowered; quiet, reflective pose on the left",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": ["doll"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса решилась: «Я починю!» — и терпеливо собрала все часть за частью, прилаживая их ровно. Потом аккуратно склеила соединения и подержала, пока схватится: «Потерпи, кукла», — попросила Алиса.",
+      "title": null,
+      "illustrationPrompt": "the child gathers the doll’s pieces and fits them together carefully, hands holding parts in place; focused expression near the top",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": ["doll"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Кукла снова целая и ладная. «Теперь — место почётное», — сказала Алиса и бережно положила её на свою полочку. «Буду заботиться о тебе, слышишь?» — пообещала Алиса вполголоса.",
+      "title": null,
+      "illustrationPrompt": "the child places the restored doll on a shelf, one hand still supporting it; soft smile; low angle toward the shelf",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": ["doll"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса улыбнулась и поглядела на куклу — целую, красивую, словно новая. Важно бережно относиться к вещам.",
+      "title": null,
+      "illustrationPrompt": "the child looks at the doll on the shelf, relaxed posture; satisfied smile; simple centered framing",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": ["doll"],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "6-year-old child, light skin, long straight blonde hair, wearing a pink dress with white polka dots, a small silver bracelet",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "6-year-old child, light skin, long straight blonde hair, wearing a pink dress with white polka dots, a small silver bracelet"
+    },
+    "cast": [],
+    "locations": [
+      {
+        "id": "bedroom",
+        "name": "спальня Алисы",
+        "descriptor": "a wooden toy chest, twice the child's height, light wood with colorful paint, surrounded by soft carpet, pale yellow walls"
+      }
+    ],
+    "props": [
+      {
+        "id": "doll",
+        "name": "волшебная кукла",
+        "descriptor": "a delicate porcelain doll with a blue dress"
+      }
+    ],
+    "atmosphere": "Bright spring morning, warm and cheerful palette."
+  }
+}

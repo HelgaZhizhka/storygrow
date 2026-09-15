@@ -1,0 +1,126 @@
+{
+  "title": "Лиза и заблудившийся шарик",
+  "discussionQuestions": [
+    "1. Как выглядел шарик Лизы?",
+    "2. Почему Саше было грустно?",
+    "3. Как Лиза помогла Саше?",
+    "4. Что сделали друзья с шариком?",
+    "5. Как ты можешь помочь другу, если ему грустно?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Лиза и заблудившийся шарик",
+      "illustrationPrompt": "the child tosses a ball up, smiling; the ball midair; the child looking up; wide view",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["balloon"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Лиза видит: Саша стоит понурый. «Улетел…» — шепчет он и глядит вверх. «Ничего?» — Лиза.",
+      "title": null,
+      "illustrationPrompt": "the child notices the friend standing with head down; the child leans toward with a gentle hand; medium two-shot",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["sasha"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Лиза глядит на шарик и на Сашу: «Помочь? Не помочь?» Она шагает туда-сюда: «Помочь? Не помочь?»",
+      "title": null,
+      "illustrationPrompt": "the child looks back and forth between the ball and the friend, finger to chin, taking a tiny step; medium shot",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["sasha"],
+        "propIds": ["balloon"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "«Держи, Саша!» — говорит Лиза и протягивает шарик. «Правда?» — улыбается Саша.",
+      "title": null,
+      "illustrationPrompt": "the child offers the ball with both hands; the friend smiles and reaches to take it; medium close-up",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["sasha"],
+        "propIds": ["balloon"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Лиза хлоп — подбрасывает шарик. Саша ловит: «Оп!» Они вместе бегут к нему и смеются.",
+      "title": null,
+      "illustrationPrompt": "the child tosses the ball; the friend catches; both laughing in motion; dynamic diagonal composition",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["sasha"],
+        "propIds": ["balloon"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "«Помочь? Не помочь?» — шутит Лиза, и они хохочут. Саша катит шарик к Лизе: «Помочь!»",
+      "title": null,
+      "illustrationPrompt": "the child shrugs playfully and points between self and the friend; both laugh; the ball rolling between them; light two-shot",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["sasha"],
+        "propIds": ["balloon"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Делая добрые дела, мы радуем других.",
+      "title": null,
+      "illustrationPrompt": "the child and the friend stand side by side, smiling at each other; simple centered composition",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["sasha"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "4-year-old girl, light skin, short curly brown hair, wearing pink dress and yellow shoes, holding a pink stuffed bunny",
+  "visualBible": {
+    "hero": {
+      "name": "Лиза",
+      "descriptor": "4-year-old girl, light skin, short curly brown hair, wearing pink dress and yellow shoes, holding a pink stuffed bunny"
+    },
+    "cast": [
+      {
+        "id": "sasha",
+        "name": "Саша",
+        "role": "друг",
+        "descriptor": "4-year-old boy, medium skin, short black hair, wearing blue jeans and a green T-shirt, a small blue cap"
+      }
+    ],
+    "locations": [
+      {
+        "id": "playground",
+        "name": "площадка",
+        "descriptor": "a large yellow slide, much taller than the child, yellow plastic slide, metal stairs, surrounded by sandpit, green grass, three small bushes"
+      }
+    ],
+    "props": [
+      {
+        "id": "balloon",
+        "name": "шарик",
+        "descriptor": "a small red rubber balloon"
+      }
+    ],
+    "atmosphere": "Sunny autumn day with a light breeze, colorful leaves on the ground."
+  }
+}

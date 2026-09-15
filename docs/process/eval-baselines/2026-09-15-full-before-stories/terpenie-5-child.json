@@ -1,0 +1,131 @@
+{
+  "title": "Алиса и волшебный сапожок с дыркой",
+  "discussionQuestions": [
+    "Почему Алиса не могла дождаться, когда сапожок высохнет?",
+    "Как Алиса почувствовала себя, когда сапожок не был готов?",
+    "Что Алиса сделала, чтобы всё исправить?",
+    "Как ты думаешь, почему лучше не спешить?",
+    "Когда тебе приходилось ждать что-то долгое? Что ты чувствовал?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и волшебный сапожок с дыркой",
+      "illustrationPrompt": "the child leans forward with eager expression, looking at a small boot; composition: close-up with the boot in foreground.",
+      "scene": {
+        "locationId": "craftroom",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса нахмурилась: «Ну что ты, клей, давай скорее!» Она подула, помахала ладошкой и прошептала сапожку: «Сохни быстрей, мне очень-очень нужно тебя надеть!»",
+      "title": null,
+      "illustrationPrompt": "the child fans a small boot with one hand and blows gently toward glue; composition: action centered.",
+      "scene": {
+        "locationId": "craftroom",
+        "castIds": [],
+        "propIds": ["glue"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "«Хватит ждать», — решила Алиса и дёрнула сапожок. Только сняла — и трр! — по шву он разошёлся. «Ой!» — сказала Алиса и крепко прижала сапожок к себе.",
+      "title": null,
+      "illustrationPrompt": "the child tugs the boot off; the seam rips; the child reacts in surprise; composition: mid-pull moment.",
+      "scene": {
+        "locationId": "craftroom",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса посмотрела на сапожок — в нём дырка. «Эх, поторопилась», — прошептала Алиса. «Прости, сапожок, я спешила, а тебе нужно было побыть в покое».",
+      "title": null,
+      "illustrationPrompt": "the child holds the boot, pointing at a hole, looking upset; composition: close-up on the hole.",
+      "scene": {
+        "locationId": "craftroom",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса тихонько кивнула: «Буду терпеливо ждать, сколько надо». Она улыбнулась сапожку: «Постоишь спокойно — и мы снова подружимся, правда?»",
+      "title": null,
+      "illustrationPrompt": "the child sits thinking, nodding slightly, the boot nearby; composition: centered.",
+      "scene": {
+        "locationId": "craftroom",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса аккуратно промазала дырку клеем: «Спокойно, без спешки». Она поставила сапожок рядом и кивнула клею: «Высыхай, я подожду столько, сколько нужно».",
+      "title": null,
+      "illustrationPrompt": "the child carefully applies glue to the hole and sets the boot aside, hands pulled back; composition: close-up.",
+      "scene": {
+        "locationId": "craftroom",
+        "castIds": [],
+        "propIds": ["glue"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса потрогала шов — крепко! «Ура, готов!» — сказала Алиса. Она надела сапожок и прошлась пару шагов, радуясь, как хорошо он держится: «Вот теперь можно бегать, мой дружок!»",
+      "title": null,
+      "illustrationPrompt": "the child tries on the repaired boot and takes a small step, smiling; composition: mid-step.",
+      "scene": {
+        "locationId": "craftroom",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса надела оба сапожка и ходит с улыбкой. Потом Алиса рассказывает друзьям, как училась ждать и как это помогло. Иногда ожидание приносит радость.",
+      "title": null,
+      "illustrationPrompt": "the child wears both boots, one hand lifted as if telling a story; composition: medium shot.",
+      "scene": {
+        "locationId": "craftroom",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "5-year-old child, light skin, short wavy blonde hair, wearing a green dress and red shoes, a blue bracelet",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "5-year-old child, light skin, short wavy blonde hair, wearing a green dress and red shoes, a blue bracelet"
+    },
+    "cast": [],
+    "locations": [
+      {
+        "id": "craftroom",
+        "name": "мастерская",
+        "descriptor": "a red stitched leather boot, about the child's height, red leather with white stitching, surrounded by colorful yarns, small wooden shelves, a bright lamp"
+      }
+    ],
+    "props": [
+      {
+        "id": "glue",
+        "name": "клей",
+        "descriptor": "a small bottle of white glue"
+      }
+    ],
+    "atmosphere": "Bright spring morning with warm sunlight."
+  }
+}

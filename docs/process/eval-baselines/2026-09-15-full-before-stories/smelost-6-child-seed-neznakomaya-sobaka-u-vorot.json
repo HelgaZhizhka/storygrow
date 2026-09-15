@@ -1,0 +1,113 @@
+{
+  "title": "Алиса и виляющий хвост у ворот",
+  "discussionQuestions": [
+    "1. Как Алиса обычно гуляет по двору?",
+    "2. Почему Алиса испугалась собаки?",
+    "3. Что помогло Алисе набраться смелости?",
+    "4. Как собака вела себя на самом деле?",
+    "5. Как ты поступаешь, когда тебе немного страшно?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и виляющий хвост у ворот",
+      "illustrationPrompt": "the child putting on a backpack, tightening a strap, about to head out; slight forward lean; composition: three-quarter view",
+      "scene": {
+        "locationId": "yard",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Жила-была девочка Алиса, и вдруг у самых ворот — собака незнакомая. Алиса застыла на шаге, пальцами сжала лямку рюкзака и прошептала: «Ой... А если она сердитая?» Сердечко тук-тук, а ноги не идут.",
+      "title": null,
+      "illustrationPrompt": "the child stops short at seeing a dog ahead, one hand gripping the backpack strap, breath held; composition: child foreground left, dog farther right",
+      "scene": {
+        "locationId": "yard",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "«Вернусь домой — и дело с концом», — думает Алиса. «Или пройти тихонько и посмотреть, какая она?» Внутри у Алисы спор — прямо качели: то туда, то сюда, а шаг всё не решается.",
+      "title": null,
+      "illustrationPrompt": "the child looks one way then the other, foot hovering mid-step, finger at chin; dog small in the distance; composition: zigzag gaze line",
+      "scene": {
+        "locationId": "yard",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "«Ладно», — решает Алиса. «Я буду смелой и посмотрю поближе». Она делает крошечный шаг, потом ещё один, дышит ровно и внимательно смотрит на собаку — что же она хочет?",
+      "title": null,
+      "illustrationPrompt": "the child takes small careful steps toward the dog, shoulders set, calm breath; composition: space between them narrowing",
+      "scene": {
+        "locationId": "yard",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса видит: собака виляет хвостом и смотрит ласково. «Ты добрая?» — тихо спрашивает Алиса и чуть приседает. Собака тычется носом в воздух и как будто зовёт: давай познакомимся, поиграем.",
+      "title": null,
+      "illustrationPrompt": "the child crouches slightly, one hand gently extended; the dog wags its tail; friendly expressions; composition: eye-level near both",
+      "scene": {
+        "locationId": "yard",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Теперь Алиса бегает рядышком и машет ладошкой: «Ну-ка, догоняй!» Собака попрыгивает около Алисы, а Алиса смеётся и выпрямляется: «Вот это да, я смогла!» Радость прямо в пятках подпрыгивает.",
+      "title": null,
+      "illustrationPrompt": "the child runs playfully beside the dog, laughing, one arm out; composition: dynamic diagonal showing movement together",
+      "scene": {
+        "locationId": "yard",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса глубоко вздыхает, кивает самой себе и шагает дальше легко. Быть смелым — это действовать, даже если страшно.",
+      "title": null,
+      "illustrationPrompt": "the child stands tall and walks forward with a small confident smile, hands on backpack straps; composition: centered, steady stride",
+      "scene": {
+        "locationId": "yard",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "6-year-old child, light skin, short wavy blonde hair, wearing a pink dress with yellow polka dots, a purple backpack",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "6-year-old child, light skin, short wavy blonde hair, wearing a pink dress with yellow polka dots, a purple backpack"
+    },
+    "cast": [],
+    "locations": [
+      {
+        "id": "yard",
+        "name": "двор у дома",
+        "descriptor": "a wooden gate with metal decorations, twice the child's height, brown wooden planks, black metal, surrounded by bushes, a small apple tree, flowers"
+      }
+    ],
+    "props": [],
+    "atmosphere": "Sunny spring day with a gentle, warm light."
+  }
+}

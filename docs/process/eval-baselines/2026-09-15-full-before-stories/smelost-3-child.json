@@ -1,0 +1,113 @@
+{
+  "title": "Алиса и путешествие через лужу",
+  "discussionQuestions": [
+    "1. Что напугало Алису в начале истории?",
+    "2. Как Алиса преодолела свой страх?",
+    "3. Что говорила Алиса, когда шагала через лужу?",
+    "4. Почему Алиса стала смелее к концу истории?",
+    "5. Как ты можешь быть смелым в своём дне?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и путешествие через лужу",
+      "illustrationPrompt": "the child walks forward with a light bounce, arms swinging; gentle smile; wide framing",
+      "scene": {
+        "locationId": "park",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса видит большую круглую лужу. «Ой…» — говорит Алиса и делает шажок назад.",
+      "title": null,
+      "illustrationPrompt": "the child stops before a big round puddle, leans back slightly, one foot drawn back; cautious face; puddle centered",
+      "scene": {
+        "locationId": "park",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "«Я смелая! Я смелая!» — говорит Алиса и тянет ножку вперёд. Раз — первый шаг!",
+      "title": null,
+      "illustrationPrompt": "the child encourages herself, chin up, extends one foot toward the puddle; starting step; puddle foreground",
+      "scene": {
+        "locationId": "park",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Ещё шаг. «Я смелая! Я смелая!» — шепчет Алиса и выбирает место для ноги.",
+      "title": null,
+      "illustrationPrompt": "the child takes another small step through the puddle, arms out a bit for balance; top-down angle",
+      "scene": {
+        "locationId": "park",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Раз — и лужа позади! Алиса смеётся и шагает дальше, она пересекла лужу.",
+      "title": null,
+      "illustrationPrompt": "the child reaches the far side of the puddle, laughing, arms raised; dynamic three-quarter view",
+      "scene": {
+        "locationId": "park",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса оглядывается и идёт обратно — проверить. «Я смелая!» — говорит Алиса.",
+      "title": null,
+      "illustrationPrompt": "the child turns and steps back into the puddle, hand to chest as she speaks; symmetric framing",
+      "scene": {
+        "locationId": "park",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса улыбается и кивает. Смелость — это действовать, несмотря на страх.",
+      "title": null,
+      "illustrationPrompt": "the child stands calmly by the puddle, small nod, one hand on heart; close framing",
+      "scene": {
+        "locationId": "park",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "3-year-old child, light skin, short wavy blonde hair, wearing a green dress, white sandals, a flower headband",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "3-year-old child, light skin, short wavy blonde hair, wearing a green dress, white sandals, a flower headband"
+    },
+    "cast": [],
+    "locations": [
+      {
+        "id": "park",
+        "name": "парк с лужайкой",
+        "descriptor": "a large round puddle, about the child's height, muddy water with pebbles, surrounded by green grass, small bushes, a park bench"
+      }
+    ],
+    "props": [],
+    "atmosphere": "Spring day, soft light, cheerful mood."
+  }
+}

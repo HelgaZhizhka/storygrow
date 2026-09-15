@@ -1,0 +1,124 @@
+{
+  "title": "Алиса и жадный Медведь",
+  "discussionQuestions": [
+    "1. Что Алиса хотела оставить только себе?",
+    "2. Почему избушка Медведя была пустой?",
+    "3. Как Алиса почувствовала себя, когда друзья ушли?",
+    "4. Что сделала Алиса, чтобы исправить ситуацию?",
+    "5. Что ты можешь поделиться с друзьями?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и жадный Медведь",
+      "illustrationPrompt": "the child holds a toy bear in one hand and a basket of treats in the other, beaming; the bear is lifted like a little guard; centered composition",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["bear", "basket"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Жила-была Алиса, и подарили ей игрушку — жадного Медведя. «Стереги, никому-ни-ко-му!» — сказала Алиса. Медведь важно устроился на ладонях, будто уже хозяин всего угощения.",
+      "title": null,
+      "illustrationPrompt": "the child examines the toy bear close to her face, whispering to it; the bear sits on her palms like a guard; close framing",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["bear"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса прижала корзинку и шепнула Медведю: «Никому не дадим, сторожи!» Ребята зовут играть, а Алиса хмурит брови: «Нет, это наше», — и играет только с Медведем.",
+      "title": null,
+      "illustrationPrompt": "the child hugs the basket and turns her head away, one hand holding the bear like a guard; a dismissive wave toward off-frame calls; side view",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["bear", "basket"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Ребята ушли играть в сторонке, лёжа и шутя. Алиса осталась с Медведем, присела рядом: «Ну что, охранник, весело нам вдвоём?»",
+      "title": null,
+      "illustrationPrompt": "the child sits alone with the bear beside her, shoulders a bit drooped, gaze turned toward off-frame activity; extra empty space around",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["bear"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса приоткрыла корзинку: сладостей — полным-полно. А вокруг тихо. «Эй, Медведь, почему не радуется сердце?» — прошептала Алиса и обняла его. Сладкого море, а смеяться не с кем.",
+      "title": null,
+      "illustrationPrompt": "the child opens the basket slightly, peeks in, then hugs the bear close; a small sigh; intimate close-up",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["bear", "basket"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса вздохнула: «Хватит сторожить, Медведь, давай делиться». Она подняла корзинку и позвала: «Ребята, подходите! Угощайтесь! Давайте вместе играть и хрумкать».",
+      "title": null,
+      "illustrationPrompt": "the child lifts the basket invitingly with one hand, the bear tucked under the other arm; mouth open calling; open welcoming gesture",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["bear", "basket"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Друзья возвращаются, и все вместе угощаются. «Как же здорово делиться!» — смеётся Алиса, а Медведь будто кивает. Важно делиться, чтобы сохранять дружбу.",
+      "title": null,
+      "illustrationPrompt": "the child offers treats from the basket with a bright smile; the bear sits nearby as if approving; hands reaching in from off-frame; balanced composition",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["bear", "basket"],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "6-year-old child, light skin, long straight blonde hair, wearing a pink dress with white polka dots and white sandals, a purple hairband",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "6-year-old child, light skin, long straight blonde hair, wearing a pink dress with white polka dots and white sandals, a purple hairband"
+    },
+    "cast": [],
+    "locations": [
+      {
+        "id": "playground",
+        "name": "площадка для игр",
+        "descriptor": "a wooden bench with colourful painted slats, about the child's height, wooden slats painted in red, blue, and yellow, surrounded by green grass, a sandbox, a few scattered toys"
+      }
+    ],
+    "props": [
+      {
+        "id": "bear",
+        "name": "жадный Медведь",
+        "descriptor": "a large plush bear with a grumpy face"
+      },
+      {
+        "id": "basket",
+        "name": "корзинка с лакомством",
+        "descriptor": "a small wicker basket filled with cookies and candies"
+      }
+    ],
+    "atmosphere": "Sunny spring day with a playful and friendly mood."
+  }
+}

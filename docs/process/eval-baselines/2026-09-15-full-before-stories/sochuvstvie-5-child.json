@@ -1,0 +1,126 @@
+{
+  "title": "Алиса и волшебные мостики из карандашей",
+  "discussionQuestions": [
+    "1. Почему Алиса сначала не хотела делиться своими карандашами?",
+    "2. Как Алиса заметила, что Антон был грустным?",
+    "3. Что помогло Алисе решиться подойти к Антону?",
+    "4. Как Антон отреагировал на предложение Алисы?",
+    "5. Как ты можешь помочь другу, который грустит?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и волшебные мостики из карандашей",
+      "illustrationPrompt": "the child sits and draws with crayons, one in hand and others nearby; focused, gentle smile; composition: the child slightly off-center with hands and crayons visible",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["crayons"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса замечает Антона: сидит рядышком, плечи опущены, молчит. «Эй… всё в порядке?» — шепчет Алиса и замирает. Новенький, а взгляд у него такой серьёзный.",
+      "title": null,
+      "illustrationPrompt": "the child notices another child sitting nearby with head lowered; the child leans slightly toward them, one hand half-raised; composition: two children on opposite sides",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["anton"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса глядит на свои карандаши и мнётся: «Позвать Антона? А вдруг не захочет… а вдруг скажет “нет”?» Рука тянется — и тут же прячется. Сердце тук-тук, будто стучит карандаш.",
+      "title": null,
+      "illustrationPrompt": "the child glances at crayons, hand reaching out then pulling back; another child nearby; expression hesitant; composition: crayons between them",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["anton"],
+        "propIds": ["crayons"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса глубоко вздыхает, берёт парочку карандашей и шагает к Антону. «Привет! Давай вместе рисовать?» — говорит Алиса и протягивает ему цвета, будто мостик дружбы.",
+      "title": null,
+      "illustrationPrompt": "the child steps closer and offers a few crayons to the other child; small friendly smile; composition: extended hands meet in the center",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["anton"],
+        "propIds": ["crayons"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Антон поднимает глаза и улыбается так светло, что Алиса тоже улыбается. «Хочу», — кивает Антон и берёт карандаши бережно. И вот уже Алиса с Антоном водят их рядом, вместе.",
+      "title": null,
+      "illustrationPrompt": "the other child smiles and takes the crayons; both lean in and move crayons together; composition: faces angled toward their hands",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["anton"],
+        "propIds": ["crayons"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "«Алиса, давай вот так, смотри!» — говорит Антон, и рука чертит смелую линию. «А я добавлю яркий штрих», — радуется Алиса. Смеются, шепчутся и слушают друг друга.",
+      "title": null,
+      "illustrationPrompt": "both children draw together, laughing; the child makes a sweeping line with a crayon, the other child points; composition: dynamic diagonal across the page",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["anton"],
+        "propIds": ["crayons"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Теперь у Алисы и Антона есть о чём болтать и что рисовать вместе, не спеша. Сочувствие помогает находить новых друзей.",
+      "title": null,
+      "illustrationPrompt": "both children sit close, crayons shared between them; calm happy expressions; composition: tight warm framing with hands and crayons centered",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["anton"],
+        "propIds": ["crayons"],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "5-year-old child, light skin, long wavy blonde hair, wearing a pink dress, white shoes, a purple headband",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "5-year-old child, light skin, long wavy blonde hair, wearing a pink dress, white shoes, a purple headband"
+    },
+    "cast": [
+      {
+        "id": "anton",
+        "name": "Антон",
+        "role": "новый друг",
+        "descriptor": "5-year-old boy, olive skin, short straight black hair, wearing a green t-shirt, blue shorts, blue sneakers"
+      }
+    ],
+    "locations": [
+      {
+        "id": "playground",
+        "name": "детская площадка",
+        "descriptor": "a tall green slide, much taller than the child, bright green plastic, surrounded by sand, a few benches, trees"
+      }
+    ],
+    "props": [
+      {
+        "id": "crayons",
+        "name": "карандаши",
+        "descriptor": "a colorful box of crayons"
+      }
+    ],
+    "atmosphere": "A sunny summer day with a warm and cheerful palette."
+  }
+}

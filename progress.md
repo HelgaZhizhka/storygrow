@@ -1642,3 +1642,23 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - 427 backend tests + 52 frontend tests pass; `./init.sh` green.
 
 **Blockers:** none.
+
+## 2026-09-15 — chore(eval): Suteev refactor foundation — spec, ADR-0004 v2, prose metrics & eval sets (#405)
+
+**Why:** open the text-quality track (#404). The prose does not read like Suteev: structure is hard-coded to one virtue/flaw arc, voice is described with adjectives, the moral is spoken by the child, and the judge scores 8+ on texts the owner rejects. Foundation phase lands the analysis + the measurement tooling with **no prompt/schema/exemplar change** — generated output is unchanged.
+
+**Done:**
+- Rebased the cloud research branch `claude/suteev-fairy-tale-analysis-h80xc7` onto today's `main` (it was cut before #391–#403). `eval-batch.ts` re-merged by hand: kept the branch semantics (`--set=core|full|antagonist`, `seeds`, `measureProse`) on top of main's object-parameter `runOne`/`runPool` refactor from #380 (max-params ≤ 3), so it lints clean.
+- Spec: `docs/superpowers/specs/2026-09-13-suteev-register-refactor-design.md` — corpus analysis of 19 Suteev tales + the 8-phase plan.
+- ADR-0004 **Amendment v2 (Proposed)**: judge the hero's imitable act, not the scary element; fairy-tale antagonist outwitted is allowed; hero-act bans absolute + three new ones. Research summary `docs/process/2026-09-safety-boundary-research.md`.
+- Tooling: `scripts/lib/prose-metrics.ts` (+spec) deterministic metrics; `lib/eval-cases.ts` sets `core`/`full`/`antagonist`; `eval:batch --set=…` prints metrics; `eval:metrics --dir=…` offline. Offline baseline `docs/process/eval-baselines/2026-09-14-prose-metrics-after2-367.json`.
+- Live `--set=full` before-baseline captured (see baseline JSON committed with this PR).
+- `./init.sh` green.
+
+**Decisions:**
+- Land as a foundation PR off today's `main` (not the 9-commit cloud branch) — clean history, convention-compliant, doc conflicts resolved once. The superseded `issue/safety-boundary-v2-research` branch can be deleted.
+- ADR-0004 v2 stays **Proposed** until it is applied to the prompts (phase 4), each prompt owner-reviewed.
+
+**Next:** phase 1 — `register.ts` device catalogue, rewrite Prose + Judge `registerMatch` (owner reviews each prompt). Phases tracked in #404.
+
+**Blockers:** open owner decision — include the "companion pays for disobedience" pattern? Gates phases 4/5, not phase 1.

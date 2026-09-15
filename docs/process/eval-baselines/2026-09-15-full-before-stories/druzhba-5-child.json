@@ -1,0 +1,131 @@
+{
+  "title": "Алиса и потерянная игрушка у скамейки",
+  "discussionQuestions": [
+    "1. Что Алиса любила больше всего?",
+    "2. Почему Алиса решила помочь мальчику?",
+    "3. Как Алиса чувствовала себя, когда играла одна?",
+    "4. Что сделало Алису счастливой в конце?",
+    "5. Как ты можешь помочь другу, если ему грустно?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и потерянная игрушка у скамейки",
+      "illustrationPrompt": "The child plays joyfully; a small toy lies off to the side unnoticed; the child turns head toward it, mid-motion; wide view.",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["toy"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса притормозила и спросила: «Что случилось?» Мальчик опустил плечи: «Игрушка пропала…» Алиса оглянулась вокруг и вдруг поняла, как без смеха пусто.",
+      "title": null,
+      "illustrationPrompt": "The child notices a boy sitting with head lowered; the child pauses and gently asks what's wrong; the boy looks down; medium two-shot.",
+      "scene": {
+        "locationId": "bench",
+        "castIds": ["boy"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса топчется у скамейки: «Подойти? А вдруг помешаю?» — думает она. «Но ведь без игрушки грустно…» Она сжала ладошки, глотнула смелости и набралась воздуха.",
+      "title": null,
+      "illustrationPrompt": "The child hesitates a step away from the boy, fingers clasped, pondering; the boy sits quietly; over-shoulder view from the child.",
+      "scene": {
+        "locationId": "bench",
+        "castIds": ["boy"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса решилась: «Давай вместе поищем!» Мальчик поднял взгляд: «Правда?» — «Правда-правда», — кивнула Алиса, делая шаг ближе и показывая, где начнут.",
+      "title": null,
+      "illustrationPrompt": "The child steps forward with a friendly hand gesture; the boy looks up hopeful; they get ready to search together; centered on both.",
+      "scene": {
+        "locationId": "bench",
+        "castIds": ["boy"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса заглянула под горку: «Смотри, вот она!» Мальчик всплеснул руками: «Нашлась!» Алиса бережно подала находку, и смех зазвенел уже вдвоём, так весело, что искать стало не нужно.",
+      "title": null,
+      "illustrationPrompt": "The child points under a low structure where a toy peeks out; the boy kneels, reaching; both smile with relief; close-up on the find.",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["boy"],
+        "propIds": ["toy"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса сказала: «Теперь вместе?» — «Конечно!» Они играют по очереди и придумывают смешные правила, считают до трёх и меняются ролями. Алиса улыбается: вдвоём любая игра веселее и добрее.",
+      "title": null,
+      "illustrationPrompt": "The child and the boy play together, running side by side and laughing; one leads then swaps; dynamic diagonal composition.",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["boy"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса и мальчик хлопнули ладонями и присели рядом. Алиса посмотрела на мальчика и улыбнулась. Дружбу нужно ценить и поддерживать.",
+      "title": null,
+      "illustrationPrompt": "The child and the boy sit side by side, sharing a gentle high-five and a calm smile; centered, quiet moment.",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["boy"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "5-year-old child, light skin, shoulder-length blonde hair, wearing pink dress, white sneakers, a small blue backpack",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "5-year-old child, light skin, shoulder-length blonde hair, wearing pink dress, white sneakers, a small blue backpack"
+    },
+    "cast": [
+      {
+        "id": "boy",
+        "name": "мальчик",
+        "role": "весёлый товарищ",
+        "descriptor": "5-year-old boy, medium skin, short black hair, wearing green T-shirt, brown shorts, red sneakers, a yellow cap"
+      }
+    ],
+    "locations": [
+      {
+        "id": "playground",
+        "name": "площадка",
+        "descriptor": "a yellow and blue slide, twice the child's height, metal and plastic, surrounded by soft sand, a few bushes"
+      },
+      {
+        "id": "bench",
+        "name": "скамейка",
+        "descriptor": "a sturdy wooden bench, about the child's height, dark wood, surrounded by tall trees, a bit of shadow"
+      }
+    ],
+    "props": [
+      {
+        "id": "toy",
+        "name": "потерянная игрушка",
+        "descriptor": "a small plush bear with a red bow"
+      }
+    ],
+    "atmosphere": "A sunny afternoon with a gentle breeze."
+  }
+}

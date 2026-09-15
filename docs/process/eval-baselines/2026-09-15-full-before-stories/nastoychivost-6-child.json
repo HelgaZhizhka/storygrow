@@ -1,0 +1,119 @@
+{
+  "title": "Алиса и книга на вершине стула",
+  "discussionQuestions": [
+    "1. Почему Алиса так хотела дотянуться до книги?",
+    "2. Что Алиса сначала подумала, когда ей не удалось?",
+    "3. Как Алиса изменила свой подход?",
+    "4. Какой у Алисы был план, чтобы достать книгу?",
+    "5. Что ты хочешь сделать, даже если это трудно?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и книга на вершине стула",
+      "illustrationPrompt": "the child stretching an arm up toward a book above, focused eyes; centered composition",
+      "scene": {
+        "locationId": "livingroom",
+        "castIds": [],
+        "propIds": ["book"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Тянется Алиса к книге высоко на полке — никак не дотянется. «Ещё чуть-чуть!» — бормочет Алиса, встаёт на носочки, тянет ладонь, да пальцам не хватает. Что же придумать?",
+      "title": null,
+      "illustrationPrompt": "the child on tiptoes reaching toward a book above, fingers just short; book at top edge of frame",
+      "scene": {
+        "locationId": "livingroom",
+        "castIds": [],
+        "propIds": ["book"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса опустила руки и фыркнула: «Позвать бы кого…» Уже рот открыла, а потом губы крепко сжала: «Нет, ещё попробую сама!» Она глубоко вздохнула и снова посмотрела на книгу.",
+      "title": null,
+      "illustrationPrompt": "the child lowers hands, almost calling out, then presses lips together, looking up at the book; medium shot",
+      "scene": {
+        "locationId": "livingroom",
+        "castIds": [],
+        "propIds": ["book"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Тут Алиса заметила высокий стул. «Точно, если взобраться — дотянусь!» — сказала Алиса. Она придвинула стул поближе и решилась.",
+      "title": null,
+      "illustrationPrompt": "the child notices a tall chair, raises a finger with an idea, and slides it closer; side view with chair and book also in frame",
+      "scene": {
+        "locationId": "livingroom",
+        "castIds": [],
+        "propIds": ["book"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "С усилием Алиса встала на стул, держась руками, выпрямилась и потянулась. «Ещё чуточку… ага!» — прошептала Алиса, и пальцы коснулись книги. Раз — и книга уже в руках!",
+      "title": null,
+      "illustrationPrompt": "the child stands carefully on the tall chair, stretching to grab the book; upward angle, book just within reach",
+      "scene": {
+        "locationId": "livingroom",
+        "castIds": [],
+        "propIds": ["book"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса обняла книгу и улыбнулась: «Сама придумала!» Она кивнула себе, глянула наверх, будто примеряла новые ходы. Теперь Алиса знает: в другой раз тоже найдёт способ.",
+      "title": null,
+      "illustrationPrompt": "the child hugs the book, gives a thoughtful upward glance with a small proud smile; calm centered framing",
+      "scene": {
+        "locationId": "livingroom",
+        "castIds": [],
+        "propIds": ["book"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса подняла книгу и держит её гордо, как награду. Если продолжать пытаться, можно добиться успеха.",
+      "title": null,
+      "illustrationPrompt": "the child holds the book proudly with both hands, smiling; centered portrait",
+      "scene": {
+        "locationId": "livingroom",
+        "castIds": [],
+        "propIds": ["book"],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "6-year-old child, light skin, long wavy blonde hair, wearing a green dress with yellow flowers, a red hairband",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "6-year-old child, light skin, long wavy blonde hair, wearing a green dress with yellow flowers, a red hairband"
+    },
+    "cast": [],
+    "locations": [
+      {
+        "id": "livingroom",
+        "name": "гостиная",
+        "descriptor": "a tall wooden chair, twice the child's height, dark brown wood, surrounded by a soft carpet, a bookshelf, a window with sheer curtains"
+      }
+    ],
+    "props": [
+      {
+        "id": "book",
+        "name": "книга",
+        "descriptor": "a large colorful picture book"
+      }
+    ],
+    "atmosphere": "A sunny afternoon, with warm light and cozy hues."
+  }
+}

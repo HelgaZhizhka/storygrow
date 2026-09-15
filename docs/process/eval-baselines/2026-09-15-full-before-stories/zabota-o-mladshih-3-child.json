@@ -1,0 +1,120 @@
+{
+  "title": "Алиса и хвостик радости",
+  "discussionQuestions": [
+    "1. Какой цвет платья у Алисы?",
+    "2. Почему щенок скучал в корзине?",
+    "3. Как Алиса помогла щенку почувствовать себя лучше?",
+    "4. Что Алиса повторила несколько раз?",
+    "5. Как ты можешь помочь своему брату или сестре?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и хвостик радости",
+      "illustrationPrompt": "the child kneels, holding and peeking into a basket; playful smile; basket near center",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "В корзине щенок скучает. «С кем играть?» — будто спрашивает он. Алиса наклонилась.",
+      "title": null,
+      "illustrationPrompt": "the child crouches by a basket; the puppy sits inside looking lonely; the child reaches a gentle hand; close view",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["puppy"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса погладила щенка. «Не бойся, я с тобой», — шепчет Алиса. Щенок тихо прижался.",
+      "title": null,
+      "illustrationPrompt": "the child strokes the puppy softly; the child’s mouth slightly open as if speaking; the puppy leans in",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["puppy"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса еще раз гладит щенка. «Не бойся, я с тобой», — повторяет Алиса. Он выглянул.",
+      "title": null,
+      "illustrationPrompt": "the child repeats the soothing gesture; both hands near the puppy; the puppy peeks out, more curious",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["puppy"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Щенок весело виляет хвостиком. «Вот так!» — смеётся Алиса. И щенок лизнул Алису в щёку.",
+      "title": null,
+      "illustrationPrompt": "the puppy licks the child’s cheek while wagging; the child giggles; tight, joyful framing",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["puppy"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса кивает и зовёт играть. «Не бойся, я с тобой», — повторяет Алиса. Щенок скачет рядом.",
+      "title": null,
+      "illustrationPrompt": "the child claps and beckons; the puppy bounces near the child; energetic pose, mid-action",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["puppy"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса гладит щенка и улыбается. Заботиться о других — это радость.",
+      "title": null,
+      "illustrationPrompt": "the child cuddles the puppy gently; calm smiles; centered, cozy composition",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["puppy"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "3-year-old child, light skin, short curly blonde hair, wearing green dress and yellow shoes, pink headband",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "3-year-old child, light skin, short curly blonde hair, wearing green dress and yellow shoes, pink headband"
+    },
+    "cast": [
+      {
+        "id": "puppy",
+        "name": "щенок",
+        "role": "маленький щенок",
+        "descriptor": "small golden retriever puppy, golden fur, fluffy fur, wearing no clothes, a blue collar"
+      }
+    ],
+    "locations": [
+      {
+        "id": "living-room",
+        "name": "гостиная",
+        "descriptor": "a soft blue basket, about the child's height, soft fabric, blue color, surrounded by wooden floor, a tall houseplant, colorful pillows"
+      }
+    ],
+    "props": [],
+    "atmosphere": "Warm spring afternoon with a bright and cheerful mood."
+  }
+}

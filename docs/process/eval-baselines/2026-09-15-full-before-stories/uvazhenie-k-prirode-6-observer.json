@@ -1,0 +1,131 @@
+{
+  "title": "Оля и спасение ежика из травяной ловушки",
+  "discussionQuestions": [
+    "1. Что заметила Оля в лесу?",
+    "2. Почему ёжик прижался к Оле?",
+    "3. Как Оля помогла ёжику?",
+    "4. Как ты заботишься о природе вокруг себя?",
+    "5. Что ты узнал о животных из этой истории?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Оля и спасение ежика из травяной ловушки",
+      "illustrationPrompt": "the child walking joyfully with springy steps, arms open, smiling upward; three-quarter view, centered",
+      "scene": {
+        "locationId": "forest",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Жила-была девочка Оля, и больше всего она любила лесные прогулки. Оля шагает неторопко, вдыхает полной грудью и улыбается: «Как тут тихо да просторно!»",
+      "title": null,
+      "illustrationPrompt": "the child strolling calmly, breathing deep, smiling; head slightly tilted; open relaxed posture; top-weighted composition",
+      "scene": {
+        "locationId": "forest",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Вот однажды Оля заметила: в высокой траве шевельнулось и притихло. Оля присела поближе и ахнула: «Ёжик! Ты тут запутался?» Травинки держат крепко, а малый лишь фыркает и смотрит на Олю.",
+      "title": null,
+      "illustrationPrompt": "the child kneeling, noticing the small animal stuck; one hand to mouth in surprise; the animal peeks out; diagonal composition leading to them",
+      "scene": {
+        "locationId": "forest",
+        "castIds": [],
+        "propIds": ["hedgehog"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Оля тянет ладошку — и одёргивает. «Как бы не кольнуть, как бы не больно тебе…» — шепчет Оля. Стоит рядом, думает, глядит на ёжика и решает, что спешить нельзя.",
+      "title": null,
+      "illustrationPrompt": "the child extends hand then pulls back, whispering; eyes concerned; the animal watches; close left-side crop",
+      "scene": {
+        "locationId": "forest",
+        "castIds": [],
+        "propIds": ["hedgehog"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Набралась Оля смелости да осторожности. «Потерпи, дружок», — говорит Оля и двумя пальчиками разводит травинки, не торопясь. Дышит ровно, показывает дорогу: «Вот так, потихоньку. Иди-ка сюда».",
+      "title": null,
+      "illustrationPrompt": "the child gently separates with two fingers near the small animal; focused face; the animal inching forward; top-heavy composition",
+      "scene": {
+        "locationId": "forest",
+        "castIds": [],
+        "propIds": ["hedgehog"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Ёжик сам понемногу выбирается и наконец свободен. Он осторожно прижимается, а Оля смеётся тихонько: «Ну и молодец ты!» Оля ладонью гладит воздух над ним — близко, да бережно.",
+      "title": null,
+      "illustrationPrompt": "the small animal presses to the child's side; the child smiles softly, hand hovering above it; both relaxed; low-angle close-up",
+      "scene": {
+        "locationId": "forest",
+        "castIds": [],
+        "propIds": ["hedgehog"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "С той поры Оля смотрит внимательней на всё вокруг. Оля не ломает лишних веточек, обходит молодую траву и шепчет себе: «Беречь — это по силам. Буду бережной, всегда-всегда».",
+      "title": null,
+      "illustrationPrompt": "the child walks carefully, stepping lightly; hands behind back; thoughtful smile; left-aligned composition",
+      "scene": {
+        "locationId": "forest",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Оля идёт дальше и чувствует: сердце стало светлее, а лес — как добрый друг. Бережное обращение с природой приносит радость.",
+      "title": null,
+      "illustrationPrompt": "the child stands still, hand on heart, soft smile; slight upward gaze; centered, simple composition",
+      "scene": {
+        "locationId": "forest",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "6-year-old girl, light skin, long straight blonde hair, wearing a green dress, pink sandals, a purple headband",
+  "visualBible": {
+    "hero": {
+      "name": "Оля",
+      "descriptor": "6-year-old girl, light skin, long straight blonde hair, wearing a green dress, pink sandals, a purple headband"
+    },
+    "cast": [],
+    "locations": [
+      {
+        "id": "forest",
+        "name": "лес",
+        "descriptor": "a small moss-covered log, smaller than the child, brown wood and soft green moss, surrounded by tall trees, bushes, and fallen leaves"
+      }
+    ],
+    "props": [
+      {
+        "id": "hedgehog",
+        "name": "ежик",
+        "descriptor": "a small hedgehog with spiky quills"
+      }
+    ],
+    "atmosphere": "Spring morning, soft sunlight, gentle and fresh."
+  }
+}
