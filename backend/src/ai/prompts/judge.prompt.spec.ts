@@ -2,12 +2,13 @@ import type { Story } from '../schemas';
 import { buildJudgePrompt, buildJudgeSystemPrompt } from './judge.prompt';
 
 describe('buildJudgeSystemPrompt — per band register calibration', () => {
-  it('5-6: shows the Сутеев register references and the flat/ornate two-sided criterion', () => {
+  it('5-6: shows the Сутеев register references and the device-checklist criterion', () => {
     const out = buildJudgeSystemPrompt('5-6');
     expect(out).toContain('Жил-был мальчик Миша'); // COURAGE
     expect(out).toContain('Гриша'); // HONESTY
-    expect(out).toMatch(/FLATTER than the exemplars/);
-    expect(out).toMatch(/MORE ORNATE/);
+    expect(out).toMatch(/VOICE DEVICES/); // checklist, not adjectives
+    expect(out).toMatch(/Инверсия глагол–подлежащее/); // a device from the catalogue
+    expect(out).toMatch(/MORE ORNATE/); // two-sided guard kept
   });
 
   it('3-4: shows the 3-4 exemplars, NOT the 5-6 ones', () => {

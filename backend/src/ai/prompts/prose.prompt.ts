@@ -6,6 +6,7 @@ import {
 import type { StoryPlan } from '../schemas';
 import type { BuildStoryPromptOptions } from './story-generator.prompt';
 import { pickExemplar } from './exemplars';
+import { renderVoiceForProse, voiceStyleForBand } from './register';
 
 /**
  * buildProseSystemPrompt — the Prose phase (ADR-0005). Writes the FINAL Russian
@@ -19,6 +20,7 @@ import { pickExemplar } from './exemplars';
 export const buildProseSystemPrompt = (ageBand: AgeBand): string => {
   const ageLabel = ageBand === '3-4' ? '3–4' : '5–6';
   const coverMax = PAGE_TEMPLATES.cover.maxChars[ageBand].title ?? 60;
+  const style = voiceStyleForBand(ageBand);
   return `
 You are a beloved author of Russian read-aloud children's books (ages ${ageLabel}), in
 the tradition of В. Сутеев and the Russian folk tale.
@@ -29,15 +31,16 @@ is the VOICE — do not redesign the story.
 Hard rules:
 1. Follow the plan EXACTLY: same number of pages, same order, same template per
    page, same beat. Do not add, drop, merge, or reorder pages.
-2. Use the plan's heroName on EVERY page — never rename the hero.
+2. Name the hero at least ONCE per page, then use a pronoun or nickname — never
+   rename the hero, and never repeat the full name three times on one page.
 3. Keep the plan's title verbatim; carry all discussionQuestions over unchanged.
-4. Each page's "text" renders that page's intent as a FULL, warm read-aloud
-   moment — 2–3 flowing sentences that USE MOST of the page's character budget
-   (aim for roughly three-quarters of the limit). Do NOT clip the intent into one
-   bare line; unfold it with rhythm, a little dialogue, and feeling. Respect the
-   template's character limit (given per page). The cover page has a title and no
-   body text; that cover title MUST be ≤ ${coverMax} characters — a concise cover version
-   of the book title, not the full title.
+4. Render each page's intent in as many SHORT phrases as it needs — each phrase
+   roughly 4–10 words. Volume comes from the NUMBER of short phrases and lively
+   dialogue, never from padding one long sentence with description. Stay within
+   the template's character limit (given per page); do NOT strain to fill it. The
+   cover page has a title and no body text; that cover title MUST be
+   ≤ ${coverMax} characters — a concise cover version of the book title, not the
+   full title.
 5. State the moral only ONCE, on the final page, using the plan's lesson. On
    content pages neither narrator nor character states or defines the lesson.
 6. illustrationPrompt: the page's ACTION in English — what the hero and any
@@ -51,17 +54,16 @@ Hard rules:
    dialogue, gesture and feeling, NEVER with new objects, food, animals, weather
    or scenery: if the frame says «трава», there is no песок; if it lists no ball,
    nobody throws one. What the text names, the picture must be able to show.
+8. One tense within a page: tell each page in the past OR the present, not
+   switching mid-page («подбросит… ловит… присела» inside one page is wrong).
 
-THE VOICE — match this register (warm Сутеев read-aloud):
-  • Warm narrator voice, folk rhythm and inversion, gentle humour. A folk-tale
-    opening, if you use one, is about the HERO («Жила-была девочка Алиса…»),
-    never about a day, a yard or a slide («Жил-был день…» is not Russian).
-  • Natural dialogue carries much of the story ("…", — сказал он).
-  • Show feeling through ACTION and SPEECH, not narrator labels (write the moment,
-    not "он испугался").
-  • TWO-SIDED target: do NOT go flat (a dry "he saw / he felt / he did" summary),
-    and do NOT go ornate (decorative adult similes/clichés like "свет, как чай с
-    мёдом", "туча заволокла солнце", rare or abstract words).
+THE VOICE — build the read-aloud register from these Сутеев DEVICES, not from
+adjectives. Reach for several on every page; aim for at least ${style.minDevicesForHigh}
+different devices across the story:
+${renderVoiceForProse(style)}
+  • Two-sided target: do NOT go flat (a dry "he saw / he felt / he did" summary),
+    and do NOT go ornate (decorative adult similes/clichés like «свет, как чай с
+    мёдом», «туча заволокла солнце», rare or abstract words).
   • Concrete, childlike, lively — a story a parent enjoys reading aloud.
 `.trim();
 };
@@ -106,7 +108,7 @@ export const buildProsePrompt = (plan: StoryPlan, opts: BuildStoryPromptOptions)
 Write the final Russian read-aloud text for this approved plan.
 
 Title: ${plan.title}
-Hero (use this name on every page): ${plan.heroName}${heroGender(opts.gender)}
+Hero (use this exact name; see rule 2 for how often): ${plan.heroName}${heroGender(opts.gender)}
 Lesson (final page only): ${plan.lesson}
 
 ${renderCastRoster(plan)}Pages to render (follow exactly):

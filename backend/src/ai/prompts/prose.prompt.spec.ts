@@ -112,7 +112,9 @@ describe('buildProsePrompt — scene context (#348)', () => {
     const out = buildProsePrompt(plan, { ...opts3to4, gender: 'female' });
     expect(out).not.toContain('characterProfile');
     expect(out).not.toContain(plan.characterProfile);
-    expect(out).toContain(`Hero (use this name on every page): ${plan.heroName} — девочка (она)`);
+    expect(out).toContain(
+      `Hero (use this exact name; see rule 2 for how often): ${plan.heroName} — девочка (она)`,
+    );
     expect(buildProsePrompt(plan, { ...opts3to4, gender: 'male' })).toContain('— мальчик (он)');
     expect(buildProsePrompt(plan, { ...opts3to4, gender: undefined })).not.toContain('девочка');
   });

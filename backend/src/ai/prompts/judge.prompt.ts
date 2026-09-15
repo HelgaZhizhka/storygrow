@@ -1,46 +1,49 @@
 import type { AgeBand } from '../../pdf/page-templates/page-templates.config';
 import type { Story } from '../schemas';
 import { getRegisterReferences } from './exemplars';
+import { renderVoiceChecklist, voiceStyleForBand } from './register';
 
-const registerMatchCriterion = (ageBand: AgeBand): string =>
-  ageBand === '3-4'
-    ? `7. registerMatch — how close the prose sits to the TARGET REGISTER shown by the
-   gold exemplars below: a SIMPLE, repetition-driven read-aloud voice for ages
-   3–4. This criterion is TWO-SIDED — BOTH failure modes score low:
-   • Score LOW (≤5) if the prose is MORE COMPLEX than the exemplars: long or
-     compound sentences, decorative similes, rare or abstract words, internal
-     monologue, or a register that reads like the 5–6 band rather than a
-     toddler read-aloud.
-   • Score LOW (≤5) if the prose has NO refrain/repetition device at all, or
-     reads as a dry event-summary with no warmth.
-   • Score HIGH (8–10) when short plain sentences, a repeated refrain line, and
-     concrete toddler-scale stakes match the exemplars below. REPETITION IS THE
-     TARGET register here, not a flaw — do NOT penalise a short repeated phrase
-     as "flat".
-   • The TITLE is part of the register — judge it against the exemplar titles
-     (the «Название: …» line of each exemplar below). A good title names a
-     simple, concrete thing from the story in plain idiomatic Russian. Cap the
-     score at ≤6 if the title contains an invented/non-existent word, precious
-     or surreal imagery, or names something that does not appear in the story.`
-    : `7. registerMatch — how close the prose sits to the TARGET REGISTER shown by the
-   gold exemplars below: a warm, musical read-aloud voice in the Сутеев / Russian
-   folk-tale tradition. This criterion is TWO-SIDED — BOTH failure modes score low:
-   • Score LOW (≤5) if the prose is FLATTER than the exemplars: a dry
-     event-summary, no warm narrator, little or no dialogue, feelings merely
-     named ("он испугался") instead of shown, or the moral repeated on more than
-     the final page.
-   • Score LOW (≤5) if the prose is MORE ORNATE / PRECIOUS than the exemplars:
-     decorative adult similes and clichés ("свет, как чай с мёдом", "туча
-     заволокла солнце", "неведомое тепло"), rare or abstract words, or
-     word-painting of what the picture should show (hair colour, scenery, weather).
-   • Score HIGH (8–10) ONLY when the voice matches the exemplars: warm narrator
-     ("Жил-был…"), folk rhythm, gentle humour, natural dialogue, concrete
-     childlike images, the lesson emerging from events rather than stated.
-   • The TITLE is part of the register — judge it against the exemplar titles
-     (the «Название: …» line of each exemplar below). A good title names a
+const TITLE_RULE = `The TITLE is part of the register — judge it against the exemplar
+     titles (the «Название: …» line of each exemplar below). A good title names a
      simple, concrete thing from the story in plain idiomatic Russian. Cap the
      score at ≤6 if the title contains an invented/non-existent word, precious
      or surreal imagery, or names something that does not appear in the story.`;
+
+const registerMatchCriterion = (ageBand: AgeBand): string => {
+  const style = voiceStyleForBand(ageBand);
+  const checklist = renderVoiceChecklist(style);
+  const min = style.minDevicesForHigh;
+  return ageBand === '3-4'
+    ? `7. registerMatch — how well the prose hits the SIMPLE, repetition-driven
+   toddler read-aloud voice of the gold exemplars, measured by these Сутеев
+   devices. Count the DISTINCT devices the story actually uses:
+${checklist}
+   • Score HIGH (8–10) when at least ${min} of these are clearly present: short
+     plain phrases, a repeated refrain/echo, concrete toddler-scale stakes.
+     REPETITION IS THE TARGET here, not a flaw — do NOT penalise a short repeated
+     phrase as "flat".
+   • Score LOW (≤5) if the prose is MORE COMPLEX than the exemplars (long or
+     compound sentences, similes, rare/abstract words, internal monologue like
+     «Дать? Не дать?», a register that reads like the 5–6 band) OR has no
+     refrain/repetition device at all.
+   • ${TITLE_RULE}`
+    : `7. registerMatch — how strongly the prose uses the Сутеев VOICE DEVICES,
+   judged against this checklist and the gold exemplars. Count the DISTINCT
+   devices the story actually uses:
+${checklist}
+   • Score HIGH (8–10) only when at least ${min} of these devices are clearly
+     present AND the voice matches the exemplars: warm narrator, natural dialogue,
+     the lesson emerging from events rather than stated.
+   • Score LOW (≤5) if at most one device is present — a dry event-summary, no
+     warm narrator, little or no dialogue, feelings merely named ("он испугался"),
+     or the moral repeated on more than the final page.
+   • Also score LOW (≤5) if the prose is MORE ORNATE / PRECIOUS than the exemplars:
+     decorative adult similes and clichés («свет, как чай с мёдом», «туча заволокла
+     солнце», «неведомое тепло»), rare or abstract words, or word-painting of what
+     the picture should show (hair colour, scenery, weather). Devices never excuse
+     ornateness.
+   • ${TITLE_RULE}`;
+};
 
 /**
  * buildJudgeSystemPrompt — a function of AgeBand (#196), not a static const,
