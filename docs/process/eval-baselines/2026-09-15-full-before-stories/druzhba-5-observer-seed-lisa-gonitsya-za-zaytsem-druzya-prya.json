@@ -1,0 +1,138 @@
+{
+  "title": "Антон и заяц в кармане",
+  "discussionQuestions": [
+    "1. Почему Антон хотел помочь зайчонку?",
+    "2. Как Антон нашёл решение проблемы?",
+    "3. Что Антон понял о дружбе?",
+    "4. Как ты заботишься о своих друзьях?",
+    "5. Как ты думаешь, зайчонку лучше теперь? Почему?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Антон и заяц в кармане",
+      "illustrationPrompt": "the child plays with a few toys, smiling and mid-motion; open, inviting pose; central composition",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Жил-был Антон, играл на площадке и вдруг услышал: «Псс!». Тут же, рядышком, затаился Зайчонок. «Ты тут? Не бойся, выходи», — сказал Антон и аккуратно протянул ладошку.",
+      "title": null,
+      "illustrationPrompt": "the child crouches and reaches out an open hand; the toy rabbit peeks from hiding; the child speaks gently; medium shot",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["rabbit"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Но вдруг мимо промчалась лиса — глаза в сторону Зайчонка. «Эй! Не трогай моего друга!» — выдохнул Антон и шагнул вперёд. Он очень хотел помочь Зайчонку и остановить погоню.",
+      "title": null,
+      "illustrationPrompt": "the child steps forward protectively with one hand out; a fox dashes toward the toy rabbit; the child looks determined; dynamic diagonal",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["rabbit"],
+        "propIds": ["fox"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Антон прижал Зайчонка к груди. «Как тебя защитить? Убежать или придумать хитрость?» — шепчет он. Лиса кружит рядом, а Антон то делает шаг, то отступает и всё думает, как быть.",
+      "title": null,
+      "illustrationPrompt": "the child hugs the toy rabbit to chest, glancing at the fox; thinking pause; shifting stance",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["rabbit"],
+        "propIds": ["fox"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "И тут Антона осенила мысль. «Спрячемся!» — улыбнулся он. Антон показал на свой карман, кивнул Зайчонку: «Тихо-тихо, сядешь внутрь, а я буду рядом и отвлеку лису глазами».",
+      "title": null,
+      "illustrationPrompt": "the child brightens with an idea, taps a pocket and signals the toy rabbit to hide; the fox searches; over-shoulder angle",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["rabbit"],
+        "propIds": ["fox"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Антон ловко опустил Зайчонка в свой карман и прикрыл ладонью. Лиса пронеслась мимо и растерянно оглянулась. «Вот так-то!» — прошептал Антон, стоя смело и удерживая карман.",
+      "title": null,
+      "illustrationPrompt": "the child slips the toy rabbit into a pocket and covers it with a hand; the fox rushes past, puzzled; action frozen mid-moment",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["rabbit"],
+        "propIds": ["fox"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Когда всё утихло, Антон вынул Зайчонка и засмеялся: «Теперь играем вместе». Он качает Зайчонка на ладони, рассказывает ему планы. «Со мной тебе тепло и весело», — шепчет Антон.",
+      "title": null,
+      "illustrationPrompt": "the child plays with the toy rabbit in hands, animated gestures; both cheerful; closer framing",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["rabbit"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Антон вернул Зайчонка из кармана себе на ладонь и тихо сказал: «Спасибо, что ты со мной». Они снова играют рядом. Дружба — это забота и поддержка друг друга.",
+      "title": null,
+      "illustrationPrompt": "the child takes the toy rabbit out of the pocket and holds it in both hands; relaxed smile; centered, quiet composition",
+      "scene": {
+        "locationId": "playground",
+        "castIds": ["rabbit"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "5-year-old boy, tan skin, short curly blond hair, wearing a blue T-shirt, green shorts, yellow sandals, a red cap",
+  "visualBible": {
+    "hero": {
+      "name": "Антон",
+      "descriptor": "5-year-old boy, tan skin, short curly blond hair, wearing a blue T-shirt, green shorts, yellow sandals, a red cap"
+    },
+    "cast": [
+      {
+        "id": "rabbit",
+        "name": "Зайчонок",
+        "role": "игрушечный зайчонок",
+        "descriptor": "small stuffed animal, white fur, soft ears, wearing no clothes, a blue ribbon"
+      }
+    ],
+    "locations": [
+      {
+        "id": "playground",
+        "name": "детская площадка",
+        "descriptor": "a red metal slide with a wooden ladder, twice the child's height, red plastic chute, pale wooden rungs, surrounded by green grass, a low hedge, one birch"
+      }
+    ],
+    "props": [
+      {
+        "id": "fox",
+        "name": "лиса",
+        "descriptor": "a plush fox toy"
+      }
+    ],
+    "atmosphere": "Summer day with bright sunlight and a warm, cheerful palette."
+  }
+}

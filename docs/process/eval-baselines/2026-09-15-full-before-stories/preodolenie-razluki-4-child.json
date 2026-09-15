@@ -1,0 +1,131 @@
+{
+  "title": "Алиса и танец с медвежонком",
+  "discussionQuestions": [
+    "1. Что Алиса принесла с собой в садик?",
+    "2. Кого она встретила в садике?",
+    "3. Какое воспоминание помогло Алисе почувствовать себя лучше?",
+    "4. Что Алиса сказала, когда снова вспомнила о тёплых моментах?",
+    "5. А ты можешь вспомнить что-то приятное, когда грустно?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и танец с медвежонком",
+      "illustrationPrompt": "the child holds the teddy and takes a small step forward, one hand raised in a wave; centered",
+      "scene": {
+        "locationId": "kindergarten",
+        "castIds": [],
+        "propIds": ["stuffed-bear"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса огляделась: всё новенькое, всё манит. «Ого!» — сказала Алиса и шагнула вперёд.",
+      "title": null,
+      "illustrationPrompt": "the child looks around, one hand to chin, slight forward lean; three-quarter view",
+      "scene": {
+        "locationId": "kindergarten",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса присела рядом с медвежонком. «Мамы нет…» — шепчет Алиса. «Скучаю», — говорит она ему.",
+      "title": null,
+      "illustrationPrompt": "the child sits close to the teddy, head slightly bowed, whispering; close-up",
+      "scene": {
+        "locationId": "kindergarten",
+        "castIds": [],
+        "propIds": ["stuffed-bear"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса прижала медвежонка к щеке. «Я помню, мама скоро придёт!» — сказала Алиса. И стало теплее.",
+      "title": null,
+      "illustrationPrompt": "the child hugs the teddy tightly, eyes closed, small smile; close-up",
+      "scene": {
+        "locationId": "kindergarten",
+        "castIds": [],
+        "propIds": ["stuffed-bear"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса хлоп-хлоп ладошками и смеётся: «Как в маминых историях!» Ещё кружочек — и снова хлоп-хлоп.",
+      "title": null,
+      "illustrationPrompt": "the child claps hands in a little game, turning in a small circle; medium shot",
+      "scene": {
+        "locationId": "kindergarten",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса выпрямилась: «Получилось!» — сказала Алиса. Улыбка растёт, шаги становятся смелей.",
+      "title": null,
+      "illustrationPrompt": "the child stands taller with hands on hips, taking a confident step; medium shot",
+      "scene": {
+        "locationId": "kindergarten",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса помахала медвежонку: «Я помню, мама скоро придёт!» — сказала Алиса. И снова игра пошла.",
+      "title": null,
+      "illustrationPrompt": "the child waves to the teddy and then resumes play, happy face; over-the-shoulder from the teddy",
+      "scene": {
+        "locationId": "kindergarten",
+        "castIds": [],
+        "propIds": ["stuffed-bear"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса улыбнулась: тёплый миг — и ждать легко. Если грустно — вспомни тёплые моменты.",
+      "title": null,
+      "illustrationPrompt": "the child with a calm smile, hands clasped to chest, looking ahead; centered",
+      "scene": {
+        "locationId": "kindergarten",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "4-year-old child, light skin, short curly blonde hair, wearing a pink dress with white sandals, a hairband with a small flower",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "4-year-old child, light skin, short curly blonde hair, wearing a pink dress with white sandals, a hairband with a small flower"
+    },
+    "cast": [],
+    "locations": [
+      {
+        "id": "kindergarten",
+        "name": "детский сад",
+        "descriptor": "a round wooden table, about the child's height, light brown wood, surrounded by colourful rugs, low shelves with toys"
+      }
+    ],
+    "props": [
+      {
+        "id": "stuffed-bear",
+        "name": "игрушечный медвежонок",
+        "descriptor": "a small brown stuffed bear"
+      }
+    ],
+    "atmosphere": "Bright sunny day with a warm, cheerful atmosphere."
+  }
+}

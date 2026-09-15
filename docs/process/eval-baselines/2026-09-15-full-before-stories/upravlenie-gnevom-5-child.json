@@ -1,0 +1,119 @@
+{
+  "title": "Алиса и волшебные пузыри спокойствия",
+  "discussionQuestions": [
+    "1. Как Алиса чувствовала себя, когда разозлилась?",
+    "2. Что произошло из-за её гнева?",
+    "3. Как Алиса успокоилась?",
+    "4. Что сделала Алиса, чтобы всё исправить?",
+    "5. Как ты успокаиваешься, когда злишься?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и волшебные пузыри спокойствия",
+      "illustrationPrompt": "the child blows a soap bubble, then starts to puff and stomp; one large bubble floats near; centered composition",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["bubble"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса дует, дует — а пузырь берёт да лопается. «Ну почему?!» — крикнула Алиса и, отпустив верёвку качелей, гаркнула ещё раз так громко, что рядом играющие дети вздрогнули.",
+      "title": null,
+      "illustrationPrompt": "the child throws back head and yells, arms flung; a soap bubble wobbles nearby; dynamic diagonal framing",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["bubble"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "От крика Алисы один малыш споткнулся — и в слёзы. Дети переглянулись: «С Алисой играть не будем», — и отошли. Алиса осталась одна.",
+      "title": null,
+      "illustrationPrompt": "the child stands apart, looking toward off-screen kids; one hand half-raised, small mouth; empty space emphasizes distance",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса тихонько качается и молчит, глядит вниз. Сердце сжимается. «Я их напугала…» — шепчет Алиса и понимает: крик прогнал друзей.",
+      "title": null,
+      "illustrationPrompt": "the child sits on a swing, gently swaying, looking down; hands close to body; lots of negative space above",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса вспоминает мамины слова: «Вдох носом, выдох — как пузырь». Она набирает воздух, медленно ду-у-у-ет на мыльный пузырь, словно его гладит. Алиса успокаивается.",
+      "title": null,
+      "illustrationPrompt": "the child inhales slowly and gently blows a soap bubble; calm face; close-up side view on mouth and bubble",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["bubble"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса подходит к ребятам: «Простите меня. Давайте снова вместе?» Она ждёт ответа и улыбается. Ребята кивают, и Алиса с ними пускает целую стайку пузырей.",
+      "title": null,
+      "illustrationPrompt": "the child faces a small group with a hand to chest in apology, small smile; then all blow bubbles together; balanced group composition",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["bubble"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Теперь Алиса помнит: прежде чем сердиться, она делает глубокий вдох — и пускает пузырь. Все дуют и смеются, а Алиса рада. Когда злишься, найди способ остыть, прежде чем что-то сломается.",
+      "title": null,
+      "illustrationPrompt": "the child and friends joyfully blowing bubbles together; the child takes a deep breath before blowing; semicircle group arrangement",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": ["bubble"],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "5-year-old child, light skin, long wavy blond hair, wearing a green dress, striped socks, a red bow",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "5-year-old child, light skin, long wavy blond hair, wearing a green dress, striped socks, a red bow"
+    },
+    "cast": [],
+    "locations": [
+      {
+        "id": "playground",
+        "name": "детская площадка",
+        "descriptor": "a big yellow swing set, twice the child's height, yellow metal frame with red plastic seats, surrounded by soft sand, a few bushes, a park bench"
+      }
+    ],
+    "props": [
+      {
+        "id": "bubble",
+        "name": "мыльный пузырь",
+        "descriptor": "a large shimmering bubble"
+      }
+    ],
+    "atmosphere": "Warm sunny day, bright and cheerful colours."
+  }
+}

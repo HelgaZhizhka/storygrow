@@ -1,0 +1,124 @@
+{
+  "title": "Маша и искусство огромного бутерброда",
+  "discussionQuestions": [
+    "1. Что больше всего любит готовить Маша?",
+    "2. Почему приготовление бутерброда оказалось сложным?",
+    "3. Как Маша справилась с проблемой со слайсами?",
+    "4. Что помогло Маше сделать бутерброд самой?",
+    "5. А что ты уже пробовал готовить сам?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Маша и искусство огромного бутерброда",
+      "illustrationPrompt": "the child looks at the big sandwich with a determined smile, one hand slightly raised as if ready to begin; centered composition",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": ["sandwich"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "На кухне Маша собирает большой бутерброд: хлеб уже ждёт, а сверху — слайсы и кружочки овощей. Да только ложатся они кривовато: то съезжают, то торчат. «Эх вы, постойте ровно!» — говорит Маша.",
+      "title": null,
+      "illustrationPrompt": "the child tries to place slices on the big sandwich; toppings slide askew; the child frowns slightly; a kitchen knife rests nearby; top-heavy composition",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": ["sandwich", "knife"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Маша уже тянет губы к крику: «Ма-ам…» — и останавливается. «Нет, Маша, попробуй сама», — шепчет себе она и расправляет ладошки. Маша дышит глубже и берётся за дело понемногу.",
+      "title": null,
+      "illustrationPrompt": "the child pauses with hands hovering over the big sandwich, lips pressed, about to call out, then nods to continue; close framing at the sandwich level",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": ["sandwich"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Тут Маша вспоминает, как мама учила: сначала плоско, потом внахлёст, а сверху — кружок к кружку. «Не спеши», — звучит в голове. Маша медленно раскладывает каждый кусочек.",
+      "title": null,
+      "illustrationPrompt": "the child slowly arranges toppings on the big sandwich with focused expression, tongue slightly out; pieces aligned carefully; left-weighted composition",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": ["sandwich"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Раз — и ничего не скользит, два — и всё ровно-ровно. Маша пригладила ладонью, накрыла верхним ломтиком и шепнула: «Получилось!» Большой бутерброд готов у Маши, как она и хотела.",
+      "title": null,
+      "illustrationPrompt": "the child smooths the top slice onto the big sandwich with a proud smile; layers look neat and even; low-angle close-up of the sandwich",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": ["sandwich"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Маша держит большой бутерброд двумя руками и зовёт: «Мама, смотри!» Ей так хочется поделиться радостью, что глаза сияют. «Я сама сделала», — говорит Маша и кивает уверенно.",
+      "title": null,
+      "illustrationPrompt": "the child holds up the big sandwich proudly with both hands and calls out to someone offscreen; open, celebratory posture; top-oriented composition",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": ["sandwich"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Маша выпрямилась и улыбнулась самой себе: «Вот могу же!» Быть самостоятельным — значит пробовать сделать все самому.",
+      "title": null,
+      "illustrationPrompt": "the child stands calmly with a gentle, thoughtful smile, one hand on chest; simple centered composition",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "6-year-old girl, light skin, long wavy blonde hair, wearing green t-shirt, yellow skirt, red shoes, a white hat",
+  "visualBible": {
+    "hero": {
+      "name": "Маша",
+      "descriptor": "6-year-old girl, light skin, long wavy blonde hair, wearing green t-shirt, yellow skirt, red shoes, a white hat"
+    },
+    "cast": [],
+    "locations": [
+      {
+        "id": "kitchen",
+        "name": "кухня",
+        "descriptor": "a large wooden table, much taller than the child, dark wood, surrounded by a bright window, a blue rug"
+      }
+    ],
+    "props": [
+      {
+        "id": "sandwich",
+        "name": "большой бутерброд",
+        "descriptor": "an oversized sandwich with various ingredients"
+      },
+      {
+        "id": "knife",
+        "name": "кухонный нож",
+        "descriptor": "a small but sharp steel knife"
+      }
+    ],
+    "atmosphere": "It is a sunny day, with warm light coming through the kitchen window."
+  }
+}

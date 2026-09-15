@@ -1,0 +1,131 @@
+{
+  "title": "Алиса и танцы игрушечных теней",
+  "discussionQuestions": [
+    "1. Какой была комната Алисы когда было светло?",
+    "2. Что показалось Алисе в темноте?",
+    "3. Как Алиса решила справиться со своим страхом?",
+    "4. Что Алиса увидела, когда включила фонарик?",
+    "5. Что ты используешь, чтобы прогнать страх темноты?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и танцы игрушечных теней",
+      "illustrationPrompt": "the child playing beneath a glowing lamp, smiling, mid-motion; simple centered composition",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Жила-была девочка Алиса: пора спать — щёлк, и свет погас. Алиса улеглась и вдруг заметила в комнате тёмный угол. «Эй… кто там?» — прошептала Алиса и притихла.",
+      "title": null,
+      "illustrationPrompt": "the child lying down as lights go off, peeking with wide eyes; one hand near chin; a darker area hinted at the edge",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "В темноте по стене поползли тени — длинные, шевелящиеся. «Ой-ой… не приближайтесь», — сказала Алиса и прикрыла нос ладошкой. Тени будто кивнули и замерли.",
+      "title": null,
+      "illustrationPrompt": "the child watching shifting shadows, eyes wide, shoulders slightly raised; hands near face; shadows looming above",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Позвать ли кого, или Алиса сама разберётся? «Я ведь храбрая… немного», — убеждает себя Алиса и глядит в тот угол. Сердечко топ-топ, а тишина молчит.",
+      "title": null,
+      "illustrationPrompt": "the child hesitating, glancing side to side, one hand to chest; small gulp; tight, intimate framing",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "«Нужен свет», — решает Алиса. Тихонько тянется, берёт свой маленький фонарик и — щёлк! — включает его. «Сейчас посмотрим, что вы там за тени такие», — кивает Алиса.",
+      "title": null,
+      "illustrationPrompt": "the child reaching to take a small flashlight and clicking it on; determined look; a diagonal beam beginning across the scene",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": ["flashlight"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Лучик скользнул в тёмный угол — и всё сразу стало ясно. «Ах вот вы кто!» — смеётся Алиса: это её игрушки так чудили в полутьме. Тени растаяли, как игра в прятки.",
+      "title": null,
+      "illustrationPrompt": "the child shining the flashlight toward where shadows were, relaxing into a smile; the beam reveals familiar shapes; the beam leads into the background",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": ["flashlight"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "«Будешь дежурить тут», — говорит Алиса и оставляет фонарик возле кровати. Мягкий кружочек света тихо дышит рядом, и Алиса улыбается: «Теперь я всё проверю, если нужно».",
+      "title": null,
+      "illustrationPrompt": "the child placing the flashlight within reach beside her, calm smile; small pool of light; focus on the hand setting it down",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": ["flashlight"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса закрывает глаза и спокойно засыпает: фонарик рядом, если вдруг что-то покажется странным. Смелость и воображение помогают победить страх темноты.",
+      "title": null,
+      "illustrationPrompt": "the child asleep peacefully, flashlight nearby within reach; relaxed face; gentle light pool; close, quiet composition",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": ["flashlight"],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "5-year-old child, light skin, long wavy blonde hair, wearing a blue nightgown and a starry cap, a small heart-shaped necklace",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "5-year-old child, light skin, long wavy blonde hair, wearing a blue nightgown and a starry cap, a small heart-shaped necklace"
+    },
+    "cast": [],
+    "locations": [
+      {
+        "id": "bedroom",
+        "name": "спальня Алисы",
+        "descriptor": "a small reading lamp, about the child's height, metal base, yellow shade, surrounded by soft carpet, pale blue walls, a shelf with books"
+      }
+    ],
+    "props": [
+      {
+        "id": "flashlight",
+        "name": "маленький фонарик",
+        "descriptor": "a small bright flashlight"
+      }
+    ],
+    "atmosphere": "Nighttime with a cozy and warm atmosphere."
+  }
+}

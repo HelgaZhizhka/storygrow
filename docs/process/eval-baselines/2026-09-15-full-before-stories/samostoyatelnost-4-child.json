@@ -1,0 +1,113 @@
+{
+  "title": "Алиса и башня крепких кубиков",
+  "discussionQuestions": [
+    "1. Что решила построить Алиса?",
+    "2. Почему башня сначала падала?",
+    "3. Как Алиса повторяла попытки?",
+    "4. Что почувствовала Алиса, когда башня стояла?",
+    "5. Что ты сам(а) любишь строить?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и башня крепких кубиков",
+      "illustrationPrompt": "the child arranging blocks to start a tower; focused, eager; central composition",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Башня у Алисы выросла высокая. «Не падай, пожалуйста!» — просит Алиса. Но башня качнулась — и рух!",
+      "title": null,
+      "illustrationPrompt": "the child watches a tall block tower wobble and collapse; worried face; blocks scattering",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса снова берёт кубики. «Теперь получится!» — говорит Алиса и тянет вверх. Но башня — бух!",
+      "title": null,
+      "illustrationPrompt": "the child rebuilds, stacking blocks upward; mouth open as speaking; tower falls again",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса пригляделась: «Сначала низ!» Она ставит внизу большие кубики. «Теперь получится!» — радуется Алиса.",
+      "title": null,
+      "illustrationPrompt": "the child places larger blocks at the base; careful hands; rebuilding with focus",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Башня у Алисы стоит крепко-крепко. «Получилось!» — смеётся Алиса и ладошкой трогает верх.",
+      "title": null,
+      "illustrationPrompt": "the child smiles at a stable tower, one hand touching the top; proud stance",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса не останавливается: «Ещё одну!» Она снова кладёт внизу большие кубики. «Теперь получится!»",
+      "title": null,
+      "illustrationPrompt": "the child builds a second tower beside the first; steady hands; repeating the method",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса кивает: «Сама справилась!» Самостоятельность помогает стать увереннее.",
+      "title": null,
+      "illustrationPrompt": "the child sits happily beside completed towers; relaxed, satisfied posture; simple close framing",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "4-year-old child, light skin, short curly blonde hair, wearing a yellow dress and red shoes, a blue ribbon",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "4-year-old child, light skin, short curly blonde hair, wearing a yellow dress and red shoes, a blue ribbon"
+    },
+    "cast": [],
+    "locations": [
+      {
+        "id": "living-room",
+        "name": "гостиная",
+        "descriptor": "a stack of colorful plastic blocks, about the child's height, multicolored plastic, surrounded by soft carpet, cozy sofa, a window with curtains"
+      }
+    ],
+    "props": [],
+    "atmosphere": "It's a sunny day with a cozy and cheerful atmosphere."
+  }
+}

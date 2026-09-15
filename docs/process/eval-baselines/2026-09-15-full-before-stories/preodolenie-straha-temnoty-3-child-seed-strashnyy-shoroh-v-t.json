@@ -1,0 +1,131 @@
+{
+  "title": "Алиса и шорохи ёжика в темноте",
+  "discussionQuestions": [
+    "1. Как выглядела комната Алисы?",
+    "2. Почему Алиса испугалась шороха?",
+    "3. Что помогло Алисе преодолеть страх?",
+    "4. Как Алиса узнала, что шорох от ёжика?",
+    "5. Что ты делаешь, когда тебе страшно в темноте?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и шорохи ёжика в темноте",
+      "illustrationPrompt": "the child sits cozily, wrapped in a blanket, holding an open book; calm smile; centered composition",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": ["blanket", "book"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "В комнате у Алисы мягкий, тёплый свет. «Как хорошо дома», — шепчет Алиса и улыбается.",
+      "title": null,
+      "illustrationPrompt": "the child smiles gently, hands relaxed, enjoying the calm; slight upward gaze; top-weighted composition",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Вдруг — шор-шор! Темно, и Алиса замирает. «Кто там?» — шепчет Алиса и слушает тишину.",
+      "title": null,
+      "illustrationPrompt": "the child freezes, looking toward the source of a rustle; hand near mouth; bottom-weighted composition",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса шепчет: «Это всего лишь лёжик». Кивает, храбреет и снова тихо: «Это всего лишь лёжик».",
+      "title": null,
+      "illustrationPrompt": "the child whispers to self, steady posture; a hedgehog is nearby, not yet engaged; top-weighted composition",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": ["hedgehog"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Шорох — от ёжика! Он выглянул тихонько. «Ой, здравствуй!» — улыбается Алиса. «Это ты шуршал?»",
+      "title": null,
+      "illustrationPrompt": "the child leans forward smiling toward the hedgehog; the hedgehog peeks out; shared focus; bottom-weighted composition",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": ["hedgehog"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса кивает и смеётся. Ёжик шур-шур рядом. «Это всего лишь лёжик», — говорит Алиса и дружит.",
+      "title": null,
+      "illustrationPrompt": "the child offers a friendly hand; hedgehog close by; both relaxed; top-weighted composition",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": ["hedgehog"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "«Если страшно, используй своё воображение», — говорит Алиса.",
+      "title": null,
+      "illustrationPrompt": "the child stands calm and confident, hand on chest, soft smile; centered composition",
+      "scene": {
+        "locationId": "bedroom",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "3-year-old child, light skin, short curly brown hair, wearing purple dress, yellow shoes, a pink hairband",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "3-year-old child, light skin, short curly brown hair, wearing purple dress, yellow shoes, a pink hairband"
+    },
+    "cast": [
+      {
+        "id": "hedgehog",
+        "name": "ёжик",
+        "role": "ёжик",
+        "descriptor": "small hedgehog, spiky brown fur, spiky brown fur, wearing no clothes, tiny black eyes"
+      }
+    ],
+    "locations": [
+      {
+        "id": "bedroom",
+        "name": "комната Алисы",
+        "descriptor": "a small night light shaped like a star, smaller than the child, soft yellow plastic, surrounded by blue walls, a fluffy rug, a small bookshelf"
+      }
+    ],
+    "props": [
+      {
+        "id": "blanket",
+        "name": "плед",
+        "descriptor": "a warm, striped blanket"
+      },
+      {
+        "id": "book",
+        "name": "книжка",
+        "descriptor": "a colourful picture book"
+      }
+    ],
+    "atmosphere": "Cozy evening with a warm, gentle light."
+  }
+}

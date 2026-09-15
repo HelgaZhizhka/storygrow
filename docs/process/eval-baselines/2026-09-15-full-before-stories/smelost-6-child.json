@@ -1,0 +1,125 @@
+{
+  "title": "Алиса и счастливое блюдо с верхней полки",
+  "discussionQuestions": [
+    "1. Почему Алиса испугалась высокого стула?",
+    "2. Как ты думаешь, Алиса могла что-то сделать иначе?",
+    "3. Что помогло Алисе набраться смелости?",
+    "4. Как Алиса почувствовала себя после того, как забралась на стул?",
+    "5. Когда ты в последний раз боялся и как справлялся с этим?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и счастливое блюдо с верхней полки",
+      "illustrationPrompt": "the child stands ready to help, hands slightly raised, a small expectant smile; looking toward an implied task; centered composition",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Жила-была девочка Алиса, помощница что надо. Глядь — блюдо стоит высоко-высоко, на самой верхней полке. «Ох, как же его достать?» — прошептала Алиса и задрала голову.",
+      "title": null,
+      "illustrationPrompt": "the child looks up at a dish on a high shelf, one hand shading her brow; curious, measuring gaze; upward composition to show height",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса прикинула: руками не дотянуться. «Придётся на высокий стул взобраться», — сказала Алиса вполголоса. Она глянула на стул — тот казался прям ух каким высоким.",
+      "title": null,
+      "illustrationPrompt": "the child looks from the high stool to the dish above, weighing the choice; a small determined nod; both objects included",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Алиса постукивает пальцем по ладони: «А вдруг упаду?» Стул словно молчит. «Но без меня мама не накроет быстро», — шепчет Алиса и крепче сжимает кулачки.",
+      "title": null,
+      "illustrationPrompt": "the child hesitates with a cautious hand on the stool, one foot hovering; conflicted expression; close framing on the moment",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса кивнула самой себе: «Попробую понемножку». Поставила ногу на перекладину и осторожно взялась руками за спинку. «Тише, стульчик», — сказала Алиса и стала лезть.",
+      "title": null,
+      "illustrationPrompt": "the child starts climbing the stool slowly, one foot on a rung, hands gripping the backrest; careful movement; side view",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Вот оно, блюдо! Алиса потянулась — ещё чуть-чуть, и пальцы ухватили край. «Есть!» — сказала Алиса и, стоя ровно, осторожно сняла блюдо, а на лице у неё заиграла улыбка.",
+      "title": null,
+      "illustrationPrompt": "the child balances on the stool and reaches to grasp the dish; gentle smile of relief as fingers secure it",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Алиса ставит блюдо поудобнее и уверенно спускается со стула. «Смогла и ещё смогу», — шепчет Алиса и проверяет, чтоб стул не качался. Теперь Алиса знает: трудность — по плечу.",
+      "title": null,
+      "illustrationPrompt": "the child holds the dish securely and steps down from the stool, testing it with a foot; steady, confident posture",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса держит блюдо двумя руками и тихо улыбается: помогла маме. «Страшно было, а я всё же сделала», — сказала Алиса про себя. Быть смелым — это действовать, несмотря на страх.",
+      "title": null,
+      "illustrationPrompt": "the child holds the dish proudly with both hands, calm smile, a sense of accomplishment; centered framing",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "6-year-old child, light skin, long straight blonde hair, wearing a pink dress, white sandals, a purple headband",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "6-year-old child, light skin, long straight blonde hair, wearing a pink dress, white sandals, a purple headband"
+    },
+    "cast": [],
+    "locations": [
+      {
+        "id": "kitchen",
+        "name": "кухня",
+        "descriptor": "a tall wooden chair with a cushion, much taller than the child, dark wood, floral cushion, surrounded by white cabinets, a green potted plant"
+      }
+    ],
+    "props": [],
+    "atmosphere": "It is a warm and sunny morning, with soft daylight streaming through the window."
+  }
+}

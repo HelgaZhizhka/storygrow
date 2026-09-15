@@ -1,0 +1,131 @@
+{
+  "title": "Алиса и последняя печенька в банке",
+  "discussionQuestions": [
+    "1. Почему Алиса решила не рассказать о съеденном печенье?",
+    "2. Как Алиса чувствовала себя, когда узнала, что произошло?",
+    "3. Что важно делать, если ты сделал ошибку?",
+    "4. Как Алиса исправила свою ошибку?",
+    "5. Почему важно, чтобы друзья и семья доверяли тебе?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и последняя печенька в банке",
+      "illustrationPrompt": "the child reaches toward the cookie jar while the mother watches with a gentle, knowing smile; jar prominent in center",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": ["mama"],
+        "propIds": ["cookieJar"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Алиса снова тянется к банке. «Ш-ш, тихо», — шепчет Алиса и берёт печенье — хрум! Алиса съела — и не поняла, что это было последнее.",
+      "title": null,
+      "illustrationPrompt": "the child tiptoes, lifting the jar lid with one hand and popping a cookie into mouth with the other; eyes darting; tight framing on jar and hands",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": ["cookieJar"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Позже мама открывает банку — пусто. «Ой, хотела угостить гостей… Алиса, ты не видела печенье?» — говорит мама и долго заглядывает внутрь, не понимая, куда оно делось.",
+      "title": null,
+      "illustrationPrompt": "the mother opens the jar, peers inside, surprised; one hand cups her mouth as she calls out; close focus on the empty jar",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": ["mama"],
+        "propIds": ["cookieJar"],
+        "heroOnPage": false
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Алиса слышит, как мама тихо говорит: «Гости пришли, а печенья нет». Алиса шепчет: «Это из-за меня…» и смотрит на маму, опустив глаза.",
+      "title": null,
+      "illustrationPrompt": "the mother speaks gently; the child stands nearby listening with head lowered, glancing up; two-shot with a small gap between them",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": ["mama"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса набирается смелости: «Мама, это я съела печенье, прости». Мама кивает. «Давай вместе испечём новое для гостей!» — говорит Алиса, и обе берутся за дело рядышком.",
+      "title": null,
+      "illustrationPrompt": "the child confesses with a hand on chest; the mother nods kindly; both roll up sleeves, ready to work together; medium shot of shared resolve",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": ["mama"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "«Спасибо за честность, Алиса», — говорит мама и обнимает. «Гости довольны», — шепчет она. А Алиса тихо улыбается и крепче жмёт мамину руку.",
+      "title": null,
+      "illustrationPrompt": "the mother hugs the child; both smiling warmly; the child relaxes; simple centered composition",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": ["mama"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса прижимается к маме и выдыхает спокойно: всё получилось. Говори правду, даже если это непросто.",
+      "title": null,
+      "illustrationPrompt": "the child stands calmly with a hand over heart, soft confident smile; centered, uncluttered framing",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "6-year-old child, light skin, long straight blonde hair, wearing yellow dress with pockets, blue sandals, a small flower hair clip",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "6-year-old child, light skin, long straight blonde hair, wearing yellow dress with pockets, blue sandals, a small flower hair clip"
+    },
+    "cast": [
+      {
+        "id": "mama",
+        "name": "мама",
+        "role": "мама",
+        "descriptor": "adult woman, light skin, short curly brown hair, wearing green blouse, beige skirt, pearl necklace"
+      }
+    ],
+    "locations": [
+      {
+        "id": "kitchen",
+        "name": "кухня",
+        "descriptor": "a round wooden table, about the child's height, oak wood, polished surface, surrounded by white walls, a window with blue curtains, a potted plant"
+      }
+    ],
+    "props": [
+      {
+        "id": "cookieJar",
+        "name": "банка для печенья",
+        "descriptor": "a tall glass cookie jar with a red lid"
+      },
+      {
+        "id": "brokenToy",
+        "name": "кораблик",
+        "descriptor": "a small wooden toy boat with a broken mast"
+      }
+    ],
+    "atmosphere": "Sunny, warm late summer afternoon, relaxed and friendly mood."
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "title": "Алиса и ленточка для мишки",
+  "discussionQuestions": [
+    "1. Какой игрушкой Алиса очень дорожила?",
+    "2. Почему Алиса сначала не хотела делиться игрушкой?",
+    "3. Что помогло Алисе изменить своё решение?",
+    "4. Какой подарок сделала Алиса своему другу?",
+    "5. Как ты проявляешь доброту к своим друзьям и близким?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и ленточка для мишки",
+      "illustrationPrompt": "the child hugs a teddy bear with a gentle smile; close framing; centered composition",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": ["teddy"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Жила-была Алиса, и был у Алисы старый плюшевый мишка — самый верный товарищ. «Ты со мной», — шепчет Алиса, усаживает мишку на колени и бережно обнимает.",
+      "title": null,
+      "illustrationPrompt": "the child sits and cradles a teddy bear, speaking softly to it; close-up on faces; intimate framing",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": [],
+        "propIds": ["teddy"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Тут пришёл Миша, новый друг. Он остановился, глядит на мишку — глаз не отвести. «Можно посмотреть?» — тихо спросил Миша, а Алиса прижала мишку к груди.",
+      "title": null,
+      "illustrationPrompt": "the friend stands nearby, reaching slightly; the child holds the teddy bear close; interested gaze; medium shot",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["friend"],
+        "propIds": ["teddy"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "«А вдруг он порвёт? А вдруг аккуратно?» — думает Алиса, глядя то на Мишу, то на мишку. Пальцем пригладила лапку и вздохнула: «Как быть-то?»",
+      "title": null,
+      "illustrationPrompt": "the child glances between the friend and the teddy bear, fiddling with the bear’s paw; the friend waits; over-shoulder angle",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["friend"],
+        "propIds": ["teddy"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Набралась Алиса храбрости. «Давай играть вместе, — говорит она. — Это мой самый любимый мишка, только бережно!» И протянула мишку Мише, будто знакомит их.",
+      "title": null,
+      "illustrationPrompt": "the child offers the teddy bear toward the friend with a small smile; hands reaching; centered moment of exchange",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["friend"],
+        "propIds": ["teddy"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Миша просиял: «Спасибо!» Он бережно берёт мишку и смешно кланяет его: «Здравствуйте, я готов играть!» Алиса смеётся: «Прошу на праздник!» — и сажает мишку между ними.",
+      "title": null,
+      "illustrationPrompt": "the friend animates the teddy bear in a little bow; the child laughs and claps; both lean in toward the bear; triangle composition",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["friend"],
+        "propIds": ["teddy"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "«Подождите-ка», — говорит Алиса. Она аккуратно завязывает на шейке мишки новую ленточку, а Миша бережно держит его, чтоб не вертелся. «Вот теперь красавец!» — радуется Алиса.",
+      "title": null,
+      "illustrationPrompt": "the child ties a ribbon around the teddy bear’s neck; the friend holds the bear steady; close on hands and bow; neat framing",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["friend"],
+        "propIds": ["teddy"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Сидит Алиса рядом с Мишей и мишкой, улыбается: «Как хорошо, что мы вместе!» Доброта — это заботиться о давних друзьях и новых знакомых.",
+      "title": null,
+      "illustrationPrompt": "the child sits close with the friend, the teddy bear between them; gentle smiles; the child’s arm lightly around the friend; wider calm shot",
+      "scene": {
+        "locationId": "living-room",
+        "castIds": ["friend"],
+        "propIds": ["teddy"],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "5-year-old child, light skin, short wavy blonde hair, wearing a pink dress with white polka dots, a colourful bracelet",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "5-year-old child, light skin, short wavy blonde hair, wearing a pink dress with white polka dots, a colourful bracelet"
+    },
+    "cast": [
+      {
+        "id": "friend",
+        "name": "Миша",
+        "role": "новый друг",
+        "descriptor": "6-year-old boy, medium skin, short straight black hair, wearing a green t-shirt and blue shorts, a red cap"
+      }
+    ],
+    "locations": [
+      {
+        "id": "living-room",
+        "name": "гостиная",
+        "descriptor": "a soft blue couch, twice the child's height, soft fabric, light wooden legs, surrounded by a large window, potted plants on the sill"
+      }
+    ],
+    "props": [
+      {
+        "id": "teddy",
+        "name": "старый плюшевый мишка",
+        "descriptor": "a well-loved brown teddy bear with a missing eye"
+      }
+    ],
+    "atmosphere": "A sunny afternoon with warm, soft lighting creating a cozy and comforting mood."
+  }
+}

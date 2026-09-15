@@ -1,0 +1,131 @@
+{
+  "title": "Анна и танцующие кубики на железной дороге",
+  "discussionQuestions": [
+    "1. Как выглядела комната Анны в начале истории?",
+    "2. Почему Анна сначала не хотела играть с другими игрушками?",
+    "3. Как Анна почувствовала себя, когда увидела, как другие игрушки играют?",
+    "4. Что Анна сделала, чтобы все игрушки играли вместе?",
+    "5. Как ты можешь проявить дружелюбие к знакомым?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Анна и танцующие кубики на железной дороге",
+      "illustrationPrompt": "the child plays with a teddy, lifting it up as if dancing; happy face; centered composition",
+      "scene": {
+        "locationId": "playroom",
+        "castIds": ["bear"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Анна огляделась и ахнула: кубики — красные, синие, жёлтые — зовут к себе, а рядом тянется железная дорога. «С вами я раньше не играла», — шепнула Анна и протянула ладошку поближе.",
+      "title": null,
+      "illustrationPrompt": "the child pauses, hand reaching toward blocks and a railway, curious gaze; toys clustered in the foreground; the child slightly behind them",
+      "scene": {
+        "locationId": "playroom",
+        "castIds": [],
+        "propIds": ["train", "blocks"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Анна присела и наморщила лоб. «А вдруг не выйдет? — прошептала Анна. — Может, ну их?» То к кубикам тянется, то отдёрнет руку, косится на рельсы и снова молчит.",
+      "title": null,
+      "illustrationPrompt": "the child crouches, one hand halfway toward blocks then pulled back; glances between blocks and railway; hesitant posture; toys set on opposite sides",
+      "scene": {
+        "locationId": "playroom",
+        "castIds": [],
+        "propIds": ["train", "blocks"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Анна вдруг кивнула самой себе: «Попробую!» Бережно берёт кубик, пододвигает к рельсам, будто строит мостик. «Ну-ка, посмотрим», — сказала Анна и улыбнулась.",
+      "title": null,
+      "illustrationPrompt": "the child decides, picking up a block and moving a track piece closer; small determined smile; hands near the center",
+      "scene": {
+        "locationId": "playroom",
+        "castIds": [],
+        "propIds": ["train", "blocks"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Завертелось! Анна укладывает рельсы змейкой, из кубиков ставит ворота и башенку. «Вот это игра!» — смеётся Анна и то строит, то переставляет, радуясь каждой детали.",
+      "title": null,
+      "illustrationPrompt": "the child happily arranges blocks as arches and a small tower beside the railway; one hand placing a block; lively diagonal flow through the scene",
+      "scene": {
+        "locationId": "playroom",
+        "castIds": [],
+        "propIds": ["train", "blocks"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Анна пододвинула мишутку поближе: «Смотри, друг!» Усадила его рядом, ладонью ведёт по рельсам, из кубиков строит мостик повыше. «Теперь будем играть все вместе», — сказала Анна.",
+      "title": null,
+      "illustrationPrompt": "the child seats the teddy nearby, pointing along the railway and holding a block; open, inviting gesture toward the teddy; triangular composition",
+      "scene": {
+        "locationId": "playroom",
+        "castIds": ["bear"],
+        "propIds": ["train", "blocks"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Анна обвела взглядом кубики и железную дорогу и прижала мишутку к сердцу. «Все мы особенные и важны по-своему.»",
+      "title": null,
+      "illustrationPrompt": "the child hugs the teddy gently and gestures open-handed to the blocks and railway; calm, proud smile; centered, balanced composition",
+      "scene": {
+        "locationId": "playroom",
+        "castIds": ["bear"],
+        "propIds": ["train", "blocks"],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "5-year-old girl, light skin, long wavy blonde hair, wearing a green dress with yellow flowers, a small pink backpack",
+  "visualBible": {
+    "hero": {
+      "name": "Анна",
+      "descriptor": "5-year-old girl, light skin, long wavy blonde hair, wearing a green dress with yellow flowers, a small pink backpack"
+    },
+    "cast": [
+      {
+        "id": "bear",
+        "name": "мишутка",
+        "role": "любимая игрушка",
+        "descriptor": "small teddy bear, brown fur, fluffy, wearing a blue scarf, a small sewn heart"
+      }
+    ],
+    "locations": [
+      {
+        "id": "playroom",
+        "name": "игровая комната",
+        "descriptor": "a colourful toy shelf, about the child's height, wooden shelf with multi-coloured boxes, surrounded by a soft rug, a few posters on the wall"
+      }
+    ],
+    "props": [
+      {
+        "id": "train",
+        "name": "железная дорога",
+        "descriptor": "a small blue toy train"
+      },
+      {
+        "id": "blocks",
+        "name": "кубики",
+        "descriptor": "colourful wooden blocks"
+      }
+    ],
+    "atmosphere": "Sunny, warm, and cheerful, with soft colours."
+  }
+}

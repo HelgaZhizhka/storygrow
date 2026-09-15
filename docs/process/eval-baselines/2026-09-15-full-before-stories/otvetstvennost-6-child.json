@@ -1,0 +1,119 @@
+{
+  "title": "Алиса и песочные открытки-сюрпризы",
+  "discussionQuestions": [
+    "1. Что Алиса обещала сделать для бабушки?",
+    "2. Почему подарки были важны для её друзей?",
+    "3. Как Алиса почувствовала себя, когда поняла, что забыла?",
+    "4. Что Алиса сделала, чтобы исправить ситуацию?",
+    "5. Какое обещание ты недавно выполнил или выполнила?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и песочные открытки-сюрпризы",
+      "illustrationPrompt": "the child holds up one finger as if making a promise, playful smile; mid-gesture; centered composition",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Села Алиса в песок да заигралась. Пальцем дорожки ведёт, куличики ровняет да смеётся: «Ещё минутку!» И так захлопоталась игра, что про обещанные подарки Алиса забыла.",
+      "title": null,
+      "illustrationPrompt": "the child sits and draws lines in sand with a finger, absorbed and smiling; top-weighted composition",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "К сроку пришла Алиса — а в ладошах пусто. «Ой… Хотела же!» — только и выдохнула она, зная: друзья уже ждут её, а она ничего не принесла. «Надо бы не забывать», — сказала Алиса вполголоса.",
+      "title": null,
+      "illustrationPrompt": "the child stands with empty open hands, small sigh, shoulders slightly raised; bottom-weighted composition",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Села Алиса на край песка и в сторону глядит, где другие уже открывают свои подарки. «Я же обещала…» — шепчет она и прячет нос в плечо.",
+      "title": null,
+      "illustrationPrompt": "the child crouches, looking off to the side, whispering to self, shoulders tucked; left-weighted composition",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "— Исправлю! — решила Алиса. Ладонью ровняет песок, рисует пальцем сердечки да звёздочки — выйдут песочные открытки. «Это для вас», — говорит Алиса, делая их одну за другой.",
+      "title": null,
+      "illustrationPrompt": "the child smooths sand with one hand and draws hearts and stars with a finger, arranging a neat row; focused face; top-weighted composition",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Показала Алиса свои песочные открытки — и оттуда слышится радостный смех: понравилось! «Больше не подведу, обещаю», — сказала Алиса и прижала ладонь к груди.",
+      "title": null,
+      "illustrationPrompt": "the child gestures toward the row of sand 'cards' and places a hand on chest as if promising; warm smile; bottom-weighted composition",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Улыбнулась Алиса и кивнула самой себе: слово держать — дело честное. Важно выполнять обещания и быть ответственным.",
+      "title": null,
+      "illustrationPrompt": "the child smiles gently with a hand on chest in a resolved pose; centered, calm composition",
+      "scene": {
+        "locationId": "playground",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "6-year-old child, light skin, long straight blond hair, wearing a yellow t-shirt, blue jeans, and a red cap, a red cap",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "6-year-old child, light skin, long straight blond hair, wearing a yellow t-shirt, blue jeans, and a red cap, a red cap"
+    },
+    "cast": [],
+    "locations": [
+      {
+        "id": "playground",
+        "name": "детская площадка",
+        "descriptor": "a sandbox with a shovel, about the child's height, wooden frame, yellow sand, surrounded by green grass, a low fence"
+      }
+    ],
+    "props": [
+      {
+        "id": "gift",
+        "name": "подарок",
+        "descriptor": "a small blue wrapped box"
+      }
+    ],
+    "atmosphere": "It's a sunny spring day with a cheerful feel."
+  }
+}

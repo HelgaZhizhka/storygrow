@@ -1,0 +1,138 @@
+{
+  "title": "Маша и огуречные шёпоты",
+  "discussionQuestions": [
+    "1. Почему Маша не хотела пробовать огурцы сначала?",
+    "2. Как бабушка помогла Маше понять важность уважения?",
+    "3. Что Маша почувствовала, когда попробовала огурцы?",
+    "4. Почему важно уважать старших и учиться у них?",
+    "5. Какие ещё полезные советы дала бабушка Маше?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Маша и огуречные шёпоты",
+      "illustrationPrompt": "the child plays, clapping hands; grandmother is busy cooking and glances over with a warm smile; the child looks up; medium two-shot",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": ["babushka"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Бабушка улыбнулась: «Маша, попробуй-ка огурцы», — позвала она ласково. «Хрустнут — услышишь музыку», — подмигнула бабушка, протягивая Маше угощение.",
+      "title": null,
+      "illustrationPrompt": "the child leans in as grandmother offers cucumbers on her open palm; the child curious; close-up on hands between them",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": ["babushka"],
+        "propIds": ["cucumbers"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Маша скривилась: «Не хочу. Они какие-то странные», — прошептала она. «Зачем они хрустят?» — задумалась Маша и спрятала руки за спину, упрямо глядя на бабушку.",
+      "title": null,
+      "illustrationPrompt": "the child frowns, pulls back and shakes head; grandmother holds out cucumbers patiently; two-shot, slight angle",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": ["babushka"],
+        "propIds": ["cucumbers"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Маша то тянется, то отдёргивает руку. «Бабушка учила: выслушай — и уважай», — вспоминает Маша и кивает. А бабушка ждёт, не торопит, только дышит рядом тихо.",
+      "title": null,
+      "illustrationPrompt": "the child hovers a hand halfway then retracts, thinking; grandmother waits calmly with a gentle smile; eye contact; centered",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": ["babushka"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "«Ладно, бабушка, попробую», — решилась Маша. Осторожно приблизила огурец к губам, откусила самую крошечку и замерла, прислушиваясь, как он шепчет своим хрустом.",
+      "title": null,
+      "illustrationPrompt": "the child takes a tiny bite of a cucumber, eyes cautious; grandmother watches softly; focus on the bite",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": ["babushka"],
+        "propIds": ["cucumbers"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Ого! Огурец вкусный и весёлый — хрум да хрум! «Бабушка, это приятно и смешно щекочет зубы!» — засмеялась Маша и обняла бабушку, радуясь, что послушала её слово.",
+      "title": null,
+      "illustrationPrompt": "the child laughs while chewing, showing delight; grandmother laughs too; the child holds a cucumber; dynamic diagonal",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": ["babushka"],
+        "propIds": ["cucumbers"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "С той поры Маша слушает бабушкины слова внимательно. «Скажи, как лучше?» — спрашивает Маша, и, услышав ответ, кивает: «Спасибо, бабушка», — и бережно делает, как сказала бабушка.",
+      "title": null,
+      "illustrationPrompt": "the child listens attentively, nodding; grandmother speaks with one hand raised; calm, close two-shot",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": ["babushka"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Маша глянула на бабушку и поняла: когда доверяешь и слушаешь старших, в мире будто становится больше тепла. Важно уважать бабушек и дедушек.",
+      "title": null,
+      "illustrationPrompt": "the child and grandmother share a warm hug; the child smiles gratefully; centered composition",
+      "scene": {
+        "locationId": "kitchen",
+        "castIds": ["babushka"],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "5-year-old girl, light skin, long blonde hair, wearing a pink dress, white sneakers, a sunflower hairpin",
+  "visualBible": {
+    "hero": {
+      "name": "Маша",
+      "descriptor": "5-year-old girl, light skin, long blonde hair, wearing a pink dress, white sneakers, a sunflower hairpin"
+    },
+    "cast": [
+      {
+        "id": "babushka",
+        "name": "бабушка",
+        "role": "бабушка",
+        "descriptor": "elderly woman, light skin, short grey hair, wearing a purple cardigan, grey skirt, round glasses"
+      }
+    ],
+    "locations": [
+      {
+        "id": "kitchen",
+        "name": "кухня",
+        "descriptor": "a wooden kitchen table, about the child's height, light brown wood, surrounded by a blue checkered tablecloth, a window with lace curtains"
+      }
+    ],
+    "props": [
+      {
+        "id": "cucumbers",
+        "name": "огурцы",
+        "descriptor": "a bowl of fresh green cucumbers"
+      }
+    ],
+    "atmosphere": "Warm summer afternoon with soft sunlight filtering through the windows."
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "title": "Алиса и чудесный сад из пустой клумбы",
+  "discussionQuestions": [
+    "1. Какой проект придумала Алиса?",
+    "2. Почему Алиса хотела сделать сад красивым?",
+    "3. Что остановило Алису от того, чтобы сдаться?",
+    "4. Как Алиса почувствовала себя, когда увидела результат?",
+    "5. Какую ещё задачу ты хотел бы выполнить сам?"
+  ],
+  "pages": [
+    {
+      "template": "cover",
+      "text": null,
+      "title": "Алиса и чудесный сад из пустой клумбы",
+      "illustrationPrompt": "the child stands, one hand to chest, the other pointing down with eager resolve; determined smile; composition: centered medium shot",
+      "scene": {
+        "locationId": "garden",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Алиса вышла в сад и прижала ладони к груди: «Хочу, чтоб он был красивым и цветущим». Перед ней — пустая клумба. «Ох, сил-то сколько надо… Смогу ли я?» — шепчет Алиса, чуточку тревожась.",
+      "title": null,
+      "illustrationPrompt": "the child looks at an empty spot, hands clasped; slight worried expression; composition: child in foreground facing the open area",
+      "scene": {
+        "locationId": "garden",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "Алиса присела у клумбы и чертила пальцем дорожку. «Позвать бы кого? — думает Алиса. — Одной сложно». Уже хотела крикнуть, да шепнула себе: «Может, помаленьку попробую сама?»",
+      "title": null,
+      "illustrationPrompt": "the child squats, tracing a line with a finger; mouth poised as if to call, then closed; thoughtful; composition: low angle near hands",
+      "scene": {
+        "locationId": "garden",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-left",
+      "text": "Алиса кивнула самой себе: «Попробую!» Взяла лейку, маленькую лопатку — и за дело. «Сначала тут, потом там», — бормочет Алиса, осторожно рыхлит и несмело поливает по капельке.",
+      "title": null,
+      "illustrationPrompt": "the child kneels, small shovel in hand, watering can beside; carefully loosening and sprinkling; focused face; side view to show motion",
+      "scene": {
+        "locationId": "garden",
+        "castIds": [],
+        "propIds": ["watering-can", "shovel"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-top",
+      "text": "Устала Алиса, да не сдавалась и трудилась день за днём. И вот — ах! — сад словно улыбнулся: зажглись яркие цветы. «Правда получилось!» — смеётся Алиса и ладонями делает круг, любуясь.",
+      "title": null,
+      "illustrationPrompt": "the child throws arms up in delight, admiring blooming flowers; big smile; composition: flowers arc around the child",
+      "scene": {
+        "locationId": "garden",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "image-bottom",
+      "text": "С той поры Алиса встаёт поутру пораньше. «Доброе утро, мои цветы!» — говорит Алиса и ровно поливает из лейки. Сердце так и подпрыгивает: каждый листик будто машет ей в ответ.",
+      "title": null,
+      "illustrationPrompt": "the child gently waters flowers with a watering can; steady stream; proud, cheerful posture; composition: diagonal water stream toward blossoms",
+      "scene": {
+        "locationId": "garden",
+        "castIds": [],
+        "propIds": ["watering-can"],
+        "heroOnPage": true
+      }
+    },
+    {
+      "template": "final",
+      "text": "Алиса сидит на краю клумбы и улыбается своему саду: «Как хорошо, что не сдалась», — шепчет Алиса. Труд приносит радость и удовлетворение.",
+      "title": null,
+      "illustrationPrompt": "the child sits at the edge, hands on knees, softly smiling, calmly admiring flowers; composition: quiet closing vignette facing the blooms",
+      "scene": {
+        "locationId": "garden",
+        "castIds": [],
+        "propIds": [],
+        "heroOnPage": true
+      }
+    }
+  ],
+  "characterProfile": "6-year-old child, light skin, long wavy blonde hair, wearing a pink T-shirt, denim shorts, and a red cap, a red cap",
+  "visualBible": {
+    "hero": {
+      "name": "Алиса",
+      "descriptor": "6-year-old child, light skin, long wavy blonde hair, wearing a pink T-shirt, denim shorts, and a red cap, a red cap"
+    },
+    "cast": [],
+    "locations": [
+      {
+        "id": "garden",
+        "name": "сад",
+        "descriptor": "a small flower bed, smaller than the child, brown soil, colorful flowers, surrounded by a white picket fence, green grass, a few daisies"
+      }
+    ],
+    "props": [
+      {
+        "id": "watering-can",
+        "name": "лейка",
+        "descriptor": "a green plastic watering can"
+      },
+      {
+        "id": "shovel",
+        "name": "маленькая лопатка",
+        "descriptor": "a small blue shovel"
+      }
+    ],
+    "atmosphere": "Bright summer day with a warm, cheerful atmosphere."
+  }
+}
