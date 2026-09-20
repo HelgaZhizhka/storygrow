@@ -1,0 +1,159 @@
+{
+  "version": "2026-09-18-v1",
+  "fingerprint": "ac386c619c8d0908ac8eebede8a52c6036b9349f0274162cc1b1d0bccffa404c",
+  "startedAt": "2026-09-18T11:49:52.036Z",
+  "gitHead": "12ac1b1fba23b85a9f4e77646d3bd9ede7523e6b",
+  "model": "gpt-5",
+  "maxOutputTokens": 10000,
+  "maxRetries": 0,
+  "timeoutMs": 240000,
+  "cases": [
+    {
+      "id": "kindness",
+      "goal": "Доброта",
+      "meaning": "Заметить потребность другого и помочь с вниманием к нему.",
+      "setting": "Домашний театр игрушек."
+    },
+    {
+      "id": "courage",
+      "goal": "Смелость",
+      "meaning": "Действовать несмотря на волнение; смелость не равна риску для себя.",
+      "setting": "Подготовка праздника во дворе со знакомыми взрослыми."
+    },
+    {
+      "id": "honesty",
+      "goal": "Честность",
+      "meaning": "Сказать правду, когда это непросто, и взять ответственность за свой поступок.",
+      "setting": "Мастерская рисунков и поделок дома."
+    }
+  ],
+  "kind": "text-only; no StoryEval or Book",
+  "audit": {
+    "verifiedAt": "2026-09-20",
+    "interpretation": "Taste calibration only; A/B comparison invalid: two premises became full stories. All six stories exceed target.",
+    "traces": [
+      {
+        "id": "courage-A",
+        "stage": "story",
+        "traceId": "99570c281d61cef9b713246683e6d453",
+        "status": 200,
+        "observations": 3,
+        "totalCost": 0.04029125,
+        "htmlPath": "/project/storygrow/traces/99570c281d61cef9b713246683e6d453"
+      },
+      {
+        "id": "kindness-A",
+        "stage": "story",
+        "traceId": "45da5b7ca9cb7b6e3a88c5ad0b69a730",
+        "status": 200,
+        "observations": 3,
+        "totalCost": 0.047645,
+        "htmlPath": "/project/storygrow/traces/45da5b7ca9cb7b6e3a88c5ad0b69a730"
+      },
+      {
+        "id": "honesty-A",
+        "stage": "story",
+        "traceId": "821bd62c5aba32bd0502e5bbf1414f5d",
+        "status": 200,
+        "observations": 3,
+        "totalCost": 0.05446375,
+        "htmlPath": "/project/storygrow/traces/821bd62c5aba32bd0502e5bbf1414f5d"
+      },
+      {
+        "id": "honesty-B",
+        "stage": "premise",
+        "traceId": "bcde87ebf88d3fc94a84ac1d269b6d29",
+        "status": 200,
+        "observations": 3,
+        "totalCost": 0.0295975,
+        "htmlPath": "/project/storygrow/traces/bcde87ebf88d3fc94a84ac1d269b6d29"
+      },
+      {
+        "id": "kindness-B",
+        "stage": "premise",
+        "traceId": "49c11dfc945e6c8ad891f80a683c3e49",
+        "status": 200,
+        "observations": 3,
+        "totalCost": 0.04114875,
+        "htmlPath": "/project/storygrow/traces/49c11dfc945e6c8ad891f80a683c3e49"
+      },
+      {
+        "id": "courage-B",
+        "stage": "premise",
+        "traceId": "883893a78df710763a6b247ffcab9896",
+        "status": 200,
+        "observations": 3,
+        "totalCost": 0.044094999999,
+        "htmlPath": "/project/storygrow/traces/883893a78df710763a6b247ffcab9896"
+      },
+      {
+        "id": "honesty-B",
+        "stage": "story",
+        "traceId": "d7a6e0d9cb8ecf33902a305b0ea3b611",
+        "status": 200,
+        "observations": 3,
+        "totalCost": 0.0465025,
+        "htmlPath": "/project/storygrow/traces/d7a6e0d9cb8ecf33902a305b0ea3b611"
+      },
+      {
+        "id": "kindness-B",
+        "stage": "story",
+        "traceId": "efe8200ead1027587661bc69a96518e4",
+        "status": 200,
+        "observations": 3,
+        "totalCost": 0.03763875,
+        "htmlPath": "/project/storygrow/traces/efe8200ead1027587661bc69a96518e4"
+      },
+      {
+        "id": "courage-B",
+        "stage": "story",
+        "traceId": "96cc99c3086e70c49c1bb0051b8b0f1f",
+        "status": 200,
+        "observations": 3,
+        "totalCost": 0.03738,
+        "htmlPath": "/project/storygrow/traces/96cc99c3086e70c49c1bb0051b8b0f1f"
+      }
+    ],
+    "langfuseEstimatedCostUsd": 0.378762,
+    "inputTokens": 9626,
+    "outputTokens": 36673,
+    "storyMetrics": [
+      {
+        "id": "courage-A",
+        "words": 907,
+        "withinTarget": false,
+        "bodySha256": "f4b15db84307b9bf6498b89166a9ade21b8089ef0d05375535148ece62ccf4d3"
+      },
+      {
+        "id": "kindness-A",
+        "words": 930,
+        "withinTarget": false,
+        "bodySha256": "f81bd4571c70e07fcedab4185f618f775c888572097c0f443a8cfc6d455299ea"
+      },
+      {
+        "id": "honesty-A",
+        "words": 847,
+        "withinTarget": false,
+        "bodySha256": "d5ed67972b6369ba8d682e44ddd1383f0ecbfbf092b7ff8cc37dbd6f41231c1d"
+      },
+      {
+        "id": "honesty-B",
+        "words": 909,
+        "withinTarget": false,
+        "bodySha256": "3226d5a70d31b85aefcf4613bd0659267b9f42f410d42d08b56d386adfabe2f4"
+      },
+      {
+        "id": "kindness-B",
+        "words": 867,
+        "withinTarget": false,
+        "bodySha256": "00faefdc6927c9be230ac02222e1ec35a4e8c9e255f47bf909708703e7ff1b6f"
+      },
+      {
+        "id": "courage-B",
+        "words": 919,
+        "withinTarget": false,
+        "bodySha256": "b00179c2e3ad3cc81aae87fe5ab620a6db966215666eb2c6c35107d001dc0685"
+      }
+    ]
+  }
+}

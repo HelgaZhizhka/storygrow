@@ -1662,3 +1662,30 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Next:** phase 1 — `register.ts` device catalogue, rewrite Prose + Judge `registerMatch` (owner reviews each prompt). Phases tracked in #404.
 
 **Blockers:** open owner decision — include the "companion pays for disobedience" pattern? Gates phases 4/5, not phase 1.
+
+## 2026-09-20 — #387: first whole-story reading pilot
+
+**Done:**
+- Isolated `issue/387-whole-story-pilot` from main `12ac1b1`; the original dirty #407 checkout and prototype results are preserved.
+- Recorded a protocol before generation, then ran 9 live GPT-5 calls on synthetic inputs: 6 whole stories and 3 intermediate responses. Raw prompts, results, model snapshot, tokens and traces are in `docs/process/2026-09-18-whole-story-pilot/`.
+- Produced a blind HTML reading document, exported to the original checkout's ignored `backend/output/whole-story-pilot-2026-09-18/reading.html`. Browser DOM matches all source titles and paragraphs exactly; inspected desktop/mobile screenshots and checked mobile overflow. Four artifact tests were developed red → green.
+- Read all six stories and added a separate editorial audit to the protocol. All 9 LangFuse traces retrieved successfully on September 20; estimated total cost $0.378762. No Book/StoryEval writes or production changes.
+
+**Decisions:**
+- Do not claim an A/B result: the planner prompt accidentally includes conflicting full-story instructions. Two premises are full stories (806/970 words); only one is short (144). Keep v1 frozen for audit, correct stage separation before any new trial.
+- Preserve the first six outputs without polishing or replacing failures. All exceed the requested 500–800 words (847–930). Use these for owner taste calibration only.
+- Do not close #387/#404 or promote this harness into production. Repetition, causality, language purity and ornamental prose remain unresolved.
+
+**Next:** owner blind reading by number; then revise the experimental protocol around observed preferences, verify a genuine short premise, and run a fresh comparison. Repeated-book diversity and real API integration require separate evidence.
+
+**Blockers:** architecture selection awaits a valid comparison and owner reading; no blockers to delivering this first reading set. Final smoke-check result recorded below.
+
+**Friction:**
+- Problem: commands in the worktree selected bundled Node 26/pnpm 11 instead of the existing Node 22.15/pnpm 10.29.3; pnpm attempted an incompatible dependency reinstall. Original #407 checkout also has pre-existing formatting failures.
+- Impact: interrupted baseline verification; avoided reinstalling or formatting unrelated work by isolating main and explicitly selecting the installed runtime.
+- Smallest fix: document/pin the expected runtime for worktree shells; retain explicit PATH in reproduction commands.
+- Problem: Docker/LangFuse were stopped when verifying traces after resuming the session.
+- Impact: delayed observability verification; existing services were restarted without deleting persistent volumes, then all traces were retrieved.
+- Smallest fix: run a read-only health check before each live pilot and after resumption.
+
+**Verification:** `./init.sh` exited 0 on 2026-09-20: formatting, TypeScript, lint, 438 backend tests and 52 frontend tests passed; frontend has 3 existing lint warnings, no errors. Full log: `/tmp/storygrow-pilot-verified-init.log`. Local reading URL returned HTTP 200. The only changes after the smoke check are this verification note and the matching protocol note.
