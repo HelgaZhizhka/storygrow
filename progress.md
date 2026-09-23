@@ -1662,3 +1662,23 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Next:** phase 1 — `register.ts` device catalogue, rewrite Prose + Judge `registerMatch` (owner reviews each prompt). Phases tracked in #404.
 
 **Blockers:** open owner decision — include the "companion pays for disobedience" pattern? Gates phases 4/5, not phase 1.
+
+## 2026-09-23 — chore(process): move the issue tracker from GitHub Issues to Linear (STO-5)
+
+**Why:** owner decision. The project ran tasks in GitHub Issues; a Linear workspace `storygrow` now exists and becomes the single task source of truth. GitHub keeps code, PRs and CI.
+
+**Done:**
+- **MCP:** `linear-storygrow` (`https://mcp.linear.app/mcp`) registered at **local scope** — it lives in `~/.claude.json` under this project only, so no other repo sees it. OAuth'd to the `StoryGrow` workspace; the account-level `claude.ai Linear` connector (workspace `WhiteLabel`) is disabled for this project to avoid two competing Linear tool sets.
+- **Labels:** the GitHub vocabulary recreated in the Linear `StoryGrow` team under the same names, so existing doc references still read correctly — 13 `area:*` (adding `area:backend`, which GitHub lacked), `ready-for-agent`, `ready-for-human`, `needs-triage`, `needs-info`, `post-defense`, `review-2026-09`. `priority:*` did **not** carry over: Linear has a native priority field (`priority:medium` → Medium/3). `wontfix` did not either — it is the `Canceled` status.
+- **Migration:** all 8 open GitHub issues moved, bodies preserved; each GitHub original closed with a pointer comment. #382→STO-6, #377→STO-7, #333→STO-8, #332→STO-9, #310→STO-10, #159→STO-11, #28→STO-12, #30→STO-13. Zero open GitHub issues remain.
+- **Docs:** `docs/agents/issue-tracker.md` rewritten for the Linear MCP (tool-by-tool conventions, status table, priority mapping); `docs/agents/triage-labels.md` remapped; `CLAUDE.md`, `AGENTS.md`, `README.md`, `.github/pull_request_template.md` and ADR-0001 (dated amendment) now say Linear. New git convention: branch `issue/sto-<N>-<short-kebab>`, PR body `Fixes STO-<N>`.
+- `./init.sh` green.
+
+**Decisions:**
+- The 164 closed GitHub issues stay in GitHub. Historical `#N` references in `progress.md`, ADRs and specs are **not** rewritten — `#N` means GitHub, `STO-N` means Linear, both resolve. Rewriting history was considered and rejected.
+- Relative GitHub links and inline `#N` cross-references inside migrated bodies were expanded to absolute URLs — they would be dead in Linear otherwise.
+- Two migrated tickets were edited beyond a copy: STO-9 no longer says faces go "to Google" (that provider was removed in #397), and STO-13 notes its Loki/Promtail acceptance assumes the retired Dokploy/VPS deploy. Both noted in the ticket footers.
+
+**Next:** connect the Linear ↔ GitHub integration in Linear settings (owner action — agents can't install it). Until then ticket status does not move on PR open/merge and has to be set via `save_issue`.
+
+**Blockers:** none.
