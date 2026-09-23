@@ -1682,3 +1682,26 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Next:** connect the Linear ↔ GitHub integration in Linear settings (owner action — agents can't install it). Until then ticket status does not move on PR open/merge and has to be set via `save_issue`.
 
 **Blockers:** none.
+
+## 2026-09-23 — docs(ai): whole-story text pipeline spec + ADR-0008 (STO-14)
+
+**Why:** owner approved (with Codex) a new direction for story text: one whole tale first, pages after; one universal style; gold texts as evaluation material. All six 2026-09-18 pilot texts were rejected; the 2026-09-13 eight-phase Suteev plan is no longer the plan. This session writes the specification only — no generator code, no paid runs, no production change.
+
+**Done:**
+- `docs/superpowers/specs/2026-09-23-whole-story-text-design.md` — goal, approved frames vs. hypotheses, current process as built (verified against `main` `9b6ff57`: orchestrator, Plan/Prose/Title/Judge prompts, schemas, validators, PDF templates, eval harness), target process with stage contracts, age/arc table, deterministic gates + judge v2 + bounded revision + refusals, change map with real files, six rollout stages with dependencies, risks, six owner questions.
+- `docs/adr/0008-whole-story-text-pipeline.md` (Proposed) — what supersedes ADR-0005 (Plan as primary artefact, register target, exemplar few-shot, `registerMatch`) and what stands (by-concern decomposition, guardrail/craft split, no vocabulary-RAG, `Story` contract).
+- 2026-09-13 spec header marked *Superseded as an implementation plan*; body untouched.
+- **Pilot preserved:** commit `91253c0` was orphaned (its branch and worktree were gone); pinned as `issue/387-whole-story-pilot` and pushed to origin. Not merged, per the ticket.
+- **PDF capacity finding:** at today's caps (220/200 chars, ≤ 12 pages) a 5–6 book holds ~340–370 words — the bottom of the 350–550 target; 3–4 holds ~100–115 against 150–250. Numbered in spec §7; lever is the owner's call on a rendered PDF.
+
+**Decisions:**
+- New ADR-0008 instead of a third ADR-0005 amendment (two already; a third would reverse half the decision).
+- Page split by paragraph **index ranges** — the model never re-emits text, so preservation is by construction, not by a diff check.
+- Until judge v2 is calibrated on the three gold texts, only safety + deterministic gates block a book; craft is read by the owner.
+- Historical `#N` references stay GitHub; `STO-N` is Linear.
+
+**Gaps (not invented):** `docs/process/2026-09-18-text-generation-research.md` + evidence JSON — not found anywhere; uncommitted #407 phase-1 work — not found in any checkout.
+
+**Next:** Codex review of PR; owner answers spec §11 (capacity lever, 3–4 range, gold-to-author, parent note placement, pilot folder, author model). Then stage 1 (first 5–6/virtue tale in a text-only harness) as its own ticket.
+
+**Blockers:** none for this PR. STO-6 remains a release prerequisite for stage 6.

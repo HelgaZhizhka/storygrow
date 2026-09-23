@@ -1,6 +1,6 @@
 # «Как будто написал Сутеев» — анализ корпуса и план рефактора текстового пайплайна
 
-**Status:** Proposal (analysis + plan, no code yet)
+**Status:** Superseded as an implementation plan (2026-09-23, STO-14 — see [2026-09-23 whole-story text design](2026-09-23-whole-story-text-design.md) and [ADR-0008](../../adr/0008-whole-story-text-pipeline.md)). §1–3 (corpus analysis, device catalogue) remain a reference; §4–5 (target model, eight phases) are no longer the plan. Kept unchanged below as history.
 **Date:** 2026-09-13
 **Scope:** gold exemplars, beat sheets, Plan/Prose/Title/Judge prompts, валидаторы, eval.
 **Не в scope:** картинки (ADR-0007), PDF-шаблоны, UI.
