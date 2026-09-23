@@ -26,4 +26,4 @@ Run `./init.sh` before committing — it's the smoke check (tsc + lint + tests) 
 | Last verified state, what's in progress | [progress.md](progress.md) |
 | Original scope, roadmap, budget | [PROJECT_PLAN.md](PROJECT_PLAN.md) |
 
-Git workflow: one GitHub Issue → one branch → one PR → squash-merge to `main`. Details in [docs/adr/0001-git-workflow.md](docs/adr/0001-git-workflow.md).
+Git workflow: one Linear ticket → one branch → one PR → squash-merge to `main`. Details in [docs/adr/0001-git-workflow.md](docs/adr/0001-git-workflow.md).

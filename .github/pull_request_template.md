@@ -1,8 +1,8 @@
 ## Summary
 
-<!-- What changed and why. Link the issue: Closes #N -->
+<!-- What changed and why. Link the Linear ticket: Fixes STO-N -->
 
-Closes #
+Fixes STO-
 
 ## Test plan
 
@@ -15,3 +15,4 @@ Closes #
 - [ ] `progress.md` updated with verified state (or N/A — explain why)
 - [ ] AI-pipeline changes only: `StoryEval` rows written + LangFuse traces visible
 - [ ] PR title follows Conventional Commits (`type(area): subject`)
+- [ ] Linear ticket reaches `Done` on merge (check it if the GitHub integration is off)

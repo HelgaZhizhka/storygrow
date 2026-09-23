@@ -13,7 +13,7 @@ Before writing any code, always do this:
 1. Run `pwd` — confirm you're in `/Users/mac/Projects/storygrow`.
 2. Read the **last 1–2 entries** of [progress.md](progress.md) (newest at the bottom) — last verified state + next step. Do NOT read the whole file or the archives in `docs/process/progress-archive-*.md`; they are history, not state.
 3. If [session-handoff.md](session-handoff.md) is **non-empty** — read it first. Previous session was interrupted mid-feature.
-4. Check **GitHub Issues** — pick the highest-priority open issue: prefer `ready-for-agent` label, explicit blockers/dependencies, then an active milestone if one applies. The project has outgrown its original 5-week roadmap; several real issues (e.g. #155, #157) carry no milestone at all, so milestone-first selection silently skips them.
+4. Check **Linear** ([storygrow](https://linear.app/storygrow), team `StoryGrow`) via the `linear-storygrow` MCP server — `list_issues` with `state: "Todo"`. Pick the highest-priority ticket: prefer the `ready-for-agent` label, then explicit blockers/dependencies, then the native priority field. `Backlog` holds what is deliberately not scheduled (`post-defense`, roadmap items) — don't pull from there without asking.
 5. Run `git log --oneline -5` — see recent commits.
 6. Run `./init.sh` — smoke-check (TypeScript + lint + unit tests).
 
@@ -23,12 +23,12 @@ Before writing any code, always do this:
 
 ## Working Rules
 
-- **One issue → one branch → one PR → squash-merge to `main`.** Branch `issue/<N>-<short-kebab>`, PR title in Conventional Commits, body `Closes #N`. Full rules: [docs/adr/0001-git-workflow.md](docs/adr/0001-git-workflow.md).
+- **One Linear ticket → one branch → one PR → squash-merge to `main`.** Branch `issue/sto-<N>-<short-kebab>`, PR title in Conventional Commits, body `Fixes STO-<N>`. Full rules: [docs/adr/0001-git-workflow.md](docs/adr/0001-git-workflow.md).
 - **Bundle the `progress.md` session entry into the feature PR**, not a standalone PR. The session log lives with the work it describes. Exception: if a session ends without touching any feature branch (rare — pure planning/meta), then a standalone `docs(progress): …` PR is fine.
-- **One issue at a time.** Finish before picking the next.
-- **Don't "also refactor" issue B while implementing issue A.** Unrelated bugs → new issue.
+- **One ticket at a time.** Finish before picking the next.
+- **Don't "also refactor" ticket B while implementing ticket A.** Unrelated bugs → a new Linear ticket.
 - **Narrow exception:** a 1-2 line fix that unblocks your work is allowed — mention it in the commit message.
-- **Don't mark an issue closed just because code was added.** Close only when Definition of Done (see [CLAUDE.md](CLAUDE.md)) is met.
+- **Don't move a ticket to `Done` just because code was added.** `Done` only when Definition of Done (see [CLAUDE.md](CLAUDE.md)) is met.
 - **Don't silently change verification rules** during implementation.
 - **Prefer durable repository artifacts over chat summaries.** When a decision is made, write it: `progress.md` for session-level, `docs/adr/` for architectural, `docs/superpowers/specs/` for feature-level.
 - **AI-pipeline code requires extra scrutiny.** It's the heart of the product — don't auto-generate it uncritically. Pair with TDD (`superpowers:test-driven-development`) and verify traces in LangFuse before closing the issue.
@@ -80,10 +80,10 @@ If the friction is blocking, surface it to the user before proceeding. If non-bl
 
 | Phase | Skill to invoke | Output / artefact |
 |---|---|---|
-| Before a major feature | `superpowers:brainstorming` or `grill-me` | Conversation; possibly an issue in GitHub |
+| Before a major feature | `superpowers:brainstorming` or `grill-me` | Conversation; possibly a Linear ticket |
 | Decision touches domain language / architecture | `grill-with-docs` | Updated [CONTEXT.md](CONTEXT.md) and/or new ADR in `docs/adr/` |
 | Turn discussion into a written spec | `superpowers:writing-plans` | `docs/superpowers/specs/YYYY-MM-DD-feature-name-design.md` |
-| Break a spec into actionable issues | `to-issues` | GitHub issues with labels + milestone |
+| Break a spec into actionable issues | `to-issues` | Linear tickets with labels + priority |
 | Implementation | `superpowers:executing-plans` + `superpowers:test-driven-development` | Code + tests |
 | Bug investigation | `diagnose` or `superpowers:systematic-debugging` | Diagnosis trace, possibly an ADR if architectural |
 | Before commit | `superpowers:verification-before-completion` | `./init.sh` exits 0 |
@@ -98,7 +98,7 @@ If the friction is blocking, surface it to the user before proceeding. If non-bl
 Before finishing any session:
 
 1. **Update `progress.md`** — append one entry: `## YYYY-MM-DD — topic`, then `Done / Decisions / Next / Blockers`.
-2. **Update GitHub Issue status** — close completed issues with a comment referencing the commit/PR.
+2. **Update the Linear ticket** — the GitHub integration moves it to `Done` on merge; if it hasn't (integration off, or the PR isn't merged yet), set the status with `save_issue` and leave a comment referencing the commit/PR.
 3. **Run `./init.sh`** — must exit 0.
 4. **Commit any clean-state changes** with a descriptive message.
 5. **If interrupted mid-feature** — fill `session-handoff.md` before stopping. Clear it when the feature is done.
@@ -107,8 +107,8 @@ Before finishing any session:
 
 ## Context Management
 
-- If a feature touches more than 10 files → break it into sub-issues.
-- If context feels heavy → start a fresh session and pass state via `session-handoff.md` + the relevant GitHub Issue.
+- If a feature touches more than 10 files → break it into sub-tickets.
+- If context feels heavy → start a fresh session and pass state via `session-handoff.md` + the relevant Linear ticket.
 - Prefer `session-handoff.md` over chat summaries for mid-feature continuity.
 
 ---
@@ -128,10 +128,12 @@ Before finishing any session:
 | `docs/superpowers/specs/` | Feature design specs (from `superpowers:writing-plans`). |
 | `docs/superpowers/plans/` | Implementation plans (from `superpowers:writing-plans`). |
 | `PROJECT_PLAN.md` | High-level product vision, scope, 5-week roadmap, budget. |
-| **GitHub Issues** | **Task source of truth.** Milestones = weeks. Labels = areas + priority. |
+| **[Linear](https://linear.app/storygrow)** | **Task source of truth.** Team `StoryGrow`, prefix `STO-`. Labels = areas + triage; priority is a native field. Driven via the `linear-storygrow` MCP server — see [docs/agents/issue-tracker.md](docs/agents/issue-tracker.md). |
 
 ---
 
 ## Deliberate non-files
 
-We deliberately do **not** maintain `feature_list.json`. GitHub Issues is the task source of truth; `progress.md` is the session log. If you ever feel like adding `feature_list.json`, re-read this section — that path was considered and rejected to avoid dual sources of truth.
+We deliberately do **not** maintain `feature_list.json`. Linear is the task source of truth; `progress.md` is the session log. If you ever feel like adding `feature_list.json`, re-read this section — that path was considered and rejected to avoid dual sources of truth.
+
+For the same reason we do **not** keep open GitHub issues alongside the Linear tickets. When the tracker moved on 2026-09-23 the 8 open issues were migrated and their GitHub originals closed with a pointer; don't reopen them or file new ones.

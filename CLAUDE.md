@@ -100,9 +100,9 @@ docker compose down -v         # Stop AND wipe data volumes
 
 Full rationale: [docs/adr/0001-git-workflow.md](docs/adr/0001-git-workflow.md). Day-to-day rules:
 
-- **One GitHub Issue → one branch → one PR → squash-merge into `main`.**
-- Branch name: `issue/<N>-<short-kebab-title>`.
-- PR body: `Closes #<N>` so the issue auto-closes on merge.
+- **One Linear ticket → one branch → one PR → squash-merge into `main`.**
+- Branch name: `issue/sto-<N>-<short-kebab-title>`.
+- PR body: `Fixes STO-<N>` so the Linear GitHub integration moves the ticket to `In Review` on open and `Done` on merge.
 - PR title and squash-commit subject follow **Conventional Commits**: `type(area): short imperative subject`.
   Types: `feat | fix | chore | docs | refactor | test | perf | ci`.
 - `main` is protected — no direct push, no force push, **CI (`./init.sh` + PR-title lint) is a required check** (since 2026-07-16).
@@ -110,11 +110,11 @@ Full rationale: [docs/adr/0001-git-workflow.md](docs/adr/0001-git-workflow.md). 
 
 ```bash
 # Typical loop
-gh issue list --milestone "Week 1" --state open
-git switch -c issue/1-pnpm-workspace
+# pick a ticket: Linear MCP `list_issues` (team StoryGrow, state Todo) — see docs/agents/issue-tracker.md
+git switch -c issue/sto-42-pnpm-workspace
 # ...work, commit incrementally...
-git push -u origin issue/1-pnpm-workspace
-gh pr create --title "chore(repo): scaffold pnpm workspace" --body "Closes #1"
+git push -u origin issue/sto-42-pnpm-workspace
+gh pr create --title "chore(repo): scaffold pnpm workspace" --body "Fixes STO-42"
 # after ./init.sh is green — queues the squash-merge for when CI passes
 gh pr merge --squash --delete-branch --auto
 ```
@@ -126,7 +126,7 @@ gh pr merge --squash --delete-branch --auto
 ### Session start
 1. **[progress.md](progress.md)** — last verified state, what was done, what's next
 2. **[session-handoff.md](session-handoff.md)** — if non-empty, previous session was interrupted; read first
-3. **GitHub Issues** — task source of truth (filter by milestone for current week)
+3. **[Linear](https://linear.app/storygrow)** — task source of truth (team `StoryGrow`, prefer `Todo` + `ready-for-agent`)
 4. Run `./init.sh` — verify clean base
 
 ### Code rules & patterns
@@ -210,7 +210,7 @@ A feature is `done` only when **all** are true:
 - ✅ Target behavior implemented
 - ✅ `./init.sh` exits 0 (tsc + lint + tests pass)
 - ✅ For AI-pipeline features: a real generation through the actual API produced a genuine `StoryEval` row + LangFuse trace (`eval:text`/`eval:batch` prove prose quality only — text-only, no DB write — and don't satisfy this on their own; see [AGENTS.md](AGENTS.md)'s "Done is not a mood")
-- ✅ GitHub Issue closed with reference to commit/PR
+- ✅ Linear ticket in `Done` with a reference to the commit/PR
 - ✅ `progress.md` updated with verified state
 - ✅ Repo clean (`git status` empty) or WIP commit with explicit note
 
@@ -220,7 +220,7 @@ A feature is `done` only when **all** are true:
 
 ### Issue tracker
 
-Issues live in GitHub Issues (`HelgaZhizhka/storygrow`). Agents use the `gh` CLI for all operations. See [docs/agents/issue-tracker.md](docs/agents/issue-tracker.md).
+Issues live in Linear ([storygrow](https://linear.app/storygrow) workspace, team `StoryGrow`, prefix `STO-`). Agents use the project-local `linear-storygrow` MCP server for all operations — **not** `gh issue`. GitHub keeps code, PRs and CI only. See [docs/agents/issue-tracker.md](docs/agents/issue-tracker.md).
 
 ### Triage labels
 
