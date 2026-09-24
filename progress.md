@@ -1724,3 +1724,20 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Next:** local Codex re-review of PR #409 at the new head; then owner reading of stage 1 as its own ticket.
 
 **Blockers:** none.
+
+## 2026-09-24 — docs(ai): STO-14 review round 3 — layout is decided on rendered samples, not inherited
+
+**Why:** after discussing with the owner, local Codex asked to make the PDF layout an explicit part of the plan: today's 110/220-char caps and page counts are not requirements of the new path; a layout comparison on an accepted text belongs between the first tale and any PDF-integration claim; the "split this sentence" edit must not become the way to keep old caps.
+
+**Done (same PR #409):**
+- Spec §7: "Renderer unchanged" replaced — templates (HTML/CSS), `suitableFor`, caps and `PAGE_COUNT_BY_BAND` are expected to change; `pdf-render.service.ts` stays only if the comparison confirms compatibility. Layout-comparison protocol written down: two samples on the same accepted 5–6 text (more text area at a comfortable type size vs. more pages with large illustrations), same existing illustrations or explicit placeholders — no paid image generation for a layout check; the owner sees real pages, page count, readability, text/image ratio; cost/time assessed if the illustration count changes; the chosen layout then checked on other texts (upper word bound, long dialogue) and separately on an accepted 3–4 text; layout may differ per band under one style. Local review's starting preference (more text area for 5–6 first) recorded as a comparison proposal, not a design.
+- Spec §8: new stage 1b "Layout comparison" (depends on 1); stage 4's PDF claim depends on 1b; stage 5 includes the 3–4 layout check.
+- Spec §6/§10: the targeted "split this sentence" revision is a rare fallback, never the main way to fit old caps; a text over the book's total capacity is a layout or word-range question, not a sentence problem. A targeted revision produces a **new text version**: the earlier version is kept in the attempt record, every text check re-runs on the new version, then split/scenes/bible; reconstruction compares against the new accepted version. Word ranges are never narrowed to fit old templates — volume by reading, capacity by rendering.
+- ADR-0008 decisions 1 and 4 and the consequences updated accordingly.
+- `./init.sh` green; links re-checked.
+
+**Decisions:** all five clarifications accepted; no obstacle found. STO-14 stays documentation-only — the layout comparison is future work in its own ticket.
+
+**Next:** local Codex re-review at the new head.
+
+**Blockers:** none.
