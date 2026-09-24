@@ -50,7 +50,7 @@ ${storyText}
 // Dull, abstract patterns a title must not match (the failure modes we saw).
 // NOTE: \b is unreliable around Cyrillic (Cyrillic letters aren't \w in JS
 // regex), so these use explicit whitespace/anchors instead of word boundaries.
-const BANNED_TITLE_PATTERNS: readonly RegExp[] = [
+export const BANNED_TITLE_PATTERNS: readonly RegExp[] = [
   /истори[яю]\s+про/i,
   /учит(?:ся|ься)/i,
   /переживани[еяй]/i,
@@ -58,7 +58,7 @@ const BANNED_TITLE_PATTERNS: readonly RegExp[] = [
 ];
 
 /** Stem of the value word, tolerant to Russian inflection (честность→честнос). */
-const valueStem = (value: string): string => {
+export const valueStem = (value: string): string => {
   const v = value.trim().toLowerCase();
   return v.length > 5 ? v.slice(0, v.length - 2) : v;
 };
