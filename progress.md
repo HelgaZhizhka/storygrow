@@ -1682,3 +1682,72 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Next:** connect the Linear ↔ GitHub integration in Linear settings (owner action — agents can't install it). Until then ticket status does not move on PR open/merge and has to be set via `save_issue`.
 
 **Blockers:** none.
+
+## 2026-09-23 — docs(ai): whole-story text pipeline spec + ADR-0008 (STO-14)
+
+**Why:** owner approved (with Codex) a new direction for story text: one whole tale first, pages after; one universal style; gold texts as evaluation material. All six 2026-09-18 pilot texts were rejected; the 2026-09-13 eight-phase Suteev plan is no longer the plan. This session writes the specification only — no generator code, no paid runs, no production change.
+
+**Done:**
+- `docs/superpowers/specs/2026-09-23-whole-story-text-design.md` — goal, approved frames vs. hypotheses, current process as built (verified against `main` `9b6ff57`: orchestrator, Plan/Prose/Title/Judge prompts, schemas, validators, PDF templates, eval harness), target process with stage contracts, age/arc table, deterministic gates + judge v2 + bounded revision + refusals, change map with real files, six rollout stages with dependencies, risks, six owner questions.
+- `docs/adr/0008-whole-story-text-pipeline.md` (Proposed) — what supersedes ADR-0005 (Plan as primary artefact, register target, exemplar few-shot, `registerMatch`) and what stands (by-concern decomposition, guardrail/craft split, no vocabulary-RAG, `Story` contract).
+- 2026-09-13 spec header marked *Superseded as an implementation plan*; body untouched.
+- **Pilot preserved:** commit `91253c0` was orphaned (its branch and worktree were gone); pinned as `issue/387-whole-story-pilot` and pushed to origin. Not merged, per the ticket.
+- **PDF capacity finding:** at today's caps (220/200 chars, ≤ 12 pages) a 5–6 book holds ~340–370 words — the bottom of the 350–550 target; 3–4 holds ~100–115 against 150–250. Numbered in spec §7; lever is the owner's call on a rendered PDF.
+
+**Decisions:**
+- New ADR-0008 instead of a third ADR-0005 amendment (two already; a third would reverse half the decision).
+- Page split by paragraph **index ranges** — the model never re-emits text, so preservation is by construction, not by a diff check.
+- Until judge v2 is calibrated on the three gold texts, only safety + deterministic gates block a book; craft is read by the owner.
+- Historical `#N` references stay GitHub; `STO-N` is Linear.
+
+**Gaps (not invented):** `docs/process/2026-09-18-text-generation-research.md` + evidence JSON — not found anywhere; uncommitted #407 phase-1 work — not found in any checkout.
+
+**Next:** Codex review of PR; owner answers spec §11 (capacity lever, 3–4 range, gold-to-author, parent note placement, pilot folder, author model). Then stage 1 (first 5–6/virtue tale in a text-only harness) as its own ticket.
+
+**Blockers:** none for this PR. STO-6 remains a release prerequisite for stage 6.
+
+## 2026-09-24 — docs(ai): STO-14 review round 2 — split without author constraints, explicit safety gate, release gate, loop ownership
+
+**Why:** two Codex reviews of PR #409. The cloud review (16:06) flagged `wholeText` as a possible second source of truth and the missing safety contract; the local review (17:29, relayed by the owner) raised four blockers: the author must not be constrained by page caps; safety needs an explicit blocking contract; stage 3 must gate release; the checks order and the orchestrator's ownership must be stated, not promised "unchanged".
+
+**Done (same PR #409):**
+- **Split:** the author writes natural paragraphs with no layout limits. The split chooses boundaries only at paragraph/sentence ends; code extracts fragments verbatim and asserts contiguity, coverage, order and exact reconstruction. An unplaceable fragment fails explicitly — never cut, re-flowed or shrunk. Layout feasibility (longest sentence ≤ largest cap) is a check on the finished text, not an authoring rule.
+- **Safety gate:** separate binary `pass | fail` verdict with reasons, own Zod schema, read as a gate; error/undetermined → fail closed; `StoryEval` row with `passed=false`; today's `safetyForChildren` 0–10 with floor 6 is replaced. Custom-goal gate (input) kept, not a substitute.
+- **Release gate:** stage 3 (nine unedited results, all three combinations, custom goals, a repeat) is a precondition for stages 5 and 6; stage 5 now covers all three combinations; stage 4 is technical readiness only.
+- **Order and ownership:** text checks → split → book check (`validateBookPlan` + reconstruction) → title; the orchestrator loop is rewritten (budget, revision kind, single re-split, one `StoryEval` row per attempt at attempt end); text-only dry run stated as a separate caveat.
+- **Clarifications:** `wholeText` immutable source + derived pages + reconstruction check (not two truths); `parentNote` is storage only until placement is decided; capacity numbers marked estimates, decided on rendered samples after an accepted text; judge calibration on 3+6 texts is a sanity check, portability re-measured in stage 3; a third marker **[proposal]** separates technical mechanisms from owner-approved frames. ADR-0008 gains decisions 6 (one source of text) and 7 (release requires stage 3).
+- **Owner questions** cut from six to two (capacity lever, parent-note placement), both after stage 1, per the local review's defaults.
+- `./init.sh` green; links re-checked.
+
+**Decisions:** none of the four blockers rejected — each was a real gap. Cloud Codex's commit `943b87c` does not exist in this repository (made in its own environment without the PR branch); nothing to merge from it.
+
+**Next:** local Codex re-review of PR #409 at the new head; then owner reading of stage 1 as its own ticket.
+
+**Blockers:** none.
+
+## 2026-09-24 — docs(ai): STO-14 review round 3 — layout is decided on rendered samples, not inherited
+
+**Why:** after discussing with the owner, local Codex asked to make the PDF layout an explicit part of the plan: today's 110/220-char caps and page counts are not requirements of the new path; a layout comparison on an accepted text belongs between the first tale and any PDF-integration claim; the "split this sentence" edit must not become the way to keep old caps.
+
+**Done (same PR #409):**
+- Spec §7: "Renderer unchanged" replaced — templates (HTML/CSS), `suitableFor`, caps and `PAGE_COUNT_BY_BAND` are expected to change; `pdf-render.service.ts` stays only if the comparison confirms compatibility. Layout-comparison protocol written down: two samples on the same accepted 5–6 text (more text area at a comfortable type size vs. more pages with large illustrations), same existing illustrations or explicit placeholders — no paid image generation for a layout check; the owner sees real pages, page count, readability, text/image ratio; cost/time assessed if the illustration count changes; the chosen layout then checked on other texts (upper word bound, long dialogue) and separately on an accepted 3–4 text; layout may differ per band under one style. Local review's starting preference (more text area for 5–6 first) recorded as a comparison proposal, not a design.
+- Spec §8: new stage 1b "Layout comparison" (depends on 1); stage 4's PDF claim depends on 1b; stage 5 includes the 3–4 layout check.
+- Spec §6/§10: the targeted "split this sentence" revision is a rare fallback, never the main way to fit old caps; a text over the book's total capacity is a layout or word-range question, not a sentence problem. A targeted revision produces a **new text version**: the earlier version is kept in the attempt record, every text check re-runs on the new version, then split/scenes/bible; reconstruction compares against the new accepted version. Word ranges are never narrowed to fit old templates — volume by reading, capacity by rendering.
+- ADR-0008 decisions 1 and 4 and the consequences updated accordingly.
+- `./init.sh` green; links re-checked.
+
+**Decisions:** all five clarifications accepted; no obstacle found. STO-14 stays documentation-only — the layout comparison is future work in its own ticket.
+
+**Next:** local Codex re-review at the new head.
+
+**Blockers:** none.
+
+## 2026-09-24 — docs(ai): STO-14 review round 4 — no hidden craft-based regeneration; old path kept for the rollback window
+
+**Why:** local Codex re-review at `516544b` found two remaining inconsistencies: the revision policy still regenerated a tale on a judge-flagged causality failure while §6 declares the judge informational; the change map deleted the Plan prompts "in the release stage" while stage 6 and ADR-0008 keep the Plan path one release for rollback.
+
+**Done (same PR #409):** §6 — no judge criterion, causality included, triggers regeneration while the judge is informational; findings are recorded and read by a human; automatic regeneration on a craft criterion is a conditional later switch after stage 3. §7 — Plan prompts, `story-plan.schema.ts`, `buildProseSchema` and their dependencies stay intact behind the flag for the whole rollback window; deletion is a separate later step. §8 stage 6 and ADR rollback consequence aligned. `./init.sh` green.
+
+**Next:** Codex's final diff check; then acceptance of the spec and the first-tale ticket.
+
+**Blockers:** none.
