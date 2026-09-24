@@ -1705,3 +1705,22 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Next:** Codex review of PR; owner answers spec §11 (capacity lever, 3–4 range, gold-to-author, parent note placement, pilot folder, author model). Then stage 1 (first 5–6/virtue tale in a text-only harness) as its own ticket.
 
 **Blockers:** none for this PR. STO-6 remains a release prerequisite for stage 6.
+
+## 2026-09-24 — docs(ai): STO-14 review round 2 — split without author constraints, explicit safety gate, release gate, loop ownership
+
+**Why:** two Codex reviews of PR #409. The cloud review (16:06) flagged `wholeText` as a possible second source of truth and the missing safety contract; the local review (17:29, relayed by the owner) raised four blockers: the author must not be constrained by page caps; safety needs an explicit blocking contract; stage 3 must gate release; the checks order and the orchestrator's ownership must be stated, not promised "unchanged".
+
+**Done (same PR #409):**
+- **Split:** the author writes natural paragraphs with no layout limits. The split chooses boundaries only at paragraph/sentence ends; code extracts fragments verbatim and asserts contiguity, coverage, order and exact reconstruction. An unplaceable fragment fails explicitly — never cut, re-flowed or shrunk. Layout feasibility (longest sentence ≤ largest cap) is a check on the finished text, not an authoring rule.
+- **Safety gate:** separate binary `pass | fail` verdict with reasons, own Zod schema, read as a gate; error/undetermined → fail closed; `StoryEval` row with `passed=false`; today's `safetyForChildren` 0–10 with floor 6 is replaced. Custom-goal gate (input) kept, not a substitute.
+- **Release gate:** stage 3 (nine unedited results, all three combinations, custom goals, a repeat) is a precondition for stages 5 and 6; stage 5 now covers all three combinations; stage 4 is technical readiness only.
+- **Order and ownership:** text checks → split → book check (`validateBookPlan` + reconstruction) → title; the orchestrator loop is rewritten (budget, revision kind, single re-split, one `StoryEval` row per attempt at attempt end); text-only dry run stated as a separate caveat.
+- **Clarifications:** `wholeText` immutable source + derived pages + reconstruction check (not two truths); `parentNote` is storage only until placement is decided; capacity numbers marked estimates, decided on rendered samples after an accepted text; judge calibration on 3+6 texts is a sanity check, portability re-measured in stage 3; a third marker **[proposal]** separates technical mechanisms from owner-approved frames. ADR-0008 gains decisions 6 (one source of text) and 7 (release requires stage 3).
+- **Owner questions** cut from six to two (capacity lever, parent-note placement), both after stage 1, per the local review's defaults.
+- `./init.sh` green; links re-checked.
+
+**Decisions:** none of the four blockers rejected — each was a real gap. Cloud Codex's commit `943b87c` does not exist in this repository (made in its own environment without the PR branch); nothing to merge from it.
+
+**Next:** local Codex re-review of PR #409 at the new head; then owner reading of stage 1 as its own ticket.
+
+**Blockers:** none.
