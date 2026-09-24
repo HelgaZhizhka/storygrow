@@ -12,7 +12,7 @@
  * Usage:
  *   pnpm --filter backend eval:whole-story --out=output/whole-story/<run> \
  *     [--goals="Доброта,Смелость,Дружба"] [--age=6] [--repeat=1] \
- *     [--model=gpt-5] [--safety-model=gpt-4o] [--judge-model=gpt-4o-mini]
+ *     [--model=gpt-5] [--safety-model=gpt-4o] [--judge-model=gpt-4o-mini] [--variants=A,B]
  *
  * Re-running with the same --out reuses successful calls and retries failed
  * ones; a changed prompt or case list refuses to run in that directory.
@@ -40,6 +40,7 @@ import {
   buildAuthorSystem,
   buildStoryBrief,
   buildWholeStoryPrompt,
+  type AuthorVariant,
   type HeroIdentity,
   type StoryBrief,
 } from '../ai/prompts/whole-story.prompt';
@@ -79,16 +80,25 @@ const options = {
   model: flag('model', 'gpt-5'),
   safetyModel: flag('safety-model', 'gpt-4o'),
   judgeModel: flag('judge-model', GENERATION_MODEL),
+  // Author-prompt variants for a single-variable diagnostic (round 2): 'A' is
+  // the round-1 prompt unchanged; ids of A cases stay `case-<g>-<r>` so a
+  // round-1 directory re-runs from its journal without new calls.
+  variants: flag('variants', 'A')
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s): s is AuthorVariant => s === 'A' || s === 'B'),
 };
 
 interface Case {
   readonly id: string;
   readonly goal: LearningGoalSeed;
+  readonly variant: AuthorVariant;
 }
 
 interface CaseResult {
   readonly id: string;
   readonly goal: string;
+  readonly variant: AuthorVariant;
   readonly brief: StoryBrief;
   readonly tale: WholeStory;
   readonly words: number;
@@ -217,7 +227,7 @@ const runCase = async (item: Case, hero: HeroIdentity): Promise<CaseResult> => {
     input: {
       id: item.id,
       stage: 'tale',
-      system: buildAuthorSystem(ageBand),
+      system: buildAuthorSystem(ageBand, item.variant),
       prompt: buildWholeStoryPrompt({ brief, hero }),
     },
     schema: WholeStorySchema,
@@ -235,6 +245,7 @@ const runCase = async (item: Case, hero: HeroIdentity): Promise<CaseResult> => {
   return {
     id: item.id,
     goal: item.goal.title,
+    variant: item.variant,
     brief,
     tale,
     words: gates.words,
@@ -249,10 +260,13 @@ const buildCases = (): Case[] =>
   options.goals.flatMap((title, gi) => {
     const goal = findLearningGoal(title);
     if (!goal) throw new Error(`Unknown learning goal: ${title}`);
-    return Array.from({ length: options.repeat }, (_, r) => ({
-      id: `case-${gi + 1}-${r + 1}`,
-      goal,
-    }));
+    return options.variants.flatMap((variant) =>
+      Array.from({ length: options.repeat }, (_, r) => ({
+        id: variant === 'A' ? `case-${gi + 1}-${r + 1}` : `case-${gi + 1}${variant}-${r + 1}`,
+        goal,
+        variant,
+      })),
+    );
   });
 
 const blindOrder = (ids: string[]): string[] =>
@@ -287,6 +301,7 @@ const writeArtifacts = (results: CaseResult[]): void => {
     results.map((r) => ({
       id: r.id,
       goal: r.goal,
+      variant: r.variant,
       words: r.words,
       withinRange: r.words >= range.min && r.words <= range.max,
       gatesPassed: r.gates.passed,
@@ -311,6 +326,7 @@ const main = async (): Promise<void> => {
     fingerprint: fingerprintOf({
       version: WHOLE_STORY_PROMPT_VERSION,
       author: buildAuthorSystem(ageBand),
+      ...(options.variants.includes('B') ? { authorB: buildAuthorSystem(ageBand, 'B') } : {}),
       safety: STORY_SAFETY_SYSTEM,
       judge: JUDGE_V2_SYSTEM,
       cases: cases.map((c) => [c.id, c.goal.title]),
@@ -325,12 +341,14 @@ const main = async (): Promise<void> => {
       ageBand,
       hero,
       models: { author: options.model, safety: options.safetyModel, judge: options.judgeModel },
+      variants: options.variants,
       maxRetries: 0,
       timeoutMs: TIMEOUT_MS,
       cases: cases.map((c) => ({
         id: c.id,
         goal: c.goal.title,
         arcType: c.goal.arcType ?? 'virtue',
+        variant: c.variant,
       })),
     },
   });

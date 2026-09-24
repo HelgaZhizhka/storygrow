@@ -1,0 +1,53 @@
+[
+  {
+    "id": "case-1-1",
+    "goal": "Доброта",
+    "words": 490,
+    "withinRange": true,
+    "gatesPassed": true,
+    "safety": "pass",
+    "judge": {
+      "language": 8,
+      "causality": 9,
+      "goalArc": 9,
+      "ageFit": 10,
+      "title": 7
+    },
+    "accepted": true,
+    "bodySha256": "ef6743816c470e30f09e8fb52e49db28ea5a2e708fe9b77b4b32b7c032fa6eac"
+  },
+  {
+    "id": "case-2-1",
+    "goal": "Смелость",
+    "words": 455,
+    "withinRange": true,
+    "gatesPassed": false,
+    "safety": "pass",
+    "judge": {
+      "language": 9,
+      "causality": 8,
+      "goalArc": 9,
+      "ageFit": 10,
+      "title": 7
+    },
+    "accepted": false,
+    "bodySha256": "673611b5bc9a4c09e4c9c166202c65d15d99f8deb47031a24179aa9697236adb"
+  },
+  {
+    "id": "case-3-1",
+    "goal": "Дружба",
+    "words": 416,
+    "withinRange": true,
+    "gatesPassed": true,
+    "safety": "pass",
+    "judge": {
+      "language": 8,
+      "causality": 9,
+      "goalArc": 8,
+      "ageFit": 10,
+      "title": 7
+    },
+    "accepted": true,
+    "bodySha256": "2314383ee00bd1f1a6d8fa06c7e49713f5d3a51d2b0a564883f524be72fc2161"
+  }
+]
