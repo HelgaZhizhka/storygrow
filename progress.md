@@ -1741,3 +1741,13 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Next:** local Codex re-review at the new head.
 
 **Blockers:** none.
+
+## 2026-09-24 — docs(ai): STO-14 review round 4 — no hidden craft-based regeneration; old path kept for the rollback window
+
+**Why:** local Codex re-review at `516544b` found two remaining inconsistencies: the revision policy still regenerated a tale on a judge-flagged causality failure while §6 declares the judge informational; the change map deleted the Plan prompts "in the release stage" while stage 6 and ADR-0008 keep the Plan path one release for rollback.
+
+**Done (same PR #409):** §6 — no judge criterion, causality included, triggers regeneration while the judge is informational; findings are recorded and read by a human; automatic regeneration on a craft criterion is a conditional later switch after stage 3. §7 — Plan prompts, `story-plan.schema.ts`, `buildProseSchema` and their dependencies stay intact behind the flag for the whole rollback window; deletion is a separate later step. §8 stage 6 and ADR rollback consequence aligned. `./init.sh` green.
+
+**Next:** Codex's final diff check; then acceptance of the spec and the first-tale ticket.
+
+**Blockers:** none.

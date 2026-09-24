@@ -52,7 +52,7 @@ Two of ADR-0005's own premises have since failed in production: exemplar-as-few-
 - **The 2026-09-13 refactor plan** (`STORY_ENGINES`, `SUTEEV_STYLE` device catalogue, per-engine exemplars, eight phases; GitHub #404/#407) is no longer the implementation plan. Its corpus analysis stays a reference. Nothing from it is deleted; the #407 phase-1 work was not found in any checkout (spec §9).
 - **The image contract is untouched; the PDF templates are not.** HTML/CSS templates, per-band caps, `suitableFor` and page counts are expected to change; `pdf-render.service.ts` stays only if the layout comparison confirms compatibility. Capacity (spec §7, estimates) is resolved by the owner on rendered samples with readable type — never by cutting text, shrinking type or narrowing word ranges. Rendering the parent note, if chosen, changes the `final` template — a later decision.
 - **Cost** rises by one small split call per book, plus one for the safety gate if it is a separate call; the tale call is comparable to today's Prose call. Images still dominate.
-- **Rollback** is a flag flip (`TEXT_PIPELINE=plan|whole`); the Plan path is kept for one release after the switch.
+- **Rollback** is a flag flip (`TEXT_PIPELINE=plan|whole`); the Plan path — prompts, schemas and their dependencies — is kept intact for one release after the switch, and its removal is a separate step after that window, never part of the release itself.
 - **Release prerequisites:** the stage-3 portability check (decision 7) and STO-6 (LangFuse in production) — neither is resolved by this ADR.
 
 ## Status
