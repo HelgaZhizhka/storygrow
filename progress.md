@@ -1751,3 +1751,23 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Next:** Codex's final diff check; then acceptance of the spec and the first-tale ticket.
 
 **Blockers:** none.
+
+## 2026-09-24 — feat(ai): STO-15 stage 1 — whole-story harness, rounds 1–2 (in progress, session paused)
+
+**Why:** stage 1 of ADR-0008 — one owner-approved 5–6/virtue tale from the new text pipeline. Spec + ADR merged (#409); STO-15 opened and taken.
+
+**Done:**
+- `eval:whole-story` text-only harness: brief (code) → whole tale (gpt-5, no layout constraint) → deterministic gates → blocking safety gate (gpt-4o, fail closed) → informational judge v2 (gpt-4o-mini); journaled calls, fingerprinted manifest, blind reading document. Schemas/prompts under `ai/`, gates under `ai/validators/`, learning goals extracted to a data module. 17 unit tests; `./init.sh` green. Draft PR #410.
+- Safety-gate negative control: `fail` with three cited reasons on an imitable dangerous act; `pass` on a fairy-tale antagonist beaten by wit.
+- **r1** (Доброта/Смелость/Дружба): 416–490 words — all inside 350–550 (the pilot's overshoot did not recur); safety 3/3; one title named the value. **Owner rejected all three (titles above all).** Frozen in `docs/process/2026-09-24-whole-story-stage1/r1/` with README.
+- Codex protocol for r2: single variable. Author variant B removes only the 5–6 profile's «подступается два-три раза» sentence; A verified byte-identical to r1 by re-running from the journal (no new calls). **r2** (Доброта, 2×A + 2×B, 4 calls, $0.20, 12/12 traces): 4/4 gates, 4/4 safety. Blind package committed; key/results held back until Codex's blind read.
+
+**Decisions:** no bundled prompt "v3" — one variable per round, ≤ 4 calls, no automatic next round. Held-equal confounds recorded (hero line → «Алисе шесть лет» openings; safety block → domestic settings). Judge v2 unreliable on titles (proposed a value-naming title); informational only, as designed.
+
+**Friction:**
+- Problem: parallel tool calls share one shell; `cd` in one raced `cp` in another — a relative-path copy failed and created a stray dir. Impact: one retry, one cleanup. Smallest fix: absolute paths in every multi-step shell command.
+- Problem: lint-staged runs prettier over frozen research artefacts (JSON/HTML) on commit. Impact: copies are reformatted, not byte-verbatim; texts verified identical. Smallest fix: consider a prettier ignore for `docs/process/**/r*/`.
+
+**Next:** Codex's blind reading of r2 → add key/results/notes to the record → agree the next single variable. Docker stopped at session end (volumes kept); `docker compose up -d` before any live run. See `session-handoff.md`.
+
+**Blockers:** none.

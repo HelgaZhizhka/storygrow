@@ -14,7 +14,7 @@ Cases: Доброта, Смелость, Дружба · hero Алиса, 6 · a
 | case-2-1 | «Алиса и карманная смелость» | 455 | fail — title names the value | pass | 9/8/9/10/7 |
 | case-3-1 | «Беличий хвостик для двоих» | 416 | pass | pass | 8/9/8/10/7 |
 
-9/9 traces retrieved from LangFuse (3 observations each); total $0.14. All three inside the 350–550 band (the pilot's 6/6 overshoot did not recur — an observation, not a proof).
+9/9 traces retrieved from LangFuse (3 observations each); total $0.14. The `backend/output/` directory was later re-run from its journal to verify that author prompt A is byte-identical (no new calls; `calls.json` unchanged); that re-run adds a `variant: "A"` field to `results.json`/`metrics.json` — the copies here are the originals. Copies pass through prettier on commit (formatting only; texts verified identical). All three inside the 350–550 band (the pilot's 6/6 overshoot did not recur — an observation, not a proof).
 
 **Owner verdict (relayed by local Codex, 2026-09-24): all three rejected as artistically unusable, the titles above all. No gold text.** The dissatisfaction is not about length or typography.
 
