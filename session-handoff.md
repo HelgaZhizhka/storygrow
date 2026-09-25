@@ -1,5 +1,9 @@
 # Session handoff — 2026-09-25 (local Codex research)
 
+## Update — editorial candidate «Прятки» (supersedes next steps below)
+
+Owner rejected «Кто будет Волком?» after the earlier research report. Subsequent local discussion produced «Прятки» (5–6 / Доброта / virtue). Owner tentatively liked it and explicitly retained «Ты и в прошлый раз обещал» as meaningful prior history. Read `docs/process/2026-09-25-hide-and-seek/README.md`, `story-before-review.md` and `story.md`: five movement/counting clarifications, complete ending, three reflection questions. Final revised text awaits owner reading; no accepted gold yet. This is chat-based editorial work, not an untouched harness output or evidence that generation works. No new paid calls, safety run, traces, Book/StoryEval, prompt/code change or PDF. STO-15 stays In Progress; PR #410 stays draft. Next: owner reading, then a separately scoped repeatability experiment. Do not automatically launch paid runs or delegate agents. Private lesson archive remains outside the repository.
+
 ## Latest state — read before the older handoff below
 
 The owner asked local Codex to conduct the proposed author research independently. Completed a bounded experiment in `docs/process/2026-09-25-author-study/`: two authors, identical r2-B system + one supplied premise, one call each, no retries, plus two safety calls. GPT-5 produced 472 words, GPT-4.1 produced 327. Both safety pass; GPT-4.1 fails length. Codex rejected both as finished stories; GPT-5 is usable material for substantial editing. Four traces retrieved with HTTP 200 and GENERATION observations; total LangFuse API cost $0.05205025.

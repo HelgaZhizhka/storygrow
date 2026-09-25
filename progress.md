@@ -1791,3 +1791,15 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Next:** owner reading of `edited-candidate.md`; use the evidence to decide a narrow editing experiment on other stories if the candidate fits. No new tasks delegated to Claude or cloud agents.
 
 **Blockers:** no owner-approved story yet; product integration and full PR code review remain unproven.
+
+## 2026-09-25 — STO-15: «Прятки» editorial candidate and reflection questions
+
+**Done:** saved the last complete chat version and a revised reading copy in `docs/process/2026-09-25-hide-and-seek/`. Clarified five movement/counting transitions across three rounds; preserved the owner's requested «Ты и в прошлый раз обещал», the complete ending and three reflection questions. Documented character locations, goal/arc and provenance. Revised prose: 472 Cyrillic lexical words, excluding title/questions; not a product-gate result.
+
+**Decisions:** owner tentatively likes this story; final reading still pending, not gold. Kindness belongs to Alice's choice to understand and help; Hare's successful independent hiding is its consequence. Chat editing does not satisfy STO-15's harness-quality requirement. Earlier «Кто будет Волком?» was rejected by the owner, superseding the pending-feedback note above. No paid runs, application/prompt changes, PDF work, cloud delegation or private archive upload.
+
+**Next:** final owner reading; then separately scope repeatability on other plots/goals. Record verification and commit in the STO-15 comment. Keep PR #410 draft and the ticket In Progress.
+
+**Verification:** `./init.sh` exited 0 after these documentation changes; backend 451 tests and frontend 52 tests passed, with the three existing frontend lint warnings. Manually checked all three rounds and the final transition; verified 472 story words and retention of the requested line. No live-generation or integration claim.
+
+**Blockers:** final owner acceptance and repeatable generation quality remain unproven; integration and full PR code review remain outstanding.
