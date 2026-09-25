@@ -1771,3 +1771,23 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Next:** Codex's blind reading of r2 → add key/results/notes to the record → agree the next single variable. Docker stopped at session end (volumes kept); `docker compose up -d` before any live run. See `session-handoff.md`.
 
 **Blockers:** none.
+
+## 2026-09-25 — STO-15: independent author experiment and editorial candidate (local Codex)
+
+**Done:**
+- At the owner's request, independently tested one fixed premise with `gpt-5-2025-08-07` and `gpt-4.1-2025-04-14`, one author call each plus one safety call each, no retries. The existing r2-B system prompt was preserved; only the invitation to invent the events was replaced. Research artifacts and executable runner: `docs/process/2026-09-25-author-study/`.
+- Read numbered outputs before the model key; recorded concrete language, role-consistency and ending defects. GPT-5: 472 words, gates+safety pass, needs substantial editing. GPT-4.1: 327 words, length fail, safety pass, rejected. No accepted gold. Found a flaw in Codex's own premise: it explained the intended feelings but omitted the actual ending of the internal play.
+- Retrieved all four LangFuse traces (HTTP 200, GENERATION model/usage recorded); total calculated API cost $0.05205025. No product Book/StoryEval, images or PDF. Raw outputs, prompts, settings, usage and traces archived; raw prose verified identical after formatting.
+- Wrote a separate 379-word editorial candidate, «Кто будет Волком?». This is a substantial Codex rewrite in this session, not an untouched model response or proof of an automated editor; owner approval pending. No additional API generation for it and no separate model safety verdict on the rewrite.
+- Application code and prompts unchanged. Initial `./init.sh` exited 0: 451 backend + 52 frontend tests, TypeScript/lint/format; three existing frontend warnings. Final `./init.sh` also exited 0 after the research artifacts were added; evidence identity, trace retrieval, local links and absence of API-key patterns verified separately.
+
+**Decisions:** no production architecture change, no automatic next batch, no winning-model claim from one sample. STO-15 remains in progress, #410 stays draft/unmerged. Read owner feedback on the single editorial candidate before treating it as a style reference. Prior r2 archive follow-up remains outstanding.
+
+**Friction:**
+- Problem: standard Docker startup collided with another project's published PostgreSQL/Redis ports 5432/6379.
+- Impact: first startup failed; LangFuse was initially unavailable, so no generation could start.
+- Smallest fix: temporary research-only compose override removes host publication for StoryGrow PostgreSQL/Redis, retaining internal service addresses. Other project's containers left running. StoryGrow containers stopped after trace verification; volumes retained. A durable local-port convention is separate work, not bundled into STO-15.
+
+**Next:** owner reading of `edited-candidate.md`; use the evidence to decide a narrow editing experiment on other stories if the candidate fits. No new tasks delegated to Claude or cloud agents.
+
+**Blockers:** no owner-approved story yet; product integration and full PR code review remain unproven.

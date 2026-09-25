@@ -1,4 +1,18 @@
-# Session handoff — 2026-09-24 (evening)
+# Session handoff — 2026-09-25 (local Codex research)
+
+## Latest state — read before the older handoff below
+
+The owner asked local Codex to conduct the proposed author research independently. Completed a bounded experiment in `docs/process/2026-09-25-author-study/`: two authors, identical r2-B system + one supplied premise, one call each, no retries, plus two safety calls. GPT-5 produced 472 words, GPT-4.1 produced 327. Both safety pass; GPT-4.1 fails length. Codex rejected both as finished stories; GPT-5 is usable material for substantial editing. Four traces retrieved with HTTP 200 and GENERATION observations; total LangFuse API cost $0.05205025.
+
+`report.md` gives the finding and limits: the supplied premise itself over-explained the lesson and omitted the concrete ending of the internal play. No proof that planning or either model solves the product. `edited-candidate.md` is a **substantial rewrite by Codex in the chat**, 379 words; not an unchanged API response, not an automated editor, not owner-approved, no separate model safety run on the edited version. Owner has been given this single candidate to read. No further generation scheduled or authorized by this handoff. Production prompts/code unchanged; STO-15 still in progress, PR #410 draft and unmerged.
+
+Next: read the owner's feedback and this research record before deciding another experiment. Do not treat the rewrite as a gold until explicitly accepted. The older r2 blind review and external research are already posted in STO-15 (comments `b4256898-4470-41b4-a539-fdfca7d012e8` and `6559248f-a61c-4ce9-80b2-233884042432`); the old instruction below to wait for Codex's blind read is obsolete. The r2 journals still need their originally planned archival step; not silently folded into this new experiment.
+
+Environment: Docker StoryGrow was started for tracing and stopped afterwards, volumes retained. Another project's PostgreSQL/Redis occupies 5432/6379; a temporary override at `/Users/mac/.codex/research/storygrow/2026-09-25-compose-research.yml` removes only host publication of StoryGrow's two conflicting ports. It does not change internal LangFuse connectivity. Do not stop the other project's containers or assume the regular backend DB connection reaches StoryGrow while those ports are occupied. Final smoke result is recorded in progress.md.
+
+---
+
+## Previous Claude handoff (historical details retained)
 
 **Ticket:** STO-15 — first whole tale 5–6/virtue, text-only harness + owner reading (stage 1 of ADR-0008). **Branch:** `issue/sto-15-first-whole-tale` (pushed, head after this commit). **Draft PR:** #410 — do NOT merge; local Codex code review not finished.
 
