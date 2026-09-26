@@ -1803,3 +1803,20 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Verification:** `./init.sh` exited 0 after these documentation changes; backend 451 tests and frontend 52 tests passed, with the three existing frontend lint warnings. Manually checked all three rounds and the final transition; verified 472 story words and retention of the requested line. No live-generation or integration claim.
 
 **Blockers:** final owner acceptance and repeatable generation quality remain unproven; integration and full PR code review remain outstanding.
+
+## 2026-09-26 — STO-15: owner accepts «Прятки»; next goal synopses
+
+**Done:** applied the owner-approved clearing transition and removed the later paw-on-stump gesture. `story.md`: 464 Cyrillic lexical words, excluding title/questions. Preserved «Ты и в прошлый раз обещал» and all three reflection questions. README/handoff now record explicit owner acceptance: «хорошо фиксируем прятки и двегиемся дальше». Prepared three complete proposed synopses for the catalog goal «Настойчивость», same age/virtue arc, in `docs/process/2026-09-26-perseverance-plots.md`.
+
+**Decisions:** «Прятки» is the first accepted editorial gold (5–6 / kindness / virtue). It is chat-authored and edited, not an untouched harness result. Do not close STO-15 or merge #410 on that basis. New synopses are unapproved proposals, not evidence of repeatable generation. No API calls, code/prompt changes, private archive upload or deployment.
+
+**Next:** owner selects the next plot, then full prose and reflection questions. Automated quality, product integration and full PR review remain outstanding.
+
+**Blockers:** no new blocker; no accepted untouched generator output yet.
+
+**Verification:** `./init.sh` exited 0, 451 backend and 52 frontend tests passed; three existing frontend warnings. Compared final story with the previous commit: only the approved transition and its dependent gesture changed; questions and the owner's requested dialogue line are intact. Editorial word count verified at 464. This is not a live generation or product-integration check.
+
+**Friction:**
+- Problem: the prior editorial continuity check missed that Hare had left the stump before being described as remaining there.
+- Impact: owner had to identify the contradiction after a claimed review.
+- Smallest fix: follow each character between actions within a round as well as between rounds; check dependent gestures after changing locations. This correction also removes the later paw-on-stump gesture.

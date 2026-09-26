@@ -1,4 +1,8 @@
-# Session handoff — 2026-09-25 (local Codex research)
+# Session handoff — 2026-09-26 (local Codex editorial work)
+
+## Current state — owner accepted «Прятки» on 2026-09-26
+
+Owner explicitly asked to fix «Прятки» as the reference and move on. `docs/process/2026-09-25-hide-and-seek/story.md` now has the approved clearing transition instead of the incorrect stump/stick passage; the later paw-on-stump gesture was also removed. README records acceptance and provenance. This is the first accepted EDITORIAL gold (5–6 / kindness / virtue), not a successful untouched harness output. Previous pending-owner notes below are historical. Next: owner selection among three perseverance synopses in `docs/process/2026-09-26-perseverance-plots.md`, then full prose. No paid calls, prompt changes, implementation, integration or PDF yet. STO-15 remains In Progress; PR #410 draft.
 
 ## Update — editorial candidate «Прятки» (supersedes next steps below)
 
