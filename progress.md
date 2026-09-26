@@ -1751,3 +1751,72 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 **Next:** Codex's final diff check; then acceptance of the spec and the first-tale ticket.
 
 **Blockers:** none.
+
+## 2026-09-24 — feat(ai): STO-15 stage 1 — whole-story harness, rounds 1–2 (in progress, session paused)
+
+**Why:** stage 1 of ADR-0008 — one owner-approved 5–6/virtue tale from the new text pipeline. Spec + ADR merged (#409); STO-15 opened and taken.
+
+**Done:**
+- `eval:whole-story` text-only harness: brief (code) → whole tale (gpt-5, no layout constraint) → deterministic gates → blocking safety gate (gpt-4o, fail closed) → informational judge v2 (gpt-4o-mini); journaled calls, fingerprinted manifest, blind reading document. Schemas/prompts under `ai/`, gates under `ai/validators/`, learning goals extracted to a data module. 17 unit tests; `./init.sh` green. Draft PR #410.
+- Safety-gate negative control: `fail` with three cited reasons on an imitable dangerous act; `pass` on a fairy-tale antagonist beaten by wit.
+- **r1** (Доброта/Смелость/Дружба): 416–490 words — all inside 350–550 (the pilot's overshoot did not recur); safety 3/3; one title named the value. **Owner rejected all three (titles above all).** Frozen in `docs/process/2026-09-24-whole-story-stage1/r1/` with README.
+- Codex protocol for r2: single variable. Author variant B removes only the 5–6 profile's «подступается два-три раза» sentence; A verified byte-identical to r1 by re-running from the journal (no new calls). **r2** (Доброта, 2×A + 2×B, 4 calls, $0.20, 12/12 traces): 4/4 gates, 4/4 safety. Blind package committed; key/results held back until Codex's blind read.
+
+**Decisions:** no bundled prompt "v3" — one variable per round, ≤ 4 calls, no automatic next round. Held-equal confounds recorded (hero line → «Алисе шесть лет» openings; safety block → domestic settings). Judge v2 unreliable on titles (proposed a value-naming title); informational only, as designed.
+
+**Friction:**
+- Problem: parallel tool calls share one shell; `cd` in one raced `cp` in another — a relative-path copy failed and created a stray dir. Impact: one retry, one cleanup. Smallest fix: absolute paths in every multi-step shell command.
+- Problem: lint-staged runs prettier over frozen research artefacts (JSON/HTML) on commit. Impact: copies are reformatted, not byte-verbatim; texts verified identical. Smallest fix: consider a prettier ignore for `docs/process/**/r*/`.
+
+**Next:** Codex's blind reading of r2 → add key/results/notes to the record → agree the next single variable. Docker stopped at session end (volumes kept); `docker compose up -d` before any live run. See `session-handoff.md`.
+
+**Blockers:** none.
+
+## 2026-09-25 — STO-15: independent author experiment and editorial candidate (local Codex)
+
+**Done:**
+- At the owner's request, independently tested one fixed premise with `gpt-5-2025-08-07` and `gpt-4.1-2025-04-14`, one author call each plus one safety call each, no retries. The existing r2-B system prompt was preserved; only the invitation to invent the events was replaced. Research artifacts and executable runner: `docs/process/2026-09-25-author-study/`.
+- Read numbered outputs before the model key; recorded concrete language, role-consistency and ending defects. GPT-5: 472 words, gates+safety pass, needs substantial editing. GPT-4.1: 327 words, length fail, safety pass, rejected. No accepted gold. Found a flaw in Codex's own premise: it explained the intended feelings but omitted the actual ending of the internal play.
+- Retrieved all four LangFuse traces (HTTP 200, GENERATION model/usage recorded); total calculated API cost $0.05205025. No product Book/StoryEval, images or PDF. Raw outputs, prompts, settings, usage and traces archived; raw prose verified identical after formatting.
+- Wrote a separate 379-word editorial candidate, «Кто будет Волком?». This is a substantial Codex rewrite in this session, not an untouched model response or proof of an automated editor; owner approval pending. No additional API generation for it and no separate model safety verdict on the rewrite.
+- Application code and prompts unchanged. Initial `./init.sh` exited 0: 451 backend + 52 frontend tests, TypeScript/lint/format; three existing frontend warnings. Final `./init.sh` also exited 0 after the research artifacts were added; evidence identity, trace retrieval, local links and absence of API-key patterns verified separately.
+
+**Decisions:** no production architecture change, no automatic next batch, no winning-model claim from one sample. STO-15 remains in progress, #410 stays draft/unmerged. Read owner feedback on the single editorial candidate before treating it as a style reference. Prior r2 archive follow-up remains outstanding.
+
+**Friction:**
+- Problem: standard Docker startup collided with another project's published PostgreSQL/Redis ports 5432/6379.
+- Impact: first startup failed; LangFuse was initially unavailable, so no generation could start.
+- Smallest fix: temporary research-only compose override removes host publication for StoryGrow PostgreSQL/Redis, retaining internal service addresses. Other project's containers left running. StoryGrow containers stopped after trace verification; volumes retained. A durable local-port convention is separate work, not bundled into STO-15.
+
+**Next:** owner reading of `edited-candidate.md`; use the evidence to decide a narrow editing experiment on other stories if the candidate fits. No new tasks delegated to Claude or cloud agents.
+
+**Blockers:** no owner-approved story yet; product integration and full PR code review remain unproven.
+
+## 2026-09-25 — STO-15: «Прятки» editorial candidate and reflection questions
+
+**Done:** saved the last complete chat version and a revised reading copy in `docs/process/2026-09-25-hide-and-seek/`. Clarified five movement/counting transitions across three rounds; preserved the owner's requested «Ты и в прошлый раз обещал», the complete ending and three reflection questions. Documented character locations, goal/arc and provenance. Revised prose: 472 Cyrillic lexical words, excluding title/questions; not a product-gate result.
+
+**Decisions:** owner tentatively likes this story; final reading still pending, not gold. Kindness belongs to Alice's choice to understand and help; Hare's successful independent hiding is its consequence. Chat editing does not satisfy STO-15's harness-quality requirement. Earlier «Кто будет Волком?» was rejected by the owner, superseding the pending-feedback note above. No paid runs, application/prompt changes, PDF work, cloud delegation or private archive upload.
+
+**Next:** final owner reading; then separately scope repeatability on other plots/goals. Record verification and commit in the STO-15 comment. Keep PR #410 draft and the ticket In Progress.
+
+**Verification:** `./init.sh` exited 0 after these documentation changes; backend 451 tests and frontend 52 tests passed, with the three existing frontend lint warnings. Manually checked all three rounds and the final transition; verified 472 story words and retention of the requested line. No live-generation or integration claim.
+
+**Blockers:** final owner acceptance and repeatable generation quality remain unproven; integration and full PR code review remain outstanding.
+
+## 2026-09-26 — STO-15: owner accepts «Прятки»; next goal synopses
+
+**Done:** applied the owner-approved clearing transition and removed the later paw-on-stump gesture. `story.md`: 464 Cyrillic lexical words, excluding title/questions. Preserved «Ты и в прошлый раз обещал» and all three reflection questions. README/handoff now record explicit owner acceptance: «хорошо фиксируем прятки и двегиемся дальше». Prepared three complete proposed synopses for the catalog goal «Настойчивость», same age/virtue arc, in `docs/process/2026-09-26-perseverance-plots.md`.
+
+**Decisions:** «Прятки» is the first accepted editorial gold (5–6 / kindness / virtue). It is chat-authored and edited, not an untouched harness result. Do not close STO-15 or merge #410 on that basis. New synopses are unapproved proposals, not evidence of repeatable generation. No API calls, code/prompt changes, private archive upload or deployment.
+
+**Next:** owner selects the next plot, then full prose and reflection questions. Automated quality, product integration and full PR review remain outstanding.
+
+**Blockers:** no new blocker; no accepted untouched generator output yet.
+
+**Verification:** `./init.sh` exited 0, 451 backend and 52 frontend tests passed; three existing frontend warnings. Compared final story with the previous commit: only the approved transition and its dependent gesture changed; questions and the owner's requested dialogue line are intact. Editorial word count verified at 464. This is not a live generation or product-integration check.
+
+**Friction:**
+- Problem: the prior editorial continuity check missed that Hare had left the stump before being described as remaining there.
+- Impact: owner had to identify the contradiction after a claimed review.
+- Smallest fix: follow each character between actions within a round as well as between rounds; check dependent gestures after changing locations. This correction also removes the later paw-on-stump gesture.

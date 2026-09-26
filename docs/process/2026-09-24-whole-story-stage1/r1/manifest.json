@@ -1,0 +1,38 @@
+{
+  "fingerprint": "e645d9a3e01ca433078328129a112e5350e98c7ddabe125d6f7ec55eab3399dd",
+  "startedAt": "2026-09-24T19:23:45.596Z",
+  "version": "2026-09-24-v2",
+  "gitHead": "e956ac37e13af935442a803b37e3ee71139ff99c",
+  "kind": "text-only dry run; no StoryEval or Book",
+  "age": 6,
+  "ageBand": "5-6",
+  "hero": {
+    "name": "Алиса",
+    "age": 6,
+    "gender": "female"
+  },
+  "models": {
+    "author": "gpt-5",
+    "safety": "gpt-4o",
+    "judge": "gpt-4o-mini"
+  },
+  "maxRetries": 0,
+  "timeoutMs": 240000,
+  "cases": [
+    {
+      "id": "case-1-1",
+      "goal": "Доброта",
+      "arcType": "virtue"
+    },
+    {
+      "id": "case-2-1",
+      "goal": "Смелость",
+      "arcType": "virtue"
+    },
+    {
+      "id": "case-3-1",
+      "goal": "Дружба",
+      "arcType": "virtue"
+    }
+  ]
+}
