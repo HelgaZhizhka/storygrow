@@ -1,4 +1,20 @@
-# Session handoff — 2026-09-26 (local Codex editorial work)
+# Session handoff — 2026-09-27 (local Codex transfer experiment)
+
+## Current state — transfer experiment completed 2026-09-27
+
+Local Codex ran the three frozen cases without Claude, retries or post-generation editing. Read `docs/process/2026-09-26-transfer-experiment/report.md` and `evidence.jsonl`. All three pass deterministic gates and safety (448/475/435 words), but editorial quality did NOT pass: unnatural phrasing and overextended ending; weak causal explanation in the kite story; instructional packing list and continuity defects in the independence story. No candidate recommended as a finished gold. Six traces retrieved HTTP 200 with GENERATION usage; total actual LangFuse cost $0.12021875. Budget $0.50. Precise snapshots accessible despite deprecated label on public page. The shorter prompt is NOT promoted to production.
+
+Mitten is saved unchanged with tentative owner approval; only «Прятки» is explicitly accepted editorial gold. Next proposed diagnostic (not scheduled): isolate provision of a strong, new complete premise against free invention; do not start another paid batch automatically or claim a planner is proven necessary. Product integration, 3–4/flaw/custom-goal coverage and full PR review remain outstanding. STO-15 In Progress / #410 draft. Questions remain outside WholeStorySchema; no automated question-generation claim.
+
+Research runner self-tests passed; deliberate second launch refused before generation (run-started guard). Preparation and full wire bodies/results archived. StoryGrow services started for this run are stopped after verification; other project containers left untouched. See progress for final smoke verification. Historical preparation/next-plot notes below are superseded.
+
+## Current state — red mitten saved; transfer experiment prepared, NOT run
+
+Owner preferred the original snow-angel mitten story, then said «да неплохо» to full prose. Saved verbatim with questions in `docs/process/2026-09-26-red-mitten/story.md` (351 words). README records tentative approval, editorial checks and the retracted needless wet-mitten edit. Do not upgrade it to an explicitly accepted gold: «Прятки» is still the only explicit editorial acceptance.
+
+Owner asks Codex to work independently, no Claude. Completed the immediately proposed preparation: `docs/process/2026-09-26-transfer-experiment/{protocol.md,author-core.md,requests.json}`. Three exact inputs: kindness, perseverance, independence; same 5–6/virtue and GPT-5 snapshot; new literary core without Suteev/few-shot/manual premise, old safety boundary preserved verbatim. This is a bundled exploratory prompt change, not an A/B causal test. No application or harness code changed. No paid calls, traces, model results or generation-quality claim. Conditional six-call ceiling $0.42 with prescribed input/output limits, reserve $0.50; live spending limiter is not yet implemented. Official GPT-5 page marks the snapshot Deprecated; check access before running, no silent model fallback.
+
+Next: implement a separate bounded research runner and its preflight checks, then run/read three untouched stories under the protocol. Do not mistake static request JSON for executable integration. Current task is still STO-15, PR #410 draft. Questions are saved in editorial examples; automated questions require a separate step and reconciliation with existing five-question product schema. Previous next-plot instructions below are historical.
 
 ## Current state — owner accepted «Прятки» on 2026-09-26
 

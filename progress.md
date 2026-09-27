@@ -1820,3 +1820,30 @@ Ran the full `superpowers:brainstorming` → `superpowers:writing-plans` process
 - Problem: the prior editorial continuity check missed that Hare had left the stump before being described as remaining there.
 - Impact: owner had to identify the contradiction after a claimed review.
 - Smallest fix: follow each character between actions within a round as well as between rounds; check dependent gestures after changing locations. This correction also removes the later paw-on-stump gesture.
+
+## 2026-09-26 — STO-15: red mitten preserved; three-case transfer protocol prepared
+
+**Done:** saved the chat-authored «Красная варежка» and three reflection questions unchanged; 351 words by the product counting expression. Checked left/right mitten, courtyard/home transitions, Misha as recalled participant, and causal role of Alice's renewed search. Owner's «да неплохо» recorded as tentative approval, not upgraded to gold. Withdrew the unnecessary suggestion to put the wet mitten in a pocket.
+
+Prepared `docs/process/2026-09-26-transfer-experiment/`: exact literary core, three full requests and fingerprint, protocol, predeclared reading rubric and conditional cost calculation. Goals verified from catalog: Доброта, Настойчивость, Самостоятельность. Kept existing author/safety models and verbatim safety boundary; removed Suteev and mandatory difficult/earned virtue framing from the experimental literary instruction. No manuscript examples, premises or private archive supplied. This is a bundled prompt hypothesis, not a single-variable causal experiment.
+
+**Decisions:** work independently without Claude. No production/harness code changed; no API calls. Conditional ceiling $0.42 for three author + three safety calls under stated input/output limits; reserve $0.50, actual spend this preparation $0. Model availability remains to be checked (official GPT-5 page labels snapshot Deprecated). Three samples cannot establish broad repeatability. Reflection questions are not in WholeStorySchema and will not be silently inserted; current product's five-question contract remains unchanged.
+
+**Next:** implement and validate a bounded research runner, execute the frozen three cases, record untouched outputs and read them against the rubric. Do not report generation quality before that. STO-15 remains In Progress; #410 draft.
+
+**Blockers:** preparation complete; executable runner/live evidence still outstanding. No new safety or product-integration proof.
+
+
+## 2026-09-27 — STO-15: three-case transfer experiment fails editorial acceptance
+
+**Done:** independently executed the frozen kindness/perseverance/independence cases using GPT-5, one author + one GPT-4o safety call each. No Claude, retries, editor, images or PDF. Separate research runner with offline preparation, model/telemetry preflight, actual-wire request budget guard and one-shot run marker. Full requests/responses, source, usage and six retrieved HTTP-200 GENERATION traces archived in `docs/process/2026-09-26-transfer-experiment/evidence.jsonl`; unchanged stories and review in `report.md`.
+
+All three pass length/language/title gates and safety: 448, 475, 435 words. None passes editorial acceptance: awkward wording/overextended resolution; nonsensical pencil analogy and unsupported technical certainty; instructional list, sudden stroller and adult conclusion. This is Codex's editorial assessment, not owner rejection or child testing. Actual trace cost $0.12021875; budget $0.50. The estimated preflight $0.42 depended on input caps; actual runner uses UTF-8 wire-byte upper estimate plus overhead and full output limit against $0.50, documented before the first call.
+
+**Decisions:** no production/harness prompt promotion, no winning-model or causal claim, no automatic next paid batch. Two plots overlap earlier ideas despite no examples/premises in the actual requests; do not infer leakage. All raw outputs retained, not just the best. «Прятки» remains accepted editorial gold; «Красная варежка» is a tentative positive example.
+
+**Next:** consider one narrow diagnostic comparing a strong new complete premise with free invention; this is a proposal, not proof a planner fixes quality. Integration and release gates remain unchanged. STO-15 In Progress; PR #410 draft/unmerged.
+
+**Blockers:** no accepted untouched generation; literary method remains unresolved.
+
+**Verification:** initial preparation smoke and final `./init.sh` exited 0; final 451 backend + 52 frontend tests, three existing frontend warnings. Offline budget/preparation self-tests passed. Deliberate second launch was refused before generation; still exactly six paid calls. Verified archive equality to saved results, exact raw prose in report, runner source hash, per-file 400-line limit and secret-pattern scan. StoryGrow containers started for this experiment stopped after trace retrieval; existing inova containers left running. No product-integration claim or completed full PR code review.
