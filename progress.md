@@ -1847,3 +1847,23 @@ All three pass length/language/title gates and safety: 448, 475, 435 words. None
 **Blockers:** no accepted untouched generation; literary method remains unresolved.
 
 **Verification:** initial preparation smoke and final `./init.sh` exited 0; final 451 backend + 52 frontend tests, three existing frontend warnings. Offline budget/preparation self-tests passed. Deliberate second launch was refused before generation; still exactly six paid calls. Verified archive equality to saved results, exact raw prose in report, runner source hash, per-file 400-line limit and secret-pattern scan. StoryGrow containers started for this experiment stopped after trace retrieval; existing inova containers left running. No product-integration claim or completed full PR code review.
+
+
+## 2026-09-28 — STO-15: supplied premise vs free invention, four unedited outputs
+
+**Done:** owner approved a four-text comparison capped at $0.70. Prepared a complete museum/whale premise and predeclared rubric; same independence goal, age, model, system/safety and settings, changing only the final user instruction. Sequence A1/B1/B2/A2. Separate research runner/manifest with tests for shared system and identical within-condition prompts; old runner/results preserved. Archived wire requests/responses, source, traces and unchanged prose in `docs/process/2026-09-28-premise-comparison/`.
+
+Eight calls (4 author + 4 safety), no retries/editing; 502/442/411/522 words; all gates and safety pass. Eight traces retrieved HTTP 200 with GENERATION usage. Actual cost $0.16407. Both B retained one plot task and outcome; both A became detailed activity instructions. All still have language/didactic defects. Narrow positive signal for supplied events, not proof of a general planner advantage; A also has sequence/endings. Own premise influenced awkward dialogue («спутник») and contained a mildly redundant orientation step. No finished new gold.
+
+**Decisions:** do not promote prompts or merge #410. Codex assessment is not owner/child testing. Next possible diagnostic is bounded editing of an existing B output without replacing events; no extra batch launched or scheduled. Automatic premise quality/diversity remains unresolved. User explicitly agreed with prior three-case review; this does not constitute acceptance of these four new texts.
+
+**Next:** discuss actual comparison and existing outputs; retain STO-15 In Progress, #410 draft. Product integration and release evidence remain outstanding.
+
+**Blockers:** no untouched output ready for publication; no automatic planner/editor quality proof.
+
+**Verification:** initial `./init.sh` passed. First final check failed only on Prettier formatting of the new requests.json; formatted it, verified every parsed request value against the executed manifest, and reran the full check: Smoke check PASSED, 451 backend + 52 frontend tests, three existing frontend warnings. Offline tests reject condition/system drift and budget excess; deliberate second live launch refused before generation. All four actual wire inputs matched frozen conditions, all eight traces had expected model IDs, and raw prose/archive/source hashes were checked. Runtime byte hash remains in archived evidence; formatting changes bytes but not requests. StoryGrow services stopped after trace retrieval, other project containers unchanged.
+
+**Friction:**
+- Problem: final formatter changed JSON serialization of the frozen request file after execution.
+- Impact: one full smoke rerun; byte-hash distinction needed despite identical parsed inputs.
+- Smallest fix: format the complete manifest before freezing and running; retain exact wire inputs and compare semantic content after any repository formatting.

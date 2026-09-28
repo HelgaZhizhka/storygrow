@@ -1,4 +1,12 @@
-# Session handoff — 2026-09-27 (local Codex transfer experiment)
+# Session handoff — 2026-09-28 (local Codex premise comparison)
+
+## Current state — four-text premise comparison completed 2026-09-28
+
+Owner agreed with the previous review and authorized four texts: two free invention, two same supplied complete premise, budget $0.70. Local Codex ran A1/B1/B2/A2 with identical system/model/goal/age/settings; only last user instruction differs. Goal Самостоятельность, Alice 6, 5–6/virtue. Read `docs/process/2026-09-28-premise-comparison/report.md`, `protocol.md`, `evidence.jsonl`. Museum premise: Alice navigates to a whale model with dad nearby; prepared before calls, not owner-approved gold.
+
+Both B preserve the single task and outcome; both A become detailed activity instructions (mailbox, planting a bean). All four have language/didactic issues; none recommended as finished gold. B has narrower plot focus, NOT proof of general causal improvement or a working automated planner. A also has sequential action and endings. Own premise contributes: «спутник» leaked into B dialogue; locating the bird icon then asking employee to identify it is partly redundant already in the premise. Full untouched texts saved. No production changes or new paid batch scheduled.
+
+Eight calls, no retries; 502/442/411/522 words; all gates and safety pass. Eight traces retrieved HTTP 200 with GENERATION usage, cost $0.16407. Offline checks enforce condition equality/change isolation/budget; attempted re-run refused before generation. Latest report is Codex editorial assessment, not owner verdict on these new texts. Proposed next diagnostic: bounded language editing of an existing B text while preserving events; not executed. Quality/diversity of automatic premise generation remains unresolved. STO-15 In Progress / #410 draft. Previous next-step notes below are historical.
 
 ## Current state — transfer experiment completed 2026-09-27
 
