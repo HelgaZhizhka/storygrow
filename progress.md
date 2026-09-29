@@ -1867,3 +1867,20 @@ Eight calls (4 author + 4 safety), no retries/editing; 502/442/411/522 words; al
 - Problem: final formatter changed JSON serialization of the frozen request file after execution.
 - Impact: one full smoke rerun; byte-hash distinction needed despite identical parsed inputs.
 - Smallest fix: format the complete manifest before freezing and running; retain exact wire inputs and compare semantic content after any repository formatting.
+
+
+## 2026-09-29 — STO-15: owner-selected mailbox, one automatic editorial pass
+
+**Done:** owner preferred free-invention mailbox A1 over the whale stories; Codex corrected the assumption that more focused plot equals greater appeal. Ran the authorized editor test on A1, preserving original and family-mail premise. One GPT-5 editor + one GPT-4o safety call, no retries, no manual correction, no supplied phrase-by-phrase fixes. New separate protocol/runner/source-hashed manifest, archived wire data and side-by-side review under `docs/process/2026-09-29-mailbox-edit/`.
+
+**Result:** mixed. Core events/agency/family warmth preserved; Alice's room/kitchen/corridor movements clearer. New continuity defect: mother «вошла в комнату», then «зашла к Алисе». Existing technical ambiguities and repeated explanations largely remain. 502→514 words, deterministic gates and safety pass. Two traces retrieved HTTP 200 with GENERATION model/usage; actual cost $0.04631, budget $0.20.
+
+**Decisions:** original A1 stays intact and preferred by owner; edited version is not approved or automatically substituted. No claim that general editing is reliable, that original plot is bad, or that supplied-premise mode wins reader preference. Production/schemas/questions unchanged; no Book/StoryEval, images or PDF. STO-15 In Progress / #410 draft.
+
+**Next:** review the concrete mixed result before another targeted experiment; no automatic next batch. Model-generated interesting premises and reliable prose/continuity remain unresolved.
+
+**Blockers:** no tested automatic quality guarantee; no accepted edited version or integration proof.
+
+**Owner feedback:** double knot + bow + tape is implausibly elaborate for this scene. It was already in the original and survived editing; Codex's review underweighted child-action plausibility. Proposed removing the whole mounting sequence, with Alice choosing to stand the box near the door; not applied or approved. Original and experimental output preserved.
+
+**Verification:** initial and final `./init.sh` exited 0 (final log: `/tmp/storygrow-mailbox-final.log`). Offline budget/source guards passed; deliberate repeat refused before generation. Archive/source/wire identity checked; StoryGrow containers stopped, other project containers untouched. No product-integration claim.

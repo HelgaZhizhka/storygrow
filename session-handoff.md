@@ -1,4 +1,16 @@
-# Session handoff — 2026-09-28 (local Codex premise comparison)
+# Session handoff — 2026-09-29 (local Codex mailbox edit)
+
+## Latest owner feedback — mounting is too elaborate
+
+Owner objected to double knot + bow + tape as overly difficult and implausible in this child's scene. This was in the original and retained by the editor. Codex acknowledged underweighting this defect; proposed replacing the entire mounting sequence with Alice choosing to stand the box on a stool by the door. Proposal only, no text altered, no extra paid calls. Preserve owner preference for the mailbox premise; this is not rejection of the entire story.
+
+## Current state — owner prefers mailbox; editing test completed 2026-09-29
+
+Owner explicitly preferred A1 «Почтовый ящик на двери» to the whale stories. Codex acknowledged conflating plot focus with reader appeal. Do not claim the supplied-premise mode won owner preference. She authorized one editing test on MAILBOX, not whale. Original A1 remains intact; preference is not automatic final-gold acceptance.
+
+Read `docs/process/2026-09-29-mailbox-edit/report.md` and `edited-story.md`. One generic editing instruction, no manual list of replacements, same GPT-5 plus one safety call. Mixed result: core events/agency/family play retained and Alice's movements clearer, but a NEW duplicate entry of mother (already entered room, then enters Alice's room again) appeared; technical ambiguities and repetition largely remain. Original 502 words, edited 514, all gates/safety pass. No automatic replacement of original; new version not owner-approved. Two traces retrieved HTTP 200, actual cost $0.04631 under $0.20. No retries, manual fixes, production changes or extra batch.
+
+Archive includes source identity, exact request/wire replies, original and edited prose, runner and traces. Init results in progress. StoryGrow services used for the test stopped after verification; other project containers untouched. STO-15 In Progress, #410 draft. Further paid test must target a stated change; general editing did not guarantee continuity. Earlier proposed whale-edit next steps below are superseded.
 
 ## Current state — four-text premise comparison completed 2026-09-28
 
