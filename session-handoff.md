@@ -1,5 +1,9 @@
 # Session handoff — 2026-09-29 (local Codex mailbox edit)
 
+## Latest revision — separate candidate, pending reading
+
+Owner asked to continue after knot criticism. Read `docs/process/2026-09-29-mailbox-edit/editorial-candidate.md` («Почта у Алисы») and report's manual revision section. Substantial chat edit: lid instead of slit, box on stool instead of knots; mother enters once, father writes in room, read letters bring family to tea. No new paid calls or safety evaluation, no alteration of original/API result, not an accepted gold or automation proof. Three proposed reflection questions in report, outside story/schema. Await owner reading.
+
 ## Latest owner feedback — mounting is too elaborate
 
 Owner objected to double knot + bow + tape as overly difficult and implausible in this child's scene. This was in the original and retained by the editor. Codex acknowledged underweighting this defect; proposed replacing the entire mounting sequence with Alice choosing to stand the box on a stool by the door. Proposal only, no text altered, no extra paid calls. Preserve owner preference for the mailbox premise; this is not rejection of the entire story.

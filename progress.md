@@ -1884,3 +1884,15 @@ Eight calls (4 author + 4 safety), no retries/editing; 502/442/411/522 words; al
 **Owner feedback:** double knot + bow + tape is implausibly elaborate for this scene. It was already in the original and survived editing; Codex's review underweighted child-action plausibility. Proposed removing the whole mounting sequence, with Alice choosing to stand the box near the door; not applied or approved. Original and experimental output preserved.
 
 **Verification:** initial and final `./init.sh` exited 0 (final log: `/tmp/storygrow-mailbox-final.log`). Offline budget/source guards passed; deliberate repeat refused before generation. Archive/source/wire identity checked; StoryGrow containers stopped, other project containers untouched. No product-integration claim.
+
+## 2026-09-29 — STO-15: manual mailbox revision after owner feedback
+
+**Done:** owner asked to continue; saved separate `editorial-candidate.md` («Почта у Алисы»). Removed intricate crafting/mounting, kept initiative and family correspondence; box now stands by door, letters go under lid. Updated spatial transitions, title and ending; review/questions in report. Source and API output unchanged.
+
+**Decisions:** substantial chat editorial revision, NOT automatic editor success or approved gold. No new paid calls, separate safety trace, product changes or integration claim. STO-15 In Progress; #410 draft.
+
+**Next:** owner reading of the candidate; retain distinction between manual repair and unproven automated quality.
+
+**Blockers:** repeatable automatic prose quality still unproven.
+
+**Verification:** `./init.sh` exited 0 (`/tmp/storygrow-mailbox-manual-final.log`); reviewed event/character/object continuity, no new issue noticed. Candidate 343 words, below current 350 lower bound; not presented as passing automatic gates or separately safety-evaluated.
