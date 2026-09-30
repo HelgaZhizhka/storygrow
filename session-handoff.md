@@ -1,3 +1,9 @@
+# Latest decision — 2026-10-01: stop model comparisons, return to stage 1
+
+Owner liked puzzle/ribbon Qwen variants («неплохие»), rejected age-biography phrases and instructional prose. Then asked to stop model comparisons and return to plan with existing author. Record in model-comparison report and `docs/process/2026-10-01-stage1-resume.md`. Keep GPT-5 as practical baseline, don't call it proven better. No Claude test, extra editor or paid calls authorized by this decision. Two exact author-rule additions prepared only; no prompt/code promotion.
+
+Next: exact inputs + budget for two amended-author 5–6/virtue texts (kindness/independence), then reading. Don't skip quality gate to PDF/integration. No new budget agreed or generation scheduled. Prior experiment pending-stage markers must not be removed or rerun. STO-15 In Progress/#410 draft. Verification/commit in latest progress.
+
 # Session handoff — 2026-09-30 (local Codex model comparison)
 
 ## Latest: interrupted Qwen/GPT-5 comparison finished with five available texts
@@ -6,11 +12,11 @@ Read `docs/process/2026-09-30-model-comparison/{protocol.md,reading.md,report.md
 
 Process disappeared during SENT case-3 (GPT-5 independence), only wire-request exists; response and trace unavailable (lookup404). Do NOT rerun it or remove markers. Separate resume sent only previously unstarted case-4/5/6 and reserved missing-request maximum $0.10905375. Six author requests, five outputs, five safety; 2 complete pairs and one unpaired independence. Both original and resume refuse repeat.
 
-Reader hides model labels; report has key and Codex assessment. Qwen kindness safety fail (milk), honesty 288 words fails length; other gates/safety pass. Both authors have concrete literary/continuity defects. No convincing replacement found in Codex review; owner has NOT read/approved these texts yet. Don't infer owner preference, universal superiority or good automated quality. Exact prose/requests/responses preserved in evidence.
+Reader hides model labels; report has key and Codex assessment. Qwen kindness safety fail (milk), honesty 288 words fails length; other gates/safety pass. Both authors have concrete literary/continuity defects. Historical pre-reading assessment: no convincing replacement found in Codex review. Superseded by owner reading recorded at the top: puzzle/ribbon received positive feedback, no final gold acceptance. Don't infer universal superiority or good automated quality. Exact prose/requests/responses preserved in evidence.
 
 10 completed traces retrievedHTTP200 with GENERATION usage/model; OpenAI cost $0.091055, Qwen computed $0.00154712 (LangFuse lacks automatic model pricing). Known sum $0.09260212; missing billed amount unknown, known+full reserve $0.20165587 under .50. No extra paid calls, product changes or StoryEval. STO-15 In Progress/#410 draft. Init/containers/commit state in latest progress entry.
 
-Next: owner reading. No further batch authorized. Older mailbox/manual research below remains historical.
+Historical next step was owner reading; it has now occurred, see latest decision above. No further batch launched. Older mailbox/manual research below remains historical.
 
 # Session handoff — 2026-09-29 (local Codex mailbox edit)
 

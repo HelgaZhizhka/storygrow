@@ -1919,3 +1919,15 @@ Original process vanished after case-3 was sent. Two author+safety results compl
 - Smallest fix: durable per-stage status and budget reservation (used here); flush started trace before sending; explicit no-repeat recovery for pending requests. Cause remains unproven, do not silently rerun the missing stage.
 
 **Verification:** initial and final smoke `./init.sh` exited 0 (final `/tmp/storygrow-model-compare-final.log`). Offline prompt-pair/budget guards passed. Deliberate resume repeat refused before HTTP generation; still six author + five safety requests. Verified all archived JSON against runtime files, runner/resume source hashes and exact prose in reading.md; file line caps and token pattern scan pass. StoryGrow services stopped; other projects left running. No product-integration claim or completed full PR review.
+
+## 2026-10-01 — STO-15: owner feedback and return to stage 1
+
+**Done:** recorded owner preference for two Qwen variants (puzzle/ribbon, «неплохие»), objections to age-as-biography and instructional prose. Updated research report without altering outputs. Owner asked to stop model comparisons and return to plan; saved `docs/process/2026-10-01-stage1-resume.md` with exact two-rule author amendment and next-stage map grounded in spec.
+
+**Decisions:** keep existing GPT-5 research author as practical baseline, not claimed universal winner. No Claude test or extra editor introduced. Amendment prepared only, no production/harness prompt change and no paid calls. Positive Qwen reading does not constitute gold acceptance. STO-15 In Progress, #410 draft.
+
+**Next:** freeze a bounded two-text 5–6/virtue check of amended author instruction (kindness/independence), with exact inputs and budget before execution; owner reading. Accepted generator text precedes layout comparison; remaining gold/portability/integration/release follow existing plan. No new paid budget agreed by this entry.
+
+**Blockers:** stage 1 generation quality not yet accepted; layout and integration gates remain outstanding.
+
+**Verification:** final `./init.sh` exited 0 (`/tmp/storygrow-stage1-return-final.log`); `git diff --check` passed. Documentation only; no model/API generation, prompt promotion, Book/StoryEval or layout changes.
