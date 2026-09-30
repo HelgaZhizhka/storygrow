@@ -1,3 +1,11 @@
+# Latest result — 2026-10-01: two amended-author texts complete
+
+Read `docs/process/2026-10-01-author-check/{reading.md,report.md}`. Local Codex only. Two authors + two safety, four confirmed traces, $0.10767625 under announced $0.30. No lost response/retry. Frozen inputs retained; do NOT rerun the runner. Deliberate repeat was blocked before generation.
+
+Owner has not read these two outputs yet. Both need substantial editing in Codex review: kindness 422 words fails Latin gate (Кsandbox), sand/tower/path causality weak; independence 546 passes gates/safety but remains an instruction with white chalk/sign/lake continuity gaps. Both safety pass. Age-as-biography absent, overall automated quality still unaccepted. No manual changes, editor, extra batch, production changes or PDF.
+
+Next: owner reading; don't call stage 1 complete or expand prohibitions/paid attempts automatically. Final init exit 0 and archive/repeat guards verified; see latest progress entry. STO-15 In Progress/#410 draft. Previous decision/history follows.
+
 # Latest decision — 2026-10-01: stop model comparisons, return to stage 1
 
 Owner liked puzzle/ribbon Qwen variants («неплохие»), rejected age-biography phrases and instructional prose. Then asked to stop model comparisons and return to plan with existing author. Record in model-comparison report and `docs/process/2026-10-01-stage1-resume.md`. Keep GPT-5 as practical baseline, don't call it proven better. No Claude test, extra editor or paid calls authorized by this decision. Two exact author-rule additions prepared only; no prompt/code promotion.

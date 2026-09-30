@@ -1931,3 +1931,26 @@ Original process vanished after case-3 was sent. Two author+safety results compl
 **Blockers:** stage 1 generation quality not yet accepted; layout and integration gates remain outstanding.
 
 **Verification:** final `./init.sh` exited 0 (`/tmp/storygrow-stage1-return-final.log`); `git diff --check` passed. Documentation only; no model/API generation, prompt promotion, Book/StoryEval or layout changes.
+
+## 2026-10-01 — STO-15: two amended-author texts, local Codex only
+
+**Done:** owner agreed to local Codex execution without parallel Claude. Prepared `docs/process/2026-10-01-author-check/` with two exact requests: kindness and independence, Alice 6, 5–6/virtue. Only two prepared author rules added to Sept27 literary core; user inputs, safety/schema/gates unchanged. Codex announced and set $0.30 ceiling for 2 author + 2 safety, no retries/editor/premise/examples. Started bounded run; results/verification pending below.
+
+**Decisions:** no production/harness promotion or automatic extra batch; owner reading remains quality gate. Existing snapshot verified by Models API before run, official rates rechecked. No new model comparison or agent delegation.
+
+**Next:** read both originals, archive every result/trace/usage, deliver reader package with evidence-based review. PDF only after accepted text.
+
+**Blockers:** quality and trace retrieval not yet established.
+
+**Friction:**
+- Problem: Docker daemon was stopped; local LangFuse unavailable.
+- Impact: generation could not start with required trace evidence.
+- Smallest fix: open Docker and start only StoryGrow observability dependencies via existing port-isolation override; no host 5432/6379 bindings, no other projects stopped.
+
+**Verification so far:** initial `./init.sh` exit 0 (`/tmp/storygrow-oct1-author-initial.log`). Offline guard RED rejected the two-case manifest under old four-case validator (2 != 4); GREEN validates frozen two cases and rejects changed prompts/system, extra/missing cases, wrong model/output, oversized input and budget overrun. Runtime syntax and prepare passed before generation. Fresh final smoke and traces pending.
+
+**Results:** exactly 2 author + 2 safety completed. Kindness 422 words, Latin gate fail (Кsandbox), safety pass; independence 546 words, gates/safety pass. Both require substantial editing in Codex full reading: weak physical causal explanation in sand construction; instructional string of operations, unintroduced white chalk and ambiguous sign/lake in independence. Anketny age absent but overall quality not accepted. Saved unedited reader package and all wire/result/trace evidence. No next batch, manual corrections or promotion. Owner reading pending.
+
+**Cost and trace proof:** four HTTP 200 traces with GENERATION model/usage; actual total $0.10767625, agrees uncached usage calculation, below $0.30. No Book/StoryEval/integration claim. Deliberate repeat exit 1 before generation; exactly four wire requests remain. Exact archive, runner/input/dependency hashes, reader paragraph identity, file caps and secret pattern checks passed.
+
+**Final verification:** `./init.sh` exited 0 (`/tmp/storygrow-oct1-author-final.log`); `git diff --check` passed. Four successful calls/traces, frozen evidence and original prose verified. StoryGrow observability services stopped after retrieval; no other containers stopped. Owner reading and stage-1 acceptance still pending.
