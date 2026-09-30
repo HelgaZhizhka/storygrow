@@ -1966,3 +1966,21 @@ Original process vanished after case-3 was sent. Two author+safety results compl
 **Blockers:** repeatable acceptable automatic prose unresolved. STO-15 In Progress, #410 draft/unmerged.
 
 **Verification:** initial and final `./init.sh` exited 0 (final `/tmp/storygrow-causal-reading-final.log`); `git diff --check` passed. Verified local reference links and exact equality of source stories/rejected outputs/frozen requests/evidence against HEAD. Documents only: zero paid calls, no new generation/traces, no AI code or production changes.
+
+## 2026-10-01 — STO-15: try event-focused author task on two goals
+
+**Done so far:** owner requested trying the prepared task; announced bounded two author + two safety under $0.30. Frozen separate requests/runner for kindness and independence 5–6 virtue, same GPT-5 and schemas/gates/safety. New literary core replaces previous core/amendment; added explicit reader age/whole-story word range to user input. No premise, examples, editor or Claude agents. Run started, outputs pending.
+
+**Decisions:** evaluate actual reading, no implication that wording fixes quality. Two results without concurrent controls are not causal A/B proof. No production/harness prompt promotion or extra batch.
+
+**Next:** retrieve traces/usage, read both unedited outputs, save originals plus candid assessment, deliver to owner.
+
+**Blockers:** generated quality not yet established. STO-15 In Progress/#410 draft.
+
+**Initial verification:** ./init.sh exit 0 (`/tmp/storygrow-event-task-initial.log`); offline RED rejected old amendment contract, GREEN validates new source/core/user params and budget guards. Syntax check passed. Source task, request, runner and dependency hashes frozen before calls.
+
+**Results:** four calls complete, no retry/lost output. «Город для Тимы»435 words and «Занавес для Алисы»433, both gates/safety pass. Codex full reading finds some meaningful relationships/performance but still substantial editing: unexplained Tim guilt and remedy, flag movement; repetitive prop repairs, artificial safety dialogue and unclear curtain mechanism. Owner reading pending, no gold/quality win. Saved all exact originals and separate evidence-based report.
+
+**Trace/cost verification:** all four HTTP200 traces with GENERATION model/usage; actual $0.08218875 under announced $0.30, matches uncached usage to rounding. Deliberate rerun rejected before generation, still four wire requests. Exact archive/prose and request/runner/source/dependency hashes, file caps and secret pattern checks verified. Fresh final smoke pending.
+
+**Final verification:** initial and final ./init.sh exit 0 (final `/tmp/storygrow-event-task-final.log`); git diff --check passed. Original reader paragraphs and complete archive/source hashes confirmed. StoryGrow observability services stopped after retrieval; no other project services stopped. No owner acceptance/product integration claim.

@@ -1,3 +1,11 @@
+# Latest result — 2026-10-01: event-focused task tried, both originals pending reading
+
+Owner asked to try prepared instructions. Local Codex ran two author + two safety, same GPT-5 and gates/schema/safety, $0.08218875 under announced $0.30. Read `docs/process/2026-10-01-event-task/{reading.md,report.md}`. New literary core only + unchanged boundary, explicit reader age/word range in user input, no examples/premise/editor/agents. Frozen source hashes retained, no retry/lost output.
+
+«Город для Тимы» kindness435 and «Занавес для Алисы» independence433 pass gates/safety. Codex full review: both need substantial editing, unaccepted; city has unclear guilt/physical remedy and moving flag, curtain repeats prop repairs, safety-instruction dialogue and unclear mechanism. Show all originals intact. Not causal A/B improvement or automatic quality acceptance.
+
+Repeat guard verified before generation (still four wire requests); all four traces HTTP200 with GENERATION model/usage. No production/harness promotion, Book/StoryEval/images/PDF or extra batch. Next: owner reading; don't impose assessment of instructions. Final init exit0 and exact archive/paragraph/source verification complete; see progress for commit. STO-15 In Progress/#410 draft. Prior rejected pair and analysis follow.
+
 # Latest decision — 2026-10-01: both stories rejected, free causal analysis complete
 
 Owner rejected the two Oct1 tales: disconnectedness and drawn-out action. Authorized free analysis of Hide-and-seek, mitten and mailbox and preparing a short author task. Read `docs/process/2026-10-01-story-causality/{analysis.md,author-task.md}`. Carefully separates accepted manual gold, tentative mitten, preferred original mailbox idea and unaccepted manual mailbox revision.
