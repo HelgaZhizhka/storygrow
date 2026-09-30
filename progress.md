@@ -1896,3 +1896,26 @@ Eight calls (4 author + 4 safety), no retries/editing; 502/442/411/522 words; al
 **Blockers:** repeatable automatic prose quality still unproven.
 
 **Verification:** `./init.sh` exited 0 (`/tmp/storygrow-mailbox-manual-final.log`); reviewed event/character/object continuity, no new issue noticed. Candidate 343 words, below current 350 lower bound; not presented as passing automatic gates or separately safety-evaluated.
+
+## 2026-09-30 — STO-15: Qwen versus GPT-5, interrupted six-request comparison
+
+**Done:** owner approved six author calls + safety under $0.50 after adding HF_TOKEN. Created frozen paired inputs and a separate research runner. Cases: kindness 3–4/virtue, independence 5–6/virtue, honesty 5–6/flaw. Same prompts within pairs, no examples/Suteev/manual premise. Qwen via HF/Novita, GPT-5 exact former snapshot, existing schemas/gates/safety. Kept all unedited outputs in reading.md, evidence.jsonl and editorial assessment under `docs/process/2026-09-30-model-comparison/`.
+
+Original process vanished after case-3 was sent. Two author+safety results complete, third response absent; no process found, trace lookup 404. Cause unproven. Continued only unstarted case-4/5/6 through separate one-shot resume, reserving full missing-request cost bound; never repeated case-3. Six author requests sent, five outputs available, five safety. Two full pairs, incomplete independence pair.
+
+**Results:** 175/212/351/288/477 words; Qwen honesty fails length, Qwen kindness safety fail citing cat milk. Other gates/safety pass. Codex review finds weak causality/goal in Qwen and concrete continuity mistakes in GPT-5 too; no persuasive replacement author identified. This is not owner preference, statistical proof, gold acceptance or finished production integration. Reader package hides model labels; report contains key and disclosed non-blind Codex review.
+
+**Cost:** 10 completed traces retrieved HTTP 200 with GENERATION model/usage. OpenAI trace cost $0.091055; Qwen usage-priced estimate $0.00154712 (LangFuse automatic price absent, zero not free). Known total $0.09260212. Missing request actual charge unknown; reserve $0.10905375, combined $0.20165587 under $0.50. No additional generation beyond these requests.
+
+**Decisions:** no promotion/merge or next automatic batch; STO-15 In Progress, PR #410 draft. Source/runtime outputs preserved without edits. No Book/StoryEval, images/PDF or product changes.
+
+**Next:** owner reading of the five available texts; don't call this three complete pairs or declare universal winner. Reliability of automatic prose remains unresolved.
+
+**Blockers:** one sent response unrecovered; repeatable acceptable automated quality not demonstrated.
+
+**Friction:**
+- Problem: long-running research process disappeared between session continuations after sending a billed request.
+- Impact: one missing output/trace, incomplete pair and uncertain charge.
+- Smallest fix: durable per-stage status and budget reservation (used here); flush started trace before sending; explicit no-repeat recovery for pending requests. Cause remains unproven, do not silently rerun the missing stage.
+
+**Verification:** initial and final smoke `./init.sh` exited 0 (final `/tmp/storygrow-model-compare-final.log`). Offline prompt-pair/budget guards passed. Deliberate resume repeat refused before HTTP generation; still six author + five safety requests. Verified all archived JSON against runtime files, runner/resume source hashes and exact prose in reading.md; file line caps and token pattern scan pass. StoryGrow services stopped; other projects left running. No product-integration claim or completed full PR review.
