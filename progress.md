@@ -1954,3 +1954,15 @@ Original process vanished after case-3 was sent. Two author+safety results compl
 **Cost and trace proof:** four HTTP 200 traces with GENERATION model/usage; actual total $0.10767625, agrees uncached usage calculation, below $0.30. No Book/StoryEval/integration claim. Deliberate repeat exit 1 before generation; exactly four wire requests remain. Exact archive, runner/input/dependency hashes, reader paragraph identity, file caps and secret pattern checks passed.
 
 **Final verification:** `./init.sh` exited 0 (`/tmp/storygrow-oct1-author-final.log`); `git diff --check` passed. Four successful calls/traces, frozen evidence and original prose verified. StoryGrow observability services stopped after retrieval; no other containers stopped. Owner reading and stage-1 acceptance still pending.
+
+## 2026-10-01 — STO-15: rejected pair, causal reading of editorial references
+
+**Done:** owner rejected both Oct1 raw stories for disconnectedness and drawn-out action. Recorded feedback without changing originals/evidence. Read accepted Hide-and-seek, tentative Red Mitten, original mailbox A1 and separate unaccepted manual mailbox candidate, plus both rejected outputs. Saved source-grounded comparison and exact short replacement literary core under `docs/process/2026-10-01-story-causality/`.
+
+**Decisions:** analyze event dependencies and pacing, not imitate Suteev or copy scenes. Mailbox preference concerns original premise, not acceptance of later manual revision. New task prepared only; no prompt/code promotion, planner/editor layer, model change, API charges or new generation. Earlier core already asked for causality; new wording is an untested hypothesis, not a proven fix.
+
+**Next:** review concrete author task; any live check must be separately bounded and retain all raw outputs. Owner acceptance remains missing; PDF/integration not started.
+
+**Blockers:** repeatable acceptable automatic prose unresolved. STO-15 In Progress, #410 draft/unmerged.
+
+**Verification:** initial and final `./init.sh` exited 0 (final `/tmp/storygrow-causal-reading-final.log`); `git diff --check` passed. Verified local reference links and exact equality of source stories/rejected outputs/frozen requests/evidence against HEAD. Documents only: zero paid calls, no new generation/traces, no AI code or production changes.

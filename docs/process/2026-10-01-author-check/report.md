@@ -38,3 +38,7 @@
 Четыре traces получены обратно HTTP 200, каждый содержит GENERATION model/usage. LangFuse actual cost: author1 $0.04628, safety1 $0.00505, author2 $0.05083375, safety2 $0.0055125; сумма **$0.10767625**, ниже объявленных $0.30. Uncached usage calculation совпал с trace sum. Trace IDs/usage/полные wire inputs и outputs, frozen manifest с runner/dependency hashes — в evidence.jsonl. Не было потерянных ответов и скрытых повторов.
 
 Начальный и итоговый ./init.sh exit 0; offline guard RED/GREEN и syntax check пройдены. Повторный запуск отклонён до generation, осталось ровно четыре HTTP запроса. Проверены равенство архива runtime, runner/input/dependency hashes и дословность всех абзацев reader package. StoryGrow observability services остановлены после проверки traces. Нет Book/StoryEval, картинок/PDF или продуктовой интеграции; проход четырёх LLM вызовов не равен завершению STO-15.
+
+## Чтение владельца
+
+Владелец отвергла оба текста: несвязанность и одновременно затянутость. Это отрицательный результат этапа 1, не pending acceptance. Оригиналы и traces сохранены. Согласованный следующий бесплатный шаг — [разбор событий в более близких примерах](../2026-10-01-story-causality/analysis.md) и короткое задание автору; без нового запуска или ручной полировки этих двух ответов.

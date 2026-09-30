@@ -1,10 +1,16 @@
+# Latest decision — 2026-10-01: both stories rejected, free causal analysis complete
+
+Owner rejected the two Oct1 tales: disconnectedness and drawn-out action. Authorized free analysis of Hide-and-seek, mitten and mailbox and preparing a short author task. Read `docs/process/2026-10-01-story-causality/{analysis.md,author-task.md}`. Carefully separates accepted manual gold, tentative mitten, preferred original mailbox idea and unaccepted manual mailbox revision.
+
+Prepared replacement literary core focuses on decisions/consequences and pacing, preserves goal/arc/age and existing safety. Not applied, not run; previous core already demanded causality, so no improvement claim. No new model/planner/editor/examples/API charges or production changes. Both rejected originals stay intact. Next: review prepared task; no paid batch authorized by this step. STO-15 In Progress/#410 draft, automatic quality unresolved. Latest verification in progress.
+
 # Latest result — 2026-10-01: two amended-author texts complete
 
 Read `docs/process/2026-10-01-author-check/{reading.md,report.md}`. Local Codex only. Two authors + two safety, four confirmed traces, $0.10767625 under announced $0.30. No lost response/retry. Frozen inputs retained; do NOT rerun the runner. Deliberate repeat was blocked before generation.
 
-Owner has not read these two outputs yet. Both need substantial editing in Codex review: kindness 422 words fails Latin gate (Кsandbox), sand/tower/path causality weak; independence 546 passes gates/safety but remains an instruction with white chalk/sign/lake continuity gaps. Both safety pass. Age-as-biography absent, overall automated quality still unaccepted. No manual changes, editor, extra batch, production changes or PDF.
+Owner has now rejected both outputs for disconnectedness and drawn-out action; see latest decision above. Both need substantial editing in Codex review: kindness 422 words fails Latin gate (Кsandbox), sand/tower/path causality weak; independence 546 passes gates/safety but remains an instruction with white chalk/sign/lake continuity gaps. Both safety pass. Age-as-biography absent, overall automated quality still unaccepted. No manual changes, editor, extra batch, production changes or PDF.
 
-Next: owner reading; don't call stage 1 complete or expand prohibitions/paid attempts automatically. Final init exit 0 and archive/repeat guards verified; see latest progress entry. STO-15 In Progress/#410 draft. Previous decision/history follows.
+Historical next step was owner reading; rejection is recorded above. Don't call stage 1 complete or expand prohibitions/paid attempts automatically. Final init exit 0 and archive/repeat guards verified; see latest progress entry. STO-15 In Progress/#410 draft. Previous decision/history follows.
 
 # Latest decision — 2026-10-01: stop model comparisons, return to stage 1
 
