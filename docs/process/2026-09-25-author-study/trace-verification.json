@@ -1,0 +1,182 @@
+[
+  {
+    "id": "case-1",
+    "stage": "author",
+    "traceId": "c3901f9d5187fabf4eb633b9cdfd8da5",
+    "status": 200,
+    "observations": [
+      {
+        "id": "c0c91489cdd1d389",
+        "type": "SPAN",
+        "model": null,
+        "usage": {
+          "unit": "TOKENS",
+          "input": 0,
+          "output": 0,
+          "total": 0
+        },
+        "calculatedTotalCost": 0
+      },
+      {
+        "id": "81663804f3956b7e",
+        "type": "SPAN",
+        "model": null,
+        "usage": {
+          "unit": "TOKENS",
+          "input": 0,
+          "output": 0,
+          "total": 0
+        },
+        "calculatedTotalCost": 0
+      },
+      {
+        "id": "a679f7a9a08bafea",
+        "type": "GENERATION",
+        "model": "gpt-5-2025-08-07",
+        "usage": {
+          "unit": "TOKENS",
+          "input": 1655,
+          "output": 3105,
+          "total": 4760
+        },
+        "calculatedTotalCost": 0.03311875
+      }
+    ],
+    "totalCost": 0.03311875
+  },
+  {
+    "id": "case-1",
+    "stage": "safety",
+    "traceId": "53462de37d83f33b58e4a2ec29861819",
+    "status": 200,
+    "observations": [
+      {
+        "id": "11b9ae2eb3155604",
+        "type": "SPAN",
+        "model": null,
+        "usage": {
+          "unit": "TOKENS",
+          "input": 0,
+          "output": 0,
+          "total": 0
+        },
+        "calculatedTotalCost": 0
+      },
+      {
+        "id": "12b362c749eca0e5",
+        "type": "SPAN",
+        "model": null,
+        "usage": {
+          "unit": "TOKENS",
+          "input": 0,
+          "output": 0,
+          "total": 0
+        },
+        "calculatedTotalCost": 0
+      },
+      {
+        "id": "ff38fb48d13232cf",
+        "type": "GENERATION",
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "unit": "TOKENS",
+          "input": 2154,
+          "output": 11,
+          "total": 2165
+        },
+        "calculatedTotalCost": 0.005495
+      }
+    ],
+    "totalCost": 0.005495
+  },
+  {
+    "id": "case-2",
+    "stage": "author",
+    "traceId": "7cab7fca8356ab17b9678e8dc18c37f7",
+    "status": 200,
+    "observations": [
+      {
+        "id": "edc3138774216091",
+        "type": "SPAN",
+        "model": null,
+        "usage": {
+          "unit": "TOKENS",
+          "input": 0,
+          "output": 0,
+          "total": 0
+        },
+        "calculatedTotalCost": 0
+      },
+      {
+        "id": "8640d3613e302303",
+        "type": "GENERATION",
+        "model": "gpt-4.1-2025-04-14",
+        "usage": {
+          "unit": "TOKENS",
+          "input": 1657,
+          "output": 715,
+          "total": 2372
+        },
+        "calculatedTotalCost": 0.009034
+      },
+      {
+        "id": "0f05a6ef39b979ee",
+        "type": "SPAN",
+        "model": null,
+        "usage": {
+          "unit": "TOKENS",
+          "input": 0,
+          "output": 0,
+          "total": 0
+        },
+        "calculatedTotalCost": 0
+      }
+    ],
+    "totalCost": 0.009034
+  },
+  {
+    "id": "case-2",
+    "stage": "safety",
+    "traceId": "12454d4459b264bf08dcc6864edcfe3f",
+    "status": 200,
+    "observations": [
+      {
+        "id": "a431fc3814456f1c",
+        "type": "SPAN",
+        "model": null,
+        "usage": {
+          "unit": "TOKENS",
+          "input": 0,
+          "output": 0,
+          "total": 0
+        },
+        "calculatedTotalCost": 0
+      },
+      {
+        "id": "ace18e22e03e9782",
+        "type": "GENERATION",
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "unit": "TOKENS",
+          "input": 1717,
+          "output": 11,
+          "total": 1728
+        },
+        "calculatedTotalCost": 0.0044025
+      },
+      {
+        "id": "304fd0ec8dfb31e6",
+        "type": "SPAN",
+        "model": null,
+        "usage": {
+          "unit": "TOKENS",
+          "input": 0,
+          "output": 0,
+          "total": 0
+        },
+        "calculatedTotalCost": 0
+      }
+    ],
+    "totalCost": 0.0044025
+  }
+]

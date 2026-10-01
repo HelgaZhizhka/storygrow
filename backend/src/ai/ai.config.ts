@@ -27,6 +27,15 @@ export const PAGE_COUNT_BY_BAND: Record<AgeBand, { min: number; max: number }> =
   '3-4': { min: 6, max: 8 },
   '5-6': { min: 6, max: 12 },
 };
+/**
+ * Whole-story word ranges per age band (ADR-0008, spec 2026-09-23 §5). Owner
+ * hypotheses for the reading tests, not age norms; they gate the finished
+ * text (STO-15 harness) and are never narrowed to fit page templates.
+ */
+export const WORD_RANGE_BY_BAND: Record<AgeBand, { min: number; max: number }> = {
+  '3-4': { min: 150, max: 250 },
+  '5-6': { min: 350, max: 550 },
+};
 export const DISCUSSION_QUESTIONS_COUNT = 5;
 export const EVAL_THRESHOLD_DEFAULT = 7.0;
 export const EVAL_MAX_RETRIES_DEFAULT = 2;
