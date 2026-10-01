@@ -1984,3 +1984,15 @@ Original process vanished after case-3 was sent. Two author+safety results compl
 **Trace/cost verification:** all four HTTP200 traces with GENERATION model/usage; actual $0.08218875 under announced $0.30, matches uncached usage to rounding. Deliberate rerun rejected before generation, still four wire requests. Exact archive/prose and request/runner/source/dependency hashes, file caps and secret pattern checks verified. Fresh final smoke pending.
 
 **Final verification:** initial and final ./init.sh exit 0 (final `/tmp/storygrow-event-task-final.log`); git diff --check passed. Original reader paragraphs and complete archive/source hashes confirmed. StoryGrow observability services stopped after retrieval; no other project services stopped. No owner acceptance/product integration claim.
+
+## 2026-10-01 — STO-15: stop experiments and audit actual author paths
+
+**Done:** owner rejects latest stories and stops all experiments. No running research processes found. Read-only Railway API SUCCESS deploy SHA cc708b0835e095dbf9d629e2df0d960ec5200190 equals main. Saved detailed Russian report and exact latest author/safety prompts in docs/process/2026-10-01-text-pipeline-audit/. No model calls, AI code changes or frozen evidence rewrites.
+
+**Decisions:** no new generation/editing/comparison or rerun without NEW explicit owner instruction. Latest pair rejected despite formal pass. Separate application, original harness and research runners. Stage 1 incomplete; STO-15 In Progress/#410 draft. Earlier near-solution claims unproven; manual gold is not automatic quality evidence.
+
+**Next:** deliver audit and instructions. Do not resume historical handoff next steps.
+
+**Blockers:** acceptable repeatable automatic prose, layout and product integration remain unproven.
+
+**Verification:** fresh ./init.sh exit 0 (/tmp/storygrow-text-audit-init.log); git diff --check passed. Exact system and both user prompts checked against frozen requests, both new documents below 400 lines. Operative Plan/Prose/exemplars/generator/orchestrator/evaluator/PDF sources match deployed main; title branch changes only exports, config adds research word ranges. No paid calls or product integration claim.

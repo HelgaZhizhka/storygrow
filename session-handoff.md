@@ -1,3 +1,9 @@
+# STOP — 2026-10-01: owner stopped all experiments; audit replaces earlier next steps
+
+Owner rejects latest stories and requests a factual audit, not new texts. No further generations, paid model calls, editing tests, model comparisons or reruns without a NEW explicit owner instruction. No research processes found running. Prior next steps below are historical, NOT authorization.
+
+Read docs/process/2026-10-01-text-pipeline-audit/{report.md,current-instructions.md}. Railway production API SUCCESS SHA cc708b0835e095dbf9d629e2df0d960ec5200190 equals main. Application still page-plan/Suteev/exemplars; recent separate runner had no Suteev/examples/page caps/literary judge/editor. Latest two texts rejected despite formal pass. Stage 1 incomplete; STO-15 In Progress/#410 draft. No model calls or product changes in audit. Frozen evidence untouched. Verification in progress.
+
 # Latest result — 2026-10-01: event-focused task tried, both originals pending reading
 
 Owner asked to try prepared instructions. Local Codex ran two author + two safety, same GPT-5 and gates/schema/safety, $0.08218875 under announced $0.30. Read `docs/process/2026-10-01-event-task/{reading.md,report.md}`. New literary core only + unchanged boundary, explicit reader age/word range in user input, no examples/premise/editor/agents. Frozen source hashes retained, no retry/lost output.
